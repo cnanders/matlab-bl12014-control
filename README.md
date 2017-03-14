@@ -9,11 +9,11 @@ MATLAB UI for controlling beamline 12.0.1.4 of the [Advanced Light Source]() at 
 2. Add this library and all dependencies to the MATLAB path, e.g., 
 
 ```matlab
-addpath(genpath('vendor/github/cnanders/matlab-instrument-control/pkg'));
-addpath(genpath('vendor/github/cnanders/matlab-npoint-lc400/pkg'));
+addpath(genpath('vendor/github/cnanders/matlab-instrument-control/src'));
+addpath(genpath('vendor/github/cnanders/matlab-npoint-lc400/src'));
 addpath(genpath('vendor/github/cnanders/matlab-scanner-control-npoint'));
-addpath(genpath('vendor/github/cnanders/matlab-ieee/pkg'));
-addpath(genpath('vendor/github/cnanders/matlab-hex/pkg'));
+addpath(genpath('vendor/github/cnanders/matlab-ieee/src'));
+addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 ```
 
@@ -35,7 +35,7 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/pkg'));
                 - matlab-npoint-lc400 **(dependency)**	
 				- matlab-ieee **(dependency of matlab-npoint-lc400)**
 				- matlab-hex **(dependency of matlab-ieee)**
-	- pkg
+	- src
         - +bl12014
             - +ui
             - +interface
