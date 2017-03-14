@@ -26,21 +26,21 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 <a name="project-structure"></a>
 # Project Structure
 
-- project
-	- vendor
-		- github
-			- cnanders
-                - matlab-scanner-control-npoint **(dependency)**
-                - matlab-instrument-control **(dependency)**
-                - matlab-npoint-lc400 **(dependency)**	
-				- matlab-ieee **(dependency of matlab-npoint-lc400)**
-				- matlab-hex **(dependency of matlab-ieee)**
-	- src
-        - +bl12014
-            - +ui
-            - +interface
-            - +mic-device
-    - tests
-    - docs
+- project/
+	- vendor/
+		- github/
+			- cnanders/
+                - matlab-scanner-control-npoint/ **(dependency)**
+                - matlab-instrument-control/ **(dependency)**
+                - matlab-npoint-lc400/ **(dependency)**	
+				- matlab-ieee/ **(dependency of matlab-npoint-lc400)**
+				- matlab-hex/ **(dependency of matlab-ieee)**
+	- src/
+        - +bl12014/
+            - +ui/
+            - +interface/
+            - +mic-device/
+    - tests/
+    - docs/
     - README.md
     - CHANGELOG.md
