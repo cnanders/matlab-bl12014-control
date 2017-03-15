@@ -1,0 +1,562 @@
+classdef WaferAxes < mic.Base
+        
+    properties (Constant)
+       
+        
+        
+    end
+    
+	properties
+        
+       
+    end
+    
+    properties (SetAccess = private)
+        
+        
+        % {double 1x1} width of the mic.ui.axes.ZoomPanAxes in pixels
+        dWidth = 600
+        
+        % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
+        dHeight = 600
+        
+        
+    end
+    
+    properties (Access = private)
+        
+        % {double 1x1} number that has to do with HSV color transparency
+        dMinV = 0.5      
+        
+        % {double 1x1} width of an exposure in meters
+        dFieldWidth = 200e-6
+        
+        % {double 1x1} height of an exposure in meters
+        dFieldHeight = 30e-6
+        
+        
+        
+        % {logical 1x1} true when exposing.  Adds pink overlay over
+        % everything
+        lExposing = false
+        
+        uiZoomPanAxes
+        hTrack
+        hCarriage
+        hIllum
+        hWafer
+        hFEMPreview
+        hExposures
+        hOverlay
+        
+        dFieldX
+        dFieldY
+        
+        dXFEMPreview            % size: [focus x dose] of X positions
+        dYFEMPreview            % size: [focus x dose] of Y positions
+                                % these values are updated whenever the FEM
+                                % grid changes
+        
+        
+        % Store exposure data in a cell.  Each item of the cell is an array that 
+        % contains:
+        %
+        %   dX
+        %   dY
+        %   dDoseNum        the dose shot num
+        %   dFEMDoseNum
+        %   dFocusNum       the focus shot num
+        %   dFEMFocusNum
+        %
+        % The dose/focus data is used for color/hue 
+        % As each exposure finishes, an array is pushed to to this cell
+        
+        ceExposure  
+        
+        
+    end
+    
+        
+    events
+        
+        eName
+        
+    end
+    
+
+    
+    methods
+        
+        
+        function this = WaferAxes(varargin)
+            
+            for k = 1 : 2: length(varargin)
+                % this.msg(sprintf('passed in %s', varargin{k}));
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
+            this.init();
+            
+            
+        end
+        
+                
+        function build(this, hParent, dLeft, dTop)
+                        
+            this.uiZoomPanAxes.build(hParent, dLeft, dTop);
+            
+            
+            % Build heirarchy of hggroups/hgtransforms for drawing
+            
+            %{
+            this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hWafer         = hggroup('Parent', this.hCarriage);
+            this.hFEMPreview    = hggroup('Parent', this.hWafer);
+            this.hFEM           = hggroup('Parent', this.hWafer);
+            this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            
+            this.drawTrack(); 
+            this.drawCarriage();
+            this.drawWafer(); 
+            this.drawIllum(); 
+            this.drawFEM(); 
+            this.drawFEMPreview(); 
+            %}
+            
+            % For some reason when I build the hg* instances as shown above
+            % and then add content to them, the stacking order is messed up
+            % (the wafer is not on top of the carriage) but when I do it
+            % this way it works. 
+            
+           
+            this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawTrack(); 
+            
+            this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCarriage(); 
+            
+            this.hWafer         = hggroup('Parent', this.hCarriage);
+            this.drawWafer();
+
+            this.hFEMPreview    = hggroup('Parent', this.hWafer);
+            this.drawFEMPreview();
+            
+            this.hExposures     = hggroup('Parent', this.hWafer);
+            this.drawExposures();
+            
+            this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawIllum();
+            
+            this.hOverlay       = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            
+            
+            
+        end
+        
+                        
+        
+        %% Destructor
+        
+        function delete(this)
+            
+            
+            
+        end
+        
+        % The FEM preview is not drawn as a single rectangle like it is in
+        % MET software.  It is a grid of exposure sites.  You don't pass
+        % in information to draw one rectangle, you pass in the x, y
+        % meshgrid of the (, y) position on the wafer at every exposure site
+        % @param {double focus x dose} dX - x position of
+        % every exposure, e.g.:
+        %  [-1.1  -0.8   -0.5
+        %   -1.1  -0.8   -0.5
+        %   -1.1  -0.8   -0.5] * 1e-3
+        % @param {double focus x dose} dY - y position of
+        % every exposure, e.g.:
+        %  [2.2   2.2   2.2
+        %   2.1   2.1   2.1
+        %   2.0   2.0   2.0] * 1e-3
+        % See addFakeFemPreview()
+        
+        function updateFEMPreview(this, dX, dY)
+            
+            this.dXFEMPreview = dX;
+            this.dYFEMPreview = dY;
+            this.drawFEMPreview();
+            
+        end
+        
+        % Draw an exposure on the wafer.  It is understood that the
+        % exposure is part of a FEM.  Information about the FEM the
+        % exposure is part of must be passed in so the colors can be drawn
+        % correctly.  May need to edit this at some point to take
+        % experimental data of exposure time and stage z of each exposure.
+        % @param {double 1x6} dData
+        % @param {double 1x1} dData[1] x position of the exposure on the
+        % wafer.  OR is it the x position of the stage when the exposure
+        % occurs?
+        % @param {double 1x1} dData[2] y position of the stage when the
+        %   exposure occurs
+        % @param {double 1x1} dData[3] dose shot num (used with dData[4]
+        %   to calculate the saturation of the fill color 
+        % @param {double 1x1} dData[4] FEM dose size
+        % @param {double 1x1} dData[5] focus shot num (used with dData[6]
+        %   to calculate the hue of the fill color 
+        % @param {double 1x1} dData[6] FEM focus size
+        function addExposure(this, dData)
+            
+            this.ceExposure{length(this.ceExposure) + 1} = dData;
+            this.drawExposure(dData);
+                        
+        end
+        
+                
+        function purgeExposures(this)
+            
+            this.ceExposure = {};
+            this.deleteChildren(this.hExposures);                
+            
+        end
+        
+        function purgeOverlay(this)
+            
+            this.deleteChildren(this.hOverlay);                
+            
+        end
+                
+        % @param {double 1x1} x position of the stage in meters
+        % @param {double 1x1} y position of the stage in meters
+        function setStagePosition(this, dX, dY)
+            
+            % Make sure the hggroup of the carriage is at the correct
+            % location.  
+            
+            hHgtf = makehgtform('translate', [dX dY 0]);
+            if ishandle(this.hCarriage);
+                set(this.hCarriage, 'Matrix', hHgtf);
+            end
+            
+        end
+        
+        function addFakeFemPreview(this)
+        
+            dX          = 0.5e-3; % Dose
+            dY          = -0.1e-3; % Focus
+            dX0         = .3e-3;
+            dY0         = -.3e-3;
+            dDoseNum    = 11;
+            dFocusNum   = 9;
+            
+            x = dX0 : dX : dX0 + (dDoseNum - 1) * dX;
+            y = dY0 : dY : dY0 + (dFocusNum - 1) * dY;
+            
+            [xx, yy] = meshgrid(x, y);
+            
+            this.updateFEMPreview(xx, yy);
+            
+        end
+        
+        function addFakeExposures(this)
+            
+            % For testing
+            
+            dX          = 0.4e-3;
+            dY          = -0.1e-3;
+            dX0         = 0e-3;
+            dY0         = 1e-3;
+            dDoseNum    = 11;
+            dFocusNum   = 9;
+            
+            for focus = 1:dFocusNum
+                for dose = 1:dDoseNum
+                    this.addExposure([...
+                        dX0 + (dose - 1)*dX, ...
+                        dY0 + (focus - 1)*dY, ...
+                        dose, ...
+                        dDoseNum, ...
+                        focus, ...
+                        dFocusNum ...
+                    ]);
+                end
+            end
+        end
+        
+        
+        function setExposing(this, lVal)
+            
+            this.lExposing = lVal;
+            
+            if this.lExposing
+                this.drawOverlay();
+            else
+                this.purgeOverlay();
+            end
+                            
+        end
+        
+            
+
+    end
+    
+    methods (Access = private)
+        
+        function init(this)
+            
+            this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, 500);
+
+        end
+        
+        function drawTrack(this)
+            
+           
+           % (L)eft (R)ight (T)op (B)ottom
+           
+           % Base is 1500 x 500 perfectly centered
+           
+           dL = -750e-3;
+           dR = 750e-3;
+           dT = 250e-3;
+           dB = -250e-3;
+           
+           patch( ...
+               [dL dL dR dR], ...
+               [dB dT dT dB], ...
+               [0.5, 0.5, 0.5], ...
+               'Parent', this.hTrack, ...
+               'EdgeColor', 'none');
+           
+           % Track
+           
+           dL = -1450e-3/2;
+           dR = 1450e-3/2;
+           dT = 200e-3;
+           dB = -200e-3;
+           
+           patch( ...
+               [dL dL dR dR], ...
+               [dB dT dT dB], ...
+               [0.6, 0.6, 0.6], ...
+               'Parent', this.hTrack, ...
+               'EdgeColor', 'none');
+            
+        end
+        
+        function drawIllum(this)
+            
+            dL = -this.dFieldWidth/2;
+            dR = this.dFieldWidth/2;
+            dT = this.dFieldHeight/2;
+            dB = -this.dFieldHeight/2;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                hsv2rgb(0.9, 1, 1), ...
+                'Parent', this.hIllum, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            uistack(hPatch, 'top');
+        end
+        
+        function drawCarriage(this)
+            
+
+            dL = -200e-3;
+            dR = 200e-3;
+            dT = 200e-3;
+            dB = -200e-3;
+
+            
+            % Base square
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                [0.4, 0.4, 0.4], ...
+                'Parent', this.hCarriage, ...
+                'EdgeColor', 'none');
+            
+
+            % Circular part without the triangle-ish thing
+                       
+            dTheta = linspace(0, 2*pi, 100);
+            dR = 175e-3;
+          
+            patch( ...
+                dR*sin(dTheta), ...
+                dR*cos(dTheta), ...
+                [0.5, 0.5, 0.5], ...
+                'Parent', this.hCarriage, ...
+                'EdgeColor', 'none');
+            
+            % The part in 60-degree archs with 60-degree flats
+            
+            dDTheta = 1/360;
+            dTheta = [0/180:dDTheta:30/180, ...
+                90/180:dDTheta:150/180, ...
+                210/180:dDTheta:270/180, ...
+                330/180:dDTheta: 360/180]*pi;
+            
+            % dR = 173e-3;
+            dTheta = dTheta - 30*pi/180;
+            
+            hPatch = patch( ...
+                dR*sin(dTheta), ...
+                dR*cos(dTheta), ...
+                [0.3, 0.3, 0.3], ...
+                'Parent', this.hCarriage, ...
+                'EdgeColor', 'none');
+                        
+        end
+        
+        function drawWafer(this)
+            
+            dDTheta = 1/360;            
+            dTheta = [0/180:dDTheta:70/180,...
+                110/180:dDTheta:170/180,...
+                190/180:dDTheta:360/180]*pi;
+            
+            
+            dR = 150e-3;
+            dTheta = dTheta - 90*pi/180;
+            
+            hPatch = patch( ...
+                dR*sin(dTheta), ...
+                dR*cos(dTheta), ...
+                [0, 0, 0], ...
+                'Parent', this.hWafer, ...
+                'EdgeColor', 'none');
+            
+            uistack(hPatch, 'top');
+                        
+        end
+        
+        
+        
+        function drawFEMPreview(this)
+            
+            if ishandle(this.hFEMPreview)
+                this.deleteChildren(this.hFEMPreview);
+            else
+                return;
+            end
+                           
+            [dFocusNum, dDoseNum] = size(this.dXFEMPreview);
+                        
+            for row = 1:dFocusNum
+                for col = 1:dDoseNum
+                
+                    dL = this.dXFEMPreview(row, col) - this.dFieldWidth/2;
+                    dR = this.dXFEMPreview(row, col) + this.dFieldWidth/2;
+                    dT = this.dYFEMPreview(row, col) + this.dFieldHeight/2;
+                    dB = this.dYFEMPreview(row, col) - this.dFieldHeight/2;
+
+                    patch( ...
+                        [dL dL dR dR], ...
+                        [dB dT dT dB], ...
+                        [1, 1, 1], ...
+                        'Parent', this.hFEMPreview, ...
+                        'FaceAlpha', 0.2, ...
+                        'EdgeColor', 'none' ...
+                    );
+                    % 'LineWidth', 2, ...
+
+                end
+            end
+        end
+        
+        function drawExposures(this)
+                        
+            for k = 1:length(this.ceExposure)
+                this.drawExposure(this.ceExposure{k});
+            end
+            
+        end
+        
+        function drawExposure(this, dData)
+            
+            
+            if isempty(this.hExposures) || ...
+                ~ishandle(this.hExposures)
+                return
+            end
+            
+            % (H)ue is focus
+            % (V)alue is dose
+            
+            dH = (dData(5) - 1)/dData(6); 
+            dV = this.dMinV + (1 - this.dMinV)*dData(3)/dData(4);
+
+            dL = dData(1) - this.dFieldWidth/2;
+            dR = dData(1) + this.dFieldWidth/2;
+            dT = dData(2) + this.dFieldHeight/2;
+            dB = dData(2) - this.dFieldHeight/2;
+
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                hsv2rgb([dH, 1, dV]), ...
+                'Parent', this.hExposures, ...
+                'EdgeColor', 'none' ...
+            );
+        end
+        
+        
+        function drawOverlay(this)
+            
+            this.msg('drawOverlay');
+            
+            
+            if isempty(this.hOverlay) || ...
+                ~ishandle(this.hOverlay)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                hsv2rgb(0.9, 1, 1), ...
+                'Parent', this.hOverlay, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+            
+        end
+        
+        
+        function deleteChildren(this, h)
+            
+            % This is a utility to delete all children of an axes, hggroup,
+            % or hgtransform instance
+            
+            if ~ishandle(h)
+                return
+            end
+            
+            hChildren = get(h, 'Children');
+            for k = 1:length(hChildren)
+                if ishandle(hChildren(k))
+                    delete(hChildren(k));
+                end
+            end
+        end
+        
+        
+        
+    end % private
+    
+    
+end

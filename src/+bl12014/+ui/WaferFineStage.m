@@ -1,53 +1,36 @@
-classdef ReticleFineStage < mic.Base
+classdef WaferFineStage < mic.Base
     
     properties
-
+      
         
         % {< mic.interface.device.GetSetNumber}
-        deviceX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceY
-        
-
-        
+        deviceZ
+                
         % {mic.ui.device.GetSetNumber 1x1}}
-        uiX
+        uiZ
         
-        % {mic.ui.device.GetSetNumber 1x1}}
-        uiY
-        
-        
-        
-        
-        
+                
     end
     
     properties (SetAccess = private)
         
         dWidth = 600
-        dHeight = 100
-        
-        cName = 'ReticleFineStage'
+        dHeight = 70
         
     end
     
     properties (Access = private)
         
         clock
-        
         hPanel
-        
         dWidthName = 70
-        
-        configStageY
-        configMeasPointVolts
+       
         
     end
     
     methods
         
-        function this = ReticleFineStage(varargin)
+        function this = WaferFineStage(varargin)
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
                 if this.hasProp( varargin{k})
@@ -62,16 +45,11 @@ classdef ReticleFineStage < mic.Base
         
         
         function turnOn(this)
-            
-            this.uiX.turnOn();
-            this.uiY.turnOn();
-            
-            
+            this.uiZ.turnOn();
         end
         
         function turnOff(this)
-            this.uiX.turnOff();
-            this.uiY.turnOff();
+            this.uiZ.turnOff();
            
             
         end
@@ -81,7 +59,7 @@ classdef ReticleFineStage < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Reticle Fine Stage',...
+                'Title', 'Wafer Fine Stage',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -96,13 +74,10 @@ classdef ReticleFineStage < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiX.build(this.hPanel, dLeft, dTop);
+            this.uiZ.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiY.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-           
+                     
             
         end
         
@@ -123,56 +98,35 @@ classdef ReticleFineStage < mic.Base
     end
     
     methods (Access = private)
-                
+        
          
-        function initUiX(this)
+         
+        function initUiZ(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-reticle-fine-stage-x.json' ...
+                'config-wafer-fine-stage-z.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiX = mic.ui.device.GetSetNumber(...
+            this.uiZ = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
-                'cName', 'reticle-fine-stage-x', ...
+                'cName', 'wafer-fine-stage-z', ...
                 'config', uiConfig, ...
-                'cLabel', 'X' ...
+                'cLabel', 'Z' ...
             );
         end
         
-        function initUiY(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-set-number', ...
-                'config-reticle-fine-stage-y.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-            
-            this.uiY = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
-                'lShowLabels', false, ...
-                'dWidthName', this.dWidthName, ...
-                'cName', 'reticle-fine-stage-y', ...
-                'config', uiConfig, ...
-                'cLabel', 'Y' ...
-            );
-        end
         
         
         
         function init(this)
-            this.initUiX();
-            this.initUiY();
+            this.initUiZ();
             
         end
         

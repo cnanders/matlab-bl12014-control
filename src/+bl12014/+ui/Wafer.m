@@ -1,7 +1,8 @@
-classdef Reticle < mic.Base
+classdef Wafer < mic.Base
         
     properties (Constant)
-      
+       
+        
         dWidth      = 620
         dHeight     = 780
         
@@ -12,25 +13,29 @@ classdef Reticle < mic.Base
         uiCoarseStage
         uiFineStage
         uiAxes
-        mod3cap
+        
+        hs
+       
     end
     
     properties (SetAccess = private)
-    
-        cName = 'Reticle'
+        
+        hFigure
+        
     end
     
     properties (Access = private)
                       
         clock
-        hFigure
         dDelay = 0.5
         
     end
     
         
     events
-                
+        
+        eName
+        
     end
     
 
@@ -38,7 +43,7 @@ classdef Reticle < mic.Base
     methods
         
         
-        function this = Reticle(varargin)
+        function this = Wafer(varargin)
             
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
@@ -48,6 +53,7 @@ classdef Reticle < mic.Base
                 end
             end
             this.init();
+            
             
         end
         
@@ -65,43 +71,42 @@ classdef Reticle < mic.Base
             dScreenSize = get(0, 'ScreenSize');
             
             this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Reticle Control', ...
+                'NumberTitle', 'off',...
+                'MenuBar', 'none',...
+                'Name', 'Wafer Control',...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
                     (dScreenSize(4) - this.dHeight)/2 ...
                     this.dWidth ...
                     this.dHeight ...
                  ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
+                'Resize', 'off',...
+                'HandleVisibility', 'on',... % lets close all close the figure
                 'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequest ...
+                'CloseRequestFcn', @this.handleCloseRequestFcn ...
                 );
             
             % There is a bug in the default 'painters' renderer when
             % drawing stacked patches.  This is required to make ordering
             % work as expected
             
-            set(this.hFigure, 'renderer', 'OpenGL');
+            % set(this.hFigure, 'renderer', 'OpenGL');
             
             drawnow;
 
             dTop = 10;
             dPad = 10;
-            
-            % this.mod3cap.build(this.hFigure, dPad, dTop);
-            
-            this.uiCoarseStage.build(this.hFigure, dPad, dTop);
+            dLeft = 10;
+            % this.hs.build(this.hFigure, dPad, dTop);
+            this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            this.uiFineStage.build(this.hFigure, dPad, dTop);
+            this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            this.uiAxes.build(this.hFigure, dPad, dTop);
+            this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
-                        
+           
             
         end
         
@@ -110,8 +115,6 @@ classdef Reticle < mic.Base
         %% Destructor
         
         function delete(this)
-            
-            this.msg('delete');
             
             % Clean up clock tasks
             
@@ -125,19 +128,8 @@ classdef Reticle < mic.Base
                 delete(this.hFigure);
             end
             
-            
         end
-        
-       
-        
-        
-            
-
-    end
-    
-    methods (Access = private)
-        
-        
+               
         
         function onClock(this)
             
@@ -150,47 +142,45 @@ classdef Reticle < mic.Base
                         
         end
         
+    end
+    
+    methods (Access = private)
         
         function init(this)
             
-           
-            this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
+            this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'clock', this.clock ...
             );
-                       
-            this.uiFineStage = bl12014.ui.ReticleFineStage(...
+            this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'clock', this.clock ...
             );
         
-            this.uiAxes = bl12014.ui.ReticleAxes(...
+            this.uiAxes = bl12014.ui.WaferAxes( ...
                 'dWidth', 600, ...
-                'dHeight', 450 ...
+                'dHeight', 480 ...
             );
-        
-            addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);
+            
+                        
+            % this.hs     = HeightSensor(this.clock);
             this.clock.add(@this.onClock, this.id(), this.dDelay);
 
         end
         
         
-        function onCloseRequest(this, src, evt)
-            this.msg('ReticleControl.closeRequestFcn()');
+        function handleCloseRequestFcn(this, src, evt)
+            
             delete(this.hFigure);
             % this.saveState();
+            
         end
         
        
         
-        function onUiAxesClickField(this, src, evt)
-                       
-            this.uiCoarseStage.uiX.setDestCalDisplay(-evt.stData.dX);
-            this.uiCoarseStage.uiY.setDestCalDisplay(-evt.stData.dY);
-            this.uiCoarseStage.uiX.moveToDest();
-            this.uiCoarseStage.uiY.moveToDest();            
-            
-        end
         
-
+        
+        
+        
+        
     end % private
     
     
