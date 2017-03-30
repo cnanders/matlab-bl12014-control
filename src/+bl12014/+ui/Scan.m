@@ -58,6 +58,10 @@ classdef Scan < mic.Base
         
         uitPlay
         
+        uitScanPause
+        uibScanAbort
+        uibScanStart
+        
         % Going to have a play/pause button and an abort button.  When you
         % click play the first time, a logical lRun = true will be set.  An
         % abort button will be shown.  Chenging the status of the button
@@ -66,12 +70,15 @@ classdef Scan < mic.Base
         
         lRunning = false
         
+        % {mic.StateScan 1x1}
+        scan
+        
         % {struct 1x1} storage used  and checking if the
         % system has reached a particular state.  The structure has a prop
         % for each configurable prop of the system and each of those has
         % two props: lSetRequired, lSetIssued
-        stStateScanSetContract
-        stStateScanAcquireContract
+        stScanSetContract
+        stScanAcquireContract
             
         
     end
@@ -205,14 +212,31 @@ classdef Scan < mic.Base
                20);
            
            dTop = dTop + 20;
-           this.uitPlay.build(this.hFigure, ...
+           
+           this.uibScanStart.build(this.hFigure, ...
                dPad + this.dWidthList + dPad, ...
                dTop, ...
                200, ...
-               mic.Utils.dEDITHEIGHT);
+               mic.Utils.dEDITHEIGHT ...
+           )
+       
+           this.uitScanPause.build(this.hFigure, ...
+               dPad + this.dWidthList + dPad, ...
+               dTop, ...
+               200, ...
+               mic.Utils.dEDITHEIGHT ...
+           );
+
+           dTop = dTop + 30;
            
-           
-           dTop = dTop + 20;
+           this.uibScanAbort.build(this.hFigure, ...
+               dPad + this.dWidthList + dPad, ...
+               dTop, ...
+               200, ...
+               mic.Utils.dEDITHEIGHT ...
+           );
+       
+            this.hideScanPauseAbort();
            
                       
         end
@@ -282,33 +306,33 @@ classdef Scan < mic.Base
                 'cLabel', 'Auto vent wafer at LL' ...
             );
             
-            
-            st1 = struct();
-            st1.lAsk        = false;
-            
-            st2 = struct();
-            st2.lAsk        = true;
-            st2.cTitle      = 'Paused';
-            st2.cQuestion   = 'The FEM is now paused.  Click "resume" to continue or "abort" to abort the FEM.';
-            st2.cAnswer1    = 'Abort';
-            st2.cAnswer2    = 'Resume';
-            st2.cDefault    = st2.cAnswer2;
-            
-            this.uitPlay            = mic.ui.common.Toggle( ...
-                'cTextFalse', 'Start FEM', ...
-                'cTextTrue', 'Pause FEM', ...
-                'stF2TOptions', st1, ...
-                'stT2FOptions', st2 ...
+
+            this.uibScanStart = mic.ui.common.Button( ...
+                'cText', 'Start' ...
+            );
+        
+            this.uitScanPause = mic.ui.common.Toggle( ...
+                'cTextFalse', 'Pause', ...
+                'cTextTrue', 'Resume' ...
             );
             
-            addlistener(this.uitPlay, 'eChange', @this.onPlay);
+            this.uibScanAbort = mic.ui.common.Button(...
+                'cText', 'Abort', ...
+                'lAsk', true, ...
+                'cMsg', 'The scan is now paused.  Are you sure you want to abort?' ... 
+            );
             
-            this.initStateScanSetContract();
-            this.initStateScanAcquireContract();
+            addlistener(this.uibScanAbort, 'ePress', @this.onScanAbortButtonPress)
+            addlistener(this.uibScanAbort, 'eChange', @this.onScanAbortButton)
+            addlistener(this.uitScanPause, 'eChange', @this.onScanPauseButton);
+            addlistener(this.uibScanStart, 'eChange', @this.onScanStartButton);
+            
+            this.initScanSetContract();
+            this.initScanAcquireContract();
                        
         end
         
-        function initStateScanSetContract(this)
+        function initScanSetContract(this)
             
              ceFields = {...
                 'pupilFill', ...
@@ -320,55 +344,73 @@ classdef Scan < mic.Base
             };
 
             for n = 1 : length(ceFields)
-                this.stStateScanSetContract.(ceFields{n}).lSetRequired = false;
-                this.stStateScanSetContract.(ceFields{n}).lSetIssued = false;
+                this.stScanSetContract.(ceFields{n}).lSetRequired = false;
+                this.stScanSetContract.(ceFields{n}).lSetIssued = false;
             end
             
         end
         
-        function initStateScanAcquireContract(this)
+        function initScanAcquireContract(this)
             
             ceFields = {...
                 'shutter'
             };
 
             for n = 1 : length(ceFields)
-                this.stStateScanAcquireContract.(ceFields{n}).lRequired = false;
-                this.stStateScanAcquireContract.(ceFields{n}).lIssued = false;
+                this.stScanAcquireContract.(ceFields{n}).lRequired = false;
+                this.stScanAcquireContract.(ceFields{n}).lIssued = false;
             end
             
         end
         
-        % For every field of this.stStateScanSetContract, set its lSetRequired and 
+        % For every field of this.stScanSetContract, set its lSetRequired and 
         % lSetIssued properties to false
-        function resetStateScanSetContract(this)
+        function resetScanSetContract(this)
             
-            ceFields = fieldnames(this.stStateScanSetContract);
+            ceFields = fieldnames(this.stScanSetContract);
             for n = 1 : length(ceFields)
-                this.stStateScanSetContract.(ceFields{n}).lSetRequired = false;
-                this.stStateScanSetContract.(ceFields{n}).lSetIssued = false;
+                this.stScanSetContract.(ceFields{n}).lSetRequired = false;
+                this.stScanSetContract.(ceFields{n}).lSetIssued = false;
             end
             
         end
         
-        function resetStateScanAcquireContract(this)
+        function resetScanAcquireContract(this)
             
-            ceFields = fieldnames(this.stStateScanSetContract);
+            ceFields = fieldnames(this.stScanSetContract);
             for n = 1 : length(ceFields)
-                this.stStateScanAcquireContract.(ceFields{n}).lRequired = false;
-                this.stStateScanAcquireContract.(ceFields{n}).lIssued = false;
+                this.stScanAcquireContract.(ceFields{n}).lRequired = false;
+                this.stScanAcquireContract.(ceFields{n}).lIssued = false;
             end
             
         end
         
-        function onPlay(this, src, evt)
+        function onScanStartButton(this, src, evt)
             
-            this.msg('onPlay');
+            this.msg('onScanStartButton');
             
-            if this.uitPlay.get()
-                this.startFEM();
-            end
+            this.hideScanStart();
+            this.showScanPauseAbort();
+            this.startNewScan();
                        
+        end
+        
+        function onScanPauseButton(this, ~, ~)
+        
+            if (this.uitScanPause.get()) % just changed to true, so was playing
+                this.scan.pause();
+            else
+                this.scan.resume();
+            end
+        end
+        
+        function onScanAbortButtonPress(this, ~, ~)
+            this.scan.pause();
+            this.uitScanPause.set(true);
+        end
+        
+        function onScanAbortButton(this, ~, ~)
+            this.scan.stop(); % calls onScanAbort()
         end
         
         
@@ -454,11 +496,11 @@ classdef Scan < mic.Base
         
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
-        function onStateScanSetState(this, stUnit, stValue)
+        function onScanSetState(this, stUnit, stValue)
             
-            this.resetStateScanSetContract();
+            this.resetScanSetContract();
             
-            % Update the stStateScanSetContract properties listed in stValue 
+            % Update the stScanSetContract properties listed in stValue 
             
             ceFields = fieldnames(stValue);
             for n = 1 : length(ceFields)
@@ -466,8 +508,8 @@ classdef Scan < mic.Base
                     case 'task'
                         % Do nothing
                     otherwise
-                        this.stStateScanSetContract.(ceFields{n}).lSetRequired = true;
-                        this.stStateScanSetContract.(ceFields{n}).lSetIssued = false;
+                        this.stScanSetContract.(ceFields{n}).lSetRequired = true;
+                        this.stScanSetContract.(ceFields{n}).lSetIssued = false;
                 end
             end
 
@@ -477,7 +519,7 @@ classdef Scan < mic.Base
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
         % @returns {logical} - true if the system is at the state
-        function lOut = onStateScanIsAtState(this, stUnit, stValue)
+        function lOut = onScanIsAtState(this, stUnit, stValue)
             
             % The complexity of setState(), i.e., lots of 
             % series operations vs. one large parallel operation, dictates
@@ -516,15 +558,15 @@ classdef Scan < mic.Base
                 end
                 
                 
-                if this.stStateScanSetContract.(cField).lSetRequired
+                if this.stScanSetContract.(cField).lSetRequired
                     if lDebug
-                        this.msg(sprintf('onStateScanIsAtState() %s set is required', cField));
+                        this.msg(sprintf('onScanIsAtState() %s set is required', cField));
                     end
 
-                    if this.stStateScanSetContract.(cField).lSetIssued
+                    if this.stScanSetContract.(cField).lSetIssued
                         
                         if lDebug
-                            this.msg(sprintf('onStateScanIsAtState() %s set has been issued', cField));
+                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
                         end
                         
                         % Check if the set operation is complete
@@ -568,13 +610,13 @@ classdef Scan < mic.Base
                         
                         if lReady
                         	if lDebug
-                                this.msg(sprintf('onStateScanIsAtState() %s set operation complete', cField));
+                                this.msg(sprintf('onScanIsAtState() %s set operation complete', cField));
                             end
  
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('onStateScanIsAtState() %s is still setting', cField));
+                                this.msg(sprintf('onScanIsAtState() %s is still setting', cField));
                             end
                             lOut = false;
                             return;
@@ -582,7 +624,7 @@ classdef Scan < mic.Base
                     else
                         % need to move and hasn't been issued.
                         if lDebug
-                            this.msg(sprintf('onStateScanIsAtState() %s set not yet issued', cField));
+                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField));
                         end
                         
                         lOut = false;
@@ -591,7 +633,7 @@ classdef Scan < mic.Base
                 else
                     
                     if lDebug
-                        this.msg(sprintf('onStateScanIsAtState() %s N/A', cField));
+                        this.msg(sprintf('onScanIsAtState() %s N/A', cField));
                     end
                    % don't need to move, this param is OK. Don't false. 
                 end
@@ -602,9 +644,9 @@ classdef Scan < mic.Base
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state (possibly contains 
         % information about the task to execute during acquire)
-        function onStateScanAcquire(this, stUnit, stValue)
+        function onScanAcquire(this, stUnit, stValue)
             
-            this.resetStateScanAcquireContract();
+            this.resetScanAcquireContract();
             
             
             
@@ -632,7 +674,7 @@ classdef Scan < mic.Base
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
         % @returns {logical} - true if the acquisition task is complete
-        function l = onStateScanIsAcquired(this, stUnit, stValue)
+        function l = onScanIsAcquired(this, stUnit, stValue)
             l = true;
             
             %{
@@ -655,17 +697,96 @@ classdef Scan < mic.Base
         end
 
 
-        function onStateScanAbort(this, stUnit)
+        function onScanAbort(this, stUnit)
              this.abort();
+             this.hideScanPauseAbort();
+             this.showScanStart();
+             
         end
 
 
-        function onStateScanComplete(this, stUnit)
+        function onScanComplete(this, stUnit)
+             this.hideScanPauseAbort();
+             this.showScanStart();
+        end
+        
+        function showScanStart(this)
+            this.uibScanStart.show();
+        end
+        
+        function hideScanStart(this)
+            this.uibScanStart.hide();
+        end
+        
+        function showScanPauseAbort(this)
+            
+            this.uitScanPause.show();
+            this.uibScanAbort.show();
+        end
+        
+        function hideScanPauseAbort(this)
+            this.uitScanPause.hide();
+            this.uibScanAbort.hide();
+            
+        end
+        
 
+        function startNewScan(this)
+            
+            this.msg('startFEM');
+                       
+            % Pre-FEM Check
+            
+            if ~this.preCheck()
+                return
+            end
+            
+            % At this point, we have passed all pre-checks and want to
+            % actually start moving motors and such.  The experiment/FEM
+            % will now begin
+            
+            % Store all of the selected items in uilActive into a temporary
+            % cell 
+            
+            this.cePrescriptions = this.uilActive.get();
+                       
+            % Create new log file
+            
+            this.createNewLog();
+            
+            % Tell grating and undulator to go to correct place.
+            % *** TO DO ***
+                        
+            % Loop through prescriptions (k, l, m)
+            
+            for k = 1:length(this.cePrescriptions)
+            
+                % Build the recipe from .json file (we dogfood our own .json recipes always)
+                
+                cFile = fullfile(this.cDirPrescriptions, this.cePrescriptions{k});
+                [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
+                
+                if lError 
+                    return;
+                end
+                
+                this.scan = mic.StateScan(...
+                    this.clock, ...
+                    stRecipe, ...
+                    @this.onScanSetState, ...
+                    @this.onScanIsAtState, ...
+                    @this.onScanAcquire, ...
+                    @this.onScanIsAcquired, ...
+                    @this.onScanComplete, ...
+                    @this.onScanAbort ...
+                );
+                
+                this.scan.start();
+            end
+            
         end
         
         
-
         function startFEM(this)
             
             this.msg('startFEM');
@@ -894,7 +1015,7 @@ classdef Scan < mic.Base
         function abort(this, cMsg)
                            
             if exist('cMsg', 'var') ~= 1
-                cMsg = '';
+                cMsg = 'The FEM was aborted.';
             end
             
             % Cleanup
@@ -916,8 +1037,8 @@ classdef Scan < mic.Base
             % Write to logs.
             this.writeToLog(sprintf('The FEM was aborted: %s', cMsg));
 
-            % Update play/pause
-            this.uitPlay.set(false);
+            this.showScanStart();
+            this.hideScanPauseAbort();
             
         end
         
@@ -1160,10 +1281,7 @@ classdef Scan < mic.Base
         
         function lOut = validateRecipe(this, stRecipe)
             % FIX ME
-            s
-            lOut = true;
-            
-            
+            lOut = true;            
         end
                 
 
