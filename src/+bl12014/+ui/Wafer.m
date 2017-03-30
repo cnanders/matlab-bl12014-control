@@ -83,7 +83,7 @@ classdef Wafer < mic.Base
                 'Resize', 'off',...
                 'HandleVisibility', 'on',... % lets close all close the figure
                 'Visible', 'on',...
-                'CloseRequestFcn', @this.handleCloseRequestFcn ...
+                'CloseRequestFcn', @this.onCloseRequestFcn ...
                 );
             
             % There is a bug in the default 'painters' renderer when
@@ -167,9 +167,10 @@ classdef Wafer < mic.Base
         end
         
         
-        function handleCloseRequestFcn(this, src, evt)
+        function onCloseRequestFcn(this, src, evt)
             
             delete(this.hFigure);
+            this.hFigure = [];
             % this.saveState();
             
         end

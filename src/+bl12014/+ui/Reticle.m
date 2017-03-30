@@ -176,6 +176,7 @@ classdef Reticle < mic.Base
         function onCloseRequest(this, src, evt)
             this.msg('ReticleControl.closeRequestFcn()');
             delete(this.hFigure);
+            this.hFigure = [];
             % this.saveState();
         end
         

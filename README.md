@@ -22,6 +22,7 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 - [github/cnanders/matlab-instrument-control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
 - [github/cnanders/matlab-npoint-lc400](https://github.com/cnanders/matlab-npoint-lc400) (for MATLAB USB serial communication with nPoint LC.400 controller)
+- [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 
 <a name="project-structure"></a>
 # Project Structure

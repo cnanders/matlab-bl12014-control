@@ -1,0 +1,66 @@
+{
+	"reticles": [
+		{	
+			"name": "name1",
+			"fields": [
+				{
+					"name": "R1C2",
+					"row": 1,
+					"col": 2
+				},
+				{
+					"name": "R1C3",
+					"row": 1,
+					"col": 3
+				},
+			]
+		},
+		{	
+			"name": "name2",
+			"fields": [
+				{
+					"name": "R1C1 LBNL (DF)",
+					"row": 1,
+					"col": 1,
+				},
+				{
+					"name": "R1C2 LBNL (BF)",
+					"row": 1,
+					"col": 2
+				},
+				{
+					"name": "R1C3 LBNL (LFBF)",
+					"row": 1,
+					"col": 3
+				},
+				{
+					"name": "R1C4 SEMATECH Contact",
+					"row": 1,
+					"col": 4
+				},
+				{
+					"name": "R1C5 Contact Bias",
+					"row": 1,
+					"col": 5
+				},
+				{
+					"name": "R10C11 Something Awesome",
+					"row": 10,
+					"col": 11
+				},
+				{
+					"name": "R10C12 Something Else",
+					"row": 10,
+					"col": 12
+				},
+				{
+					"name": "R10C19 Booyah",
+					"row": 10,
+					"col": 19
+				},
+			]
+		}
+	]
+}
+		
+		

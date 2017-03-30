@@ -147,6 +147,7 @@ classdef M142 < mic.Base
          function onFigureCloseRequest(this, src, evt)
             this.msg('M141Control.closeRequestFcn()');
             delete(this.hFigure);
+            this.hFigure = [];
          end
         
          

@@ -52,7 +52,14 @@ classdef D141 < mic.Base
         
         function build(this)
             
+            this.msg('D141.build()');
+            
             if ishghandle(this.hFigure)
+                cMsg = sprintf(...
+                    'D141.build() ishghandle(%1.0f) === true', ...
+                    this.hFigure ...
+                );
+                this.msg(cMsg);
                 % Bring to front
                 figure(this.hFigure);
                 return
@@ -162,6 +169,7 @@ classdef D141 < mic.Base
         function onFigureCloseRequest(this, src, evt)
             this.msg('closeRequestFcn()');
             delete(this.hFigure);
+            this.hFigure = [];
         end
         
         
