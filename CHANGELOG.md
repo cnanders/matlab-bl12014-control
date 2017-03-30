@@ -26,19 +26,19 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 
 # 1.0.0-alpha.3
 
-Added `save()` and `load()` methods to `bl12014.ui.:`
-- `ReticleTool`
-- `ProcessTool`
-- `FemTool`
-- `PupilSelectTool`
+### bl12014.ui.Scan
 
-Also refactored these classes to use the refactored API of `mic.ui.common.List` and `Popup*` from v1.0.0-beta.5 of MIC.  Added `uitQA` property to each that is a `mic.ui.common.Toggle` that changes the color of the panel when clicked.  The idea is the user can click these after they have verified a particular section of the recipe.  I would like the panel to change back to the default color whenever something changes.
+This is the class that creates a `mic.StateScan` to carry out a prescription recipe.  
 
 ### bl12014.ui.PrescriptionTool
 
-- Now builds JSON recipe to be consumed by `mic.StateScan`
-- Now stores the UI state of each recipe in a .mat file and the UI is updated whenever a recipe is selected
+- Builds JSON state scan recipe of a FEM + reticle position + pupil fill to be consumed by `mic.StateScan`
+- Stores the UI state of each recipe in a .mat file and the UI is updated whenever a recipe is selected
 
+### bl12014.ui.ReticleTool, ProcessTool, FemTool, PupilTool
+- Added `save()` and `load()` methods
+- Refactored to use the refactored API of `mic.ui.common.List` and `Popup*` from v1.0.0-beta.5 of MIC.
+- Added `uitQA` property to each that is a `mic.ui.common.Toggle` that changes the color of the panel when clicked.  The idea is the user can click these after they have verified a particular section of the recipe.  I would like the panel to change back to the default color whenever something changes.  This is still in progress.
 
 # 1.0.0-alpha.2
 
