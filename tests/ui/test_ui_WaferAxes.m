@@ -34,7 +34,7 @@ h = figure( ...
 ui.build(h, 10, 10);
 
 ui.addFakeExposures();
-
+ui.addFakeFemPreview();
 
  
 

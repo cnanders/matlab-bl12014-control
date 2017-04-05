@@ -60,17 +60,23 @@ classdef WaferAxes < mic.Base
         hChiefRayCrosshair
         hWafer
         hWaferCrosshair
-        hFEMPreview
+        hFemPreviewPrescription
+        hFemPreviewScan
         hExposures
         hOverlay
         
         dFieldX
         dFieldY
         
-        dXFEMPreview            % size: [focus x dose] of X positions
-        dYFEMPreview            % size: [focus x dose] of Y positions
+        dXFemPreview            % size: [focus x dose] of X positions
+        dYFemPreview            % size: [focus x dose] of Y positions
                                 % these values are updated whenever the FEM
                                 % grid changes
+                                
+        % {double focus x dose} x positions
+        dXFemPreviewScan
+        % {double focus x dose} y positions 
+        dYFemPreviewScan 
         
         
         % Store exposure data in a cell.  Each item of the cell is an array that 
@@ -130,7 +136,7 @@ classdef WaferAxes < mic.Base
             this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
             this.hWafer         = hggroup('Parent', this.hCarriage);
-            this.hFEMPreview    = hggroup('Parent', this.hWafer);
+            this.hFemPreview    = hggroup('Parent', this.hWafer);
             this.hFEM           = hggroup('Parent', this.hWafer);
             this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             
@@ -139,7 +145,7 @@ classdef WaferAxes < mic.Base
             this.drawWafer(); 
             this.drawIllum(); 
             this.drawFEM(); 
-            this.drawFEMPreview(); 
+            this.drawFemPreview(); 
             %}
             
             % For some reason when I build the hg* instances as shown above
@@ -160,8 +166,8 @@ classdef WaferAxes < mic.Base
             this.hWaferCrosshair = hggroup('Parent', this.hWafer);
             this.drawWaferCrosshair();
 
-            this.hFEMPreview    = hggroup('Parent', this.hWafer);
-            this.drawFEMPreview();
+            this.hFemPreviewPrescription    = hggroup('Parent', this.hWafer);
+            this.hFemPreviewScan    = hggroup('Parent', this.hWafer);
             
             this.hExposures     = hggroup('Parent', this.hWafer);
             this.drawExposures();
@@ -204,14 +210,14 @@ classdef WaferAxes < mic.Base
         %   2.0   2.0   2.0] * 1e-3
         % See addFakeFemPreview()
         
-        function updateFEMPreview(this, dX, dY)
-            
-            this.dXFEMPreview = dX;
-            this.dYFEMPreview = dY;
-            this.drawFEMPreview();
-            
-        end
+        function addFemPreviewPrescription(this, dX, dY)
+           this.drawFemPreview(dX, dY, 'prescription')
+        end 
         
+        function addFemPreviewScan(this, dX, dY)
+           this.drawFemPreview(dX, dY, 'scan')
+        end 
+                
         % Draw an exposure on the wafer.  It is understood that the
         % exposure is part of a FEM.  Information about the FEM the
         % exposure is part of must be passed in so the colors can be drawn
@@ -285,7 +291,7 @@ classdef WaferAxes < mic.Base
             
             [xx, yy] = meshgrid(x, y);
             
-            this.updateFEMPreview(xx, yy);
+            this.addFemPreviewPrescription(xx, yy);
             
         end
         
@@ -325,6 +331,27 @@ classdef WaferAxes < mic.Base
                 this.purgeOverlay();
             end
                             
+        end
+        
+        
+        function deleteFemPreviewPrescription(this)
+            
+            if ishandle(this.hFemPreviewPrescription)
+                this.deleteChildren(this.hFemPreviewPrescription);
+            else
+                return;
+            end 
+            
+        end
+        
+        function deleteFemPreviewScan(this)
+            
+            if ishandle(this.hFemPreviewScan)
+                this.deleteChildren(this.hFemPreviewScan);
+            else
+                return;
+            end 
+            
         end
         
             
@@ -571,32 +598,41 @@ classdef WaferAxes < mic.Base
                         
         end
         
+
         
-        
-        function drawFEMPreview(this)
+        function drawFemPreview(this, dX, dY, cType)
             
-            if ishandle(this.hFEMPreview)
-                this.deleteChildren(this.hFEMPreview);
-            else
+            if ~ishandle(this.hFemPreviewPrescription)
                 return;
             end
-                           
-            [dFocusNum, dDoseNum] = size(this.dXFEMPreview);
+            
+            switch cType
+                case 'prescription'
+                    dColor = [1 1 1];
+                    dAlpha = 0.5;
+                    hParent = this.hFemPreviewPrescription;
+                case 'scan'
+                    dColor = [1 0 1];
+                    dAlpha = 0.5;
+                    hParent = this.hFemPreviewScan;
+            end
+                        
+            [dFocusNum, dDoseNum] = size(dX);
                         
             for row = 1:dFocusNum
                 for col = 1:dDoseNum
                 
-                    dL = this.dXFEMPreview(row, col) - this.dFieldWidth/2;
-                    dR = this.dXFEMPreview(row, col) + this.dFieldWidth/2;
-                    dT = this.dYFEMPreview(row, col) + this.dFieldHeight/2;
-                    dB = this.dYFEMPreview(row, col) - this.dFieldHeight/2;
+                    dL = dX(row, col) - this.dFieldWidth/2;
+                    dR = dX(row, col) + this.dFieldWidth/2;
+                    dT = dY(row, col) + this.dFieldHeight/2;
+                    dB = dY(row, col) - this.dFieldHeight/2;
 
                     patch( ...
                         [dL dL dR dR], ...
                         [dB dT dT dB], ...
-                        [1, 1, 1], ...
-                        'Parent', this.hFEMPreview, ...
-                        'FaceAlpha', 0.5, ...
+                        dColor, ...
+                        'Parent', hParent, ...
+                        'FaceAlpha', dAlpha, ...
                         'EdgeColor', 'none' ...
                     );
                     % 'LineWidth', 2, ...

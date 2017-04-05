@@ -231,11 +231,11 @@ classdef Beamline < mic.Base
             
             
             this.msg('onFemToolSizeChange');
-            disp(evt.stData.dX)
-            disp(evt.stData.dY)
+            %disp(evt.stData.dX)
+            %disp(evt.stData.dY)
             
-           
-            this.uiWafer.uiAxes.updateFEMPreview(evt.stData.dX, evt.stData.dY);
+            this.uiWafer.uiAxes.deleteFemPreviewPrescription();
+            this.uiWafer.uiAxes.addFemPreviewPrescription(evt.stData.dX, evt.stData.dY);
         end
         
         function init(this)

@@ -66,6 +66,10 @@ classdef FemTool < mic.Base
         dHeightFocus        = 100;
         
         uibMatrix
+        
+        % {logical 1x1} when calling load(), this is true so a bunch of
+        % events are not dispatched while loading
+        lLoading = false
                 
     end
     
@@ -110,6 +114,7 @@ classdef FemTool < mic.Base
         % @param {struct} UI state to load.  See save() for info on struct
         function load(this, st)
             
+            this.lLoading = true;
             this.uiePositionStartX.set(st.dPositionStartX);
             this.uiePositionStepX.set(st.dPositionStepX);
             this.uiePositionStartY.set(st.dPositionStartY);
@@ -123,6 +128,13 @@ classdef FemTool < mic.Base
             this.uieFocusNum.set(st.u8FocusNum);
             this.uieFocusCenter.set(st.dFocusCenter);
             this.uieFocusStep.set(st.dFocusStep);
+            
+            this.lLoading = false;
+            
+            % call updateSize() to dispatch the event
+            this.updateSize();
+            
+            
         end
         
         
@@ -603,8 +615,8 @@ classdef FemTool < mic.Base
             
             % this.msg('updateSize');
             
-            this.dX = this.uiePositionStartX.get() : this.uiePositionStepX.get(): this.uiePositionStartX.get() + (double(this.uieDoseNum.get()) - 1)*this.uiePositionStepX.get();
-            this.dY = this.uiePositionStartY.get() : this.uiePositionStepY.get(): this.uiePositionStartY.get() + (double(this.uieFocusNum.get()) - 1)*this.uiePositionStepY.get();
+            this.dX = this.uiePositionStartX.get() : this.uiePositionStepX.get() : this.uiePositionStartX.get() + (double(this.uieDoseNum.get()) - 1)*this.uiePositionStepX.get();
+            this.dY = this.uiePositionStartY.get() : this.uiePositionStepY.get() : this.uiePositionStartY.get() + (double(this.uieFocusNum.get()) - 1)*this.uiePositionStepY.get();
              
             if ~isempty(this.dX)
                 cVal = sprintf( ...
@@ -635,7 +647,13 @@ classdef FemTool < mic.Base
             stData = struct();
             stData.dX = dXGrid;
             stData.dY = dYGrid;
-            notify(this, 'eSizeChange', mic.EventWithData(stData));
+            
+            if ~this.lLoading
+                this.msg('updateSize() calling notify()');
+                notify(this, 'eSizeChange', mic.EventWithData(stData));
+            else
+                this.msg('updateSize() skipping notify() because loading');
+            end
             
         end
         

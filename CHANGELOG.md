@@ -1,6 +1,7 @@
 <!-- 
 TO DO
 
+
 ### UI for Exit Slits
 
 - Most likeley a single mic.ui.GetSetNumber
@@ -30,6 +31,11 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 ### bl12014.ui.WaferAxes
 
 - Build crosshairs for the wafer and the chief ray that change thickness on zoom so they can be viewed zoomed out and zoomed in while preserving the field of view that they occupy
+- Added support for FEM preview associated with the prescription and a FEM preview associated with the scan.  Each has its own `add()` and `delete()` methods
+
+### bl12014.ui.FemTool
+
+- While `load()` is being evoked, now suppresses `notify` calls during the load process while multiple `mic.ui.common.Edit` are being updated and instead issues one single event at the end.
 
 ### bl12014.ui.Beamline
 
@@ -48,7 +54,7 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 ### bl12014.ui.Scan
 
 - Fixed bug with `stScanAcquireContract` not setting `lRequired` = `true` for the `shutter` property.
-- Got first 
+- As prescriptions are added and removed from the upcoming scan, the FEM preview of each one is added to the `ui.WaferAxes`.
 
 ### bl12014.ui.Shutter
 

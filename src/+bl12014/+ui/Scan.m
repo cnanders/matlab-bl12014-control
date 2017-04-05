@@ -433,6 +433,7 @@ classdef Scan < mic.Base
             % Purge all items from uilActive
             this.uilActive.setOptions(cell(1,0));
             this.uiWafer.uiAxes.purgeExposures();
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
             
         end
         
@@ -441,10 +442,29 @@ classdef Scan < mic.Base
             % Loop through all selected prescriptions and push them to the
             % active list
             
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
+
             ceSelected = this.uilPrescriptions.get();
             for k = 1:length(ceSelected)
                 this.uilActive.append(ceSelected{k});
+                
+                cFile = fullfile(this.cDirPrescriptions, ceSelected{k});
+                [stRecipe, lError] = this.buildRecipeFromFile(cFile);
+                
+                [dX, dY] = this.getFemGrid(...
+                    stRecipe.fem.dPositionStartX, ...
+                    stRecipe.fem.dPositionStepX, ...
+                    stRecipe.fem.u8DoseNum, ...
+                    stRecipe.fem.dPositionStartY, ... 
+                    stRecipe.fem.dPositionStepY, ...
+                    stRecipe.fem.u8FocusNum ...
+                );
+                this.uiWafer.uiAxes.addFemPreviewScan(dX, dY);
+                    
             end
+            
+            % Build a recipe for each prescription and use it to update the
+            % FEM preview on the wafer axes
             
         end  
         
@@ -838,8 +858,8 @@ classdef Scan < mic.Base
                 ]
                 %}
                 dExposure = [
-                    this.uiWafer.uiCoarseStage.uiX.getValCal('m') ...
-                    this.uiWafer.uiCoarseStage.uiY.getValCal('m') ...
+                    -this.uiWafer.uiCoarseStage.uiX.getValCal('m') ...
+                    -this.uiWafer.uiCoarseStage.uiY.getValCal('m') ...
                     stValue.task.femCol ...
                     stValue.task.femCols ...
                     stValue.task.femRow ...
@@ -1447,6 +1467,14 @@ classdef Scan < mic.Base
         function lOut = validateRecipe(this, stRecipe)
             % FIX ME
             lOut = true;            
+        end
+        
+        function [dX, dY] = getFemGrid(this, dXStart, dXStep, u8NumDose, dYStart, dYStep, u8NumFocus)
+            
+            dX = dXStart : dXStep : dXStart + (double(u8NumDose) - 1) * dXStep;
+            dY = dYStart : dYStep : dYStart + (double(u8NumFocus) - 1) * dYStep;
+            
+            [dX, dY] = meshgrid(dX * 1e-3, dY * 1e-3);
         end
                 
 
