@@ -41,10 +41,10 @@ classdef PrescriptionTool < mic.Base
     
 	properties
         
-        processTool              
-        reticleTool                
-        pupilFillTool            
-        femTool                  
+        uiProcessTool              
+        uiReticleTool                
+        uiPupilFillTool            
+        uiFemTool                  
                 
     end
     
@@ -114,19 +114,19 @@ classdef PrescriptionTool < mic.Base
         % @return {struct} UI state to save
         function st = save(this)
             st = struct();
-            st.processTool = this.processTool.save();
-            st.femTool = this.femTool.save();
-            st.pupilFillTool = this.pupilFillTool.save();
-            st.reticleTool = this.reticleTool.save();
+            st.uiProcessTool = this.uiProcessTool.save();
+            st.uiFemTool = this.uiFemTool.save();
+            st.uiPupilFillTool = this.uiPupilFillTool.save();
+            st.uiReticleTool = this.uiReticleTool.save();
             
         end
         
         % @param {struct} UI state to load
         function load(this, st)
-            this.processTool.load(st.processTool);
-            this.femTool.load(st.femTool);
-            this.pupilFillTool.load(st.pupilFillTool);
-            this.reticleTool.load(st.reticleTool);
+            this.uiProcessTool.load(st.uiProcessTool);
+            this.uiFemTool.load(st.uiFemTool);
+            this.uiPupilFillTool.load(st.uiPupilFillTool);
+            this.uiReticleTool.load(st.uiReticleTool);
         end
         
         
@@ -165,27 +165,27 @@ classdef PrescriptionTool < mic.Base
             % set(this.hFigure, 'renderer', 'OpenGL'); % Enables proper stacking
              
             
-            this.processTool.build( ...
+            this.uiProcessTool.build( ...
                 this.hFigure, ...
                 dPad, ...
                 dTop);
-            this.reticleTool.build(...
+            this.uiReticleTool.build(...
                 this.hFigure, ...
-                dPad + this.processTool.dWidth + dPad, ...
+                dPad + this.uiProcessTool.dWidth + dPad, ...
                 dTop);
-            this.pupilFillTool.build( ...
+            this.uiPupilFillTool.build( ...
                 this.hFigure, ...
-                dPad + this.processTool.dWidth + dPad, ...
-                dTop + this.reticleTool.dHeight + dPad);
-            this.femTool.build( ...
+                dPad + this.uiProcessTool.dWidth + dPad, ...
+                dTop + this.uiReticleTool.dHeight + dPad);
+            this.uiFemTool.build( ...
                 this.hFigure, ...
-                dPad + this.processTool.dWidth + dPad + this.reticleTool.dWidth + dPad, ...
+                dPad + this.uiProcessTool.dWidth + dPad + this.uiReticleTool.dWidth + dPad, ...
                 dTop);
             this.uibSave.build( ...
                 this.hFigure, ...
-                dPad + this.processTool.dWidth + dPad + this.reticleTool.dWidth + dPad, ...
-                dTop + this.femTool.dHeight + dPad, ...
-                this.femTool.dWidth, ...
+                dPad + this.uiProcessTool.dWidth + dPad + this.uiReticleTool.dWidth + dPad, ...
+                dTop + this.uiFemTool.dHeight + dPad, ...
+                this.uiFemTool.dWidth, ...
                 55);
             
             this.hPanelSaved = uipanel(...
@@ -195,7 +195,7 @@ classdef PrescriptionTool < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                     dPad ...
-                    dTop + this.processTool.dHeight + 2*dPad ...
+                    dTop + this.uiProcessTool.dHeight + 2*dPad ...
                     this.dWidth - 2*dPad ...
                     280], this.hFigure) ...
             );
@@ -241,14 +241,14 @@ classdef PrescriptionTool < mic.Base
         
         function stRecipe = getRecipe(this)
             
-            ceValues = cell(1, length(this.femTool.dX) * length(this.femTool.dY) + 1);
+            ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
             
             % Use first state to set reticle and pupil fill 
             
             stValue = struct();
-            stValue.reticleX = this.reticleTool.dX;
-            stValue.reticleY = this.reticleTool.dY;
-            stValue.pupilFill = this.pupilFillTool.get();
+            stValue.reticleX = this.uiReticleTool.dX;
+            stValue.reticleY = this.uiReticleTool.dY;
+            stValue.pupilFill = this.uiPupilFillTool.get();
             
             % Use other states for wafer pos and exposure task FEM
             
@@ -256,18 +256,22 @@ classdef PrescriptionTool < mic.Base
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
-            for m = 1 : length(this.femTool.dDose)
-                for n = 1 : length(this.femTool.dFocus)
+            for m = 1 : length(this.uiFemTool.dDose)
+                for n = 1 : length(this.uiFemTool.dFocus)
 
                     % State
                     stValue = struct();
-                    stValue.waferX = this.femTool.dX(m);
-                    stValue.waferY = this.femTool.dY(n);
-                    stValue.waferZ = this.femTool.dFocus(n);
+                    stValue.waferX = -this.uiFemTool.dX(m);
+                    stValue.waferY = -this.uiFemTool.dY(n);
+                    stValue.waferZ = this.uiFemTool.dFocus(n);
                     
                     % Exposure task
                     stTask = struct();
-                    stTask.dose = this.femTool.dDose(m);
+                    stTask.dose = this.uiFemTool.dDose(m);
+                    stTask.femCols = length(this.uiFemTool.dDose);
+                    stTask.femCol = m;
+                    stTask.femRows = length(this.uiFemTool.dFocus);
+                    stTask.femRow = n;
                     stTask.pausePreExpose = 1; % FIX ME
                     
                     stValue.task = stTask;
@@ -278,10 +282,20 @@ classdef PrescriptionTool < mic.Base
                 end
             end
             
+            stUnit = struct();
+            stUnit.waferX = 'mm';
+            stUnit.waferY = 'mm';
+            stUnit.waferZ = 'nm';
+            stUnit.reticleX = 'mm';
+            stUnit.reticleY = 'mm';
+            stUnit.pupilFill = 'n/a';
+            
             stRecipe = struct();
-            stRecipe.unit = struct();
+            stRecipe.process = this.uiProcessTool.save();
+            stRecipe.fem = this.uiFemTool().save();
+            stRecipe.unit = stUnit;
             stRecipe.values = ceValues;
-            stRecipe.process = this.processTool.save();
+            
             
         end
                     
@@ -292,10 +306,11 @@ classdef PrescriptionTool < mic.Base
         
         function init(this)
              
-            this.processTool = bl12014.ui.ProcessTool();
-            this.reticleTool = bl12014.ui.ReticleTool();
-            this.pupilFillTool = bl12014.ui.PupilFillTool();
-            this.femTool = bl12014.ui.FemTool();
+            this.msg('init()');
+            this.uiProcessTool = bl12014.ui.ProcessTool();
+            this.uiReticleTool = bl12014.ui.ReticleTool();
+            this.uiPupilFillTool = bl12014.ui.PupilFillTool();
+            this.uiFemTool = bl12014.ui.FemTool();
             
             this.uibSave = mic.ui.common.Button('cText', 'Save');
             addlistener(this.uibSave, 'eChange', @this.onSave);
@@ -337,12 +352,12 @@ classdef PrescriptionTool < mic.Base
             % abbrev.]-[FEM rows x FEM cols]
             
            
-            cResist = this.processTool.uieResistName.get();
+            cResist = this.uiProcessTool.uieResistName.get();
             if (length(cResist) > 10)
                 cResist = cResist(1:10);
             end
             
-            cIllum = this.pupilFillTool.get();
+            cIllum = this.uiPupilFillTool.get();
             if (length(cIllum) > 10)
                 cIllum = cIllum(1:10);
             end
@@ -351,11 +366,11 @@ classdef PrescriptionTool < mic.Base
             c = sprintf('%s__RES_%s__RET_%s_%s__ILLUM_%s__FEM_%1dx%1d', ...
                 datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), ...
                 cResist, ...
-                this.reticleTool.uipReticle.get(), ...
-                this.reticleTool.uipField.get(), ...
+                this.uiReticleTool.uipReticle.get(), ...
+                this.uiReticleTool.uipField.get(), ...
                 cIllum, ...
-                length(this.femTool.dDose), ...
-                length(this.femTool.dFocus) ...
+                length(this.uiFemTool.dDose), ...
+                length(this.uiFemTool.dFocus) ...
             );
             
         end
@@ -440,12 +455,14 @@ classdef PrescriptionTool < mic.Base
             stOptions = struct();
             stOptions.FileName = cPath;
             stOptions.Compact = 0; 
-            savejson('', this.getRecipe(), stOptions); 
             
-              
+            stRecipe = this.getRecipe();
             
-            
-            
+            % !! IMPORTANT !!
+            % savejson() cannot accept structures that contain double
+            % quotes.  Use single quotes for strings in the recipe
+            savejson('', stRecipe, stOptions); 
+               
         end
         
         function onPrescriptionsDelete(this, src, evt)

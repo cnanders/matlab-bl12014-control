@@ -103,7 +103,7 @@ classdef FemTool < mic.Base
 
             st.u8FocusNum = this.uieFocusNum.get();
             st.dFocusCenter = this.uieFocusCenter.get();
-            st.dFocuStep = this.uieFocusStep.get();
+            st.dFocusStep = this.uieFocusStep.get();
             
         end
         
@@ -122,7 +122,7 @@ classdef FemTool < mic.Base
 
             this.uieFocusNum.set(st.u8FocusNum);
             this.uieFocusCenter.set(st.dFocusCenter);
-            this.uieFocusStep.set(st.dFocuStep);
+            this.uieFocusStep.set(st.dFocusStep);
         end
         
         
@@ -524,6 +524,7 @@ classdef FemTool < mic.Base
         
         function init(this)
                         
+            this.msg('init()');
             
             this.initDosePanel();
             this.initFocusPanel();

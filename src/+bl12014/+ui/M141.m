@@ -232,6 +232,8 @@ classdef M141 < mic.Base
         end
         
         function init(this)
+            
+            this.msg('init');
             this.initStageX();
             this.initStageTiltX();
             this.initStageTiltY();

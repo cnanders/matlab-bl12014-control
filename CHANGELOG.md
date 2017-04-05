@@ -24,6 +24,36 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 
 -->
 
+# 1.0.0-alpha.4
+
+
+### bl12014.ui.WaferAxes
+
+- Build crosshairs for the wafer and the chief ray that change thickness on zoom so they can be viewed zoomed out and zoomed in while preserving the field of view that they occupy
+
+### bl12014.ui.Beamline
+
+- Now listens for size changes from `bl12014.ui.FemTool` and updates the FEM preview on `bl12014.ui.WaferAxes`
+- Now listens for `bl12014.ui.PrescriptionTool` `eNew` event and refreshes the list of available prescriptions in `bl12014.ui.Scan`
+
+### bl12014.ui.ProcessTool
+
+- Now using Hungarian notaion in `save()` and `load()`.
+- Fixed a typo on one of the properties in `save()` and `load()`
+
+### bl12014.ui.PrescriptionTool
+
+- Now saves `fem` and `process` parameters to the recipe `.json` file.
+
+### bl12014.ui.Scan
+
+- Fixed bug with `stScanAcquireContract` not setting `lRequired` = `true` for the `shutter` property.
+- Got first 
+
+### bl12014.ui.Shutter
+
+- Build this class and incorporated it into `bl12014.ui.Scan` and `bl12014.ui.Beamline`
+
 # 1.0.0-alpha.3
 
 ### bl12014.ui.Scan

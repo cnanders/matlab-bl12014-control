@@ -273,6 +273,7 @@ classdef ReticleCoarseStage < mic.Base
         
         
         function init(this)
+            this.msg('init()');
             this.initUiX();
             this.initUiY();
             this.initUiZ();

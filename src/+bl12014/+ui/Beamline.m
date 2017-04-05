@@ -2,29 +2,26 @@ classdef Beamline < mic.Base
         
     properties (Constant)
        
-        dHeight         = 450
+        dHeight         = 500
         dWidth          = 140
         
         
     end
 	properties
         
+        uiShutter
         uiM141
         uiM142
         % uiM143
-        
         uiD141
         uiD142
-        
         uiReticle
         uiWafer
         uiPupilControl
         uiFieldControl
         uiPrescriptionTool           
-        uiExptControl         
-        uiShutter             
-        
-        
+        uiScan         
+
         
     end
     
@@ -39,6 +36,7 @@ classdef Beamline < mic.Base
         clock
         hFigure
         
+        uibShutter
         uibD141
         uibD142
         uibM141
@@ -47,7 +45,7 @@ classdef Beamline < mic.Base
         uibReticle
         uibWafer
         uibPreTool
-        uibExptControl
+        uibScan
         uibPupilScanner
         uibFieldScanner
         
@@ -90,8 +88,11 @@ classdef Beamline < mic.Base
 
             dWidthButton = 120;
             dTop = 20;
-            dSep = 40;
+            dSep = 25;
             dLeft = 10;
+            
+            this.uibShutter.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            dTop = dTop + dSep;
             
             this.uibD141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
@@ -117,7 +118,7 @@ classdef Beamline < mic.Base
             this.uibPreTool.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibExptControl.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uibScan.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
             this.uibPupilScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
@@ -132,41 +133,26 @@ classdef Beamline < mic.Base
         
         function delete(this)
             
-            
             this.msg('delete');
             
             % Delete the figure
-            
             if ishandle(this.hFigure)
                 delete(this.hFigure);
             end
             
-            %{
-            % Clean up clock tasks
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
-            % Since all child classes refrence the clock, we need to delete
-            % it first.  I originally thought this is so the clock wouldn't
-            % continue to try to execute tasks that belong to deleted function
-            % handles, but this isn't it.
-            %
-            % When you delete a class, you delete all of its properties.
-            % Since we make the clock a property of each child class, it
-            % will get deleted when the first child class is deleted (in
-            % this case it is the ReticleControl class).  When this happens,
-            % all of the other classes will have ...
-            % Acutally, it doesn't make sense to me why we have to delete
-            % the clock first, but it works.
-                
-            % Maybe it has something to do with the fact that the clock is
-            % a private property of the child classes and when we delete
-            % the child class, the reference to the clock persists through
-            % the private property?
-            %
-            % No this is wrong.  Private properties are deleted.  
+            % Delete the device UI controls
+            delete(this.uiShutter)
+            delete(this.uiM141)
+            delete(this.uiM142)
+            % delete(this.uiM143)
+            delete(this.uiD141)
+            delete(this.uiD142)
+            delete(this.uiReticle)
+            delete(this.uiWafer)
+            delete(this.uiPupilControl)
+            delete(this.uiFieldControl)
+            delete(this.uiPrescriptionTool)           
+            delete(this.uiScan) 
             
             % Delete the clock
             delete(this.clock);
@@ -176,6 +162,11 @@ classdef Beamline < mic.Base
     end
     
     methods (Access = private)
+        
+        function onButtonShutter(this, src, evt)
+            this.msg('onButtonShutter()');
+            this.uiShutter.build();
+        end
         
         function onButtonD141(this, src, evt)
             this.msg('onButtonD141()');
@@ -217,9 +208,9 @@ classdef Beamline < mic.Base
             this.uiPrescriptionTool.build();
         end
         
-        function onButtonExpt(this, src, evt)
-            this.msg('onButtonExpt()');
-            this.exptControl.build();
+        function onButtonScan(this, src, evt)
+            this.msg('onButtonScan()');
+            this.uiScan.build();
         end
         
         function onButtonPupilFill(this, src, evt)
@@ -232,24 +223,25 @@ classdef Beamline < mic.Base
             this.uiFieldControl.build();
         end
         
-        function onPreToolSizeChange(this, src, evt)
+        function onFemToolSizeChange(this, src, evt)
             
             % evt has a property stData
             %   dX
             %   dY
             
-            %{
-            this.msg('onPreToolSizeChange');
+            
+            this.msg('onFemToolSizeChange');
             disp(evt.stData.dX)
             disp(evt.stData.dY)
-            %}
+            
            
-            this.uiWafer.updateFEMPreview(evt.stData.dX, evt.stData.dY);
+            this.uiWafer.uiAxes.updateFEMPreview(evt.stData.dX, evt.stData.dY);
         end
         
         function init(this)
             
             this.clock = mic.Clock('Master');
+            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
             this.uiD141 = bl12014.ui.D141('clock', this.clock);
             this.uiD142 = bl12014.ui.D142('clock', this.clock);
             this.uiM141 = bl12014.ui.M141('clock', this.clock);
@@ -260,25 +252,25 @@ classdef Beamline < mic.Base
             % this.uiPupilControl = ScannerControl(this.clock, 'pupil');
             % this.uiFieldControl = ScannerControl(this.clock, 'field');
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
-            % this.shutter = Shutter('imaging', this.clock);
+            this.uiScan = bl12014.ui.Scan(...
+                'clock', this.clock, ...
+                'uiShutter', this.uiShutter, ...
+                'uiReticle', this.uiReticle, ...
+                'uiWafer', this.uiWafer ...
+            );
+
+            addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
+            addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
             %{
-            this.exptControl = ExptControl( ...
-                                        'clock', this.clock, ...
-                                        'shutter', this.shutter, ...
-                                        'wafer', this.uiWafer, ...
-                                        'reticle', this.uiReticle, ...
-                                        'pupil', this.uiPupilControl);
-            %}
+            addlistener(this.uiPrescriptionTool.femTool, 'eSizeChange', @this.onFemToolSizeChange);
             
-            %{
-            addlistener(this.uiPrescriptionTool.femTool, 'eSizeChange', @this.onPreToolSizeChange);
-            addlistener(this.uiPrescriptionTool, 'eNew', @this.onPreToolNew);
             addlistener(this.uiPrescriptionTool, 'eDelete', @this.onPreToolDelete);
             
             addlistener(this.uiPupilControl, 'eNew', @this.onPupilFillNew);
             addlistener(this.uiPupilControl, 'eDelete', @this.onPupilFillDelete);
             %}
             
+            this.uibShutter = mic.ui.common.Button('cText', 'Shutter');
             this.uibD141 = mic.ui.common.Button('cText', 'D141');
             this.uibD142 = mic.ui.common.Button('cText', 'D142');
             
@@ -291,8 +283,9 @@ classdef Beamline < mic.Base
             this.uibPreTool = mic.ui.common.Button('cText', 'Pre Tool');
             this.uibPupilScanner = mic.ui.common.Button('cText', 'Pupil Scanner');
             this.uibFieldScanner = mic.ui.common.Button('cText', 'Field Scanner');
-            this.uibExptControl = mic.ui.common.Button('cText', 'Expt. Control');
+            this.uibScan = mic.ui.common.Button('cText', 'Expt. Control');
             
+            addlistener(this.uibShutter, 'eChange', @this.onButtonShutter);
             addlistener(this.uibD141, 'eChange', @this.onButtonD141);
             addlistener(this.uibD142, 'eChange', @this.onButtonD142);
             addlistener(this.uibM141, 'eChange', @this.onButtonM141);
@@ -301,7 +294,7 @@ classdef Beamline < mic.Base
             addlistener(this.uibReticle, 'eChange', @this.onButtonReticle);
             addlistener(this.uibWafer,   'eChange', @this.onButtonWafer);
             addlistener(this.uibPreTool,        'eChange', @this.onButtonPreTool);
-            addlistener(this.uibExptControl,    'eChange', @this.onButtonExpt);
+            addlistener(this.uibScan,    'eChange', @this.onButtonScan);
             addlistener(this.uibPupilScanner,   'eChange', @this.onButtonPupilFill);
             addlistener(this.uibFieldScanner,   'eChange', @this.onButtonFieldFill);
 
@@ -315,12 +308,12 @@ classdef Beamline < mic.Base
             % this.saveState();
         end
             
-        function onPreToolNew(this, src, evt)
-            this.exptControl.uilPrescriptions.refresh();
+        function onPrescriptionToolNew(this, src, evt)
+            this.uiScan.refreshPrescriptions();
         end
         
         function onPreToolDelete(this, src, evt)
-            this.exptControl.uilPrescriptions.refresh();
+            this.uiScan.uilPrescriptions.refresh();
         end
         
         function onPupilFillNew(this, src, evt)

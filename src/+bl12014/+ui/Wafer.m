@@ -148,6 +148,7 @@ classdef Wafer < mic.Base
         
         function init(this)
             
+            this.msg('init()');
             this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'clock', this.clock ...
             );

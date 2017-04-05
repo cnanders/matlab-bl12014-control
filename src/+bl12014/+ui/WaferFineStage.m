@@ -126,6 +126,7 @@ classdef WaferFineStage < mic.Base
         
         
         function init(this)
+            this.msg('init()');
             this.initUiZ();
             
         end

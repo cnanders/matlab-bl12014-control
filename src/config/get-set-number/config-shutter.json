@@ -1,0 +1,21 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "ms (1x)",
+			"slope": 2,
+			"offset": 0,
+			"precision": 0
+		},
+		{
+			"name": "ms (4x)",
+			"slope": 8,
+			"offset": 0,
+			"precision": 0
+		}
+	],
+  "min": 1,
+  "max": 65535
+}	
+	
+	

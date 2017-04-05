@@ -153,7 +153,7 @@ classdef Reticle < mic.Base
         
         function init(this)
             
-           
+            this.msg('init()');
             this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
                 'clock', this.clock ...
             );

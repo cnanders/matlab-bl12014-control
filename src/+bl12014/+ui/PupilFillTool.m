@@ -135,7 +135,8 @@ classdef PupilFillTool < mic.Base
     methods (Access = private)
         
         function init(this)
-                        
+              
+            this.msg('init()');
             this.uilOptions = mic.ui.common.List(...
                 'ceOptions', cell(1,0), ...
                 'cLabel', '', ...

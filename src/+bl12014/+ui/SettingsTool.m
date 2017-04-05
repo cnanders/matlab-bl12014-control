@@ -139,6 +139,7 @@ classdef SettingsTool < mic.Base
         end
         function init(this)
                         
+            this.msg('init()');
             
             this.uiePausePreExposure = mic.ui.common.Edit(...
                 'cLabel', 'Pre-exp', ...

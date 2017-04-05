@@ -217,7 +217,8 @@ classdef ExptControl < HandlePlus
     methods (Access = private)
         
         function init(this)
-                        
+                       
+            this.msg('init()');
             this.uilPrescriptions   = UIList(cell(1,0), 'Prescriptions', false, false, true, true);
             %addlistener(this.uilPrescriptions, 'eDelete', @this.handlePrescriptionsDelete);
             %addlistener(this.uilPrescriptions, 'eChange', @this.handlePrescriptionsChange);

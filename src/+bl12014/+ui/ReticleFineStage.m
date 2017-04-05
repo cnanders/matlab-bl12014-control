@@ -171,6 +171,7 @@ classdef ReticleFineStage < mic.Base
         
         
         function init(this)
+            this.msg('init()');
             this.initUiX();
             this.initUiY();
             

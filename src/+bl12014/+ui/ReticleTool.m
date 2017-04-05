@@ -221,6 +221,7 @@ classdef ReticleTool < mic.Base
         %    will be a URL request that returns JSON. For now I will read
         %    a text file with JSON
         
+            this.msg('init()');
             
             cPath = fullfile(this.cDirSrc, 'reticles.json');
             this.sData = parse_json(fileread(cPath));

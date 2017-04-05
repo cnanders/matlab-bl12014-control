@@ -42,6 +42,7 @@ classdef Scan < mic.Base
         uiWafer
         uiReticle
         uiPupilFill
+        uiShutter
         
         clock
         
@@ -76,7 +77,7 @@ classdef Scan < mic.Base
         % {struct 1x1} storage used  and checking if the
         % system has reached a particular state.  The structure has a prop
         % for each configurable prop of the system and each of those has
-        % two props: lSetRequired, lSetIssued
+        % two props: lRequired, lIssued
         stScanSetContract
         stScanAcquireContract
             
@@ -260,6 +261,10 @@ classdef Scan < mic.Base
         function ceReturn = refreshFcn(this)
             ceReturn = mic.Utils.dir2cell(this.cDirPrescriptions, 'date', 'descend', '*.json');
         end
+        
+        function refreshPrescriptions(this)
+            this.uilPrescriptions.refresh(); 
+        end
                     
 
     end
@@ -267,7 +272,9 @@ classdef Scan < mic.Base
     methods (Access = private)
         
         function init(this)
-                        
+                  
+            this.msg('init()');
+            
             this.uilPrescriptions = mic.ui.common.List( ...
                 'ceOptions', cell(1,0), ...
                 'cLabel', 'Prescriptions', ...
@@ -322,10 +329,10 @@ classdef Scan < mic.Base
                 'cMsg', 'The scan is now paused.  Are you sure you want to abort?' ... 
             );
             
-            addlistener(this.uibScanAbort, 'ePress', @this.onScanAbortButtonPress)
-            addlistener(this.uibScanAbort, 'eChange', @this.onScanAbortButton)
-            addlistener(this.uitScanPause, 'eChange', @this.onScanPauseButton);
-            addlistener(this.uibScanStart, 'eChange', @this.onScanStartButton);
+            addlistener(this.uibScanAbort, 'ePress', @this.onButtonPressScanAbort);
+            addlistener(this.uibScanAbort, 'eChange', @this.onButtonScanAbort);
+            addlistener(this.uitScanPause, 'eChange', @this.onButtonScanPause);
+            addlistener(this.uibScanStart, 'eChange', @this.onButtonScanStart);
             
             this.initScanSetContract();
             this.initScanAcquireContract();
@@ -344,8 +351,8 @@ classdef Scan < mic.Base
             };
 
             for n = 1 : length(ceFields)
-                this.stScanSetContract.(ceFields{n}).lSetRequired = false;
-                this.stScanSetContract.(ceFields{n}).lSetIssued = false;
+                this.stScanSetContract.(ceFields{n}).lRequired = false;
+                this.stScanSetContract.(ceFields{n}).lIssued = false;
             end
             
         end
@@ -369,15 +376,15 @@ classdef Scan < mic.Base
             
             ceFields = fieldnames(this.stScanSetContract);
             for n = 1 : length(ceFields)
-                this.stScanSetContract.(ceFields{n}).lSetRequired = false;
-                this.stScanSetContract.(ceFields{n}).lSetIssued = false;
+                this.stScanSetContract.(ceFields{n}).lRequired = false;
+                this.stScanSetContract.(ceFields{n}).lIssued = false;
             end
             
         end
         
         function resetScanAcquireContract(this)
             
-            ceFields = fieldnames(this.stScanSetContract);
+            ceFields = fieldnames(this.stScanAcquireContract);
             for n = 1 : length(ceFields)
                 this.stScanAcquireContract.(ceFields{n}).lRequired = false;
                 this.stScanAcquireContract.(ceFields{n}).lIssued = false;
@@ -385,9 +392,9 @@ classdef Scan < mic.Base
             
         end
         
-        function onScanStartButton(this, src, evt)
+        function onButtonScanStart(this, src, evt)
             
-            this.msg('onScanStartButton');
+            this.msg('onButtonScanStart');
             
             this.hideScanStart();
             this.showScanPauseAbort();
@@ -395,7 +402,7 @@ classdef Scan < mic.Base
                        
         end
         
-        function onScanPauseButton(this, ~, ~)
+        function onButtonScanPause(this, ~, ~)
         
             if (this.uitScanPause.get()) % just changed to true, so was playing
                 this.scan.pause();
@@ -404,12 +411,12 @@ classdef Scan < mic.Base
             end
         end
         
-        function onScanAbortButtonPress(this, ~, ~)
+        function onButtonPressScanAbort(this, ~, ~)
             this.scan.pause();
             this.uitScanPause.set(true);
         end
         
-        function onScanAbortButton(this, ~, ~)
+        function onButtonScanAbort(this, ~, ~)
             this.scan.stop(); % calls onScanAbort()
         end
         
@@ -508,10 +515,61 @@ classdef Scan < mic.Base
                     case 'task'
                         % Do nothing
                     otherwise
-                        this.stScanSetContract.(ceFields{n}).lSetRequired = true;
-                        this.stScanSetContract.(ceFields{n}).lSetIssued = false;
+                        this.stScanSetContract.(ceFields{n}).lRequired = true;
+                        this.stScanSetContract.(ceFields{n}).lIssued = false;
                 end
             end
+            
+            % Move to new state.   Setting the state programatically does
+            % exactly what would happen if the user were to do it manually
+            % with the UI. I.E., we programatically update the UI and
+            % programatically "click" UI buttons.
+            
+            for n = 1 : length(ceFields)
+                
+                
+                switch ceFields{n}
+                    case 'task'
+                        % Do nothing
+                    otherwise
+                        cUnit = stUnit.(ceFields{n}); 
+                        dValue = stValue.(ceFields{n});
+                end
+                
+                switch ceFields{n}
+                    case 'reticleX'
+                        this.uiReticle.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
+                        this.uiReticle.uiCoarseStage.uiX.moveToDest(); % click
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                    case 'reticleY'
+                        this.uiReticle.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
+                        this.uiReticle.uiCoarseStage.uiY.moveToDest(); % click
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                    case 'waferX'
+                        this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
+                        this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                    case 'waferY'
+                        this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
+                        this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                    case 'waferZ'
+                        this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(dValue, cUnit);
+                        this.uiWafer.uiFineStage.uiZ.moveToDest();  % click
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                    case 'pupilFill'
+                        % FIX ME
+                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                        
+                    otherwise
+                        % do nothing
+                        
+                end
+                
+                
+                
+            end
+                        
 
         end
 
@@ -558,12 +616,12 @@ classdef Scan < mic.Base
                 end
                 
                 
-                if this.stScanSetContract.(cField).lSetRequired
+                if this.stScanSetContract.(cField).lRequired
                     if lDebug
                         this.msg(sprintf('onScanIsAtState() %s set is required', cField));
                     end
 
-                    if this.stScanSetContract.(cField).lSetIssued
+                    if this.stScanSetContract.(cField).lIssued
                         
                         if lDebug
                             this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
@@ -648,52 +706,150 @@ classdef Scan < mic.Base
             
             this.resetScanAcquireContract();
             
+            % If stValue does not have a "task" or "action" prop, return
             
+            if ~isfield(stValue, 'task')
+                return
+            end
             
+            % Should eventually have a "type" property associated with the
+            % task that can be switched on.  "type", "data" which is a
+            % struct.  
+            % 
+            % One type would be "exposure"
             
-            % FIX ME
+            this.stScanAcquireContract.shutter.lRequired = true;
+            this.stScanAcquireContract.shutter.lIssued = false;
             
             % Pre-exp pause.  xVal prop will return type double
-             
-            %{
-            pause(stPre.femTool.uiePausePreExp.xVal);
+            pause(stValue.task.pausePreExpose);
 
             % Calculate the exposure time
-
-            dSec = stPre.femTool.dDose(dose)/this.mJPerCm2PerSec;
-
-            % Set the shutter time (ms)
-
-            this.shutter.uieExposureTime.setVal(dSec*1e3);
+            dSec = stValue.task.dose / this.mJPerCm2PerSec;
+            
+            % Set the shutter UI time (ms)
+            this.uiShutter.uiShutter.setDestCal(...
+                dSec * 1000, ...
+                this.uiShutter.uiShutter.getUnit().name ...
+            );
+                        
+            % Trigger the shutter UI
+            this.uiShutter.uiShutter.moveToDest();
+            
+            % Update the UI of wafer to show exposing
             this.uiWafer.uiAxes.setExposing(true);
-            this.shutter.open();
-            %}
+            
+            this.stScanAcquireContract.shutter.lIssued = true;
             
         end
 
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
         % @returns {logical} - true if the acquisition task is complete
-        function l = onScanIsAcquired(this, stUnit, stValue)
-            l = true;
+        function lOut = onScanIsAcquired(this, stUnit, stValue)
+
+            lDebug = true;           
+            lOut = true;
             
-            %{
-            
-            % Write to log
+            if ~isfield(stValue, 'task')
+                return
+            end
                         
-            this.writeToLog('');
+            ceFields= fieldnames(this.stScanAcquireContract);
+            
+            for n = 1:length(ceFields)
+                
+                cField = ceFields{n};
+                
+                if this.stScanAcquireContract.(cField).lRequired
+                    if lDebug
+                        this.msg(sprintf('onScanIsAtState() %s set is required', cField));
+                    end
 
-            % Add an exposure to the plot
+                    if this.stScanAcquireContract.(cField).lIssued
+                        
+                        if lDebug
+                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
+                        end
+                        
+                        % Check if the set operation is complete
+                        
+                        lReady = true;
+                        
+                        switch cField
+                            case 'shutter'
+                               if ~this.uiShutter.uiShutter.getDevice().isReady()
+                                   lReady = false;
+                               end
+                                 
+                            otherwise
+                                
+                                % UNSUPPORTED
+                                
+                        end
+                        
+                        
+                        if lReady
+                        	if lDebug
+                                this.msg(sprintf('onScanIsAtState() %s set complete', cField));
+                            end
+ 
+                        else
+                            % still isn't there.
+                            if lDebug
+                                this.msg(sprintf('onScanIsAtState() %s set still setting', cField));
+                            end
+                            lOut = false;
+                            return;
+                        end
+                    else
+                        % need to move and hasn't been issued.
+                        if lDebug
+                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField));
+                        end
+                        
+                        lOut = false;
+                        return;
+                    end                    
+                else
+                    
+                    if lDebug
+                        this.msg(sprintf('onScanIsAtState() %s set is not required', cField));
+                    end
+                   % don't need to move, this param is OK. Don't false. 
+                end
+            end
+            
+            if lOut
+                
+                % Write to log
 
-            this.uiWafer.addExposure([ ...
-                stPre.femTool.dX(dose)*1e-3 ...
-                stPre.femTool.dY(focus)*1e-3 ...
-                dose ...
-                length(stPre.femTool.dX) ...
-                focus ...
-                length(stPre.femTool.dY)] ...
-            );
-            %}
+                this.writeToLog('Finished task.');
+
+                % Add an exposure to the plot
+                %{
+                dExposure = [ ...
+                    stValue.waferX ...
+                    stValue.waferY ...
+                    stValue.task.femCol ...
+                    stValue.task.femCols ...
+                    stValue.task.femRow ...
+                    stValue.task.femRows ...
+                ]
+                %}
+                dExposure = [
+                    this.uiWafer.uiCoarseStage.uiX.getValCal('m') ...
+                    this.uiWafer.uiCoarseStage.uiY.getValCal('m') ...
+                    stValue.task.femCol ...
+                    stValue.task.femCols ...
+                    stValue.task.femRow ...
+                    stValue.task.femRows ...
+                ]
+                this.uiWafer.uiAxes.addExposure(dExposure);
+            
+                % Update the UI of wafer to show exposing
+                this.uiWafer.uiAxes.setExposing(false);
+            end
         end
 
 
@@ -701,6 +857,8 @@ classdef Scan < mic.Base
              this.abort();
              this.hideScanPauseAbort();
              this.showScanStart();
+             % Update the UI of wafer to show exposing
+             this.uiWafer.uiAxes.setExposing(false);
              
         end
 
@@ -767,6 +925,7 @@ classdef Scan < mic.Base
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
                 
                 if lError 
+                    this.abort('There was an error building the scan recipe from the .json file.');
                     return;
                 end
                 
@@ -1087,6 +1246,12 @@ classdef Scan < mic.Base
             
             cMsg = '';
             
+            % Shutter
+            
+            if ~this.uiShutter.uiShutter.isActive()
+                cMsg = sprintf('%s\n%s', cMsg, this.uiShutter.uiShutter.id());
+            end
+            
             % Reticle Coarse Stage
             
             if ~this.uiReticle.uiCoarseStage.uiX.isActive()
@@ -1167,13 +1332,13 @@ classdef Scan < mic.Base
             if ~strcmp(cMsg, '')
                 
                 cQuestion   = sprintf( ...
-                    ['The following hardware components are virtualized (not active):' ...
+                    ['The following device UI controls are virtualized (not active):' ...
                     '\n %s \n\n' ...
-                    'Do you want to continue running the FEM with virtual hardware?'], ...
+                    'Do you want to continue running the FEM with virtual devices?'], ...
                     cMsg ...
                 );
                 
-                cTitle      = 'Warning: hardware is virtualized';
+                cTitle      = 'Some UI controls are virtualized';
                 cAnswer1    = 'Run FEM with virtual hardware';
                 cAnswer2    = 'Abort';
                 cDefault    = cAnswer2;

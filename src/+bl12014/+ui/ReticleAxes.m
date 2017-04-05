@@ -129,6 +129,7 @@ classdef ReticleAxes < mic.Base
         
         
         function init(this)
+            this.msg('init()');
             this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
 
         end

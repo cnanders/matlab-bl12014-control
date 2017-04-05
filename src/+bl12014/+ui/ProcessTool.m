@@ -6,20 +6,20 @@ classdef ProcessTool < mic.Base
         
         uieUser
         uieBase                 % checkbox
-        uieUL1Name
-        uieUL1Thick
-        uieUL1PABTemp
-        uieUL1PABTime
-        uieUL2Name
-        uieUL2Thick
-        uieUL2PABTemp
-        uieUL2PABTime
+        uieUnderlayer1Name
+        uieUnderlayer1Thick
+        uieUnderlayer1PabTemp
+        uieUnderlayer1PabTime
+        uieUnderlayer2Name
+        uieUnderlayer2Thick
+        uieUnderlayer2PabTemp
+        uieUnderlayer2PabTime
         uieResistName
         uieResistThick
-        uieResistPABTemp
-        uieResistPABTime
-        uieResistPEBTemp
-        uieResistPEBTime
+        uieResistPabTemp
+        uieResistPabTime
+        uieResistPebTemp
+        uieResistPebTime
         uieDevName
         uieDevTime
         uieRinseName
@@ -64,51 +64,61 @@ classdef ProcessTool < mic.Base
         % @return {struct} state to save
         function st = save(this)
             st = struct();            
-            st.user = this.uieUser.get();
-            st.base = this.uieBase.get();                
-            st.ul1Name = this.uieUL1Name.get();
-            st.ul1Thick = this.uieUL1Thick.get();
-            st.ul1PabTemp = this.uieUL1PABTemp.get();
-            st.ul1PabTime = this.uieUL1PABTime.get();
-            st.ul2Name = this.uieUL2Name.get();
-            st.ul2Thick = this.uieUL2Thick.get();
-            st.ul2PabTemp = this.uieUL2PABTemp.get();
-            st.ul2PabTime = this.uieUL2PABTime.get();
-            st.resistName = this.uieResistName.get();
-            st.resistThick = this.uieResistThick.get();
-            st.resistPabTemp = this.uieResistPABTemp.get();
-            st.resistPabTime = this.uieResistPABTime.get();
-            st.resistPebTemp = this.uieResistPEBTemp.get();
-            st.resistPebTime = this.uieResistPEBTime.get();
-            st.devName = this.uieDevName.get();
-            st.devTime = this.uieDevTime.get();
-            st.rinseName = this.uieRinseName.get();
-            st.rinseTime = this.uieRinseTime.get();
+            st.cUser = this.uieUser.get();
+            st.cBase = this.uieBase.get();  
+            
+            st.cUnderlayer1Name = this.uieUnderlayer1Name.get();
+            st.dUnderlayer1Thick = this.uieUnderlayer1Thick.get();
+            st.dUnderlayer1PabTemp = this.uieUnderlayer1PabTemp.get();
+            st.dUnderlayer1PabTime = this.uieUnderlayer1PabTime.get();
+            
+            st.cUnderlayer2Name = this.uieUnderlayer2Name.get();
+            st.dUnderlayer2Thick = this.uieUnderlayer2Thick.get();
+            st.dUnderlayer2PabTemp = this.uieUnderlayer2PabTemp.get();
+            st.dUnderlayer2PabTime = this.uieUnderlayer2PabTime.get();
+            
+            st.cResistName = this.uieResistName.get();
+            st.dResistThick = this.uieResistThick.get();
+            st.dResistPabTemp = this.uieResistPabTemp.get();
+            st.dResistPabTime = this.uieResistPabTime.get();
+            st.dResistPebTemp = this.uieResistPebTemp.get();
+            st.dResistPebTime = this.uieResistPebTime.get();
+            
+            st.cDevName = this.uieDevName.get();
+            st.dDevTime = this.uieDevTime.get();
+            
+            st.cRinseName = this.uieRinseName.get();
+            st.dRinseTime = this.uieRinseTime.get();
             
         end
         
         function load(this, st)
             
-           this.uieUser.set(st.user);
-           this.uieBase.set(st.base);                
-           this.uieUL1Name.set(st.ul1Name);
-           this.uieUL1Thick.set(st.ul1Thick);
-           this.uieUL1PABTemp.set(st.ul1PabTemp);
-           this.uieUL1PABTime.set(st.ul1PabTime);
-           this.uieUL2Name.set(st.ul2Name);
-           this.uieUL2Thick.set(st.ul2Thick);
-           this.uieUL2PABTemp.set(st.ul2PabTemp);
-           this.uieUL2PABTime.set(st.ul2PabTime);
-           this.uieResistName.set(st.resistName);
-           this.uieResistThick.set(st.resistThick);
-           this.uieResistPABTemp.set(st.resistPabTemp);
-           this.uieResistPABTime.set(st.resistPabTime);
-           this.uieResistPEBTemp.set(st.resistPebTemp);
-           this.uieResistPEBTime.set(st.resistPebTime);
-           this.uieDevName.set(st.devName);
-           this.uieDevTime.set(st.devTime);
-           this.uieRinseName.set(st.rinseName);
-           this.uieRinseTime.set(st.rinseTime);
+           this.uieUser.set(st.cUser);
+           this.uieBase.set(st.cBase); 
+           
+           this.uieUnderlayer1Name.set(st.cUnderlayer1Name);
+           this.uieUnderlayer1Thick.set(st.dUnderlayer1Thick);
+           this.uieUnderlayer1PabTemp.set(st.dUnderlayer1PabTemp);
+           this.uieUnderlayer1PabTime.set(st.dUnderlayer1PabTime);
+           
+           this.uieUnderlayer2Name.set(st.cUnderlayer2Name);
+           this.uieUnderlayer2Thick.set(st.dUnderlayer2Thick);
+           this.uieUnderlayer2PabTemp.set(st.dUnderlayer2PabTemp);
+           this.uieUnderlayer2PabTime.set(st.dUnderlayer2PabTime);
+           
+           this.uieResistName.set(st.cResistName);
+           this.uieResistThick.set(st.dResistThick);
+           this.uieResistPabTemp.set(st.dResistPabTemp);
+           this.uieResistPabTime.set(st.dResistPabTime);
+           this.uieResistPebTemp.set(st.dResistPebTemp);
+           this.uieResistPebTime.set(st.dResistPebTime);
+           
+           this.uieDevName.set(st.cDevName);
+           this.uieDevTime.set(st.dDevTime);
+           
+           this.uieRinseName.set(st.cRinseName);
+           this.uieRinseTime.set(st.dRinseTime);
             
         end
         
@@ -179,7 +189,7 @@ classdef ProcessTool < mic.Base
         
             dTop = dTop + dSep;
             
-            this.uieUL1Name.build( ...
+            this.uieUnderlayer1Name.build( ...
                 this.hPanel, ...
                 dPadX, ...
                 dTop, ...
@@ -187,7 +197,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL1Thick.build( ...
+            this.uieUnderlayer1Thick.build( ...
                 this.hPanel, ...
                 2*dPadX + dWidthName, ...
                 dTop, ...
@@ -195,7 +205,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL1PABTemp.build( ...
+            this.uieUnderlayer1PabTemp.build( ...
                 this.hPanel, ...
                 3*dPadX + dWidthName + dWidthThick, ...
                 dTop, ...
@@ -203,7 +213,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL1PABTime.build( ...
+            this.uieUnderlayer1PabTime.build( ...
                 this.hPanel, ...
                 4*dPadX + dWidthName + dWidthThick + dWidthTemp, ...
                 dTop, ...
@@ -215,7 +225,7 @@ classdef ProcessTool < mic.Base
         
             dTop = dTop + dSep;
             
-            this.uieUL2Name.build( ...
+            this.uieUnderlayer2Name.build( ...
                 this.hPanel, ...
                 dPadX, ...
                 dTop, ...
@@ -223,7 +233,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL2Thick.build( ...
+            this.uieUnderlayer2Thick.build( ...
                 this.hPanel, ...
                 2*dPadX + dWidthName, ...
                 dTop, ...
@@ -231,7 +241,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL2PABTemp.build( ...
+            this.uieUnderlayer2PabTemp.build( ...
                 this.hPanel, ...
                 3*dPadX + dWidthName + dWidthThick, ...
                 dTop, ...
@@ -239,7 +249,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieUL2PABTime.build( ...
+            this.uieUnderlayer2PabTime.build( ...
                 this.hPanel, ...
                 4*dPadX + dWidthName + dWidthThick + dWidthTemp, ...
                 dTop, ...
@@ -265,7 +275,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieResistPABTemp.build( ...
+            this.uieResistPabTemp.build( ...
                 this.hPanel, ...
                 3*dPadX + dWidthName + dWidthThick, ...
                 dTop, ...
@@ -273,7 +283,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieResistPABTime.build( ...
+            this.uieResistPabTime.build( ...
                 this.hPanel, ...
                 4*dPadX + dWidthName + dWidthThick + dWidthTemp, ...
                 dTop, ...
@@ -287,7 +297,7 @@ classdef ProcessTool < mic.Base
             dTop = dTop + dSep;
             
             
-            this.uieResistPEBTemp.build( ...
+            this.uieResistPebTemp.build( ...
                 this.hPanel, ...
                 dPadX, ...
                 dTop, ...
@@ -295,7 +305,7 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
-            this.uieResistPEBTime.build( ...
+            this.uieResistPebTime.build( ...
                 this.hPanel, ...
                 2*dPadX + dWidthTemp, ...
                 dTop, ...
@@ -434,22 +444,23 @@ classdef ProcessTool < mic.Base
         
         function init(this)
             
+            this.msg('init()');
             this.uieUser            = mic.ui.common.Edit('cLabel', 'User', 'cType', 'c');
             this.uieBase            = mic.ui.common.Edit('cLabel', 'Base', 'cType', 'c');              
-            this.uieUL1Name         = mic.ui.common.Edit('cLabel', 'UL 1', 'cType', 'c');
-            this.uieUL1Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieUL1PABTemp      = mic.ui.common.Edit('cLabel', 'PAB Temp', 'cType', 'u8');
-            this.uieUL1PABTime      = mic.ui.common.Edit('cLabel', 'PAB Time', 'cType', 'u8');
-            this.uieUL2Name         = mic.ui.common.Edit('cLabel', 'UL 2', 'cType', 'c');
-            this.uieUL2Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieUL2PABTemp      = mic.ui.common.Edit('cLabel', 'PAB Temp', 'cType', 'u8');
-            this.uieUL2PABTime      = mic.ui.common.Edit('cLabel', 'PAB Time', 'cType', 'u8');
+            this.uieUnderlayer1Name         = mic.ui.common.Edit('cLabel', 'Underlayer 1', 'cType', 'c');
+            this.uieUnderlayer1Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
+            this.uieUnderlayer1PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
+            this.uieUnderlayer1PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
+            this.uieUnderlayer2Name         = mic.ui.common.Edit('cLabel', 'UL 2', 'cType', 'c');
+            this.uieUnderlayer2Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
+            this.uieUnderlayer2PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
+            this.uieUnderlayer2PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
             this.uieResistName      = mic.ui.common.Edit('cLabel', 'Resist', 'cType', 'c');
             this.uieResistThick     = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieResistPABTemp   = mic.ui.common.Edit('cLabel', 'PAB Temp', 'cType', 'u8');
-            this.uieResistPABTime   = mic.ui.common.Edit('cLabel', 'PAB Time', 'cType', 'u8');
-            this.uieResistPEBTemp   = mic.ui.common.Edit('cLabel', 'PEB Temp', 'cType', 'u8');
-            this.uieResistPEBTime   = mic.ui.common.Edit('cLabel', 'PEB Time', 'cType', 'u8');
+            this.uieResistPabTemp   = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
+            this.uieResistPabTime   = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
+            this.uieResistPebTemp   = mic.ui.common.Edit('cLabel', 'Peb Temp', 'cType', 'u8');
+            this.uieResistPebTime   = mic.ui.common.Edit('cLabel', 'Peb Time', 'cType', 'u8');
             this.uieDevName         = mic.ui.common.Edit('cLabel', 'Dev', 'cType', 'c');
             this.uieDevTime         = mic.ui.common.Edit('cLabel', 'Dev Time', 'cType', 'u8');
             this.uieRinseName       = mic.ui.common.Edit('cLabel', 'Rinse Name', 'cType', 'c');
@@ -468,16 +479,16 @@ classdef ProcessTool < mic.Base
             
             % Defaults
             this.uieUser.set('Development');
-            this.uieUL1Name.set('NCX011');
-            this.uieUL1Thick.set(uint8(20));
-            this.uieUL1PABTemp.set(uint8(200));
-            this.uieUL1PABTime.set(uint8(90));
+            this.uieUnderlayer1Name.set('NCX011');
+            this.uieUnderlayer1Thick.set(uint8(20));
+            this.uieUnderlayer1PabTemp.set(uint8(200));
+            this.uieUnderlayer1PabTime.set(uint8(90));
             this.uieResistName.set('Fuji-1201E');
             this.uieResistThick.set(uint8(35));
-            this.uieResistPABTemp.set(uint8(110));
-            this.uieResistPABTime.set(uint8(60));
-            this.uieResistPEBTemp.set(uint8(100));
-            this.uieResistPEBTime.set(uint8(60));
+            this.uieResistPabTemp.set(uint8(110));
+            this.uieResistPabTime.set(uint8(60));
+            this.uieResistPebTemp.set(uint8(100));
+            this.uieResistPebTime.set(uint8(60));
             this.uieDevName.set('MF26A');
             this.uieDevTime.set(uint8(30));
             this.uieRinseName.set('DIH20');
@@ -497,20 +508,20 @@ classdef ProcessTool < mic.Base
             
             this.uieUser.hide();
             this.uieBase.hide();             % checkbox
-            this.uieUL1Name.hide();
-            this.uieUL1Thick.hide();
-            this.uieUL1PABTemp.hide();
-            this.uieUL1PABTime.hide();
-            this.uieUL2Name.hide();
-            this.uieUL2Thick.hide();
-            this.uieUL2PABTemp.hide();
-            this.uieUL2PABTime.hide();
+            this.uieUnderlayer1Name.hide();
+            this.uieUnderlayer1Thick.hide();
+            this.uieUnderlayer1PabTemp.hide();
+            this.uieUnderlayer1PabTime.hide();
+            this.uieUnderlayer2Name.hide();
+            this.uieUnderlayer2Thick.hide();
+            this.uieUnderlayer2PabTemp.hide();
+            this.uieUnderlayer2PabTime.hide();
             this.uieResistName.hide();
             this.uieResistThick.hide();
-            this.uieResistPABTemp.hide();
-            this.uieResistPABTime.hide();
-            this.uieResistPEBTemp.hide();
-            this.uieResistPEBTime.hide();
+            this.uieResistPabTemp.hide();
+            this.uieResistPabTime.hide();
+            this.uieResistPebTemp.hide();
+            this.uieResistPebTime.hide();
             this.uieDevName.hide();
             this.uieDevTime.hide();
             this.uieRinseName.hide();
@@ -523,20 +534,20 @@ classdef ProcessTool < mic.Base
             
             this.uieUser.show();
             this.uieBase.show();             
-            this.uieUL1Name.show();
-            this.uieUL1Thick.show();
-            this.uieUL1PABTemp.show();
-            this.uieUL1PABTime.show();
-            this.uieUL2Name.show();
-            this.uieUL2Thick.show();
-            this.uieUL2PABTemp.show();
-            this.uieUL2PABTime.show();
+            this.uieUnderlayer1Name.show();
+            this.uieUnderlayer1Thick.show();
+            this.uieUnderlayer1PabTemp.show();
+            this.uieUnderlayer1PabTime.show();
+            this.uieUnderlayer2Name.show();
+            this.uieUnderlayer2Thick.show();
+            this.uieUnderlayer2PabTemp.show();
+            this.uieUnderlayer2PabTime.show();
             this.uieResistName.show();
             this.uieResistThick.show();
-            this.uieResistPABTemp.show();
-            this.uieResistPABTime.show();
-            this.uieResistPEBTemp.show();
-            this.uieResistPEBTime.show();
+            this.uieResistPabTemp.show();
+            this.uieResistPabTime.show();
+            this.uieResistPebTemp.show();
+            this.uieResistPebTime.show();
             this.uieDevName.show();
             this.uieDevTime.show();
             this.uieRinseName.show();
@@ -548,20 +559,20 @@ classdef ProcessTool < mic.Base
             
             this.uieUser.styleVerified();
             this.uieBase.styleVerified();             
-            this.uieUL1Name.styleVerified();
-            this.uieUL1Thick.styleVerified();
-            this.uieUL1PABTemp.styleVerified();
-            this.uieUL1PABTime.styleVerified();
-            this.uieUL2Name.styleVerified();
-            this.uieUL2Thick.styleVerified();
-            this.uieUL2PABTemp.styleVerified();
-            this.uieUL2PABTime.styleVerified();
+            this.uieUnderlayer1Name.styleVerified();
+            this.uieUnderlayer1Thick.styleVerified();
+            this.uieUnderlayer1PabTemp.styleVerified();
+            this.uieUnderlayer1PabTime.styleVerified();
+            this.uieUnderlayer2Name.styleVerified();
+            this.uieUnderlayer2Thick.styleVerified();
+            this.uieUnderlayer2PabTemp.styleVerified();
+            this.uieUnderlayer2PabTime.styleVerified();
             this.uieResistName.styleVerified();
             this.uieResistThick.styleVerified();
-            this.uieResistPABTemp.styleVerified();
-            this.uieResistPABTime.styleVerified();
-            this.uieResistPEBTemp.styleVerified();
-            this.uieResistPEBTime.styleVerified();
+            this.uieResistPabTemp.styleVerified();
+            this.uieResistPabTime.styleVerified();
+            this.uieResistPebTemp.styleVerified();
+            this.uieResistPebTime.styleVerified();
             this.uieDevName.styleVerified();
             this.uieDevTime.styleVerified();
             this.uieRinseName.styleVerified();

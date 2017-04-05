@@ -264,6 +264,7 @@ classdef M142 < mic.Base
         
         
         function init(this)
+            this.msg('init');
             this.initUiStageX();
             this.initUiStageTiltX();
             this.initUiStageTiltYMf();

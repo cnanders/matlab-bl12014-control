@@ -1,4 +1,4 @@
-classdef D142 < mic.Base
+classdef Shutter < mic.Base
     
     properties
         
@@ -7,16 +7,14 @@ classdef D142 < mic.Base
         measPoint
         
         % {< mic.interface.device.GetSetNumber}
-        deviceStageY
+        device
         
-        % {< mic.interface.device.GetNumber}
-        deviceMeasPointVolts
+        % {bl12014.device.ShutterVirtual}
+        deviceVirtual
         
         % {mic.ui.device.GetSetNumber 1x1}}
-        uiStageY
+        uiShutter
         
-        % {mic.ui.device.GetNumber 1x1}
-        uiMeasPointVolts
         
     end
     
@@ -24,7 +22,7 @@ classdef D142 < mic.Base
         
         clock
         dWidth = 580
-        dHeight = 90
+        dHeight = 66
         hFigure
         
         configStageY
@@ -34,7 +32,7 @@ classdef D142 < mic.Base
     
     methods
         
-        function this = D142(varargin)
+        function this = Shutter(varargin)
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
                 if this.hasProp( varargin{k})
@@ -52,11 +50,11 @@ classdef D142 < mic.Base
         
         function build(this)
             
-            this.msg('D142.build()');
+            this.msg('Shutter.build()');
             
             if ishghandle(this.hFigure)
                 cMsg = sprintf(...
-                    'D142.build() ishghandle(%1.0f) === true', ...
+                    'Shutter.build() ishghandle(%1.0f) === true', ...
                     this.hFigure ...
                 );
                 this.msg(cMsg);
@@ -70,7 +68,7 @@ classdef D142 < mic.Base
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...
                 'MenuBar', 'none', ...
-                'Name', 'D142 Control', ...
+                'Name', 'Shutter Control', ...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
                     (dScreenSize(4) - this.dHeight)/2 ...
@@ -89,11 +87,9 @@ classdef D142 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiStageY.build(this.hFigure, dLeft, dTop);
+            this.uiShutter.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
-            this.uiMeasPointVolts.build(this.hFigure, dLeft, dTop);
-            
+                        
         end
         
         
@@ -118,53 +114,43 @@ classdef D142 < mic.Base
     
     methods (Access = private)
         
-         function initStageY(this)
+         function initShutter(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-d142-stage-y.json' ...
+                'config-shutter.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiStageY = mic.ui.device.GetSetNumber(...
+            this.uiShutter = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'cName', 'd142-stage-y', ...
+                'cName', 'shutter', ...
                 'config', uiConfig, ...
-                'cLabel', 'Stage Y' ...
+                'cLabel', 'Shutter', ...
+                'dWidthUnit', 120, ...
+                'lShowRel', false, ...
+                'lShowJog', false, ...
+                'lShowZero', false, ...
+                'lShowStores', false ...
             );
+        
+            this.uiShutter.setDeviceVirtual(this.deviceVirtual);
         end
         
-        
-        function initCurrent(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-number', ...
-                'config-d142-current.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-        
-            this.uiMeasPointVolts = mic.ui.device.GetNumber(...
-                'clock', this.clock, ...
-                'cName', 'measur-point-d142-diode', ...
-                'config', uiConfig, ...
-                'cLabel', 'MeasurPoint', ...
-                'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
-            );
+        function initDeviceShutterVirtual(this)
+            this.deviceVirtual = bl12014.device.ShutterVirtual();
         end
+        
         
         function init(this)
             this.msg('init()');
-            this.initStageY();
-            this.initCurrent();
+            
+            this.initDeviceShutterVirtual();
+            this.initShutter();
         end
         
         function onFigureCloseRequest(this, src, evt)

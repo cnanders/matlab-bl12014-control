@@ -33,10 +33,9 @@ h = figure( ...
 );
 ui.build(h, 10, 10);
 
-%{
-cb = @(src, evt) (fprintf('x %1.3f, y %1.3f \n', evt.stData.dX, evt.stData.dY));
-addlistener(ui, 'eClickField', cb);
-%}
+
+cb = @(src, evt) (fprintf('femTool eSizeChange\n'));
+addlistener(ui, 'eSizeChange', cb);
 
 
  

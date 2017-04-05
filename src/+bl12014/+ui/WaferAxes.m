@@ -34,7 +34,20 @@ classdef WaferAxes < mic.Base
         % {double 1x1} height of an exposure in meters
         dFieldHeight = 30e-6
         
+        % {double 1x1} height of crosshair at center of wafer
+        dSizeWaferCrosshair = 100e-3;
+        dSizeChiefRayCrosshair = 20e-3;
         
+        % {double 1x1} thickness of crosshair at center of wafer
+        dThickCrosshair
+                
+        dAlphaWaferCrosshair = 1;
+        dColorWaferCrosshair = [0 1 0];
+        
+        dAlphaChiefRayCrosshair = 1;
+        dColorChiefRayCrosshair = [1 0 1];
+            
+        dZoomMax = 500;
         
         % {logical 1x1} true when exposing.  Adds pink overlay over
         % everything
@@ -44,7 +57,9 @@ classdef WaferAxes < mic.Base
         hTrack
         hCarriage
         hIllum
+        hChiefRayCrosshair
         hWafer
+        hWaferCrosshair
         hFEMPreview
         hExposures
         hOverlay
@@ -107,6 +122,7 @@ classdef WaferAxes < mic.Base
                         
             this.uiZoomPanAxes.build(hParent, dLeft, dTop);
             
+            this.dThickCrosshair = this.getThickCrosshair();
             
             % Build heirarchy of hggroups/hgtransforms for drawing
             
@@ -140,6 +156,9 @@ classdef WaferAxes < mic.Base
             
             this.hWafer         = hggroup('Parent', this.hCarriage);
             this.drawWafer();
+            
+            this.hWaferCrosshair = hggroup('Parent', this.hWafer);
+            this.drawWaferCrosshair();
 
             this.hFEMPreview    = hggroup('Parent', this.hWafer);
             this.drawFEMPreview();
@@ -149,6 +168,9 @@ classdef WaferAxes < mic.Base
             
             this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawIllum();
+            
+            this.hChiefRayCrosshair = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawChiefRayCrosshair();
             
             this.hOverlay       = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             
@@ -214,7 +236,14 @@ classdef WaferAxes < mic.Base
                         
         end
         
-                
+        function deleteWaferCrosshair(this)
+            this.deleteChildren(this.hWaferCrosshair)
+        end
+        
+        function deleteChiefRayCrosshair(this)
+            this.deleteChildren(this.hChiefRayCrosshair)
+        end
+        
         function purgeExposures(this)
             
             this.ceExposure = {};
@@ -304,12 +333,28 @@ classdef WaferAxes < mic.Base
     
     methods (Access = private)
         
+        
         function init(this)
-            
-            this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, 500);
-
+            this.msg('init()');
+            this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
+            addlistener(this.uiZoomPanAxes, 'eZoom', @this.onZoom);
         end
         
+        function onZoom(this, ~, ~)
+            
+            dThick = this.getThickCrosshair();
+            if dThick ~= this.dThickCrosshair
+                this.dThickCrosshair = dThick;
+                this.deleteWaferCrosshair();
+                this.deleteChiefRayCrosshair();
+                this.drawWaferCrosshair();
+                this.drawChiefRayCrosshair();
+            end
+            
+            cMsg = sprintf('zoom = %1.2e', this.uiZoomPanAxes.getZoom());
+            this.msg(cMsg);
+            
+        end
         function drawTrack(this)
             
            
@@ -416,6 +461,94 @@ classdef WaferAxes < mic.Base
                         
         end
         
+        function drawWaferCrosshair(this)
+            
+            % Vertical Line
+                       
+            dL = -this.dThickCrosshair/2;
+            dR = this.dThickCrosshair/2;
+            dT = this.dSizeWaferCrosshair/2;
+            dB = -this.dSizeWaferCrosshair/2;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorWaferCrosshair, ...
+                'Parent', this.hWaferCrosshair, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaWaferCrosshair ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeWaferCrosshair/2;
+            dR = this.dSizeWaferCrosshair/2;
+            dT = this.dThickCrosshair/2;
+            dB = -this.dThickCrosshair/2;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorWaferCrosshair, ...
+                'Parent', this.hWaferCrosshair, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaWaferCrosshair ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            
+            
+        end 
+        
+        
+        function drawChiefRayCrosshair(this)
+            
+            % Vertical Line
+                       
+            dL = -this.dThickCrosshair/2;
+            dR = this.dThickCrosshair/2;
+            dT = this.dSizeChiefRayCrosshair/2;
+            dB = -this.dSizeChiefRayCrosshair/2;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorChiefRayCrosshair, ...
+                'Parent', this.hChiefRayCrosshair, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaChiefRayCrosshair ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeChiefRayCrosshair/2;
+            dR = this.dSizeChiefRayCrosshair/2;
+            dT = this.dThickCrosshair/2;
+            dB = -this.dThickCrosshair/2;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorChiefRayCrosshair, ...
+                'Parent', this.hChiefRayCrosshair, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaChiefRayCrosshair ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            
+            
+        end 
+            
+        
         function drawWafer(this)
             
             dDTheta = 1/360;            
@@ -463,7 +596,7 @@ classdef WaferAxes < mic.Base
                         [dB dT dT dB], ...
                         [1, 1, 1], ...
                         'Parent', this.hFEMPreview, ...
-                        'FaceAlpha', 0.2, ...
+                        'FaceAlpha', 0.5, ...
                         'EdgeColor', 'none' ...
                     );
                     % 'LineWidth', 2, ...
@@ -552,6 +685,39 @@ classdef WaferAxes < mic.Base
                     delete(hChildren(k));
                 end
             end
+        end
+        
+        
+        function d = getThickCrosshair(this)
+        
+            dZoomUi = this.uiZoomPanAxes.getZoom();
+            
+            % Start with a thickness and a zoom transition level.  The idea
+            % is if you double the zoom, halve the thickness.  Keep doing
+            % this until you get to this.dZoomMax
+            
+            dThickStart = 5e-3;
+            dZoomStart = 1.25;
+            
+            % Compute number of zoom levels.  If dZoomStart is 1.5, they
+            % look like this:
+            % 1.5, 3, 6, 12, 24, 48, ...
+            % Use this equation:
+            % dZoomStart * 2^(n - 1) = this.dZoomMax
+            
+            dLevels = ceil(log10(this.dZoomMax / dZoomStart) / log10(2) + 1);
+            dLevel = 1 : dLevels;
+            dZoom = dZoomStart * 2.^(dLevel - 1);
+            dThick = dThickStart ./ 2.^(dLevel - 1);
+            
+            for n = 1 : length(dZoom)
+                if dZoomUi < dZoom(n)
+                    d = dThick(n);
+                    return;
+                end
+            end
+            
+            d = dThick(end);
         end
         
         
