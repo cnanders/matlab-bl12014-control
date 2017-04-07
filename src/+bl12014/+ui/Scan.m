@@ -56,9 +56,7 @@ classdef Scan < mic.Base
         
         cePrescriptions           % Store uilActive.ceOptions when FEM starts
          
-        
-        uitPlay
-        
+                
         uitScanPause
         uibScanAbort
         uibScanStart
@@ -581,6 +579,46 @@ classdef Scan < mic.Base
                         % FIX ME
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                         
+                        %{
+
+                        
+                        % Load the saved structure associated with the pupil fill
+                
+                        cFile = fullfile( ...
+                            this.cDirPupilFills, ...
+                            stPre.uiPupilFillSelect.cSelected ...
+                        );
+
+                        if exist(cFile, 'file') ~= 0
+                            load(cFile); % populates s in local workspace
+                            stPupilFill = s;
+                        else
+                            this.abort(sprintf('Could not find pupilfill file: %s', cFile));
+                            return;
+                        end
+                        if ~this.uiPupilFill.np.setWavetable(stPupilFill.i32X, stPupilFill.i32Y);
+
+                            cQuestion   = ['The nPoint pupil fill scanner is ' ...
+                                'not enabled and not scanning the desired ' ...
+                                'pupil pattern.  Do you want to run the FEM anyway?'];
+
+                            cTitle      = 'nPoint is not enabled';
+                            cAnswer1    = 'Run FEM without pupilfill.';
+                            cAnswer2    = 'Abort';
+                            cDefault    = cAnswer2;
+
+                            qanswer = questdlg(cQuestion, cTitle, cAnswer1, cAnswer2, cDefault);
+                            switch qanswer
+                                case cAnswer1;
+
+                                otherwise
+                                    this.abort('You stopped the FEM because the nPoint is not scanning.');
+                                    return; 
+                            end
+
+                        end
+                        %}
+                        
                     otherwise
                         % do nothing
                         
@@ -966,224 +1004,7 @@ classdef Scan < mic.Base
         end
         
         
-        function startFEM(this)
-            
-            this.msg('startFEM');
-                       
-            % Pre-FEM Check
-            
-            if ~this.preCheck()
-                return
-            end
-            
-            % At this point, we have passed all pre-checks and want to
-            % actually start moving motors and such.  The experiment/FEM
-            % will now begin
-            
-            % Store all of the selected items in uilActive into a temporary
-            % cell 
-            
-            this.cePrescriptions = this.uilActive.get();
-                       
-            % Create new log file
-            
-            this.createNewLog();
-            
-            % Tell grating and undulator to go to correct place.
-            % *** TO DO ***
-                        
-            % Loop through prescriptions (k, l, m)
-            
-            for k = 1:length(this.cePrescriptions)
-            
-                % Build the recipe from .json file (we dogfood our own .json recipes always)
-                
-                cFile = fullfile(this.cDirPrescriptions, this.cePrescriptions{k});
-                [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
-                
-                if lError 
-                    return;
-                end
-                
-                % Load the saved structure associated with the pupil fill
-                
-                cFile = fullfile( ...
-                    this.cDirPupilFills, ...
-                    stPre.uiPupilFillSelect.cSelected ...
-                );
-                
-                if exist(cFile, 'file') ~= 0
-                    load(cFile); % populates s in local workspace
-                    stPupilFill = s;
-                else
-                    this.abort(sprintf('Could not find pupilfill file: %s', cFile));
-                    return;
-                end
-                
-                if ~this.uiPupilFill.np.setWavetable(stPupilFill.i32X, stPupilFill.i32Y);
-                    
-                    
-                    cQuestion   = ['The nPoint pupil fill scanner is ' ...
-                        'not enabled and not scanning the desired ' ...
-                        'pupil pattern.  Do you want to run the FEM anyway?'];
-
-                    cTitle      = 'nPoint is not enabled';
-                    cAnswer1    = 'Run FEM without pupilfill.';
-                    cAnswer2    = 'Abort';
-                    cDefault    = cAnswer2;
-
-                    qanswer = questdlg(cQuestion, cTitle, cAnswer1, cAnswer2, cDefault);
-                    switch qanswer
-                        case cAnswer1;
-
-                        otherwise
-                            this.abort('You stopped the FEM because the nPoint is not scanning.');
-                            return; 
-                    end
-                                        
-                end
-                                
-                % Move the reticle into position and wait until it is there
-                
-                this.msg(sprintf('Moving reticle to (x,y) = (%1.5f, %1.5f)', ...
-                    stPre.reticleTool.dX, ...
-                    stPre.reticleTool.dY));
-                
-                
-                this.uiReticle.uiCoarseStage.hioX.setDestRaw(stPre.reticleTool.dX);
-                this.uiReticle.uiCoarseStage.hioY.setDestRaw(stPre.reticleTool.dY);
-                
-                this.uiReticle.uiCoarseStage.hioX.moveToDest();
-                this.uiReticle.uiCoarseStage.hioY.moveToDest();
-                
-                
-                if ~this.waitFor(@this.rcsIsThere, 'reticle xy')
-                    break;
-                    this.abort();
-                end
-                
-                
-                % Double loop through dose and focus
-                
-                for dose = 1:length(stPre.femTool.dDose)
-                    
-                    %{
-                    if ~this.lRunning
-                        this.abort('');
-                        break;
-                    end
-                    %}
-                    
-                    if ~this.uitPlay.get()
-                        this.abort();
-                        break;
-                    end
-                    
-                    for focus = 1:length(stPre.femTool.dFocus)
-                       
-                        
-                        %{
-                        if ~this.lRunning
-                            this.abort('');
-                            break;
-                        end
-                        %}
-                        
-                        if ~this.uitPlay.get()
-                            this.abort();
-                            break;
-                        end
-                        
-                        
-                        % Move the wafer (x, y) into position. Note that
-                        % the FEM dX and dY are in mm, not m. Also, they
-                        % are the position of the FEM on the wafer, not the
-                        % position of the stage needed to put the exposure
-                        % at that location
-                        
-                        this.uiWafer.uiCoarseStage.hioX.setDestRaw(-stPre.femTool.dX(dose)*1e-3);
-                        this.uiWafer.uiCoarseStage.hioY.setDestRaw(-stPre.femTool.dY(focus)*1e-3);
-                        this.uiWafer.uiCoarseStage.hioX.moveToDest();
-                        this.uiWafer.uiCoarseStage.hioY.moveToDest();
-                        
-                        % Wait while it gets there
-                        
-                        if ~this.waitFor(@this.wcsXYIsThere, 'wafer xy')
-                            this.abort();
-                            break;
-                        end
-                                                
-                        
-                        % TO DO: should this be closed loop with the height
-                        % sensor?  Is that done at the controller level or
-                        % here?
-                        
-                        % Move the wafer fine z into position.
-                        % Remember that focus is in nm.  For now, assume
-                        % the hardware takes units of nm.  Need to think
-                        % about this more
-                        
-                        this.uiWafer.uiFineStage.hioZ.setDestRaw(stPre.femTool.dFocus(focus))
-                        this.uiWafer.uiFineStage.hioZ.moveToDest();
-                        
-                        % Wait while it gets there
-                        
-                        if ~this.waitFor(@this.wfsIsThere, 'wafer z')
-                            this.abort();
-                            break;
-                        end
-                        
-                        
-                        % Pre-exp pause.  xVal prop will return type double
-                        
-                        pause(stPre.femTool.uiePausePreExp.xVal);
-                        
-                        % Calculate the exposure time
-                        
-                        dSec = stPre.femTool.dDose(dose)/this.mJPerCm2PerSec;
-                        
-                        % Set the shutter time (ms)
-                        
-                        this.shutter.uieExposureTime.setVal(dSec*1e3);
-                        this.uiWafer.uiAxes.setExposing(true);
-                        this.shutter.open();
-                        
-                        % Wait for the shutter to close
-                        
-                        if ~this.waitFor(@this.shIsClosed, 'shutter close')
-                            this.abort();
-                            break;
-                        end
-                        
-                        this.uiWafer.uiAxes.setExposing(false);
-                        
-                                                                        
-                        % Write to log
-                        
-                        this.writeToLog('');
-                        
-                        % Add an exposure to the plot
-                        
-                        this.uiWafer.addExposure([ ...
-                            stPre.femTool.dX(dose)*1e-3 ...
-                            stPre.femTool.dY(focus)*1e-3 ...
-                            dose ...
-                            length(stPre.femTool.dX) ...
-                            focus ...
-                            length(stPre.femTool.dY)] ...
-                        );
-                        
-                    end
-                end
-                
-            end
-            
-            msgbox('The FEM is done!', 'Finished', 'warn')
-                        
-            % Update play/pause
-            this.uitPlay.set(false);
-            
-        end
+        
         
         function onCloseRequestFcn(this, src, evt)
             delete(this.hFigure);
@@ -1423,11 +1244,6 @@ classdef Scan < mic.Base
             
         end
         
-        function lReturn = unpaused(this)
-            
-            lReturn = this.uitPlay.get();
-            
-        end
         
         function lReturn = shIsClosed(this)
             
@@ -1436,33 +1252,7 @@ classdef Scan < mic.Base
         end
         
         
-        function lReturn = waitFor(this, fh, cMsg)
-            
-            % @parameter fh   function handle
-            % This is a blocking wait 
-            
-            if exist('cMsg', 'var') ~= 1
-                cMsg = '';
-            end
-                        
-            while(~fh())
-                this.msg(sprintf('waiting... %s', cMsg));
-                
-                % Check for abort.  We don't deal with pauses here, cannot
-                % pause while we are waiting for something else to finish
-                
-                % if ~this.lRunning
-                if ~this.uitPlay.get()
-                    lReturn = false;
-                    break;
-                else
-                    pause(this.dPauseTime);
-                end
-            end 
-            
-            lReturn = true;
-            
-        end
+        
         
         function lOut = validateRecipe(this, stRecipe)
             % FIX ME

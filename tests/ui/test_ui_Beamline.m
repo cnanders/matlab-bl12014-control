@@ -19,8 +19,7 @@ ui = bl12014.ui.Beamline(...
     'clock', clock ...
 );
 
-h = figure()
-ui.build(h, 10, 10);
+ui.build();
 
 
  
