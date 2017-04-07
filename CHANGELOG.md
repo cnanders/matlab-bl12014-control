@@ -27,6 +27,9 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 
 # 1.0.0-alpha.4
 
+### bl12014.ui.Beamline
+
+- New UI class to store the undulator gap, mono grating tilt (or wav through conversion), exit slit, shutter, d142 stage y, and MeasurPoint channel with d142 diode connected.
 
 ### bl12014.ui.WaferAxes
 
@@ -37,10 +40,10 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 
 - While `load()` is being evoked, now suppresses `notify` calls during the load process while multiple `mic.ui.common.Edit` are being updated and instead issues one single event at the end.
 
-### bl12014.ui.Beamline
+### bl12014.ui.Beamline renamed to bl12014.ui.App
 
 - Now listens for size changes from `bl12014.ui.FemTool` and updates the FEM preview on `bl12014.ui.WaferAxes`
-- Now listens for `bl12014.ui.PrescriptionTool` `eNew` event and refreshes the list of available prescriptions in `bl12014.ui.Scan`
+- Now listens for `eDelete` and `eNew` events from `bl12014.ui.PrescriptionTool` and refreshes the list of available prescriptions in `bl12014.ui.Scan`
 
 ### bl12014.ui.ProcessTool
 
@@ -50,6 +53,7 @@ In addition, it will have interface for setting up a 1D scan, similar to NUS sof
 ### bl12014.ui.PrescriptionTool
 
 - Now saves `fem` and `process` parameters to the recipe `.json` file.
+
 
 ### bl12014.ui.Scan
 

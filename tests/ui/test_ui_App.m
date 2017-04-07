@@ -10,17 +10,15 @@ cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
-
 purge
 
-clock = mic.Clock('Master');
+ui = bl12014.ui.App();
+ui.build();
 
-ui = bl12014.ui.Beamline(...
-    'clock', clock ...
-);
-
-h = figure()
-ui.build(h, 10, 10);
+%{
+cb = @(src, evt) (fprintf('x %1.3f, y %1.3f \n', evt.stData.dX, evt.stData.dY));
+addlistener(ui, 'eClickField', cb);
+%}
 
 
  

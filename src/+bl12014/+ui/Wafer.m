@@ -27,7 +27,7 @@ classdef Wafer < mic.Base
     properties (Access = private)
                       
         clock
-        dDelay = 0.5
+        dDelay = 0.15
         
     end
     
