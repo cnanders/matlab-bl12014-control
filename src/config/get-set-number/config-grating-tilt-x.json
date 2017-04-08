@@ -2,19 +2,19 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "deg",
+			"name": "sin(theta)",
 			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mdeg",
+			"name": "wav",
 			"slope": 1000,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mrad",
+			"name": "eV",
 			"slope": 17.453292519943297,
 			"offset": 0,
 			"precision": 3
