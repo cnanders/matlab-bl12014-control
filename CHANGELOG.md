@@ -1,35 +1,26 @@
 <!-- 
 TO DO
 
-
-### UI for Exit Slits
-
-- Most likeley a single mic.ui.GetSetNumber
-
-### UI for Mono
-
-- mic.ui.GetSetNumbers:
-  - wav, grating
-- mic.ui.GetSetLogical:
-  - diode insertion
-- mic.ui.GetNumber:
-  - diode current (MeasurPoint?)
-
-In addition, it will have interface for setting up a 1D scan, similar to NUS software.  It will have min / max values for wavelength, settle delay, all of the stuff that NUS scan had (possibly elapsed time, etc).  Will need to show the plot, allow clicking to set zero. 
-
- 
-
 ### ui.Wafer
 
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
 
+# 1.0.0-alpha.5
+
+### bl12014.ui.Beamline
+- Refactored to use new `mic.ui.Scan` UI for controlling the scan and displaying scan progress
+- Now saves scan results and the `recipe.json` and `result.json` files are each saved to their own unique directory that includes a timestamp and identiying information about the scan
+- Now saves `result.csv`
+- Now properly saves `result.*` files when the scan is aborted
+
 # 1.0.0-alpha.4
 
 ### bl12014.ui.Beamline
 
 - New UI class to store the undulator gap, mono grating tilt (or wav through conversion), exit slit, shutter, d142 stage y, and MeasurPoint channel with d142 diode connected.
+
 
 ### bl12014.ui.WaferAxes
 

@@ -69,7 +69,7 @@ classdef Scan < mic.Base
         
         lRunning = false
         
-        % {mic.StateScan 1x1}
+        % {mic.Scan 1x1}
         scan
         
         % {struct 1x1} storage used  and checking if the
@@ -987,7 +987,7 @@ classdef Scan < mic.Base
                     return;
                 end
                 
-                this.scan = mic.StateScan(...
+                this.scan = mic.Scan(...
                     this.clock, ...
                     stRecipe, ...
                     @this.onScanSetState, ...

@@ -1,11 +1,13 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
+cDirApp = fullfile(cDirThis, '..', '..');
+
+% skg
+cDirBl12014 = fullfile(cDirApp, 'src');
 addpath(genpath(cDirBl12014));
 
 % dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
+cDirVendor = fullfile(cDirApp, 'vendor');
 
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));

@@ -3,21 +3,21 @@ classdef Beamline < mic.Base
     
     properties (Constant, Access = private)
         
-        dWidth = 620
-        dHeight = 680
+        dWidth = 640
+        % dHeight = 740 % Calculated in buildFigure()
         
-        dWidthPanelScan = 600
-        dHeightPanelScan = 80
+        dWidthPanelRecipe = 620
+        dHeightPanelRecipe = 120
         
-        dWidthPanelData = 600
+        dWidthPanelData = 620
         dHeightPanelData = 340
         
-        dWidthPanelDevices = 600
+        dWidthPanelDevices = 620
         dHeightPanelDevices = 225
         
-        dWidthRecipeEdit = 60
+        dWidthRecipeEdit = 40
         dWidthRecipeButton = 60
-        dWidthRecipePopup = 150
+        dWidthRecipePopup = 120
         dWidthRecipeUnit = 50
         
         
@@ -39,10 +39,12 @@ classdef Beamline < mic.Base
         cNameDeviceD142StageY = 'd142_stage_y'
         cNameDeviceMeasurPointD142 = 'measur_point_d142'
         
-        
+        cScanAcquireTypeMeasurPointD142 = 'measur_point_d142'
         
         dColorFigure = [200 200 200]./255
         dColorPanelData = [1 1 1]
+        
+        lDebugScan = false
     end
     
     properties
@@ -59,27 +61,28 @@ classdef Beamline < mic.Base
         % {< mic.interface.device.GetSetNumber}
         deviceShutter
         
-        
+        % {bl12014.device.ShutterVirtual}
+        deviceShutterVirtual
         
         
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiExitSlit
+        uiDeviceExitSlit
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiUndulatorGap
+        uiDeviceUndulatorGap
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiShutter
+        uiDeviceShutter
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiGratingTiltX
+        uiDeviceGratingTiltX
         
          % {mic.ui.device.GetSetNumber 1x1}
-        uiD142StageY
+        uiDeviceD142StageY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiMeasurPointD142
+        uiDeviceMeasurPointD142
         
         
     end
@@ -93,11 +96,19 @@ classdef Beamline < mic.Base
     
     properties (Access = private)
         
+        % {cell of struct} storage of state during each acquire
+        ceValues
+        
         clock
         
         cDirThis
+        % {char 1xm} - full path to the src directory of this application
         cDirSrc
+        % {char 1xm} - full path to the directory where scans are saved
         cDirSave
+        % {char 1xm} - full path to a particular scan (recipe.json +
+        % result.json) are saved.  Each scan is saved to a new folder
+        cDirScan
         
         hFigure
         hPanelDevices
@@ -108,7 +119,8 @@ classdef Beamline < mic.Base
         % storage for handles returned by plot()
         hLines
         
-        dWidthName = 70
+        dWidthUiDeviceName = 70
+        dWidthUiDeviceUnit = 100
         
         configStageY
         configMeasPointVolts 
@@ -119,9 +131,10 @@ classdef Beamline < mic.Base
         uiEditRecipeSteps
         uiTextRecipeUnit
         
-        uiToggleScanPause
-        uiButtonScanAbort
-        uiButtonScanStart
+        % {mic.ui.Scan 1x1}
+        uiScan
+        
+        uiScanStatus
          
         % Stores the values of the start, stop, steps of each device type.
         % When the device popup switches, the start, stop, steps initialize
@@ -137,9 +150,10 @@ classdef Beamline < mic.Base
         stScanAcquireContract
         stScanSetContract
         
-        cNameRecipe
+        cPathRecipe
         
-        
+        % {mic.Scan 1x1}
+        scan
     end
     
     methods
@@ -149,6 +163,8 @@ classdef Beamline < mic.Base
             this.cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
             this.cDirSave = fullfile(this.cDirSrc, 'save', 'beamline-scans');
+            
+            mic.Utils.checkDir(this.cDirSave);
             
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
@@ -165,24 +181,24 @@ classdef Beamline < mic.Base
         
         function turnOn(this)
             
-            this.uiExitSlit.turnOn();
-            this.uiUndulatorGap.turnOn();
-            this.uiShutter.turnOn();
-            this.uiGratingTiltX.turnOn();
+            this.uiDeviceExitSlit.turnOn();
+            this.uiDeviceUndulatorGap.turnOn();
+            this.uiDeviceShutter.turnOn();
+            this.uiDeviceGratingTiltX.turnOn();
             this.uiTiltY.turnOn();
-            this.uiD142StageY.turnOn();
-            this.uiMeasurPointD142.turnOn();
+            this.uiDeviceD142StageY.turnOn();
+            this.uiDeviceMeasurPointD142.turnOn();
             
         end
         
         function turnOff(this)
-            this.uiExitSlit.turnOff();
-            this.uiUndulatorGap.turnOff();
-            this.uiShutter.turnOff();
-            this.uiGratingTiltX.turnOff();
+            this.uiDeviceExitSlit.turnOff();
+            this.uiDeviceUndulatorGap.turnOff();
+            this.uiDeviceShutter.turnOff();
+            this.uiDeviceGratingTiltX.turnOff();
             this.uiTiltY.turnOff();
-            this.uiD142StageY.turnOff();
-            this.uiMeasurPointD142.turnOff();
+            this.uiDeviceD142StageY.turnOff();
+            this.uiDeviceMeasurPointD142.turnOff();
             
         end
         
@@ -197,6 +213,7 @@ classdef Beamline < mic.Base
             this.buildUiDevices()
             this.buildPanelRecipe();
             this.buildUiRecipe()
+            %this.buildUiScan();
             this.buildPanelData();
             this.buildAxes();
             
@@ -240,7 +257,7 @@ classdef Beamline < mic.Base
             
                 
                 dHeight = this.dHeightFigurePad + ...
-                    this.dHeightPanelScan + ...
+                    this.dHeightPanelRecipe + ...
                     this.dHeightPanelData + ...
                     this.dHeightFigurePad + ...
                     this.dHeightPanelDevices + ...
@@ -277,7 +294,8 @@ classdef Beamline < mic.Base
         function buildPanelData(this)
             
             dLeft = this.dWidthFigurePad;
-            dTop = this.dHeightFigurePad + this.dHeightPanelScan; % No vertical pad between scan and data panels
+            dTop = this.dHeightFigurePad + ...
+                this.dHeightPanelRecipe; % No vertical pad between scan and data panels
             this.hPanelData = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
@@ -324,7 +342,10 @@ classdef Beamline < mic.Base
                 'ButtonDownFcn', @this.onAxesButtonDown ...
             );
             hold(this.hAxes, 'on');
-
+            this.updatePlot()
+            this.updatePlotLabels()
+            this.updatePlotXLimits()
+            
             % 'FontSize', this.dSizeFont, ...
 
         end
@@ -333,7 +354,7 @@ classdef Beamline < mic.Base
             
             dLeft = this.dWidthFigurePad;
             dTop = this.dHeightFigurePad + ...
-                this.dHeightPanelScan + ...
+                this.dHeightPanelRecipe + ...
                 this.dHeightPanelData + ...
                 this.dHeightFigurePad;
             
@@ -362,23 +383,27 @@ classdef Beamline < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiExitSlit.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
+            this.uiDeviceGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop  + 15 + dSep;
             
-            this.uiUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
+            this.uiDeviceUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiShutter.build(this.hPanelDevices, dLeft, dTop);
+            this.uiDeviceExitSlit.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
+            this.uiDeviceD142StageY.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiD142StageY.build(this.hPanelDevices, dLeft, dTop);
+            this.uiDeviceShutter.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiMeasurPointD142.build(this.hPanelDevices, dLeft, dTop);
+            
+            
+            
+            this.uiDeviceMeasurPointD142.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
+            
             
         end
         
@@ -395,8 +420,8 @@ classdef Beamline < mic.Base
                 'Position', mic.Utils.lt2lb([ ...
                     dLeft ...
                     dTop ...
-                    this.dWidthPanelScan ...
-                    this.dHeightPanelScan], ...
+                    this.dWidthPanelRecipe ...
+                    this.dHeightPanelRecipe], ...
                     this.hFigure ...
                 ) ...
             );
@@ -404,6 +429,19 @@ classdef Beamline < mic.Base
             drawnow;
             
         end
+        
+        %{
+        function buildUiScan(this)
+            dLeft = this.dWidthFigurePad + ...
+                this.dWidthPanelRecipe + ...
+                this.dWidthFigurePad;
+            
+            dLeft = this.dWidthFigurePad + ...
+                this.dWidthPanelRecipe;
+            
+            
+        end
+        %}
         
         function buildUiRecipe(this)
             
@@ -455,40 +493,13 @@ classdef Beamline < mic.Base
             );
             dLeft = dLeft + this.dWidthRecipeEdit + this.dWidthPadH;
             
-            dTop = dTop + 12;
-            this.uiButtonScanStart.build( ...
-                this.hPanelScan, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthRecipeButton, ...
-                this.dHeightUi ...
-            );
-        
-            this.uiToggleScanPause.build( ...
-                this.hPanelScan, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthRecipeButton, ...
-                this.dHeightUi ...
-            );
-            dLeft = dLeft + this.dWidthRecipeButton + this.dWidthPadH;
-            % dTop = dTop + 30
-            
-            this.uiButtonScanAbort.build( ...
-                this.hPanelScan, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthRecipeButton, ...
-                this.dHeightUi ...
-            );
-        
-            this.hideScanPauseAbort();
+            this.uiScan.build(this.hPanelScan, dLeft, 12);
             this.onPopupRecipeDevice();
         
         end
         
         
-        function initUiD142StageY(this)
+        function initUiDeviceD142StageY(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -500,20 +511,21 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiD142StageY = mic.ui.device.GetSetNumber(...
+            this.uiDeviceD142StageY = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'cName', 'd142-stage-y', ...
+                'cName', 'beamline-d142-stage-y', ...
                 'config', uiConfig, ...
-                'dWidthName', this.dWidthName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
                 'lShowLabels', false, ...
                 'cLabel', 'D142 Stage Y' ...
             );
         
-            addlistener(this.uiD142StageY, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiDeviceD142StageY, 'eUnitChange', @this.onUnitChange);
         end
         
         
-        function initUiMeasurPointD142(this)
+        function initUiDeviceMeasurPointD142(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -525,20 +537,21 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            this.uiMeasurPointD142 = mic.ui.device.GetNumber(...
+            this.uiDeviceMeasurPointD142 = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
-                'cName', 'measur-point-d142-diode', ...
+                'cName', 'beamline-measur-point-d142-diode', ...
                 'config', uiConfig, ...
-                'dWidthName', this.dWidthName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
                 'cLabel', 'MeasurPoint (D142)', ...
                 'dWidthPadUnit', 277, ...
                 'lShowLabels', false ...
             );
         
-            addlistener(this.uiMeasurPointD142, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiDeviceMeasurPointD142, 'eUnitChange', @this.onUnitChange);
         end 
          
-        function initUiExitSlit(this)
+        function initUiDeviceExitSlit(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -550,18 +563,20 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiExitSlit = mic.ui.device.GetSetNumber(...
+            this.uiDeviceExitSlit = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'dWidthName', this.dWidthName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
+                'lShowLabels', false, ...
                 'cName', 'exit-slit', ...
                 'config', uiConfig, ...
                 'cLabel', 'Exit Slit' ...
             );
         
-            addlistener(this.uiExitSlit, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiDeviceExitSlit, 'eUnitChange', @this.onUnitChange);
         end
         
-        function initUiUndulatorGap(this)
+        function initUiDeviceUndulatorGap(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -573,19 +588,22 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiUndulatorGap = mic.ui.device.GetSetNumber(...
+            this.uiDeviceUndulatorGap = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
-                'dWidthName', this.dWidthName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
                 'cName', 'undulator-gap', ...
                 'config', uiConfig, ...
                 'cLabel', 'Undulator Gap' ...
             );
         
-            addlistener(this.uiUndulatorGap, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiDeviceUndulatorGap, 'eUnitChange', @this.onUnitChange);
         end
         
-        function initUiShutter(this)
+        function initUiDeviceShutter(this)
+            
+            this.deviceShutterVirtual = bl12014.device.ShutterVirtual();
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -597,20 +615,22 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiShutter = mic.ui.device.GetSetNumber(...
+            this.uiDeviceShutter = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
-                'dWidthName', this.dWidthName, ...
-                'cName', 'shutter', ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
+                'cName', 'beamline-shutter', ...
                 'config', uiConfig, ...
                 'cLabel', 'Shutter' ...
             );
-        
-            addlistener(this.uiShutter, 'eUnitChange', @this.onUnitChange);
+            
+        	this.uiDeviceShutter.setDeviceVirtual(this.deviceShutterVirtual);
+            addlistener(this.uiDeviceShutter, 'eUnitChange', @this.onUnitChange);
         end
         
         
-        function initUiGratingTiltX(this)
+        function initUiDeviceGratingTiltX(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -622,16 +642,17 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiGratingTiltX = mic.ui.device.GetSetNumber(...
+            this.uiDeviceGratingTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'lShowLabels', false, ...
-                'dWidthName', this.dWidthName, ...
+                'lShowLabels', true, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
                 'cName', 'grating-tilt-x', ...
                 'config', uiConfig, ...
                 'cLabel', 'Grating Tilt X' ...
             );
         
-            addlistener(this.uiGratingTiltX, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiDeviceGratingTiltX, 'eUnitChange', @this.onUnitChange);
         end
         
         function initUiRecipe(this)
@@ -658,10 +679,9 @@ classdef Beamline < mic.Base
                 'cValue', this.cNameDeviceD142StageY ...
             );  
             ceOptions = { ...
-                stDeviceTypeExitSlit, ...
-                stDeviceTypeUndulatorGap, ...
-                stDeviceTypeShutter, ...
                 stDeviceTypeGratingTiltX, ...
+                stDeviceTypeUndulatorGap, ...
+                stDeviceTypeExitSlit, ...
                 stDeviceTypeD142StageY ...
             };
         
@@ -684,7 +704,7 @@ classdef Beamline < mic.Base
             );
         
             this.uiEditRecipeSteps = mic.ui.common.Edit(...
-                'cType', 'u8', ... % uint8
+                'cType', 'u16', ... % uint16
                 'cLabel', 'Steps' ...
             );
         
@@ -700,7 +720,7 @@ classdef Beamline < mic.Base
             addlistener(this.uiEditRecipeSteps, 'eChange', @this.onEditRecipeSteps);
         end
         
-        function onPopupRecipeDevice(this, src, evt)
+        function onPopupRecipeDevice(this, ~, ~)
             
             this.msg('onPopupRecipeDevice()')
             
@@ -715,56 +735,34 @@ classdef Beamline < mic.Base
             
         end
         
-        function onEditRecipeStart(this, src, evt)
+        function onEditRecipeStart(this, src, ~)
             this.stUiRecipeStore.(this.uiPopupRecipeDevice.get().cValue).start = src.get();
             this.resetScanData();
         end
       
-        function onEditRecipeStop(this, src, evt)
+        function onEditRecipeStop(this, src, ~)
             this.stUiRecipeStore.(this.uiPopupRecipeDevice.get().cValue).stop = src.get();
             this.resetScanData();
         end
         
-        function onEditRecipeSteps(this, src, evt)
+        function onEditRecipeSteps(this, src, ~)
             this.stUiRecipeStore.(this.uiPopupRecipeDevice.get().cValue).steps = src.get();
             this.resetScanData();
         end
         
-        function initUiScan(this)
-            
-            this.uiButtonScanStart = mic.ui.common.Button(...
-                'cText', 'Start' ...
-            );
-            
-            this.uiToggleScanPause = mic.ui.common.Toggle(...
-                'cTextFalse', 'Pause', ...
-                'cTextTrue', 'Resume' ...
-            );
         
-            this.uiButtonScanAbort = mic.ui.common.Button(...
-                'cText', 'Abort', ...
-                'lAsk', true, ...
-                'cMsg', 'The scan is now paused.  Are you sure you want to abort?' ... 
-            );
-            
-            addlistener(this.uiButtonScanAbort, 'ePress', @this.onButtonScanAbortPress);
-            addlistener(this.uiButtonScanAbort, 'eChange', @this.onButtonScanAbort);
-            addlistener(this.uiToggleScanPause, 'eChange', @this.onButtonScanPause);
-            addlistener(this.uiButtonScanStart, 'eChange', @this.onButtonScanStart);
-        
-        end
         
         function init(this)
             this.msg('init()');
-            this.initUiExitSlit();
-            this.initUiUndulatorGap();
-            this.initUiShutter();
-            this.initUiGratingTiltX();
-            this.initUiD142StageY()
-            this.initUiMeasurPointD142();
+            this.initUiDeviceExitSlit();
+            this.initUiDeviceUndulatorGap();
+            this.initUiDeviceShutter();
+            this.initUiDeviceGratingTiltX();
+            this.initUiDeviceD142StageY()
+            this.initUiDeviceMeasurPointD142();
             
             this.initUiRecipe();
-            this.initUiScan();
+            this.initUiScan()
             this.initUiRecipeStore();
             
             this.initScanAcquireContract();
@@ -788,15 +786,48 @@ classdef Beamline < mic.Base
            % this.updateAxesCrosshair();
         end 
         
+        function onUiScanStart(this, src, evt)
+            
+            this.msg('onUiScanStart');
+            this.resetScanData()
+            
+            this.cDirScan = this.getScanDir();
+            this.cPathRecipe = fullfile(this.cDirScan, 'recipe.json');
+            this.saveRecipeToDisk(this.cPathRecipe);
+            this.startNewScan();
+                       
+        end
+        
+        function onUiScanPause(this, ~, ~)
+        
+            this.scan.pause();
+            this.updateUiScanStatus()
+        end
+        
+        function onUiScanResume(this, ~, ~)
+            
+            this.scan.resume();
+            this.updateUiScanStatus()
+            
+        end
+        
+        function onUiScanAbort(this, ~, ~)
+            
+            this.scan.stop(); % calls onScanAbort()
+            
+        end
+        
+        %{
         function onButtonScanStart(this, src, evt)
             
             this.msg('onButtonScanStart');
             
+            this.resetScanData()
             this.hideScanStart();
             this.showScanPauseAbort();
             
-            this.cNameRecipe = this.getRecipeName();
-            this.saveRecipeToDisk(this.cNameRecipe);
+            this.cPathRecipe = fullfile(this.cDirSave, this.getRecipeName());
+            this.saveRecipeToDisk(this.cPathRecipe);
             this.startNewScan();
                        
         end
@@ -808,15 +839,19 @@ classdef Beamline < mic.Base
             else
                 this.scan.resume();
             end
+            
+            this.updateUiScanStatus()
         end
         
         function onButtonScanAbortPress(this, ~, ~)
             this.scan.pause();
             this.uiToggleScanPause.set(true);
+            
         end
         
         function onButtonScanAbort(this, ~, ~)
             this.scan.stop(); % calls onScanAbort()
+            
         end
         
         function showScanStart(this)
@@ -838,10 +873,11 @@ classdef Beamline < mic.Base
             this.uiButtonScanAbort.hide();
             
         end
+        %}
         
         function startNewScan(this)
             
-            [stRecipe, lError] = this.loadRecipeFromDisk(this.cNameRecipe);
+            [stRecipe, lError] = this.loadRecipeFromDisk(this.cPathRecipe);
             
             if lError 
                 cMsg = 'There was an error building the scan recipe from the .json file.';
@@ -857,12 +893,13 @@ classdef Beamline < mic.Base
                 % wait for them to close the message
                 % uiwait(h);
 
-                this.showScanStart();
-                this.hideScanPauseAbort();
                 return;
             end
 
-            this.scan = mic.StateScan(...
+            
+            this.ceValues = cell(size(stRecipe.values));
+             
+            this.scan = mic.Scan(...
                 this.clock, ...
                 stRecipe, ...
                 @this.onScanSetState, ...
@@ -884,12 +921,13 @@ classdef Beamline < mic.Base
             dValues = linspace(...
                 this.uiEditRecipeStart.get(), ...
                 this.uiEditRecipeStop.get(), ...
-                this.uiEditRecipeSteps.get() + uint8(1) ...
+                this.uiEditRecipeSteps.get() + uint16(1) ...
             );
             this.dScanDataParam = dValues;
             this.dScanDataValue = zeros(size(dValues)); 
             
             this.updatePlot()
+            this.updatePlotXLimits()
             
         end
         
@@ -917,6 +955,26 @@ classdef Beamline < mic.Base
             
         end
         
+        
+        function updatePlotXLimits(this)
+            
+            if  isempty(this.hAxes) || ...
+                ~ishandle(this.hAxes)
+               
+                this.msg('updatePlotLabels() returning due to empty Axes handle');
+                return;
+            end
+            
+            dMin = min(this.dScanDataParam);
+            dMax = max(this.dScanDataParam);
+            if dMin ~= dMax
+                xlim(this.hAxes, [dMin dMax]);
+            end
+            
+            
+            
+        end
+        
         function updatePlotLabels(this)
             
             if  isempty(this.hAxes) || ...
@@ -935,7 +993,7 @@ classdef Beamline < mic.Base
             
             cLabelY = sprintf(...
                 'MeasurPoint D142 (%s)', ...
-                this.uiMeasurPointD142.getUnit().name ...
+                this.uiDeviceMeasurPointD142.getUnit().name ...
             );
             ylabel(this.hAxes, cLabelY);
         end
@@ -949,6 +1007,24 @@ classdef Beamline < mic.Base
             c = 'test (um)';
         end
         
+        function initUiScan(this)
+            %{
+            this.uiScan = mic.ui.Scan(...
+                'cTitle', '', ...
+                'dWidth', 210, ...
+                'dHeightPadPanel', 30, ...
+                'dHeight', this.dHeightPanelRecipe ...
+            );
+            %}
+            this.uiScan = mic.ui.Scan(...
+                'cTitle', '', ...
+                'dWidthPanelBorder', 0 ...
+            );
+            addlistener(this.uiScan, 'eStart', @this.onUiScanStart);
+            addlistener(this.uiScan, 'ePause', @this.onUiScanPause);
+            addlistener(this.uiScan, 'eResume', @this.onUiScanResume);
+            addlistener(this.uiScan, 'eAbort', @this.onUiScanAbort);
+        end
         
         function initUiRecipeStore(this)
             
@@ -956,23 +1032,23 @@ classdef Beamline < mic.Base
             
             this.stUiRecipeStore.(this.cNameDeviceExitSlit).start = 35;
             this.stUiRecipeStore.(this.cNameDeviceExitSlit).stop = 350;
-            this.stUiRecipeStore.(this.cNameDeviceExitSlit).steps = uint8(10);
+            this.stUiRecipeStore.(this.cNameDeviceExitSlit).steps = uint16(10);
             
             this.stUiRecipeStore.(this.cNameDeviceUndulatorGap).start = 38;
             this.stUiRecipeStore.(this.cNameDeviceUndulatorGap).stop = 44;
-            this.stUiRecipeStore.(this.cNameDeviceUndulatorGap).steps = uint8(5);
+            this.stUiRecipeStore.(this.cNameDeviceUndulatorGap).steps = uint16(5);
             
             this.stUiRecipeStore.(this.cNameDeviceShutter).start = 5;
             this.stUiRecipeStore.(this.cNameDeviceShutter).stop = 50;
-            this.stUiRecipeStore.(this.cNameDeviceShutter).steps = uint8(5);
+            this.stUiRecipeStore.(this.cNameDeviceShutter).steps = uint16(5);
             
             this.stUiRecipeStore.(this.cNameDeviceGratingTiltX).start = 86;
             this.stUiRecipeStore.(this.cNameDeviceGratingTiltX).stop = 89;
-            this.stUiRecipeStore.(this.cNameDeviceGratingTiltX).steps = uint8(20);
+            this.stUiRecipeStore.(this.cNameDeviceGratingTiltX).steps = uint16(20);
             
             this.stUiRecipeStore.(this.cNameDeviceD142StageY).start = 0;
             this.stUiRecipeStore.(this.cNameDeviceD142StageY).stop = 10;
-            this.stUiRecipeStore.(this.cNameDeviceD142StageY).steps = uint8(20);
+            this.stUiRecipeStore.(this.cNameDeviceD142StageY).steps = uint16(20);
             
            
         end
@@ -989,15 +1065,15 @@ classdef Beamline < mic.Base
         function c = getRecipeDeviceUnit(this)
             switch this.uiPopupRecipeDevice.get().cValue
                 case 'grating_tilt_x'
-                    c = this.uiGratingTiltX.getUnit().name;
+                    c = this.uiDeviceGratingTiltX.getUnit().name;
                 case 'shutter'
-                    c = this.uiShutter.getUnit().name;
+                    c = this.uiDeviceShutter.getUnit().name;
                 case 'exit_slit'
-                    c = this.uiExitSlit.getUnit().name;
+                    c = this.uiDeviceExitSlit.getUnit().name;
                 case 'undulator_gap'
-                    c = this.uiUndulatorGap.getUnit().name;
+                    c = this.uiDeviceUndulatorGap.getUnit().name;
                 case 'd142_stage_y'
-                    c = this.uiD142StageY.getUnit().name;
+                    c = this.uiDeviceD142StageY.getUnit().name;
                 otherwise 
                     c = 'unknown';
             end
@@ -1013,7 +1089,8 @@ classdef Beamline < mic.Base
                 stValue.(this.uiPopupRecipeDevice.get().cValue) = dParam;
                 
                 stTask = struct();
-                stTask.pause = 0.5;
+                stTask.type = this.cScanAcquireTypeMeasurPointD142;
+                stTask.pause = 0.1;
                 
                 stValue.task = stTask;
                 ceValues{u8Count} = stValue;
@@ -1038,12 +1115,12 @@ classdef Beamline < mic.Base
         
         function st = getDeviceUnits(this)
             st = struct();
-            st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getUnit().name;
-            st.(this.cNameDeviceShutter) = this.uiShutter.getUnit().name;
-            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getUnit().name;
-            st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getUnit().name;
-            st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getUnit().name;
-            st.(this.cNameDeviceMeasurPointD142) = this.uiMeasurPointD142.getUnit().name;
+            st.(this.cNameDeviceGratingTiltX) = this.uiDeviceGratingTiltX.getUnit().name;
+            st.(this.cNameDeviceShutter) = this.uiDeviceShutter.getUnit().name;
+            st.(this.cNameDeviceExitSlit) = this.uiDeviceExitSlit.getUnit().name;
+            st.(this.cNameDeviceUndulatorGap) = this.uiDeviceUndulatorGap.getUnit().name;
+            st.(this.cNameDeviceD142StageY) = this.uiDeviceD142StageY.getUnit().name;
+            st.(this.cNameDeviceMeasurPointD142) = this.uiDeviceMeasurPointD142.getUnit().name;
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1117,12 +1194,12 @@ classdef Beamline < mic.Base
                
         end
         
-        function c = getRecipeName(this)
+        function c = getScanDir(this)
            
-            % Generate a suggestion for the filename
+            % Generate a suggestion for the dir
             % [yyyymmdd-HHMMSS]-[device]-[unit]-[start]-[stop]-[steps]
            
-            c = sprintf('%s__%s__%s__%1.1f_%1.1f_%1dx%1d', ...
+            c = sprintf('%s__%s__%s__%1.1f_%1.1f_%1d', ...
                 datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), ...
                 this.uiPopupRecipeDevice.get().cValue, ...
                 this.getRecipeDeviceUnit(), ...
@@ -1130,6 +1207,11 @@ classdef Beamline < mic.Base
                 this.uiEditRecipeStop.get(), ...
                 this.uiEditRecipeSteps.get() ...
             );
+        
+            c = fullfile(this.cDirSave, c);
+            c = mic.Utils.path2canonical(c);
+            mic.Utils.checkDir(c);
+
             
         end
         
@@ -1188,7 +1270,7 @@ classdef Beamline < mic.Base
             
             this.resetScanSetContract();
             
-            % Update the stScanSetContract properties listed in stValue 
+            % Update the contract
             
             ceFields = fieldnames(stValue);
             for n = 1 : length(ceFields)
@@ -1212,209 +1294,114 @@ classdef Beamline < mic.Base
                 switch ceFields{n}
                     case 'task'
                         % Do nothing
+                        continue
                     otherwise
                         cUnit = stUnit.(ceFields{n}); 
                         dValue = stValue.(ceFields{n});
                 end
                 
+
                 switch ceFields{n}
-                    case 'reticleX'
-                        this.uiReticle.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
-                        this.uiReticle.uiCoarseStage.uiX.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'reticleY'
-                        this.uiReticle.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
-                        this.uiReticle.uiCoarseStage.uiY.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferX'
-                        this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
-                        this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferY'
-                        this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
-                        this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferZ'
-                        this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(dValue, cUnit);
-                        this.uiWafer.uiFineStage.uiZ.moveToDest();  % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'pupilFill'
-                        % FIX ME
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                        
-                        %{
-
-                        
-                        % Load the saved structure associated with the pupil fill
-                
-                        cFile = fullfile( ...
-                            this.cDirPupilFills, ...
-                            stPre.uiPupilFillSelect.cSelected ...
-                        );
-
-                        if exist(cFile, 'file') ~= 0
-                            load(cFile); % populates s in local workspace
-                            stPupilFill = s;
-                        else
-                            this.abort(sprintf('Could not find pupilfill file: %s', cFile));
-                            return;
-                        end
-                        if ~this.uiPupilFill.np.setWavetable(stPupilFill.i32X, stPupilFill.i32Y);
-
-                            cQuestion   = ['The nPoint pupil fill scanner is ' ...
-                                'not enabled and not scanning the desired ' ...
-                                'pupil pattern.  Do you want to run the FEM anyway?'];
-
-                            cTitle      = 'nPoint is not enabled';
-                            cAnswer1    = 'Run FEM without pupilfill.';
-                            cAnswer2    = 'Abort';
-                            cDefault    = cAnswer2;
-
-                            qanswer = questdlg(cQuestion, cTitle, cAnswer1, cAnswer2, cDefault);
-                            switch qanswer
-                                case cAnswer1;
-
-                                otherwise
-                                    this.abort('You stopped the FEM because the nPoint is not scanning.');
-                                    return; 
-                            end
-
-                        end
-                        %}
-                        
+                    case this.cNameDeviceExitSlit
+                        this.uiDeviceExitSlit.setDestCalDisplay(dValue, cUnit);
+                        this.uiDeviceExitSlit.moveToDest(); % click
+                    case this.cNameDeviceUndulatorGap
+                        this.uiDeviceUndulatorGap.setDestCalDisplay(dValue, cUnit);
+                        this.uiDeviceUndulatorGap.moveToDest(); % click
+                    case this.cNameDeviceGratingTiltX 
+                        this.uiDeviceGratingTiltX.setDestCalDisplay(dValue, cUnit);
+                        this.uiDeviceGratingTiltX.moveToDest(); % click
+                    case this.cNameDeviceD142StageY
+                        this.uiDeviceD142StageY.setDestCalDisplay(dValue, cUnit);
+                        this.uiDeviceD142StageY.moveToDest(); % click 
                     otherwise
                         % do nothing
-                        
                 end
                 
                 
+                this.stScanSetContract.(ceFields{n}).lIssued = true;
+                cMsg = sprintf('onScanSetState() %s issued move', ceFields{n});
+                this.msg(cMsg)
                 
             end
                         
 
         end
 
-
         % @param {struct} stUnit - the unit definition structure 
-        % @param {struct} stState - the state
+        % @param {struct} stValue - the system state that needs to be reached
         % @returns {logical} - true if the system is at the state
         function lOut = onScanIsAtState(this, stUnit, stValue)
-            
-            % The complexity of setState(), i.e., lots of 
-            % series operations vs. one large parallel operation, dictates
-            % how complex this needs to be.  I decided to implement a
-            % general approach that will work for the case of complex
-            % serial operations.  The idea is that each device (HIO) is
-            % wrapped with a lSetRequired and lSetIssued {locical} property.
-            %
-            % The beginning of setState(), loops through all devices
-            % that will be controlled and sets the lSetRequired flag ==
-            % true for each one and false for non-controlled devices.  It also sets 
-            % lSetIssued === false for all controlled devices.  
-            %
-            % Once a device move is commanded, the lSetIssued flag is set
-            % to true.  These two flags provide a systematic way to check
-            % isAtState: loop through all devices being controlled and only
-            % return true when every one that needs to be moved has had its
-            % move issued and also has isThere / lReady === true.
-            
-            % Ryan / Antine you might know a better way to do this nested
-            % loop / conditional but I wanted readability and debugginb so
-            % I made it verbose
-            
-            lDebug = true;           
+
             lOut = true;
-                        
-            ceFields= fieldnames(stValue);
+
+            this.updateUiScanStatus()
             
+            stContract = this.stScanSetContract;
+            ceFields= fieldnames(stContract);
+
             for n = 1:length(ceFields)
-                
+
                 cField = ceFields{n};
-                
+
                 % special case, skip task
                 if strcmp(cField, 'task')
                     continue;
                 end
-                
-                
-                if this.stScanSetContract.(cField).lRequired
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is required', cField));
-                    end
 
-                    if this.stScanSetContract.(cField).lIssued
-                        
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
-                        end
-                        
-                        % Check if the set operation is complete
-                        
-                        lReady = true;
-                        %{
-                        switch cField
-                            case 'reticleX'
-                               if ~this.uiReticle.uiCoarseStage.uiX.getDevice().isReady()
-                                   lReady = false;
-                               end
-                               
-                            case 'reticleY'
-                               if ~this.uiReticle.uiCoarseStage.uiY.getDevice().isReady()
-                                   lReady = false;
-                               end
-                                
-                            case 'waferX'
-                                if ~this.uiWafer.uiCoarseStage.uiX.getDevice().isReady()
-                                   lReady = false;
-                               end
-                                
-                            case 'waferY'
-                                if ~this.uiWafer.uiCoarseStage.uiY.getDevice().isReady()
-                                   lReady = false;
-                               end
-                                
-                            case 'waferZ'
-                               if ~this.uiWafer.uiFineStage.uiZ.getDevice().isReady()
-                                   lReady = false;
-                               end
-                            case 'pupilFill'
-                                % FIX ME
-                                
+
+                if stContract.(cField).lRequired
+
+                    if stContract.(cField).lIssued
+
+                        % !!! REQUIRED CODE !!! 
+                        %
+                        % Check if the set operation on the current device is
+                        % complete by calling isReady() on devices.  This will
+                        % often be a switch on cField that does something like:
+                        % this.uiDeviceStage.getDevice().isReady()
+
+                        switch ceFields{n}
+                            case this.cNameDeviceExitSlit
+                                lReady = this.uiDeviceExitSlit.getDevice().isReady();
+                            case this.cNameDeviceUndulatorGap
+                                lReady = this.uiDeviceUndulatorGap.getDevice().isReady();
+                            case this.cNameDeviceGratingTiltX 
+                                lReady = this.uiDeviceGratingTiltX.getDevice().isReady();
+                            case this.cNameDeviceD142StageY
+                                lReady = this.uiDeviceD142StageY.getDevice().isReady();
                             otherwise
-                                
-                                % UNSUPPORTED
-                                
+                                lReady = true;
+                                % do nothing
                         end
-                        %}
-                        
+
+                        % !!! END REQUIRED CODE !!!
+
                         if lReady
-                        	if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set operation complete', cField));
+                            if this.lDebugScan
+                                this.msg(sprintf('onScanIsAtState() %s required, issued, complete', cField));
                             end
- 
+
                         else
-                            % still isn't there.
-                            if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s is still setting', cField));
+                            if this.lDebugScan
+                                this.msg(sprintf('onScanIsAtState() %s required, issued, incomplete', cField));
                             end
                             lOut = false;
                             return;
                         end
                     else
-                        % need to move and hasn't been issued.
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField));
+                        if this.lDebugScan
+                            this.msg(sprintf('onScanIsAtState() %s required, not issued.', cField));
                         end
-                        
+
                         lOut = false;
                         return;
                     end                    
                 else
-                    
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s N/A', cField));
+
+                    if this.lDebugScan
+                        this.msg(sprintf('onScanIsAtState() %s not required', cField));
                     end
-                   % don't need to move, this param is OK. Don't false. 
                 end
             end
         end
@@ -1433,13 +1420,51 @@ classdef Beamline < mic.Base
                 return
             end
             
-            % Should eventually have a "type" property associated with the
-            % task that can be switched on.  "type", "data" which is a
-            % struct.  
-            % 
-            % One type would be "exposure"
+            stTask = stValue.task;
             
-           
+            % Update the contract
+            switch stTask.type
+                case this.cScanAcquireTypeMeasurPointD142
+                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lRequired = true;
+                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lIssued = false;
+                otherwise
+                    % Do nothing
+            end
+            
+            % Execute
+            % Move to new state.   Setting the state programatically does
+            % exactly what would happen if the user were to do it manually
+            % with the UI. I.E., we programatically update the UI and
+            % programatically "click" UI buttons.
+            
+            switch stTask.type
+                case this.cScanAcquireTypeMeasurPointD142
+                    % Open the shutter
+                    this.uiDeviceShutter.setDestCal(10000, 'ms (1x)');
+                    this.uiDeviceShutter.moveToDest();
+                    % Pause
+                    pause(stTask.pause);
+                    
+                    % Get the state of the system
+                    stValue = this.getState(stUnit);
+                    this.ceValues{this.scan.u8Index} = stValue;
+            
+                    % Update the plot data with MeasurPoint value
+                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceMeasurPointD142);
+                    
+                    % TO DO
+                    % Overwrite goal value of param with measured value
+                    % this.dScanDataParam(this.scan.u8Index) = stValue.(this.uiPopupDeviceName.get().cValue)
+                    
+                    % Close the shutter
+                    this.uiDeviceShutter.stop();
+                    % Update the contract lIssued
+                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lIssued = true;
+                otherwise 
+                    % do nothing
+            end
+            
+            this.updateUiScanStatus();
             
         end
 
@@ -1448,93 +1473,195 @@ classdef Beamline < mic.Base
         % @returns {logical} - true if the acquisition task is complete
         function lOut = onScanIsAcquired(this, stUnit, stValue)
 
-            lDebug = true;           
             lOut = true;
             
-            if ~isfield(stValue, 'task')
-                return
-            end
-                        
-            ceFields= fieldnames(this.stScanAcquireContract);
-            
-            for n = 1:length(ceFields)
-                
-                cField = ceFields{n};
-                
-                if this.stScanAcquireContract.(cField).lRequired
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is required', cField));
-                    end
+            stContract = this.stScanAcquireContract;
+            ceFields= fieldnames(stContract);
 
-                    if this.stScanAcquireContract.(cField).lIssued
+            for n = 1:length(ceFields)
+
+                cField = ceFields{n};
+
+                if stContract.(cField).lRequired
+
+                    if stContract.(cField).lIssued
+
+                        % !!! REQUIRED CODE !!! 
+                        % Check if the set operation on the current device is
+                        % complete by calling isReady() on devices.  This will
+                        % often be a switch on cField that does something like:
+                        % this.uiDeviceStage.getDevice().isReady()
                         
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
-                        end
-                        
-                        % Check if the set operation is complete
                         
                         lReady = true;
-                        
-                        %{
-                        switch cField
-                            case 'shutter'
-                               if ~this.uiShutter.uiShutter.getDevice().isReady()
-                                   lReady = false;
-                               end
-                                 
-                            otherwise
-                                
-                                % UNSUPPORTED
-                                
-                        end
-                        %}
-                        
+
+                        % !!! END REQUIRED CODE !!!
+
                         if lReady
-                        	if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set complete', cField));
+                            if this.lDebugScan
+                                this.msg(sprintf('onScanIsAcquired() %s required, issued, complete', cField));
                             end
- 
+
                         else
-                            % still isn't there.
-                            if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set still setting', cField));
+                            if this.lDebugScan
+                                this.msg(sprintf('onScanIsAcquired() %s required, issued, incomplete', cField));
                             end
                             lOut = false;
                             return;
                         end
                     else
-                        % need to move and hasn't been issued.
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField));
+                        if this.lDebugScan
+                            this.msg(sprintf('onScanIsAcquired() %s required, not issued.', cField));
                         end
-                        
+
                         lOut = false;
                         return;
                     end                    
                 else
-                    
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is not required', cField));
+
+                    if this.lDebugScan
+                        this.msg(sprintf('onScanIsAcquired() %s not required', cField));
                     end
-                   % don't need to move, this param is OK. Don't false. 
                 end
             end
             
-            
+            this.updatePlot();
         end
 
 
         function onScanAbort(this, stUnit)
-             this.hideScanPauseAbort();
-             this.showScanStart();
+        	 this.saveScanResults(stUnit, true);
+             this.updateUiScanStatus()
         end
 
 
         function onScanComplete(this, stUnit)
-             this.hideScanPauseAbort();
-             this.showScanStart();
+             this.saveScanResults(stUnit);
+             this.uiScan.reset();
+             this.updateUiScanStatus()
         end
+       
+        % Validte a recipe structure.  
+        function l = validateRecipe(this, stRecipe)
+            l = true;
+        end
+        
+        function updateUiScanStatus(this)
+            
+           this.uiScan.setStatus(this.scan.getStatus()); 
+            
+        end
+        
+        function saveScanResults(this, stUnit, lAborted)
+            this.msg('saveScanResults()');
+            
+            if nargin <3
+                lAborted = false;
+            end
+            this.saveScanResultsJson(stUnit, lAborted);
+            this.saveScanResultsCsv(stUnit, lAborted);
+        end
+        
+        function saveScanResultsJson(this, stUnit, lAborted)
+       
+            this.msg('saveScanResultsJson()');
+             
+            switch lAborted
+                case true
+                    cName = 'result-aborted.json';
+                case false
+                    cName = 'result.json';
+            end
+            
+            cPath = fullfile(...
+                this.cDirScan, ... % cDirScan
+                cName ...
+            );
+        
+            stResult = struct();
+            stResult.recipe = this.cPathRecipe;
+            stResult.unit = stUnit;
+            stResult.values = this.ceValues;
+            
+            stOptions = struct();
+            stOptions.FileName = cPath;
+            stOptions.Compact = 0;
+            
+            
+            savejson('', stResult, stOptions);     
+
+        end
+        
+        
+        function saveScanResultsCsv(this, stUnit, lAborted)
+        
+            this.msg('saveScanResultsCsv()');
+            
+            switch lAborted
+                case true
+                    cName = 'result-aborted.csv';
+                case false
+                    cName = 'result.csv';
+            end
+            
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                cName ...
+            );
+            
+            if isempty(this.ceValues)
+                return
+            end
+            
+            % Open the file
+            fid = fopen(cPath, 'w');
+
+            % Write the header
+            % Device
+            fprintf(fid, '# "%s"\n', this.uiPopupRecipeDevice.get().cValue);
+            
+            % Write the field names
+            ceNames = fieldnames(this.ceValues{1});
+            for n = 1:length(ceNames)
+                fprintf(fid, '%s,', ceNames{n});
+            end
+            fprintf(fid, '\n');
+
+            % Write values
+            for n = 1 : length(this.ceValues)
+                stValue = this.ceValues{n};
+                if ~isstruct(stValue)
+                    continue
+                end
+                ceNames = fieldnames(stValue);
+                for m = 1 : length(ceNames)
+                    switch ceNames{m}
+                        case 'time'
+                            fprintf(fid, '%s,', stValue.(ceNames{m}));
+                        otherwise
+                            fprintf(fid, '%1.3e,', stValue.(ceNames{m}));
+                    end
+                end
+                fprintf(fid, '\n');
+            end
+
+            % Close the file
+            fclose(fid);
+
+        end
+        
+        function st = getState(this, stUnit)
+            
+        	st = struct();
+            st.(this.cNameDeviceMeasurPointD142) = this.uiDeviceMeasurPointD142.getValCal(stUnit.(this.cNameDeviceMeasurPointD142));
+            st.(this.cNameDeviceExitSlit) = this.uiDeviceExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
+            st.(this.cNameDeviceUndulatorGap) = this.uiDeviceUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
+            st.(this.cNameDeviceGratingTiltX) = this.uiDeviceGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
+            st.(this.cNameDeviceD142StageY) = this.uiDeviceD142StageY.getValCal(stUnit.(this.cNameDeviceD142StageY));
+            st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
+
+        end
+        
         
 
         
@@ -1542,4 +1669,7 @@ classdef Beamline < mic.Base
     
     
 end
+
+
+
 

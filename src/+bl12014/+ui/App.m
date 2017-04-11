@@ -9,6 +9,7 @@ classdef App < mic.Base
     end
 	properties
         
+        uiBeamline
         uiShutter
         uiM141
         uiM142
@@ -36,6 +37,7 @@ classdef App < mic.Base
         clock
         hFigure
         
+        uibBeamline
         uibShutter
         uibD141
         uibD142
@@ -90,6 +92,9 @@ classdef App < mic.Base
             dTop = 20;
             dSep = 25;
             dLeft = 10;
+            
+            this.uibBeamline.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            dTop = dTop + dSep;
             
             this.uibShutter.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
@@ -162,6 +167,11 @@ classdef App < mic.Base
     end
     
     methods (Access = private)
+        
+        function onButtonBeamline(this, src, evt)
+            this.msg('onButtonBeamline()');
+            this.uiBeamline.build();
+        end
         
         function onButtonShutter(this, src, evt)
             this.msg('onButtonShutter()');
@@ -241,6 +251,7 @@ classdef App < mic.Base
         function init(this)
             
             this.clock = mic.Clock('Master');
+            this.uiBeamline = bl12014.ui.Beamline('clock', this.clock);
             this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
             this.uiD141 = bl12014.ui.D141('clock', this.clock);
             this.uiD142 = bl12014.ui.D142('clock', this.clock);
@@ -271,6 +282,7 @@ classdef App < mic.Base
             addlistener(this.uiPupilControl, 'eDelete', @this.onPupilFillDelete);
             %}
             
+            this.uibBeamline = mic.ui.common.Button('cText', 'Beamline');
             this.uibShutter = mic.ui.common.Button('cText', 'Shutter');
             this.uibD141 = mic.ui.common.Button('cText', 'D141');
             this.uibD142 = mic.ui.common.Button('cText', 'D142');
@@ -286,6 +298,8 @@ classdef App < mic.Base
             this.uibFieldScanner = mic.ui.common.Button('cText', 'Field Scanner');
             this.uibScan = mic.ui.common.Button('cText', 'Expt. Control');
             
+            
+            addlistener(this.uibBeamline, 'eChange', @this.onButtonBeamline);
             addlistener(this.uibShutter, 'eChange', @this.onButtonShutter);
             addlistener(this.uibD141, 'eChange', @this.onButtonD141);
             addlistener(this.uibD142, 'eChange', @this.onButtonD142);
