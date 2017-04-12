@@ -36,7 +36,9 @@ classdef PrescriptionTool < mic.Base
        
         dWidth          = 1250
         dHeight         = 720
-        
+        dColorFigure = [200 200 200]./255
+
+                
     end
     
 	properties
@@ -60,7 +62,7 @@ classdef PrescriptionTool < mic.Base
         cDirThis
         cDirSrc
         cDirSave
-        uilPrescriptions
+        uiListPrescriptions
         uibSave         % button for saving
         
         % For undo/redo
@@ -73,6 +75,11 @@ classdef PrescriptionTool < mic.Base
         stStatePresent
         % {cell of struct}
         cestStatesFuture 
+        
+        uiButtonChooseDir
+        uiTextDir
+        
+        dWidthBorderPanel = 0
     
     end
     
@@ -96,7 +103,8 @@ classdef PrescriptionTool < mic.Base
             this.cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
             this.cDirSave = fullfile(this.cDirSrc, 'save', 'prescriptions');
-        
+            this.cDirSave = mic.Utils.path2canonical(this.cDirSave);
+            
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
                 if this.hasProp( varargin{k})
@@ -130,37 +138,13 @@ classdef PrescriptionTool < mic.Base
         end
         
         
+        
         function build(this)
               
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            dScreenSize = get(0, 'ScreenSize');
+            this.buildFigure()            
             
             dPad = 10;
             dTop = 10;
-            
-            % Figure
-            this.hFigure = figure( ...
-                'NumberTitle', 'off',...
-                'MenuBar', 'none',...
-                'Name',  'Prescription Builder',...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off',...
-                'HandleVisibility', 'on',... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequestFcn ...
-                );
-            
-            drawnow;            
-            
                         
             % set(this.hFigure, 'renderer', 'OpenGL'); % Enables proper stacking
              
@@ -188,10 +172,22 @@ classdef PrescriptionTool < mic.Base
                 this.uiFemTool.dWidth, ...
                 55);
             
+            this.buildPanelSaved()
+            
+            
+                                  
+        end
+        
+        function buildPanelSaved(this)
+             
+            dPad = 10;
+            dTop = 10;
+            
             this.hPanelSaved = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
                 'Title', 'Saved Prescriptions',...
+                'BorderWidth', this.dWidthBorderPanel, ...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                     dPad ...
@@ -199,21 +195,42 @@ classdef PrescriptionTool < mic.Base
                     this.dWidth - 2*dPad ...
                     280], this.hFigure) ...
             );
-            drawnow; 
+            drawnow;
             
-            this.uilPrescriptions.build( ...
+            dTop = 20;  
+            dLeft = 10;
+            dWidthButton = 100;
+            dHeightButton = 24;
+            
+            this.uiButtonChooseDir.build(...
                 this.hPanelSaved, ...
-                dPad, ...
-                20, ...
-                this.dWidth - 4*dPad, ...
-                225);
-            
-            this.uilPrescriptions.refresh();
-            
-                                  
-        end
+                dLeft, ...
+                dTop, ...
+                dWidthButton, ...
+                dHeightButton ...
+            );
         
-                        
+            this.uiTextDir.build(...
+                this.hPanelSaved, ...
+                dLeft + dWidthButton + 10, ...
+                dTop, ...
+                1000, ...
+                dHeightButton ...
+            );
+
+            dTop = dTop + dHeightButton + 10;
+            
+            
+            this.uiListPrescriptions.build( ...
+                this.hPanelSaved, ...
+                10, ...
+                dTop, ...
+                this.dWidth - 4*dPad, ...
+                180);
+            
+            this.uiListPrescriptions.refresh();
+            
+        end
         
         %% Destructor
         
@@ -236,7 +253,7 @@ classdef PrescriptionTool < mic.Base
         end
         
         function ceReturn = refreshSaved(this)
-            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'descend', '*.json');
+            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'ascend', '*.json');
         end
         
         function stRecipe = getRecipe(this)
@@ -319,19 +336,30 @@ classdef PrescriptionTool < mic.Base
             this.ec                 = ExptControl();
             addlistener(this.ec, 'ePreChange', @this.onPreChange);
             %}
+            
+            this.uiButtonChooseDir = mic.ui.common.Button(...
+                'cText', 'Choose Dir' ...
+            );
+            this.uiTextDir = mic.ui.common.Text(...
+                'cVal', '...' ...
+            );
+            this.updateDirLabel();
+            
+            addlistener(this.uiButtonChooseDir, 'eChange', @this.onUiButtonChooseDir);
+
            
-            this.uilPrescriptions = mic.ui.common.List(...
+            this.uiListPrescriptions = mic.ui.common.List(...
                 'ceOptions', cell(1,0), ...
                 'cLabel', '', ...
                 'lShowDelete', true, ...
-                'lShowMove', true, ...
+                'lShowMove', false, ...
                 'lShowLabel', false, ...
                 'lShowRefresh', true ...
             );
-            this.uilPrescriptions.setRefreshFcn(@this.refreshSaved);
+            this.uiListPrescriptions.setRefreshFcn(@this.refreshSaved);
             
-            addlistener(this.uilPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
-            addlistener(this.uilPrescriptions, 'eChange', @this.onPrescriptionsChange);
+            addlistener(this.uiListPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
+            addlistener(this.uiListPrescriptions, 'eChange', @this.onPrescriptionsChange);
             
             
            
@@ -389,9 +417,31 @@ classdef PrescriptionTool < mic.Base
                 mkdir(this.cDirSave)
             end
                                 
-            cPath = fullfile(this.cDirSave, cName);
             
-            % Allow the user to overwrite the filename and path
+            % Allow the user to change the suggested filename
+            
+            cPrompt = { 'Prescription Name' };
+            cTitle = 'Input';
+            u8Lines = [1 150];
+            cDefaultAns = { cName };
+            ceAnswer = inputdlg(...
+                cPrompt, ...
+                cTitle, ...
+                u8Lines, ...
+                cDefaultAns ...
+            );
+        
+            if isempty(ceAnswer)
+                return
+            end
+ 
+            %{
+            
+            Old way allows overriding dir and path.  No longer doing it
+            this way, use the dir defined by "choose dir"
+            
+            cPath = fullfile(this.cDirSave, cName);
+
             [   cUserFile, ...
                 cUserPath, ...
                 cFilterIndex] = uiputfile('*.json', 'Save As:', cPath);
@@ -405,18 +455,29 @@ classdef PrescriptionTool < mic.Base
             cPathJson = fullfile(cUserPath, cUserFile);
             cPathMat = this.replaceExtension(cPathJson, '.mat');
             
+            %}
+            
+            cNameJson = [ceAnswer{1}, '.json'];
+            cNameMat = [ceAnswer{1}, '.mat'];
+            cPathJson = fullfile(this.cDirSave, cNameJson);
+            cPathMat = fullfile(this.cDirSave, cNameMat);
+            
             this.saveRecipeToDisk(cPathJson)
             this.saveToDisk(cPathMat)
             
-            % If the name is not already on the list, append it
-            if isempty(strmatch(cPath, this.uilPrescriptions.getOptions(), 'exact'))
-                this.uilPrescriptions.prepend(cUserFile);
-            end
+            % Refresh the list of prescriptions
+            this.uiListPrescriptions.refresh();
             
+            %{
+            % If the name is not already on the list, append it
+            if isempty(strmatch(cPath, this.uiListPrescriptions.getOptions(), 'exact'))
+                this.uiListPrescriptions.prepend(cUserFile);
+            end
+            %}
             
             % Dispatch
             stData = struct();
-            stData.cName = cUserFile;
+            stData.cName = cNameJson;
             notify(this, 'eNew', mic.EventWithData(stData)); 
             
             
@@ -499,7 +560,7 @@ classdef PrescriptionTool < mic.Base
             this.msg('onPrescriptionsChange()');
             
             
-            ceSelected = this.uilPrescriptions.get();
+            ceSelected = this.uiListPrescriptions.get();
             if ~isempty(ceSelected)
                                 
                 % Load the .mat file (assume that cName is the filename in the
@@ -518,6 +579,64 @@ classdef PrescriptionTool < mic.Base
         function c = replaceExtension(this, cPath, cExt)
             [cPathTemp, cFileTemp, cExtTemp] = fileparts(cPath);
             c = fullfile(cPathTemp, [cFileTemp, cExt]);
+        end
+        
+        
+        function onUiButtonChooseDir(this, src, evt)
+           
+            cName = uigetdir(...
+                this.cDirSave, ...
+                'Please choose a directory' ...
+            );
+        
+            if isequal(cName,0)
+               return; % User clicked "cancel"
+            end
+            
+            this.cDirSave = mic.Utils.path2canonical(cName);
+            this.uiListPrescriptions.refresh(); 
+            this.updateDirLabel();            
+        end
+        
+        function updateDirLabel(this)
+            this.uiTextDir.setTooltip(sprintf(...
+                'The directory where scan recipe/result files are saved: %s', ...
+                this.cDirSave ...
+            ));
+            cVal = mic.Utils.truncate(this.cDirSave, 200, true);
+            this.uiTextDir.set(cVal);
+            
+        end
+        
+        function buildFigure(this)
+            if ishghandle(this.hFigure)
+                % Bring to front
+                figure(this.hFigure);
+                return
+            end
+            dScreenSize = get(0, 'ScreenSize');
+            
+            % Figure
+            this.hFigure = figure( ...
+                'NumberTitle', 'off',...
+                'MenuBar', 'none',...
+                'Name',  'Prescription Builder',...
+                'Position', [ ...
+                    (dScreenSize(3) - this.dWidth)/2 ...
+                    (dScreenSize(4) - this.dHeight)/2 ...
+                    this.dWidth ...
+                    this.dHeight ...
+                 ],... % left bottom width height
+                'Resize', 'off',...
+                'Color', this.dColorFigure, ...
+                'HandleVisibility', 'on',... % lets close all close the figure
+                'Visible', 'on',...
+                'CloseRequestFcn', @this.onCloseRequestFcn ...
+                );
+            
+            drawnow;
+            
+            
         end
     end 
     

@@ -37,7 +37,7 @@ classdef ReticleTool < mic.Base
     
     properties (Access = private)
         
-        
+        dWidthBorderPanel = 0
         cDirSrc
         
         hPanel
@@ -112,6 +112,7 @@ classdef ReticleTool < mic.Base
                 'Units', 'pixels',...
                 'Title', 'Reticle',...
                 'Clipping', 'on',...
+                'BorderWidth', this.dWidthBorderPanel, ...
                 'Position', mic.Utils.lt2lb([dLeft dTop this.dWidth this.dHeight], this.hFigure) ...
             );
 			drawnow; 
@@ -171,7 +172,7 @@ classdef ReticleTool < mic.Base
             
             dTop = dTop + 14;
             this.uibZero.build(this.hPanel, 220, dTop, 100, this.dHeightEdit);
-            this.uitQA.build(this.hPanel, 390, dTop, 20, this.dHeightEdit);
+            this.uitQA.build(this.hPanel, 380, dTop, 40, this.dHeightEdit);
             
             % The ButtonDownFunction listener registers clicks on the axes
             % but if you add anything handles on top of the axes (for

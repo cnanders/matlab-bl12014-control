@@ -7,6 +7,21 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.6
+
+
+### bl12014.ui.PrescriptionTool
+
+- Now has option to choose the directory the prescriptions are saved to
+- Improved layout
+
+
+### bl12014.ui.Scan
+
+- Refactored to use new `mic.ui.Scan` UI for controlling the scan and displaying scan progress
+- Now has option to choose the directory of the prescriptions that can be added to the wafer
+- Improved layout
+
 # 1.0.0-alpha.5
 
 ### bl12014.ui.Beamline

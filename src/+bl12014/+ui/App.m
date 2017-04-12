@@ -37,19 +37,19 @@ classdef App < mic.Base
         clock
         hFigure
         
-        uibBeamline
-        uibShutter
-        uibD141
-        uibD142
-        uibM141
-        uibM142
-        uibM143
-        uibReticle
-        uibWafer
-        uibPreTool
-        uibScan
-        uibPupilScanner
-        uibFieldScanner
+        uiButtonBeamline
+        uiButtonShutter
+        uiButtonD141
+        uiButtonD142
+        uiButtonM141
+        uiButtonM142
+        uiButtonM143
+        uiButtonReticle
+        uiButtonWafer
+        uiButtonPreTool
+        uiButtonScan
+        uiButtonPupilScanner
+        uiButtonFieldScanner
         
     end
     
@@ -93,43 +93,43 @@ classdef App < mic.Base
             dSep = 25;
             dLeft = 10;
             
-            this.uibBeamline.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonBeamline.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibShutter.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonShutter.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibD141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonD141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibD142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonD142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibM141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonM141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibM142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonM142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibM143.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonM143.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibReticle.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonReticle.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibWafer.build(this.hFigure,dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonWafer.build(this.hFigure,dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibPreTool.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonPreTool.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibScan.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonScan.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibPupilScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonPupilScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
             dTop = dTop + dSep;
             
-            this.uibFieldScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
+            this.uiButtonFieldScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
         end
         
                         
@@ -168,68 +168,68 @@ classdef App < mic.Base
     
     methods (Access = private)
         
-        function onButtonBeamline(this, src, evt)
-            this.msg('onButtonBeamline()');
+        function onUiButtonBeamline(this, src, evt)
+            this.msg('onUiButtonBeamline()');
             this.uiBeamline.build();
         end
         
-        function onButtonShutter(this, src, evt)
-            this.msg('onButtonShutter()');
+        function onUiButtonShutter(this, src, evt)
+            this.msg('onUiButtonShutter()');
             this.uiShutter.build();
         end
         
-        function onButtonD141(this, src, evt)
-            this.msg('onButtonD141()');
+        function onUiButtonD141(this, src, evt)
+            this.msg('onUiButtonD141()');
             this.uiD141.build();
         end
         
-        function onButtonD142(this, src, evt)
-            this.msg('onButtonD142()');
+        function onUiButtonD142(this, src, evt)
+            this.msg('onUiButtonD142()');
             this.uiD142.build();
         end
         
-        function onButtonM141(this, src, evt)
-            this.msg('onButtonM141()');
+        function onUiButtonM141(this, src, evt)
+            this.msg('onUiButtonM141()');
             this.uiM141.build();
         end
         
-        function onButtonM142(this, src, evt)
-            this.msg('onButtonM142()');
+        function onUiButtonM142(this, src, evt)
+            this.msg('onUiButtonM142()');
             this.uiM142.build();
         end
         
-        function onButtonM143(this, src, evt)
-            this.msg('onButtonM143()');
+        function onUiButtonM143(this, src, evt)
+            this.msg('onUiButtonM143()');
             % this.uiM143.build();
         end
         
-        function onButtonReticle(this, src, evt)
-            this.msg('onButtonReticle()');
+        function onUiButtonReticle(this, src, evt)
+            this.msg('onUiButtonReticle()');
             this.uiReticle.build();
         end
         
-        function onButtonWafer(this, src, evt)
-            this.msg('onButtonWafer()');
+        function onUiButtonWafer(this, src, evt)
+            this.msg('onUiButtonWafer()');
             this.uiWafer.build(); 
         end
         
-        function onButtonPreTool(this, src, evt)
-            this.msg('onButtonPreTool()');
+        function onUiButtonPreTool(this, src, evt)
+            this.msg('onUiButtonPreTool()');
             this.uiPrescriptionTool.build();
         end
         
-        function onButtonScan(this, src, evt)
-            this.msg('onButtonScan()');
+        function onUiButtonScan(this, src, evt)
+            this.msg('onUiButtonScan()');
             this.uiScan.build();
         end
         
-        function onButtonPupilFill(this, src, evt)
-            this.msg('onButtonPupilFill()');
+        function onUiButtonPupilFill(this, src, evt)
+            this.msg('onUiButtonPupilFill()');
             this.uiPupilControl.build();
         end
         
-        function onButtonFieldFill(this, src, evt)
-            this.msg('onButtonFieldFill()');
+        function onUiButtonFieldFill(this, src, evt)
+            this.msg('onUiButtonFieldFill()');
             this.uiFieldControl.build();
         end
         
@@ -282,36 +282,36 @@ classdef App < mic.Base
             addlistener(this.uiPupilControl, 'eDelete', @this.onPupilFillDelete);
             %}
             
-            this.uibBeamline = mic.ui.common.Button('cText', 'Beamline');
-            this.uibShutter = mic.ui.common.Button('cText', 'Shutter');
-            this.uibD141 = mic.ui.common.Button('cText', 'D141');
-            this.uibD142 = mic.ui.common.Button('cText', 'D142');
+            this.uiButtonBeamline = mic.ui.common.Button('cText', 'Beamline');
+            this.uiButtonShutter = mic.ui.common.Button('cText', 'Shutter');
+            this.uiButtonD141 = mic.ui.common.Button('cText', 'D141');
+            this.uiButtonD142 = mic.ui.common.Button('cText', 'D142');
             
-            this.uibM141 = mic.ui.common.Button('cText', 'M141');
-            this.uibM142 = mic.ui.common.Button('cText', 'M142');
-            this.uibM143 = mic.ui.common.Button('cText', 'M143');
+            this.uiButtonM141 = mic.ui.common.Button('cText', 'M141');
+            this.uiButtonM142 = mic.ui.common.Button('cText', 'M142');
+            this.uiButtonM143 = mic.ui.common.Button('cText', 'M143');
             
-            this.uibReticle = mic.ui.common.Button('cText', 'Reticle');
-            this.uibWafer = mic.ui.common.Button('cText', 'Wafer');
-            this.uibPreTool = mic.ui.common.Button('cText', 'Pre Tool');
-            this.uibPupilScanner = mic.ui.common.Button('cText', 'Pupil Scanner');
-            this.uibFieldScanner = mic.ui.common.Button('cText', 'Field Scanner');
-            this.uibScan = mic.ui.common.Button('cText', 'Expt. Control');
+            this.uiButtonReticle = mic.ui.common.Button('cText', 'Reticle');
+            this.uiButtonWafer = mic.ui.common.Button('cText', 'Wafer');
+            this.uiButtonPreTool = mic.ui.common.Button('cText', 'Pre Tool');
+            this.uiButtonPupilScanner = mic.ui.common.Button('cText', 'Pupil Scanner');
+            this.uiButtonFieldScanner = mic.ui.common.Button('cText', 'Field Scanner');
+            this.uiButtonScan = mic.ui.common.Button('cText', 'Expt. Control');
             
             
-            addlistener(this.uibBeamline, 'eChange', @this.onButtonBeamline);
-            addlistener(this.uibShutter, 'eChange', @this.onButtonShutter);
-            addlistener(this.uibD141, 'eChange', @this.onButtonD141);
-            addlistener(this.uibD142, 'eChange', @this.onButtonD142);
-            addlistener(this.uibM141, 'eChange', @this.onButtonM141);
-            addlistener(this.uibM142, 'eChange', @this.onButtonM142);
-            addlistener(this.uibM143, 'eChange', @this.onButtonM143);
-            addlistener(this.uibReticle, 'eChange', @this.onButtonReticle);
-            addlistener(this.uibWafer,   'eChange', @this.onButtonWafer);
-            addlistener(this.uibPreTool,        'eChange', @this.onButtonPreTool);
-            addlistener(this.uibScan,    'eChange', @this.onButtonScan);
-            addlistener(this.uibPupilScanner,   'eChange', @this.onButtonPupilFill);
-            addlistener(this.uibFieldScanner,   'eChange', @this.onButtonFieldFill);
+            addlistener(this.uiButtonBeamline, 'eChange', @this.onUiButtonBeamline);
+            addlistener(this.uiButtonShutter, 'eChange', @this.onUiButtonShutter);
+            addlistener(this.uiButtonD141, 'eChange', @this.onUiButtonD141);
+            addlistener(this.uiButtonD142, 'eChange', @this.onUiButtonD142);
+            addlistener(this.uiButtonM141, 'eChange', @this.onUiButtonM141);
+            addlistener(this.uiButtonM142, 'eChange', @this.onUiButtonM142);
+            addlistener(this.uiButtonM143, 'eChange', @this.onUiButtonM143);
+            addlistener(this.uiButtonReticle, 'eChange', @this.onUiButtonReticle);
+            addlistener(this.uiButtonWafer,   'eChange', @this.onUiButtonWafer);
+            addlistener(this.uiButtonPreTool,        'eChange', @this.onUiButtonPreTool);
+            addlistener(this.uiButtonScan,    'eChange', @this.onUiButtonScan);
+            addlistener(this.uiButtonPupilScanner,   'eChange', @this.onUiButtonPupilFill);
+            addlistener(this.uiButtonFieldScanner,   'eChange', @this.onUiButtonFieldFill);
 
         end
         
