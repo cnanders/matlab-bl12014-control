@@ -119,24 +119,18 @@ classdef PrescriptionTool < mic.Base
         end
         
         
-        % @return {struct} UI state to save
+        
         function st = save(this)
-            st = struct();
-            st.uiProcessTool = this.uiProcessTool.save();
-            st.uiFemTool = this.uiFemTool.save();
-            st.uiPupilFillTool = this.uiPupilFillTool.save();
-            st.uiReticleTool = this.uiReticleTool.save();
-            
+             st = struct();
+             st.cDirSave = this.cDirSave;
+             
         end
         
-        % @param {struct} UI state to load
         function load(this, st)
-            this.uiProcessTool.load(st.uiProcessTool);
-            this.uiFemTool.load(st.uiFemTool);
-            this.uiPupilFillTool.load(st.uiPupilFillTool);
-            this.uiReticleTool.load(st.uiReticleTool);
+            this.cDirSave = st.cDirSave;
+            this.updateUiTextDir();
+            this.uiListPrescriptions.refresh();
         end
-        
         
         
         function build(this)
@@ -246,12 +240,6 @@ classdef PrescriptionTool < mic.Base
         end
         
         
-        function loadPre(cName)
-            
-            
- 
-        end
-        
         function ceReturn = refreshSaved(this)
             ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'ascend', '*.json');
         end
@@ -343,7 +331,7 @@ classdef PrescriptionTool < mic.Base
             this.uiTextDir = mic.ui.common.Text(...
                 'cVal', '...' ...
             );
-            this.updateDirLabel();
+            this.updateUiTextDir();
             
             addlistener(this.uiButtonChooseDir, 'eChange', @this.onUiButtonChooseDir);
 
@@ -463,7 +451,7 @@ classdef PrescriptionTool < mic.Base
             cPathMat = fullfile(this.cDirSave, cNameMat);
             
             this.saveRecipeToDisk(cPathJson)
-            this.saveToDisk(cPathMat)
+            this.saveRecipeMatToDisk(cPathMat)
             
             % Refresh the list of prescriptions
             this.uiListPrescriptions.refresh();
@@ -483,15 +471,27 @@ classdef PrescriptionTool < mic.Base
             
         end
         
-        function saveToDisk(this, cPath)
-            st = this.save();
+        function saveRecipeMatToDisk(this, cPath)
+            
+            st = struct();
+            st.uiProcessTool = this.uiProcessTool.save();
+            st.uiFemTool = this.uiFemTool.save();
+            st.uiPupilFillTool = this.uiPupilFillTool.save();
+            st.uiReticleTool = this.uiReticleTool.save();
+            
             save(cPath, 'st');
         end
         
-        function loadFromDisk(this, cPath)
+        % Load the saved .mat state of the recipe into the UI
+        function loadRecipeMatFromDisk(this, cPath)
             if exist(cPath, 'file') == 2
                 load(cPath); % populates variable st in local workspace
-                this.load(st);
+                
+                this.uiProcessTool.load(st.uiProcessTool);
+                this.uiFemTool.load(st.uiFemTool);
+                this.uiPupilFillTool.load(st.uiPupilFillTool);
+                this.uiReticleTool.load(st.uiReticleTool);
+                
             else
 
                 % warning message box
@@ -567,7 +567,7 @@ classdef PrescriptionTool < mic.Base
                 % prescriptions directory
 
                 cPath = this.replaceExtension(fullfile(this.cDirSave, ceSelected{1}), '.mat');
-                this.loadFromDisk(cPath);
+                this.loadRecipeMatFromDisk(cPath);
             end
             
         end
@@ -595,10 +595,10 @@ classdef PrescriptionTool < mic.Base
             
             this.cDirSave = mic.Utils.path2canonical(cName);
             this.uiListPrescriptions.refresh(); 
-            this.updateDirLabel();            
+            this.updateUiTextDir();            
         end
         
-        function updateDirLabel(this)
+        function updateUiTextDir(this)
             this.uiTextDir.setTooltip(sprintf(...
                 'The directory where scan recipe/result files are saved: %s', ...
                 this.cDirSave ...
@@ -638,6 +638,11 @@ classdef PrescriptionTool < mic.Base
             
             
         end
+
+        
+        
+                
+
     end 
     
     

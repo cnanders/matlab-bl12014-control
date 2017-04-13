@@ -14,6 +14,7 @@ TO DO
 
 - Now has option to choose the directory the prescriptions are saved to
 - Improved layout
+- `save()` and `load()` methdos
 
 
 ### bl12014.ui.Scan
@@ -21,6 +22,12 @@ TO DO
 - Refactored to use new `mic.ui.Scan` UI for controlling the scan and displaying scan progress
 - Now has option to choose the directory of the prescriptions that can be added to the wafer
 - Improved layout
+- `save()` and `load()` methdos
+
+### bl12014.ui.App
+
+- `save()` and `load()` methdos
+- `saveToDisk()` and `loadFromDisk()` methods to persist state of the application across sessions
 
 # 1.0.0-alpha.5
 

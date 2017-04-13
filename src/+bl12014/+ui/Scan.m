@@ -9,9 +9,9 @@ classdef Scan < mic.Base
     properties (Constant)
        
         dWidth = 950
-        dHeight = 550
+        dHeight = 570
         
-        dWidthList = 550
+        dWidthList = 700
         dHeightList = 150
         
         dPauseTime = 1
@@ -160,6 +160,22 @@ classdef Scan < mic.Base
             
         end
         
+        
+        function st = save(this)
+             st = struct();
+             st.cDirPrescriptions = this.cDirPrescriptions;
+             st.lWaferLoadLock = this.uicWaferLL.get();
+             st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get(); 
+        end
+        
+        function load(this, st)
+            this.cDirPrescriptions = st.cDirPrescriptions;
+            this.updateUiTextDir();
+            this.uicWaferLL.set(st.lWaferLoadLock);
+            this.uicAutoVentAtLL.set(st.lAutoVentAtLoadLock);
+            this.refreshPrescriptions();
+        end
+        
         function buildPanelAvailable(this)
             
             dTop = this.dHeightPadFigure;
@@ -173,7 +189,7 @@ classdef Scan < mic.Base
             this.hPanelAvailable = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
-                'Title', 'Choose Prescriptions',...
+                'Title', 'Available Prescriptions',...
                 'BorderWidth', this.dWidthPanelBorder, ...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
@@ -195,16 +211,19 @@ classdef Scan < mic.Base
                 this.dHeightButton ...
             );
         
+            dLeft = dLeft + this.dWidthButton + 10;
+            
             this.uiTextDir.build(...
                 this.hPanelAvailable, ...
-                dLeft + this.dWidthButton + 10, ...
+                dLeft, ...
                 dTop, ...
-                440, ...
+                this.dWidthList - dLeft, ...
                 this.dHeightButton ...
             );
 
             dTop = dTop + this.dHeightButton + 10;
-            
+            dLeft = this.dWidthPadFigure;
+
             this.uiListPrescriptions.build(this.hPanelAvailable, ...
                 dLeft, ...
                 dTop, ...
@@ -382,7 +401,7 @@ classdef Scan < mic.Base
             this.uiTextDir = mic.ui.common.Text(...
                 'cVal', '...' ...
             );
-            this.updateDirLabel();
+            this.updateUiTextDir();
         
             addlistener(this.uiButtonChooseDir, 'eChange', @this.onUiButtonChooseDir);
             
@@ -399,7 +418,7 @@ classdef Scan < mic.Base
             this.uiListPrescriptions.setRefreshFcn(@this.refreshFcn);
             this.uiListPrescriptions.refresh();
             
-            this.uibNewWafer = mic.ui.common.Button('cText', 'New Wafer');
+            this.uibNewWafer = mic.ui.common.Button('cText', 'New');
             this.uibAddToWafer = mic.ui.common.Button('cText', 'Add To Wafer');
             this.uibPrint = mic.ui.common.Button('cText', 'Print');
             
@@ -1402,10 +1421,10 @@ classdef Scan < mic.Base
             
             this.cDirPrescriptions = mic.Utils.path2canonical(cName);
             this.uiListPrescriptions.refresh(); 
-            this.updateDirLabel();            
+            this.updateUiTextDir();            
         end
         
-        function updateDirLabel(this)
+        function updateUiTextDir(this)
             this.uiTextDir.setTooltip(sprintf(...
                 'The directory where scan recipe/result files are saved: %s', ...
                 this.cDirPrescriptions ...
@@ -1414,6 +1433,9 @@ classdef Scan < mic.Base
             this.uiTextDir.set(cVal);
             
         end
+        
+        
+
                 
 
     end 

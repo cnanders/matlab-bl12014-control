@@ -51,6 +51,9 @@ classdef App < mic.Base
         uiButtonPupilScanner
         uiButtonFieldScanner
         
+        cDirThis
+        cDirSave
+        
     end
     
         
@@ -66,7 +69,15 @@ classdef App < mic.Base
         
         function this = App()
             
-            
+            cDirThis = fileparts(mfilename('fullpath'));
+            this.cDirSave = fullfile( ...
+                cDirThis, ...
+                '..', ...
+                '..', ...
+                'save', ...
+                'app' ...
+            );
+        
             this.init();
             
         end
@@ -139,6 +150,9 @@ classdef App < mic.Base
         function delete(this)
             
             this.msg('delete');
+            
+            this.saveStateToDisk();
+
             
             % Delete the figure
             if ishandle(this.hFigure)
@@ -312,6 +326,10 @@ classdef App < mic.Base
             addlistener(this.uiButtonScan,    'eChange', @this.onUiButtonScan);
             addlistener(this.uiButtonPupilScanner,   'eChange', @this.onUiButtonPupilFill);
             addlistener(this.uiButtonFieldScanner,   'eChange', @this.onUiButtonFieldFill);
+            
+            
+            this.loadStateFromDisk();
+
 
         end
         
@@ -340,6 +358,42 @@ classdef App < mic.Base
             % uil property is private, so I exposed a public method
             this.uiPrescriptionTool.pupilFillSelect.refreshList();
         end
+        
+        
+        function st = save(this)
+             st = struct();
+             st.uiPrescriptionTool = this.uiPrescriptionTool.save();
+             st.uiScan = this.uiScan.save();
+             
+        end
+        
+        function load(this, st)
+            this.uiPrescriptionTool.load(st.uiPrescriptionTool);
+            this.uiScan.load(st.uiScan)
+        end
+        
+        function saveStateToDisk(this)
+            st = this.save();
+            save(this.file(), 'st');
+        end
+        
+        function loadStateFromDisk(this)
+            if exist(this.file(), 'file') == 2
+                this.msg('loadStateFromDisk()');
+                load(this.file()); % populates variable st in local workspace
+                this.load(st);
+            end
+        end
+        
+        function c = file(this)
+            mic.Utils.checkDir(this.cDirSave);
+            c = fullfile(...
+                this.cDirSave, ...
+                ['saved-state', '.mat']...
+            );
+        end
+        
+        
 
     end % private
     
