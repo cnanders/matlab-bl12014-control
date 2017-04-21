@@ -1,27 +1,27 @@
-classdef App < mic.Base
+classdef Comm < mic.Base
         
     properties (Constant)
        
         dHeight         = 500
         dWidth          = 140
         
+       
+        cTooltipBeamline = 'Mono Grating Tilt, Exit Slit, Shutter'
+        cTooltipHeightSensor = 'Height Sensor'
+        cTooltipDataTranslationMeasurPoint = 'M141 Diode, D141 Diode, D142 Diode, M143 Diode, Vis RTDs, Metrology Frame RTDs, Mod3 RTDs, POB RDTs'
+        cTooltipSmarActMcsM141 = 'M141 Stage'
+        cTooltipSmarActMcsGoni = 'Interferometry Goniometer'
+        cTooltipSmarActSmarPod = 'Interferometry Hexapod'
+        cTooltipMicronixMmc103 = 'M142 + M142R common X, M142R tiltZ'
+        cTooltipNewFocus8742 = 'M142 + M142R common tiltX, M142 tiltY, M142R tiltY'
+        cTooltipNPointField = 'M142 Field Scan'
+        cTooltipNPointPupil = 'MA Pupil Scan'
+        cTooltipDeltaTauPowerPmac = 'Reticle Stage, Reticle RTDs, Wafer Stage, Wafer RTDs'
+        cTooltipKeithley6482Reticle = 'Reticle Diode'
+        cTooltipKeithley6482Wafer = 'Wafer Diode (Dose), Wafer Diode (Focus)'
         
     end
 	properties
-        
-        uiBeamline
-        uiShutter
-        uiM141
-        uiM142
-        % uiM143
-        uiD141
-        uiD142
-        uiReticle
-        uiWafer
-        uiPupilControl
-        uiFieldControl
-        uiPrescriptionTool           
-        uiScan 
         
     end
     
@@ -33,31 +33,35 @@ classdef App < mic.Base
          
         dHeightEdit = 24
         
-        clock
-        hFigure
         
-        uiButtonBeamline
-        uiButtonShutter
-        uiButtonD141
-        uiButtonD142
-        uiButtonM141
-        uiButtonM142
-        uiButtonM143
-        uiButtonReticle
-        uiButtonWafer
-        uiButtonPreTool
-        uiButtonScan
-        uiButtonPupilScanner
-        uiButtonFieldScanner
+        % Use tooltip to show which components use this comm
         
-        cDirThis
-        cDirSave
+        uiButtonBeamline % Shutter, Exit Slit, Mono Angle
+        uiButtonHeightSensor
+        uiButtonDataTranslationMeasurPoint
+        uiButtonSmarActMcsM141
+        uiButtonSmarActMcsGoni
+        uiButtonMicronixMmc103
+        uiButtonNewFocus8742 
+        uiButtonNPointField % M142 Scan
+        uiButtonNPointPupil % MA Scan
+        uiButtonDeltaTauPowerPmac % Reticle, Wafer
+        uiButtonKeithley6482Reticle
+        uiButtonKeithley6482Wafer
         
-        % {< cxro.met5.Instruments}
-        jMet5Instruments
+        fhOnCxroBeamlineClick
+        fhOnCxroHeightSensorClick
+        fhOnDataTranslationMeasurPointClick
+        fhOnSmarActMcsM141Click
+        fhOnSmarActMcsGoniClick
+        fhOnMicronixMmc103Click
+        fhOnNewFocus8742Click
+        fhOnNPointFieldClick
+        fhOnNPointPupilClick
+        fhOnDeltaTauPowerPmacClick
+        fhOnKeithley6482ReticleClick
+        fhOnKeithley6482WaferClick
         
-        % {< cxro.common.device.motion.Stage 1x1}
-        jM141Stage
         
     end
     
@@ -72,17 +76,16 @@ classdef App < mic.Base
     methods
         
         
-        function this = App()
+        function this = Comm(varargin)
             
-            cDirThis = fileparts(mfilename('fullpath'));
-            this.cDirSave = fullfile( ...
-                cDirThis, ...
-                '..', ...
-                '..', ...
-                'save', ...
-                'app' ...
-            );
-        
+            for k = 1 : 2: length(varargin)
+                % this.msg(sprintf('passed in %s', varargin{k}));
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
+            
             this.init();
             
         end
