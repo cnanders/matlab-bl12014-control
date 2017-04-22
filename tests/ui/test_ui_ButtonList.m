@@ -10,16 +10,16 @@ cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
+
 purge
 
-ui = bl12014.ui.App();
-h = figure();
-ui.build(h, 10, 10);
+ui = bl12014.ui.ButtonList(...
+    'cLayout', bl12014.ui.ButtonList.cLAYOUT_INLINE, ...
+    'dWidthButton', 80 ...
+);
 
-%{
-cb = @(src, evt) (fprintf('x %1.3f, y %1.3f \n', evt.stData.dX, evt.stData.dY));
-addlistener(ui, 'eClickField', cb);
-%}
+h = figure()
+ui.build(h, 10, 10);
 
 
  

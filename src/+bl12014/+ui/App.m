@@ -21,7 +21,9 @@ classdef App < mic.Base
         uiPupilControl
         uiFieldControl
         uiPrescriptionTool           
-        uiScan 
+        uiScan
+        
+        uiButtonList
         
     end
     
@@ -53,12 +55,6 @@ classdef App < mic.Base
         cDirThis
         cDirSave
         
-        % {< cxro.met5.Instruments}
-        jMet5Instruments
-        
-        % {< cxro.common.device.motion.Stage 1x1}
-        jM141Stage
-        
     end
     
         
@@ -88,9 +84,11 @@ classdef App < mic.Base
         end
         
                 
-        function build(this)
-                        
+        function build(this, hParent, dLeft, dTop)
+             
+            this.uiButtonList.build(hParent, dLeft, dTop)
             % Figure
+            %{
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...
                 'MenuBar', 'none', ...
@@ -108,44 +106,8 @@ classdef App < mic.Base
             dTop = 20;
             dSep = 25;
             dLeft = 10;
+            %}
             
-            this.uiButtonBeamline.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonShutter.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonD141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonD142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonM141.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonM142.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonM143.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonReticle.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonWafer.build(this.hFigure,dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonPreTool.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonScan.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonPupilScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
-            dTop = dTop + dSep;
-            
-            this.uiButtonFieldScanner.build(this.hFigure, dLeft, dTop, dWidthButton, this.dHeightEdit);
         end
         
                         
@@ -187,71 +149,6 @@ classdef App < mic.Base
     
     methods (Access = private)
         
-        function onUiButtonBeamline(this, src, evt)
-            this.msg('onUiButtonBeamline()');
-            this.uiBeamline.build();
-        end
-        
-        function onUiButtonShutter(this, src, evt)
-            this.msg('onUiButtonShutter()');
-            this.uiShutter.build();
-        end
-        
-        function onUiButtonD141(this, src, evt)
-            this.msg('onUiButtonD141()');
-            this.uiD141.build();
-        end
-        
-        function onUiButtonD142(this, src, evt)
-            this.msg('onUiButtonD142()');
-            this.uiD142.build();
-        end
-        
-        function onUiButtonM141(this, src, evt)
-            this.msg('onUiButtonM141()');
-            this.uiM141.build();
-        end
-        
-        function onUiButtonM142(this, src, evt)
-            this.msg('onUiButtonM142()');
-            this.uiM142.build();
-        end
-        
-        function onUiButtonM143(this, src, evt)
-            this.msg('onUiButtonM143()');
-            % this.uiM143.build();
-        end
-        
-        function onUiButtonReticle(this, src, evt)
-            this.msg('onUiButtonReticle()');
-            this.uiReticle.build();
-        end
-        
-        function onUiButtonWafer(this, src, evt)
-            this.msg('onUiButtonWafer()');
-            this.uiWafer.build(); 
-        end
-        
-        function onUiButtonPreTool(this, src, evt)
-            this.msg('onUiButtonPreTool()');
-            this.uiPrescriptionTool.build();
-        end
-        
-        function onUiButtonScan(this, src, evt)
-            this.msg('onUiButtonScan()');
-            this.uiScan.build();
-        end
-        
-        function onUiButtonPupilFill(this, src, evt)
-            this.msg('onUiButtonPupilFill()');
-            this.uiPupilControl.build();
-        end
-        
-        function onUiButtonFieldFill(this, src, evt)
-            this.msg('onUiButtonFieldFill()');
-            this.uiFieldControl.build();
-        end
-        
         function onFemToolSizeChange(this, src, evt)
             
             % evt has a property stData
@@ -292,50 +189,73 @@ classdef App < mic.Base
             addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
             addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
             addlistener(this.uiPrescriptionTool, 'eDelete', @this.onPrescriptionToolDelete);
+           
+            % TO DO Can replicate this with mic.ui.common.ButtonList
+            % fhOnClick would look like @this.ui.PrescriptionTool.build
+            
+            st = struct;
+            
+            st(1).cLabel = 'Beamline';
+            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).cTooltip = 'Beamline';
+            
+            st(2).cLabel = 'Shutter';
+            st(2).fhOnClick = @this.uiShutter.build;
+            st(2).cTooltip = 'Beamline';
+            
+            st(3).cLabel = 'D141';
+            st(3).fhOnClick = @this.uiD141.build;
+            st(3).cTooltip = 'D141';
+            
+            st(4).cLabel = 'D142';
+            st(4).fhOnClick = @this.uiD142.build;
+            st(4).cTooltip = 'D142';
+            
+            st(5).cLabel = 'M141';
+            st(5).fhOnClick = @this.uiM141.build;
+            st(5).cTooltip = 'Beamline';
+            
+            st(6).cLabel = 'M142';
+            st(6).fhOnClick = @this.uiM142.build;
+            st(6).cTooltip = 'Beamline';
+            
             %{
-            addlistener(this.uiPrescriptionTool.femTool, 'eSizeChange', @this.onFemToolSizeChange);
-            
-            
-            
-            addlistener(this.uiPupilControl, 'eNew', @this.onPupilFillNew);
-            addlistener(this.uiPupilControl, 'eDelete', @this.onPupilFillDelete);
+            st(1).cLabel = 'M143';
+            st(1).fhOnClick = @this.uiM143.build;
+            st(1).cTooltip = 'Beamline';
             %}
             
-            this.uiButtonBeamline = mic.ui.common.Button('cText', 'Beamline');
-            this.uiButtonShutter = mic.ui.common.Button('cText', 'Shutter');
-            this.uiButtonD141 = mic.ui.common.Button('cText', 'D141');
-            this.uiButtonD142 = mic.ui.common.Button('cText', 'D142');
+            st(7).cLabel = 'Reticle';
+            st(7).fhOnClick = @this.uiReticle.build;
+            st(7).cTooltip = 'Beamline';
             
-            this.uiButtonM141 = mic.ui.common.Button('cText', 'M141');
-            this.uiButtonM142 = mic.ui.common.Button('cText', 'M142');
-            this.uiButtonM143 = mic.ui.common.Button('cText', 'M143');
+            st(8).cLabel = 'Wafer';
+            st(8).fhOnClick = @this.uiWafer.build;
+            st(8).cTooltip = 'Beamline';
             
-            this.uiButtonReticle = mic.ui.common.Button('cText', 'Reticle');
-            this.uiButtonWafer = mic.ui.common.Button('cText', 'Wafer');
-            this.uiButtonPreTool = mic.ui.common.Button('cText', 'Pre Tool');
-            this.uiButtonPupilScanner = mic.ui.common.Button('cText', 'Pupil Scanner');
-            this.uiButtonFieldScanner = mic.ui.common.Button('cText', 'Field Scanner');
-            this.uiButtonScan = mic.ui.common.Button('cText', 'Expt. Control');
+            st(9).cLabel = 'Pre Tool';
+            st(9).fhOnClick = @this.uiPrescriptionTool.build;
+            st(9).cTooltip = 'Beamline';
             
+            %{
+            st(1).cLabel = 'Pupil Scanner';
+            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).cTooltip = 'Beamline';
             
-            addlistener(this.uiButtonBeamline, 'eChange', @this.onUiButtonBeamline);
-            addlistener(this.uiButtonShutter, 'eChange', @this.onUiButtonShutter);
-            addlistener(this.uiButtonD141, 'eChange', @this.onUiButtonD141);
-            addlistener(this.uiButtonD142, 'eChange', @this.onUiButtonD142);
-            addlistener(this.uiButtonM141, 'eChange', @this.onUiButtonM141);
-            addlistener(this.uiButtonM142, 'eChange', @this.onUiButtonM142);
-            addlistener(this.uiButtonM143, 'eChange', @this.onUiButtonM143);
-            addlistener(this.uiButtonReticle, 'eChange', @this.onUiButtonReticle);
-            addlistener(this.uiButtonWafer,   'eChange', @this.onUiButtonWafer);
-            addlistener(this.uiButtonPreTool,        'eChange', @this.onUiButtonPreTool);
-            addlistener(this.uiButtonScan,    'eChange', @this.onUiButtonScan);
-            addlistener(this.uiButtonPupilScanner,   'eChange', @this.onUiButtonPupilFill);
-            addlistener(this.uiButtonFieldScanner,   'eChange', @this.onUiButtonFieldFill);
+            st(1).cLabel = 'Field Scanner';
+            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).cTooltip = 'Beamline';
+            %}
             
+            st(10).cLabel = 'Expt. Control';
+            st(10).fhOnClick = @this.uiScan.build;
+            st(10).cTooltip = 'Beamline';
             
-            this.initHardware()
+            this.uiButtonList = mic.ui.common.ButtonList(...
+                'stButtonDefinitions', st ...
+            );
+        
             this.loadStateFromDisk();
-
 
         end
         
@@ -399,33 +319,6 @@ classdef App < mic.Base
             );
         end
         
-        
-        function initHardware(this)
-            
-            return
-            
-            % 
-            this.jMet5Instruments = cxro.met5.Instruments();
-            this.jM141Stage = this.jMet5Instruments.getM141Stage()
-            
-        end
-        
-        function initDevices(this)
-            
-            return
-            
-            % this.deviceGetSetNumberM141 
-            
-        end
-        
-        
-        function destroyHardware(this)
-            
-            
-        end
-        
-        
-
     end % private
     
     

@@ -1,25 +1,7 @@
 classdef WaferCoarseStage < mic.Base
     
     properties
-        
-        
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceY
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceZ
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceTiltX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceTiltY
-        
-                
+            
         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiX

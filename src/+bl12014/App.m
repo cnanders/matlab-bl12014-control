@@ -115,21 +115,65 @@ classdef App < mic.Base
             
             this.uiApp = bl12014.ui.App(); 
             
-            this.uiComm = bl12014.ui.Comm(...
-                'fhOnCxroBeamlineClick', @this.connectCommCxroBeamline, ...
-                'fhOnCxroHeightSensorClick', @this.connectCommCxroHeightSensor, ...
-                'fhOnDataTranslationMeasurPointClick', @this.connectCommDataTranslationMeasurPoint, ...
-                'fhOnSmarActMcsM141Click', @this.connectCommSmarActMcsM141, ...
-                'fhOnSmarActMcsGoniClick', @this.connectCommSmarActMcsGoni, ...
-                'fhOnMicronixMmc103Click', @this.connectCommMicronixMmc103, ...
-                'fhOnNewFocus8742Click', @this.connectCommNewFocus8742, ...
-                'fhOnNPointFieldClick', @this.connectCommNPointField, ...
-                'fhOnNPointPupilClick', @this.connectCommNPointPupil, ...
-                'fhOnDeltaTauPowerPmacClick', @this.connectCommDeltaTauPowerPmac, ...
-                'fhOnKeithley6482ReticleClick', @this.connectCommKeithley6482Reticle, ...
-                'fhOnKeithley6482WaferClick', @this.connectCommKeithley6482Wafer ...
-            );
             
+            st = struct;
+            
+            st(1).cLabel = 'CXRO Beamline';
+            st(1).fhOnClick = @this.connectCommCxroBeamline;
+            st(1).cTooltip = 'Mono grating TiltX, Exit Slit, shutter';
+            
+            st(2).cLabel = 'CXRO Height Sensor';
+            st(2).fhOnClick = @this.connectCommCxroHeightSensor;
+            st(2).cTooltip = 'Wafer Z + TiltX + TiltY';
+            
+            st(3).cLabel = 'Data Translation MeasurPoint';
+            st(3).fhOnClick = @this.connectCommDataTranslationMeasurPoint;
+            st(3).cTooltip = 'M141 diode, D141 diode, D142 diode, M143 diode, Vis RTDs, Metrology Frame RTDs, Mod3 RTDs, POB RDTs';
+            
+            st(4).cLabel = 'SmarAct MCS (M141)';
+            st(4).fhOnClick = @this.connectCommSmarActMcsM141;
+            st(4).cTooltip = 'M141 Stage';
+            
+            st(5).cLabel = 'SmarAct MCS (Goni)';
+            st(5).fhOnClick = @this.connectCommSmarActMcsGoni;
+            st(5).cTooltip = 'Interferometry Goniometer';
+            
+            st(6).cLabel =  'Micronix MMC-103';
+            st(6).fhOnClick = @this.connectCommMicronixMmc103;
+            st(6).cTooltip = 'M142 + M142R common x, M142R tiltZ';
+            
+            st(7).cLabel =  'New Focus 8742';
+            st(7).fhOnClick = @this.connectCommNewFocus8742;
+            st(7).cTooltip = 'M142 + M142R common tiltX, M142 tiltY, M142R tiltY';
+            
+            st(8).cLabel =  'nPoint LC.403 (Field)';
+            st(8).fhOnClick = @this.connectCommNPointLC400Field;
+            st(8).cTooltip = 'M142 Field Scan';
+            
+            st(9).cLabel = 'nPoint LC.403 (Pupil)';
+            st(9).fhOnClick = @this.connectCommNPointLC400Pupil;
+            st(9).cTooltip = 'MA Pupil Scan';
+            
+            st(10).cLabel =  'Delta Tau PowerPMAC';
+            st(10).fhOnClick = @this.connectCommDeltaTauPowerPmac;
+            st(10).cTooltip = 'Reticle Stage, Reticle RTDs, Wafer Stage, Wafer RTDs';
+            
+            st(11).cLabel = 'Keithley6482 (Reticle)';
+            st(11).fhOnClick = @this.connectCommKeithley6482Reticle;
+            st(11).cTooltip = 'Reticle Diode';
+            
+            st(12).cLabel = 'Keithley6482 (Wafer)';
+            st(12).fhOnClick = @this.connectCommKeithley6482Wafer;
+            st(12).cTooltip = 'Wafer Diode (Dose), Wafer Diode (Focus)';
+            
+            st(13).cLabel =  'SmarAct SmarPod';
+            st(13).fhOnClick = @this.connectCommSmarActSmarPod;
+            st(13).cTooltip = 'Interferometry Hexapod';
+            
+            this.uiComm = bl12014.ui.Comm(...
+                'stButtonDefinitions', st ...
+            );
+
             % this.initComm()
             % this.loadStateFromDisk();
 
