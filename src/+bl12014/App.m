@@ -1,12 +1,14 @@
 classdef App < mic.Base
         
     properties (Constant)
-       
+        dWidth = 500
+        dHeight = 500
+        
+        dWidthButton = 150
     end
     
 	properties
         
-        uiApp
         
         
     end
@@ -16,7 +18,12 @@ classdef App < mic.Base
     end
     
     properties (Access = private)
-                 
+        
+        hFigure
+        
+        uiApp
+        uiComm
+        
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
         
@@ -74,7 +81,6 @@ classdef App < mic.Base
         lConnectedToCommCxroBeamline = false
         lConnectedToCommNPointLC400Field = false
         lConnectedToCommNPointLC400Pupil = false
-        
 
     end
     
@@ -95,7 +101,10 @@ classdef App < mic.Base
         
                 
         function build(this)
-            this.uiApp.build();
+            
+            this.buildFigure();
+            this.uiApp.build(this.hFigure, 10, 10);
+            this.uiComm.build(this.hFigure, 210, 10);
         end
         
         %% Destructor
@@ -110,10 +119,38 @@ classdef App < mic.Base
     methods (Access = private)
         
         
+        function buildFigure(this)
+            
+            if ishghandle(this.hFigure)
+                % Bring to front
+                figure(this.hFigure);
+                return
+            else 
+            
+                
+                % Figure
+                this.hFigure = figure( ...
+                    'NumberTitle', 'off', ...
+                    'MenuBar', 'none', ...
+                    'Name', 'MET5', ...
+                    'Position', [0 0 this.dWidth this.dHeight], ... % left bottom width height
+                    'Resize', 'off', ...
+                    'HandleVisibility', 'on', ... % lets close all close the figure
+                    'Visible', 'on'...
+                );
+                % 'CloseRequestFcn', @this.onCloseRequestFcn ...
+
+                drawnow;                
+            end
+            
+        end
+        
         
         function init(this)
             
-            this.uiApp = bl12014.ui.App(); 
+            this.uiApp = bl12014.ui.App(...
+                'dWidthButtonButtonList', this.dWidthButton ...
+            ); 
             
             
             st = struct;
@@ -171,7 +208,9 @@ classdef App < mic.Base
             st(13).cTooltip = 'Interferometry Hexapod';
             
             this.uiComm = bl12014.ui.Comm(...
-                'stButtonDefinitions', st ...
+                'stButtonDefinitions', st, ...
+                'cTitle', 'Hardware Comm', ...
+                'dWidthButton', this.dWidthButton ...
             );
 
             % this.initComm()
@@ -207,7 +246,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiM141ToCommSmarActMcsM141(this.uiApp.uiM141, this.commSmarActMcsM141)
+            Connect.connectCommSmarActMcsM141ToUiM141(this.commSmarActMcsM141, this.uiApp.uiM141)
             this.lConnectedToCommSmarActMcsM141 = true;
         end
         
@@ -223,15 +262,38 @@ classdef App < mic.Base
             
             try
                 this.initCommMet5Instruments();
-                this.commSmarActMcsGoni = this.jMet5Instruments.getGoniStage()
+                this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer()
             catch mE
                 l = false;
                 return
             end
             
-            Connect.connectUiInterferometryToCommSmarActMcsGoni(this.uiApp.uiInterferometry, this.commSmarActMcsGoni)
+            Connect.connectCommSmarActMcsGoniToUiInterferometry(this.commSmarActMcsGoni, this.uiApp.uiInterferometry)
             this.lConnectedToCommSmarActMcsGoni = true;
         end
+        
+        function l = connectCommSmarActSmarPod(this)
+            
+            l = true;
+            return
+            
+            if this.lConnectedToCommSmarActSmarPod
+                this.showMsgConnected('commSmarActSmarPod');
+                return
+            end
+            
+            try
+                this.initCommMet5Instruments();
+                this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod()
+            catch mE
+                l = false;
+                return
+            end
+            
+            Connect.connectCommSmarActSmarPodToUiInterferometry(this.commSmarActSmarPod, this.uiApp.uiInterferometry)
+            this.lConnectedToCommSmarActSmarPod = true;
+        end
+        
         
         function l = connectCommDataTranslationMeasurPoint(this)
             
@@ -250,19 +312,19 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiM141ToCommDataTranslationMeasurPoint(this.uiApp.uiM141, this.commDataTranslationMeasurPoint)
-            Connect.connectUiD141ToCommDataTranslationMeasurPoint(this.uiApp.uiD141, this.commDataTranslationMeasurPoint);
-            Connect.connectUiD142ToCommDataTranslationMeasurPoint(this.uiApp.uiD142, this.commDataTranslationMeasurPoint);
-            Connect.connectUiM143ToCommDataTranslationMeasurPoint(this.uiApp.uiM143, this.commDataTranslationMeasurPoint);
-            Connect.connectUiVisToCommDataTranslationMeasurPoint(this.uiApp.uiVis, this.commDataTranslationMeasurPoint);
-            Connect.connectUiMetrologyFrameToCommDataTranslationMeasurPoint(this.uiApp.uiMetrologyFrame, this.commDataTranslationMeasurPoint);
-            Connect.connectUiMod3ToCommDataTranslationMeasurPoint(this.uiApp.uiMod3, this.commDataTranslationMeasurPoint);
-            Connect.connectUiPobToCommDataTranslationMeasurPoint(this.uiApp.uiPob, this.commDataTranslationMeasurPoint);
+            Connect.connectCommDataTranslationMeasurPointToUiM141(this.commDataTranslationMeasurPoint, this.uiApp.uiM141)
+            Connect.connectCommDataTranslationMeasurPointToUiD141(this.commDataTranslationMeasurPoint, this.uiApp.uiD141);
+            Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
+            Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
+            Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
+            Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
+            Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
+            Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
             
             this.lConnectedToCommDataTranslationMeasurPoint = true;
         end
         
-        function l = connectcommDeltaTauPowerPmac(this)
+        function l = connectCommDeltaTauPowerPmac(this)
             
             l = true;
             return
@@ -279,8 +341,8 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiReticleToCommDeltaTauPowerPmac(this.uiApp.uiReticle, this.commDeltaTauPowerPmac);
-            Connect.connectUiWaferToCommDeltaTauPowerPmac(this.uiApp.uiWafer, this.commDeltaTauPowerPmac);
+            Connect.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
+            Connect.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
             
             this.lConnectedToCommDeltaTauPowerPmac = true;
             
@@ -303,7 +365,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiWaferToCommKeithley6482Wafer(this.uiApp.uiWafer, this.commKeithley6482Wafer);
+            Connect.connectCommKeithley6482WaferToUiWafer(this.commKeithley6482Wafer, this.uiApp.uiWafer);
             
             this.lConnectedToCommKeithley6482Wafer = true;
         end
@@ -327,7 +389,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiReticleToCommKeithley6482Reticle(this.uiApp.uiReticle, this.commKeithley6482Reticle);
+            Connect.connectCommKeithley6482ReticleToUiReticle(this.commKeithley6482Reticle, this.uiApp.uiReticle);
             
             this.lConnectedToCommKeithley6482Reticle = true;
             
@@ -350,7 +412,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectUiWaferToCommCxroHeightSensor(this.uiApp.uiWafer, this.commCxroHeightSensor);
+            Connect.connectCommCxroHeightSensorToUiWafer(this.commCxroHeightSensor, this.uiApp.uiWafer);
             
             this.lConnectedToCommCxroHeightSensor = true;
             
@@ -373,9 +435,104 @@ classdef App < mic.Base
                 return;
             end
             
-            Connect.connectUiBeamlineToCommCxroBeamline(this.uiApp.uiBeamline, this.commCxroBeamline);
+            Connect.connectCommCxroBeamlineToUiBeamline(this.commCxroBeamline, this.uiApp.uiBeamline);
             
             this.lConnectedToCommCxroBeamline = true;
+            
+        end
+        
+        function l = connectCommNewFocus8742(this)
+            
+            
+            l = true;
+            return
+            
+            if this.lConnectedToCommNewFocus8742
+                this.showMsgConnected('commNewFocus8742');
+                return
+            end
+            
+            try
+                this.commNewFocus8742 = newFocus.NewFocus8742();
+            catch mE
+                l = false;
+                return;
+            end
+            
+            Connect.connectCommNewFocus8742ToUiM142(this.commNewFocus8742, this.uiApp.uiM142);
+            
+            this.lConnectedToCommCxroBeamline = true;
+            
+            
+        end
+        
+        function l = connectCommMicronixMmc103(this)
+            
+            l = true;
+            return
+            
+            if this.lConnectedToCommMicronixMmc103
+                this.showMsgConnected('commMicronixMmc103');
+                return
+            end
+            
+            try
+                this.commMicronixMmc103 = micronix.Mmc103();
+            catch mE
+                l = false;
+                return;
+            end
+            
+            Connect.connectCommMicronixMmc103ToUiM142(this.commMicronixMmc103, this.uiApp.uiM142);
+            
+            this.lConnectedToCommCxroBeamline = true;
+            
+        end
+        
+        
+        function l = connectCommNPointLC400Pupil(this)
+            
+            l = true;
+            return
+            
+            if this.lConnectedToCommNPointLC400Pupil
+                this.showMsgConnected('commNPointLC400Pupil');
+                return
+            end
+            
+            try
+                this.commNPointLC400Pupil = npoint.LC400();
+            catch mE
+                l = false;
+                return;
+            end
+            
+            Connect.connectCommNPointLC400PupilToUiPupilScanner(this.commNPointLC400Pupil, this.uiApp.uiPupilScanner);
+            
+            this.lConnectedToCommNPointLC400Pupil = true;
+            
+        end
+        
+        function l = connectCommNPointLC400Field(this)
+            
+            l = true;
+            return
+            
+            if this.lConnectedToCommNPointLC400Field
+                this.showMsgConnected('commNPointLC400Field');
+                return
+            end
+            
+            try
+                this.commNPointLC400Field = npoint.LC400();
+            catch mE
+                l = false;
+                return;
+            end
+            
+            Connect.connectCommNPointLC400FieldToUiFieldScanner(this.commNPointLC400Field, this.uiApp.uiFieldScanner);
+            
+            this.lConnectedToCommNPointLC400Field = true;
             
         end
         
@@ -393,6 +550,14 @@ classdef App < mic.Base
         function showMsgError(this, cMsg)
             
         end
+        
+        function onCloseRequestFcn(this, src, evt)
+            this.msg('closeRequestFcn()');
+            % purge;
+            delete(this.hFigure);
+            % this.saveState();
+         end
+        
 
     end % private
     

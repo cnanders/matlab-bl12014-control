@@ -23,7 +23,6 @@ classdef App < mic.Base
         uiPrescriptionTool           
         uiScan
         
-        uiButtonList
         
     end
     
@@ -34,26 +33,13 @@ classdef App < mic.Base
     properties (Access = private)
          
         dHeightEdit = 24
-        
+        dWidthButtonButtonList = 100
+        cTitleButtonList = 'UI'
         clock
         hFigure
-        
-        uiButtonBeamline
-        uiButtonShutter
-        uiButtonD141
-        uiButtonD142
-        uiButtonM141
-        uiButtonM142
-        uiButtonM143
-        uiButtonReticle
-        uiButtonWafer
-        uiButtonPreTool
-        uiButtonScan
-        uiButtonPupilScanner
-        uiButtonFieldScanner
-        
         cDirThis
         cDirSave
+        uiButtonList
         
     end
     
@@ -68,7 +54,7 @@ classdef App < mic.Base
     methods
         
         
-        function this = App()
+        function this = App(varargin)
             
             cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSave = fullfile( ...
@@ -79,35 +65,25 @@ classdef App < mic.Base
                 'app' ...
             );
         
+            for k = 1 : 2: length(varargin)
+                % this.msg(sprintf('passed in %s', varargin{k}));
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
+            
             this.init();
             
         end
         
-                
+          
+        function sayHi(this)
+            this.msg('Hi!');
+        end
+        
         function build(this, hParent, dLeft, dTop)
-             
             this.uiButtonList.build(hParent, dLeft, dTop)
-            % Figure
-            %{
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'MET5', ...
-                'Position', [0 0 this.dWidth this.dHeight], ... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequestFcn ...
-                );
-            
-            drawnow;
-
-            dWidthButton = 120;
-            dTop = 20;
-            dSep = 25;
-            dLeft = 10;
-            %}
-            
         end
         
                         
@@ -190,69 +166,78 @@ classdef App < mic.Base
             addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
             addlistener(this.uiPrescriptionTool, 'eDelete', @this.onPrescriptionToolDelete);
            
-            % TO DO Can replicate this with mic.ui.common.ButtonList
-            % fhOnClick would look like @this.ui.PrescriptionTool.build
+            % Cannot directly pass the function handle of the build method
+            % of the bl12014.ui.* instances but I found that passing an
+            % anonymous function that calls bl12014.ui.*.build() works
+            %
+            % Does not work: function handle of method of property
+            % st(1).fhOnClick = @this.uiBeamline.build;
+            %
+            % Does work: anonymous function that calls uiBeamline.build()
+            % st(1).fhOnClick = @() this.uiBeamline.build()
             
             st = struct;
             
             st(1).cLabel = 'Beamline';
-            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).fhOnClick = @() this.uiBeamline.build();
             st(1).cTooltip = 'Beamline';
             
             st(2).cLabel = 'Shutter';
-            st(2).fhOnClick = @this.uiShutter.build;
+            st(2).fhOnClick = @() this.uiShutter.build();
             st(2).cTooltip = 'Beamline';
             
             st(3).cLabel = 'D141';
-            st(3).fhOnClick = @this.uiD141.build;
+            st(3).fhOnClick = @() this.uiD141.build();
             st(3).cTooltip = 'D141';
             
             st(4).cLabel = 'D142';
-            st(4).fhOnClick = @this.uiD142.build;
+            st(4).fhOnClick = @() this.uiD142.build();
             st(4).cTooltip = 'D142';
             
             st(5).cLabel = 'M141';
-            st(5).fhOnClick = @this.uiM141.build;
+            st(5).fhOnClick = @() this.uiM141.build();
             st(5).cTooltip = 'Beamline';
             
             st(6).cLabel = 'M142';
-            st(6).fhOnClick = @this.uiM142.build;
+            st(6).fhOnClick = @() this.uiM142.build();
             st(6).cTooltip = 'Beamline';
             
             %{
             st(1).cLabel = 'M143';
-            st(1).fhOnClick = @this.uiM143.build;
+            st(1).fhOnClick = @() this.uiM143.build();
             st(1).cTooltip = 'Beamline';
             %}
             
             st(7).cLabel = 'Reticle';
-            st(7).fhOnClick = @this.uiReticle.build;
+            st(7).fhOnClick = @() this.uiReticle.build();
             st(7).cTooltip = 'Beamline';
             
             st(8).cLabel = 'Wafer';
-            st(8).fhOnClick = @this.uiWafer.build;
+            st(8).fhOnClick = @() this.uiWafer.build();
             st(8).cTooltip = 'Beamline';
             
             st(9).cLabel = 'Pre Tool';
-            st(9).fhOnClick = @this.uiPrescriptionTool.build;
+            st(9).fhOnClick = @()this.uiPrescriptionTool.build();
             st(9).cTooltip = 'Beamline';
             
             %{
             st(1).cLabel = 'Pupil Scanner';
-            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).fhOnClick = @() this.uiBeamline.build();
             st(1).cTooltip = 'Beamline';
             
             st(1).cLabel = 'Field Scanner';
-            st(1).fhOnClick = @this.uiBeamline.build;
+            st(1).fhOnClick = @() this.uiBeamline.build();
             st(1).cTooltip = 'Beamline';
             %}
             
             st(10).cLabel = 'Expt. Control';
-            st(10).fhOnClick = @this.uiScan.build;
+            st(10).fhOnClick = @() this.uiScan.build();
             st(10).cTooltip = 'Beamline';
             
             this.uiButtonList = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', st ...
+                'stButtonDefinitions', st, ...
+                'cTitle', this.cTitleButtonList, ...
+                'dWidthButton', this.dWidthButtonButtonList ...
             );
         
             this.loadStateFromDisk();
