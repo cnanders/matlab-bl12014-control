@@ -9,9 +9,14 @@ TO DO
 
 # 1.0.0-alpha.7
 
+### bl12014.ui.M143
 
+- Build this component and added it to `bl12014.ui.App`
 
+### bl12014.ui.App
 
+- Refactored the list of structures used for the `mic.ui.common.ButtonList` so their order can easily be changed.
+- Added button for M143
 
 
 # 1.0.0-alpha.6
