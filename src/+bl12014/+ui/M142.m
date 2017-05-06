@@ -6,20 +6,7 @@ classdef M142 < mic.Base
         wagoSolenoid
         measPoint
         
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltYMf
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltYMfr
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltZMfr
+
         
         
         

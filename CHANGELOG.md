@@ -7,11 +7,64 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.8
+
+### bl12014.ui.PobCapSensors
+
+- New UI panel to show reading from MeasurPoint for each cap sensor of POB (they look at the wafer)
+
+### bl12014.ui.PobTempSensors
+
+- New UI panel to show reading from MeasurPoint for each RTD (12) attached to POB
+
+### bl12014.ui.Mod3CapSensors
+
+- New UI panel to show reading from MeasurPoint for each cap sensor of Mod3 (they look at the reticle)
+
+### bl12014.ui.Mod3TempSensors
+
+- New UI panel to show reading from MeasurePoint for each RTD (?) attached to the Mod3
+
+### bl12014.ui.TempSensors
+
+- New UI that shows all temp sensors
+
+### bl12014.ui.HeightSensor
+
+- New UI panel for the height sensor channel values (possibly will add tiltX, tiltY, avgZ later)
+
+### bl12014.ui.Reticle
+
+- Incorporated `bl12014.ui.Mod3CapSensors`
+
+### bl12014.ui.Wafer
+
+- Incorporated `bl12014.ui.PobCapSensors`
+- Incorporated `bl12014.ui.HeightSensor`
+
+### bl12014.ui.App
+
+- New button to launch `bl12014.ui.TempSensors`
+
+### bl12014.device.GetSetNumberFromMicronixMMC103
+
+- New
+
+### bl12014.device.GetSetNumberFromNewFocusModel8742
+
+- New
+
+### bl12014.Connect
+
+- Linked about half of the hardware comm to the UI through the `bl12014.device.*` instances
+
+
 # 1.0.0-alpha.7
 
 ### bl12014.ui.M143
 
 - Build this component and added it to `bl12014.ui.App`
+
 
 ### bl12014.ui.App
 

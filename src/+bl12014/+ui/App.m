@@ -2,7 +2,7 @@ classdef App < mic.Base
         
     properties (Constant)
        
-        dHeight         = 500
+        dHeight         = 550
         dWidth          = 140
         
         
@@ -22,7 +22,7 @@ classdef App < mic.Base
         uiFieldControl
         uiPrescriptionTool           
         uiScan
-        
+        uiTempSensors
         
     end
     
@@ -115,6 +115,7 @@ classdef App < mic.Base
             delete(this.uiFieldControl)
             delete(this.uiPrescriptionTool)           
             delete(this.uiScan) 
+            delete(this.uiTempSensors)
             
             % Delete the clock
             delete(this.clock);
@@ -152,6 +153,7 @@ classdef App < mic.Base
             this.uiM143 = bl12014.ui.M143('clock', this.clock);
             this.uiReticle = bl12014.ui.Reticle('clock', this.clock);
             this.uiWafer = bl12014.ui.Wafer('clock', this.clock);
+            this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             % this.uiPupilControl = ScannerControl(this.clock, 'pupil');
             % this.uiFieldControl = ScannerControl(this.clock, 'field');
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
@@ -227,6 +229,12 @@ classdef App < mic.Base
             'cLabel',  'Pre Tool', ...
             'fhOnClick',  @()this.uiPrescriptionTool.build(), ...
             'cTooltip',  'Beamline');
+        
+            stTempSensors = struct( ...
+                'cLabel',  'Temp Sensors', ...
+                'fhOnClick',  @()this.uiTempSensors.build(), ...
+                'cTooltip',  'Temp Sensors (Mod3, POB)' ...
+            );
             
         
             %{
@@ -259,7 +267,8 @@ classdef App < mic.Base
               stReticle, ...
               stWafer, ...
               stPrescriptionTool, ...
-              stExptControl ...
+              stExptControl, ...
+              stTempSensors ...
            ];
             
             this.uiButtonList = mic.ui.common.ButtonList(...

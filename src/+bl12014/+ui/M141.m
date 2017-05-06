@@ -6,17 +6,7 @@ classdef M141 < mic.Base
         wagoSolenoid
         measPoint
         
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageTiltY
-        
-        % {< mic.interface.device.GetNumber}
-        deviceMeasPointVolts
+
         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageX
@@ -28,7 +18,7 @@ classdef M141 < mic.Base
         uiStageTiltY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiMeasPointVolts
+        uiMeasurPointVolts
         
     end
     
@@ -103,7 +93,7 @@ classdef M141 < mic.Base
             this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiMeasPointVolts.build(this.hFigure, dLeft, dTop);
+            this.uiMeasurPointVolts.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
 
             
@@ -221,7 +211,7 @@ classdef M141 < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            this.uiMeasPointVolts = mic.ui.device.GetNumber(...
+            this.uiMeasurPointVolts = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
                 'cName', 'm141-current', ...
                 'config', uiConfig, ...

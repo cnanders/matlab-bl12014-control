@@ -3,8 +3,8 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 620
-        dHeight     = 780
+        dWidth      = 1295
+        dHeight     = 690
         
     end
     
@@ -13,8 +13,8 @@ classdef Wafer < mic.Base
         uiCoarseStage
         uiFineStage
         uiAxes
-        
-        hs
+        uiPobCapSensors
+        uiHeightSensor
        
     end
     
@@ -104,6 +104,14 @@ classdef Wafer < mic.Base
             this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
+            this.uiPobCapSensors.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiPobCapSensors.dHeight + dPad;
+            
+            this.uiHeightSensor.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiHeightSensor.dHeight + dPad;
+            
+            dLeft = 620;
+            dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
            
@@ -155,10 +163,17 @@ classdef Wafer < mic.Base
             this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'clock', this.clock ...
             );
+            this.uiPobCapSensors = bl12014.ui.PobCapSensors(...
+                'clock', this.clock ...
+            )
+            this.uiHeightSensor = bl12014.ui.HeightSensor( ...
+                'clock', this.clock ...
+            );
         
+            dHeight = this.dHeight - 20
             this.uiAxes = bl12014.ui.WaferAxes( ...
-                'dWidth', 600, ...
-                'dHeight', 480 ...
+                'dWidth', dHeight, ...
+                'dHeight', dHeight ...
             );
             
                         

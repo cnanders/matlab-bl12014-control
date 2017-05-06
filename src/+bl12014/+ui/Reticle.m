@@ -2,8 +2,8 @@ classdef Reticle < mic.Base
         
     properties (Constant)
       
-        dWidth      = 620
-        dHeight     = 780
+        dWidth      = 1230
+        dHeight     = 490
         
     end
     
@@ -13,6 +13,7 @@ classdef Reticle < mic.Base
         uiFineStage
         uiAxes
         mod3cap
+        uiMod3CapSensors
     end
     
     properties (SetAccess = private)
@@ -90,16 +91,22 @@ classdef Reticle < mic.Base
 
             dTop = 10;
             dPad = 10;
+            dLeft = 10
             
             % this.mod3cap.build(this.hFigure, dPad, dTop);
             
-            this.uiCoarseStage.build(this.hFigure, dPad, dTop);
+            this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            this.uiFineStage.build(this.hFigure, dPad, dTop);
+            this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            this.uiAxes.build(this.hFigure, dPad, dTop);
+            this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
+            
+            dLeft = 620;
+            dTop = 10;
+            this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
                         
             
@@ -164,7 +171,11 @@ classdef Reticle < mic.Base
         
             this.uiAxes = bl12014.ui.ReticleAxes(...
                 'dWidth', 600, ...
-                'dHeight', 450 ...
+                'dHeight', 470 ...
+            );
+        
+            this.uiMod3CapSensors = bl12014.ui.Mod3CapSensors(...
+                'clock', this.clock ...
             );
         
             addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);

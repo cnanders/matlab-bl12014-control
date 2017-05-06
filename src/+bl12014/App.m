@@ -57,19 +57,19 @@ classdef App < mic.Base
         % {cxro.bl1201.Beamline 1x1}
         commCxroBeamline
         
-        % {newFocus.NewFocus8742 1x1} 
+        % {newFocus.NewFocusModel8742 1x1} 
         % May cheat and use DLL directly with {mic.interface.device.*}
         % M142 + M142R common tiltX (pitch)
         % M142 independent tiltY  (roll)
         % M142R independent tiltY (roll)
-        commNewFocus8742
+        commNewFocusModel8742
         
         % {micronix.Mmc103 1x1}
         % M142R tiltZ (clocking)
         % M142 + M142R common x
         commMicronixMmc103
         
-        lConnectedToCommNewFocus8742 = false
+        lConnectedToCommNewFocusModel8742 = false
         lConnectedToCommSmarActMcsM141 = false
         lConnectedToCommSmarActMcsGoni = false
         lConnectedToCommMicronixMmc103 = false
@@ -159,6 +159,13 @@ classdef App < mic.Base
                 'cTooltip',  'M141 diode, D141 diode, D142 diode, M143 diode, Vis RTDs, Metrology Frame RTDs, Mod3 RTDs, POB RDTs' ...
             );
         
+            % No longer needed?
+            stWago = struct( ...
+                'cLabel', 'Wago', ...
+                'fhOnClick', @this.connectCommWago, ...
+                'cTooltip', 'D141 Actuator' ...
+            );
+        
             stSmarActMcsM141 = struct( ...
                 'cLabel',  'SmarAct MCS (M141)', ...
                 'fhOnClick',  @this.connectCommSmarActMcsM141, ...
@@ -177,9 +184,9 @@ classdef App < mic.Base
                 'cTooltip',  'M142 + M142R common x, M142R tiltZ' ...
             );
             
-            stNewFocus8742 = struct( ...
+            stNewFocusModel8742 = struct( ...
                 'cLabel',   'New Focus 8742', ...
-                'fhOnClick',  @this.connectCommNewFocus8742, ...
+                'fhOnClick',  @this.connectCommNewFocusModel8742, ...
                 'cTooltip',  'M142 + M142R common tiltX, M142 tiltY, M142R tiltY' ...
             );
             
@@ -225,6 +232,8 @@ classdef App < mic.Base
                 'cTooltip',  'Interferometry Hexapod' ...
             );
             
+        % stWago, ...
+
             stButtons = [...
                 stCxroBeamline ...
                 stKeithley6482Reticle, ...
@@ -232,7 +241,7 @@ classdef App < mic.Base
                 stDeltaTauPowerPmac, ...
                 stNPointLC400Field, ...
                 stNPointLC400Pupil, ...
-                stNewFocus8742, ...
+                stNewFocusModel8742, ...
                 stMicronixMmc103, ...
                 stSmarActMcsM141, ...
                 stDataTranslationMeasurPoint, ...
@@ -263,6 +272,7 @@ classdef App < mic.Base
 
         end
         
+
         function initCommMet5Instruments(this)
            
             return
@@ -272,6 +282,30 @@ classdef App < mic.Base
             end
         end
         
+        %{
+        function l = connectWago(this)
+            
+            l = true;
+            return;
+            
+            if this.lConnectedToCommWago
+                this.showMsgConnected('commWago');
+                return
+            end 
+            
+            
+            try
+                this.commWago = wago.Wago()
+            catch mE
+                l = false;
+                return
+            end
+            
+            Connect.connectCommWagoToUiD141(this.commWago, this.uiApp.uiD141)
+            this.lConnectedToCommWago = true;
+            
+        end
+        %}
                 
         function l = connectCommSmarActMcsM141(this)
             
@@ -362,9 +396,13 @@ classdef App < mic.Base
             Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
             Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
             Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
-            Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
-            Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
-            Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
+            %Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
+            %Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
+            %Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
+            Connect.connectCommDataTranslationMeasurPointToUiReticle(this.commDataTranslationMeasurPoint, this.uiApp.uiReticle);
+            Connect.connectCommDataTranslationMeasurPointToUiWafer(this.commDataTranslationMeasurPoint, this.uiApp.uiWafer);
+            Connect.connectCommDataTranslationMeasurPointToUiTempSensors(this.commDataTranslationMeasurPoint, this.uiApp.uiTempSensors);
+            
             
             this.lConnectedToCommDataTranslationMeasurPoint = true;
         end
@@ -486,25 +524,25 @@ classdef App < mic.Base
             
         end
         
-        function l = connectCommNewFocus8742(this)
+        function l = connectCommNewFocusModel8742(this)
             
             
             l = true;
             return
             
-            if this.lConnectedToCommNewFocus8742
-                this.showMsgConnected('commNewFocus8742');
+            if this.lConnectedToCommNewFocusModel8742
+                this.showMsgConnected('commNewFocusModel8742');
                 return
             end
             
             try
-                this.commNewFocus8742 = newFocus.NewFocus8742();
+                this.commNewFocusModel8742 = newFocus.NewFocusModel8742();
             catch mE
                 l = false;
                 return;
             end
             
-            Connect.connectCommNewFocus8742ToUiM142(this.commNewFocus8742, this.uiApp.uiM142);
+            Connect.connectCommNewFocusModel8742ToUiM142(this.commNewFocusModel8742, this.uiApp.uiM142);
             
             this.lConnectedToCommCxroBeamline = true;
             
