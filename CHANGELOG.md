@@ -7,6 +7,14 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.9
+
+- Linked Micronix MMC 103 into App and Connect
+- Linked NewFocus Model 8742 into App and Connect
+- Connect now calls `turnOn()` method of `mic.ui.device.*` instances after it sets their device
+- Updated config for M142 tiltX, tiltYMf, tiltYMfr to use counts instead of deg
+
+
 # 1.0.0-alpha.8
 
 ### bl12014.ui.PobCapSensors
