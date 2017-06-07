@@ -2,25 +2,13 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "deg",
+			"name": "counts",
 			"slope": 1,
 			"offset": 0,
-			"precision": 3
-		},
-		{
-			"name": "mdeg",
-			"slope": 1000,
-			"offset": 0,
-			"precision": 3
-		},
-		{
-			"name": "mrad",
-			"slope": 17.453292519943297,
-			"offset": 0,
-			"precision": 3
+			"precision": 0
 		}
 	],
-    "step": 0.1
+    "step": 100
 }	
 	
 	

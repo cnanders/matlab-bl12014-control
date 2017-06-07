@@ -9,21 +9,6 @@ classdef App < mic.Base
     
 	properties
         
-        
-        
-    end
-    
-    properties (SetAccess = private)
-    
-    end
-    
-    properties (Access = private)
-        
-        hFigure
-        
-        uiApp
-        uiComm
-        
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
         
@@ -68,6 +53,19 @@ classdef App < mic.Base
         % M142R tiltZ (clocking)
         % M142 + M142R common x
         commMicronixMmc103
+        
+    end
+    
+    properties (SetAccess = private)
+    
+    end
+    
+    properties (Access = private)
+        
+        hFigure
+        
+        uiApp
+        uiComm
         
         lConnectedToCommNewFocusModel8742 = false
         lConnectedToCommSmarActMcsM141 = false
@@ -301,7 +299,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommWagoToUiD141(this.commWago, this.uiApp.uiD141)
+            bl12014.Connect.connectCommWagoToUiD141(this.commWago, this.uiApp.uiD141)
             this.lConnectedToCommWago = true;
             
         end
@@ -325,7 +323,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommSmarActMcsM141ToUiM141(this.commSmarActMcsM141, this.uiApp.uiM141)
+            bl12014.Connect.connectCommSmarActMcsM141ToUiM141(this.commSmarActMcsM141, this.uiApp.uiM141)
             this.lConnectedToCommSmarActMcsM141 = true;
         end
         
@@ -347,7 +345,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommSmarActMcsGoniToUiInterferometry(this.commSmarActMcsGoni, this.uiApp.uiInterferometry)
+            bl12014.Connect.connectCommSmarActMcsGoniToUiInterferometry(this.commSmarActMcsGoni, this.uiApp.uiInterferometry)
             this.lConnectedToCommSmarActMcsGoni = true;
         end
         
@@ -369,7 +367,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommSmarActSmarPodToUiInterferometry(this.commSmarActSmarPod, this.uiApp.uiInterferometry)
+            bl12014.Connect.connectCommSmarActSmarPodToUiInterferometry(this.commSmarActSmarPod, this.uiApp.uiInterferometry)
             this.lConnectedToCommSmarActSmarPod = true;
         end
         
@@ -391,17 +389,17 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommDataTranslationMeasurPointToUiM141(this.commDataTranslationMeasurPoint, this.uiApp.uiM141)
-            Connect.connectCommDataTranslationMeasurPointToUiD141(this.commDataTranslationMeasurPoint, this.uiApp.uiD141);
-            Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
-            Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
-            Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
-            %Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
-            %Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
-            %Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
-            Connect.connectCommDataTranslationMeasurPointToUiReticle(this.commDataTranslationMeasurPoint, this.uiApp.uiReticle);
-            Connect.connectCommDataTranslationMeasurPointToUiWafer(this.commDataTranslationMeasurPoint, this.uiApp.uiWafer);
-            Connect.connectCommDataTranslationMeasurPointToUiTempSensors(this.commDataTranslationMeasurPoint, this.uiApp.uiTempSensors);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM141(this.commDataTranslationMeasurPoint, this.uiApp.uiM141)
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD141(this.commDataTranslationMeasurPoint, this.uiApp.uiD141);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiReticle(this.commDataTranslationMeasurPoint, this.uiApp.uiReticle);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiWafer(this.commDataTranslationMeasurPoint, this.uiApp.uiWafer);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiTempSensors(this.commDataTranslationMeasurPoint, this.uiApp.uiTempSensors);
             
             
             this.lConnectedToCommDataTranslationMeasurPoint = true;
@@ -424,8 +422,8 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
-            Connect.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
+            bl12014.Connect.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
+            bl12014.Connect.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
             
             this.lConnectedToCommDeltaTauPowerPmac = true;
             
@@ -448,7 +446,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommKeithley6482WaferToUiWafer(this.commKeithley6482Wafer, this.uiApp.uiWafer);
+            bl12014.Connect.connectCommKeithley6482WaferToUiWafer(this.commKeithley6482Wafer, this.uiApp.uiWafer);
             
             this.lConnectedToCommKeithley6482Wafer = true;
         end
@@ -472,7 +470,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommKeithley6482ReticleToUiReticle(this.commKeithley6482Reticle, this.uiApp.uiReticle);
+            bl12014.Connect.connectCommKeithley6482ReticleToUiReticle(this.commKeithley6482Reticle, this.uiApp.uiReticle);
             
             this.lConnectedToCommKeithley6482Reticle = true;
             
@@ -495,7 +493,7 @@ classdef App < mic.Base
                 return
             end
             
-            Connect.connectCommCxroHeightSensorToUiWafer(this.commCxroHeightSensor, this.uiApp.uiWafer);
+            bl12014.Connect.connectCommCxroHeightSensorToUiWafer(this.commCxroHeightSensor, this.uiApp.uiWafer);
             
             this.lConnectedToCommCxroHeightSensor = true;
             
@@ -518,7 +516,7 @@ classdef App < mic.Base
                 return;
             end
             
-            Connect.connectCommCxroBeamlineToUiBeamline(this.commCxroBeamline, this.uiApp.uiBeamline);
+            bl12014.Connect.connectCommCxroBeamlineToUiBeamline(this.commCxroBeamline, this.uiApp.uiBeamline);
             
             this.lConnectedToCommCxroBeamline = true;
             
@@ -526,9 +524,8 @@ classdef App < mic.Base
         
         function l = connectCommNewFocusModel8742(this)
             
-            
-            l = true;
-            return
+            %l = true;
+            %return
             
             if this.lConnectedToCommNewFocusModel8742
                 this.showMsgConnected('commNewFocusModel8742');
@@ -536,23 +533,29 @@ classdef App < mic.Base
             end
             
             try
-                this.commNewFocusModel8742 = newFocus.NewFocusModel8742();
+                this.commNewFocusModel8742 = newfocus.Model8742( ...
+                    'cTcpipHost', '192.168.0.3' ...
+                );
+                this.commNewFocusModel8742.init();
+                this.commNewFocusModel8742.connect();
             catch mE
                 l = false;
+                rethrow(mE)
                 return;
             end
             
-            Connect.connectCommNewFocusModel8742ToUiM142(this.commNewFocusModel8742, this.uiApp.uiM142);
-            
-            this.lConnectedToCommCxroBeamline = true;
-            
+            bl12014.Connect.connectCommNewFocusModel8742ToUiM142(this.commNewFocusModel8742, this.uiApp.uiM142);
+            this.lConnectedToCommNewFocusModel8742 = true;
+            l = true;
             
         end
         
         function l = connectCommMicronixMmc103(this)
             
+            %{
             l = true;
             return
+            %}
             
             if this.lConnectedToCommMicronixMmc103
                 this.showMsgConnected('commMicronixMmc103');
@@ -560,15 +563,31 @@ classdef App < mic.Base
             end
             
             try
-                this.commMicronixMmc103 = micronix.Mmc103();
+                this.commMicronixMmc103 = micronix.MMC103(...
+                    'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
+                    'cTcpipHost', '192.168.0.2' ...
+                );
+                % Create tcpip object
+                this.commMicronixMmc103.init();
+
+                % Open connection to tcpip/tcpclient/serial)
+                this.commMicronixMmc103.connect();
+
+                % Clear any bytes sitting in the output buffer
+                this.commMicronixMmc103.clearBytesAvailable()
+
+                % Get Firmware Version
+                % this.commMicronixMmc103.getFirmwareVersion(uint8(1))
+            
             catch mE
+            
                 l = false;
                 return;
             end
             
-            Connect.connectCommMicronixMmc103ToUiM142(this.commMicronixMmc103, this.uiApp.uiM142);
-            
-            this.lConnectedToCommCxroBeamline = true;
+            bl12014.Connect.connectCommMicronixMmc103ToUiM142(this.commMicronixMmc103, this.uiApp.uiM142);
+            this.lConnectedToCommMicronixMmc103 = true;
+            l = true;
             
         end
         
@@ -590,7 +609,7 @@ classdef App < mic.Base
                 return;
             end
             
-            Connect.connectCommNPointLC400PupilToUiPupilScanner(this.commNPointLC400Pupil, this.uiApp.uiPupilScanner);
+            bl12014.Connect.connectCommNPointLC400PupilToUiPupilScanner(this.commNPointLC400Pupil, this.uiApp.uiPupilScanner);
             
             this.lConnectedToCommNPointLC400Pupil = true;
             
@@ -613,7 +632,7 @@ classdef App < mic.Base
                 return;
             end
             
-            Connect.connectCommNPointLC400FieldToUiFieldScanner(this.commNPointLC400Field, this.uiApp.uiFieldScanner);
+            bl12014.Connect.connectCommNPointLC400FieldToUiFieldScanner(this.commNPointLC400Field, this.uiApp.uiFieldScanner);
             
             this.lConnectedToCommNPointLC400Field = true;
             
@@ -622,7 +641,9 @@ classdef App < mic.Base
                
         
         function destroyComm(this)
-            
+            if this.lConnectedToCommMicronixMmc103
+                this.commMicronixMmc103.disconnect();
+            end
             
         end
         

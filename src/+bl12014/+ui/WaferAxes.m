@@ -271,7 +271,7 @@ classdef WaferAxes < mic.Base
             % location.  
             
             hHgtf = makehgtform('translate', [dX dY 0]);
-            if ishandle(this.hCarriage);
+            if ishandle(this.hCarriage)
                 set(this.hCarriage, 'Matrix', hHgtf);
             end
             

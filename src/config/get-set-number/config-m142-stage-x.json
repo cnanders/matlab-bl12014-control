@@ -2,20 +2,14 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "m",
+			"name": "mm",
 			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mm",
-			"slope": 1000,
-			"offset": 0,
-			"precision": 1
-		},
-		{
 			"name": "um",
-			"slope": 1000000,
+			"slope": 1000,
 			"offset": 0,
 			"precision": 1
 		}
@@ -23,20 +17,20 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "out",
-            "raw": 1.5
+            "name": "yag (1)",
+            "raw": 1
         },
         {
-            "name": "mf",
-            "raw": 3
+            "name": "mf (-20)",
+            "raw": -20
         },
         {
-            "name": "mfr",
-            "raw": 5
+            "name": "mfr (30)",
+            "raw": 30
         }
     ],
-    "min": -10,
-    "max": 10
+    "min": -51,
+    "max": 52
 }	
 	
 	

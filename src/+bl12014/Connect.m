@@ -214,8 +214,14 @@ classdef Connect
             ui.uiStageTiltYMf.setDevice(deviceTiltYMf);
             ui.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
             
+            ui.uiStageTiltX.turnOn()
+            ui.uiStageTiltYMf.turnOn()
+            ui.uiStageTiltYMfr.turnOn()
+            
         end
         
+        % @param {micronix.MMC103 1x1} comm
+        % @param {bl12014.ui.M142 1x1} ui
         function connectCommMicronixMmc103ToUiM142(comm, ui)
             
             % {< mic.interface.device.GetSetNumber}
@@ -226,6 +232,9 @@ classdef Connect
             
             ui.uiStageX.setDevice(deviceX);
             ui.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
+            
+            ui.uiStageX.turnOn()
+            ui.uiStageTiltZMfr.turnOn()
             
         end
         
