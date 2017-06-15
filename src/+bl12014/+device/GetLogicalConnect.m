@@ -17,23 +17,25 @@ classdef GetLogicalConnect < mic.interface.device.GetSetNumber
         % {function_handle 1x1} that returns a logical
         fh
         
-        % {logical 1x1}
-        lIsInitialized = false
         
     end
-    
+            
     methods
+        
+        function this = GetLogicalConnect(fh)
+            this.fh = fh;
+        end
         
         function l = get(this)
             l = true;
         end
         
         function initialize(this)
-            this.lIsInitialized = this.fh();
+            this.fh();
         end
 
         function l = isInitialized(this)
-           l = this.lIsInitialized;
+           l = this.fh();
         end
         
     end

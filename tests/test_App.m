@@ -1,33 +1,19 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
-% bl12014 pkg
+% bl12014
 cDirBl12014 = fullfile(cDirThis, '..', 'src');
 addpath(genpath(cDirBl12014));
 
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', 'vendor');
 cDirCnanders = fullfile(cDirVendor, 'github', 'cnanders');
-
-cDirMic = fullfile(...
-    cDirCnanders, ...
-    'matlab-instrument-control', ...
-    'src'...
-);
-addpath(genpath(cDirMic));
-
-cDirMicronixMMC103 = fullfile(...
-    cDirCnanders, ...
-    'matlab-micronix-mmc-103', ...
-    'src' ...
-);
-addpath(genpath(cDirMicronixMMC103));
-
-cDirNewFocusModel8742 = fullfile(...
-    cDirCnanders, ...
-    'matlab-newfocus-model-8742', ...
-    'src' ...
-);
-addpath(genpath(cDirNewFocusModel8742));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-instrument-control', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-micronix-mmc-103', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-newfocus-model-8742', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-hex', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-ieee', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-npoint-lc400', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-scanner-control-npoint', 'src')));
 
 purge
 

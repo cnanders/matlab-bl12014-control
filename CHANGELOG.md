@@ -7,6 +7,10 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.10
+
+- Linked ScannerControl (MA and M142) into the App and they are incorporated into `save()` and `load()` to persist their state across sessions.
+
 # 1.0.0-alpha.9
 
 - Linked Micronix MMC 103 into App and Connect

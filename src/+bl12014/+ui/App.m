@@ -5,6 +5,8 @@ classdef App < mic.Base
         dHeight         = 550
         dWidth          = 140
         
+        cLC400PupilTcpipHost = '192.168.0.2'
+        cLC400FieldTcpipHost = '192.168.0.3'
         
     end
 	properties
@@ -18,8 +20,8 @@ classdef App < mic.Base
         uiD142
         uiReticle
         uiWafer
-        uiPupilControl
-        uiFieldControl
+        uiScannerControlMA
+        uiScannerControlM142
         uiPrescriptionTool           
         uiScan
         uiTempSensors
@@ -111,8 +113,8 @@ classdef App < mic.Base
             delete(this.uiD142)
             delete(this.uiReticle)
             delete(this.uiWafer)
-            delete(this.uiPupilControl)
-            delete(this.uiFieldControl)
+            delete(this.uiScannerControlMA)
+            delete(this.uiScannerControlM142)
             delete(this.uiPrescriptionTool)           
             delete(this.uiScan) 
             delete(this.uiTempSensors)
@@ -154,8 +156,16 @@ classdef App < mic.Base
             this.uiReticle = bl12014.ui.Reticle('clock', this.clock);
             this.uiWafer = bl12014.ui.Wafer('clock', this.clock);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
-            % this.uiPupilControl = ScannerControl(this.clock, 'pupil');
-            % this.uiFieldControl = ScannerControl(this.clock, 'field');
+            this.uiScannerControlMA = ScannerControl(...
+                'clock', this.clock, ...
+                'cDevice', 'MA', ...
+                'cLC400TcpipHost', this.cLC400PupilTcpipHost ...
+            );
+            this.uiScannerControlM142 = ScannerControl(...
+                'clock', this.clock, ...
+                'cDevice', 'M142', ...
+                'cLC400TcpipHost', this.cLC400FieldTcpipHost ...
+            );
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ...
@@ -235,19 +245,17 @@ classdef App < mic.Base
                 'fhOnClick',  @()this.uiTempSensors.build(), ...
                 'cTooltip',  'Temp Sensors (Mod3, POB)' ...
             );
-            
-        
-            %{
-            stPupilScanner = struct(...
-            'cLabel',  'Pupil Scanner', ...
-            'fhOnClick',  @() this.uiPupilScanner.build(), ...
+                        
+            stScannerControlMA = struct(...
+            'cLabel',  'MA Scanner Control', ...
+            'fhOnClick',  @() this.uiScannerControlMA.build(), ...
             'cTooltip',  'Beamline');
             
-            stFieldScanner = struct(...
-            'cLabel',  'Field Scanner', ...
-            'fhOnClick',  @() this.uiFieldScanner.build(), ...
+            stScannerControlM142 = struct(...
+            'cLabel',  'M142 Scanner Control', ...
+            'fhOnClick',  @() this.uiScannerControlM142.build(), ...
             'cTooltip',  'Beamline');
-            %}
+            
             
             stExptControl = struct(...
             'cLabel',  'Expt. Control', ...
@@ -263,7 +271,9 @@ classdef App < mic.Base
               stM141, ...
               stD142, ...
               stM142, ...
+              stScannerControlM142, ...
               stM143, ...
+              stScannerControlMA, ...
               stReticle, ...
               stWafer, ...
               stPrescriptionTool, ...
@@ -311,13 +321,26 @@ classdef App < mic.Base
         function st = save(this)
              st = struct();
              st.uiPrescriptionTool = this.uiPrescriptionTool.save();
+             st.uiScannerControlMA = this.uiScannerControlMA.save();
+             st.uiScannerControlM142 = this.uiScannerControlM142.save();
              st.uiScan = this.uiScan.save();
              
         end
         
         function load(this, st)
-            this.uiPrescriptionTool.load(st.uiPrescriptionTool);
-            this.uiScan.load(st.uiScan)
+                        
+            if isfield(st, 'uiPrescriptionTool') 
+                this.uiPrescriptionTool.load(st.uiPrescriptionTool);
+            end
+            if isfield(st, 'uiScannerControlMA')
+                this.uiScannerControlMA.load(st.uiScannerControlMA);
+            end
+            if isfield(st, 'uiScannerControlM142')
+                this.uiScannerControlM142.load(st.uiScannerControlM142);
+            end
+            if isfield(st, 'uiScan')
+                this.uiScan.load(st.uiScan)
+            end
         end
         
         function saveStateToDisk(this)

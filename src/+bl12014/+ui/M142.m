@@ -3,26 +3,27 @@ classdef M142 < mic.Base
     properties
         
         
-        wagoSolenoid
-        measPoint
         
-
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiNewFocusModel8742
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiMicronixMmc103
         
         
-        
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiStageX
         
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiStageTiltX
         
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiStageTiltYMf
         
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiStageTiltYMfr
         
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiStageTiltZMfr
         
        
@@ -94,6 +95,14 @@ classdef M142 < mic.Base
             dLeft = 10;
             dSep = 30;
             
+            %{
+            this.uiMicronixMmc103.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiNewFocusModel8742.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
+            %}
+                         
             this.uiStageX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
@@ -253,11 +262,40 @@ classdef M142 < mic.Base
             );
         end
         
+        function initUiNewFocusModel8742(this)
+            
+            this.uiNewFocusModel8742 = mic.ui.device.GetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowValue', false, ...
+                'cName', 'newfocus-model-8742', ...
+                'cLabel', 'NewFocus Model 8742' ...
+            );
         
+        end
         
+        function initUiMicronixMmc103(this)
+            
+            this.uiMicronixMmc103 = mic.ui.device.GetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowValue', false, ...
+                'cName', 'micronix-mmc-103', ...
+                'cLabel', 'Micronix MMC 103' ...
+            );
         
+        end
+        
+
         function init(this)
             this.msg('init');
+            
+            %this.initUiNewFocusModel8742();
+            %this.initUiMicronixMmc103()
             this.initUiStageX();
             this.initUiStageTiltX();
             this.initUiStageTiltYMf();
