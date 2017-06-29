@@ -5,6 +5,11 @@ classdef App < mic.Base
         dHeight = 500
         
         dWidthButton = 150
+        
+        
+        cTcpipHostMicronix = '192.168.0.2'
+        cTcpipHostNewFocus = '192.168.0.3'
+        
     end
     
 	properties
@@ -534,7 +539,7 @@ classdef App < mic.Base
             
             try
                 this.commNewFocusModel8742 = newfocus.Model8742( ...
-                    'cTcpipHost', '192.168.0.3' ...
+                    'cTcpipHost', this.cTcpipHostNewFocus ...
                 );
                 this.commNewFocusModel8742.init();
                 this.commNewFocusModel8742.connect();
@@ -565,7 +570,7 @@ classdef App < mic.Base
             try
                 this.commMicronixMmc103 = micronix.MMC103(...
                     'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
-                    'cTcpipHost', '192.168.0.2' ...
+                    'cTcpipHost', this.cTcpipHostMicronix ...
                 );
                 % Create tcpip object
                 this.commMicronixMmc103.init();

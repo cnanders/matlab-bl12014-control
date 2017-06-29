@@ -1,4 +1,4 @@
-classdef GetLogicalConnect < mic.interface.device.GetSetNumber
+classdef GetLogicalConnect < mic.interface.device.GetLogical
     
     % This device will be used with a quasi-hack of the 
     % mic.ui.device.GetLogical UI control
@@ -16,7 +16,6 @@ classdef GetLogicalConnect < mic.interface.device.GetSetNumber
         
         % {function_handle 1x1} that returns a logical
         fh
-        
         
     end
             

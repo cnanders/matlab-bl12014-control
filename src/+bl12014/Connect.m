@@ -34,11 +34,27 @@ classdef Connect
             
         end
         
+        function disconnectCommSmarActMcsM141ToUiM141(ui)
+            
+            ui.uiStageX.setDevice([]);
+            ui.uiStageTiltX.setDevice([]);
+            ui.uiStageTiltY.setDevice([]);
+            
+        end
+        
         function connectCommSmarActMcsGoniToUiInterferometry(comm, ui)
             
         end
         
+        function disconnectCommSmarActMcsGoniToUiInterferometry(comm, ui)
+            
+        end
+        
         function connectCommSmarActSmarPodToUiInterferometry(comm, ui)
+            
+        end
+        
+        function disconnectCommSmarActSmarPodToUiInterferometry(comm, ui)
             
         end
     
@@ -48,6 +64,11 @@ classdef Connect
             % {< mic.interface.device.GetNumber}
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, u8Channel);
             ui.uiMeasurPointVolts.setDevice(device);
+        end
+        
+        function disconnectCommDataTranslationMeasurPointToUiM141(ui)
+            
+            ui.uiMeasurPointVolts.setDevice([]);
         end
         
         %{
@@ -66,6 +87,11 @@ classdef Connect
             ui.uiMeasurPointVolts.setDevice(device);
         end
         
+        function disconnectCommDataTranslationMeasurPointToUiD142(ui)
+            
+            ui.uiMeasurPointVolts.setDevice([]);
+        end
+        
         function connectCommDataTranslationMeasurPointToUiM143(comm, ui)
             
             u8Channel = 3;
@@ -76,7 +102,17 @@ classdef Connect
             
         end
         
+        function disconnectCommDataTranslationMeasurPointToUiM143(ui)
+            
+            ui.uiMeasurPointVolts.setDevice([]);
+            
+        end
+        
         function connectCommDataTranslationMeasurPointToUiVis(comm, ui)
+            
+        end
+        
+        function disconnectCommDataTranslationMeasurPointToUiVis(ui)
             
         end
         
@@ -133,7 +169,39 @@ classdef Connect
             
         end
         
+        function disconnectCommDataTranslationMeasurPointToUiTempSensors(ui)
+            
+            ui.uiMod3TempSensors.uiReticleCam1.setDevice([]);
+            ui.uiMod3TempSensors.uiReticleCam2.setDevice([]);
+            ui.uiMod3TempSensors.uiFiducialCam1.setDevice([]);
+            ui.uiMod3TempSensors.uiFiducialCam2.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame1.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame2.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame3.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame4.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame5.setDevice([]);
+            ui.uiMod3TempSensors.uiFrame6.setDevice([]);
+            
+            
+            ui.uiPobTempSensors.uiFrame1.setDevice([]);
+            ui.uiPobTempSensors.uiFrame2.setDevice([]);
+            ui.uiPobTempSensors.uiFrame3.setDevice([]);
+            ui.uiPobTempSensors.uiFrame4.setDevice([]);
+            ui.uiPobTempSensors.uiFrame5.setDevice([]);
+            ui.uiPobTempSensors.uiFrame6.setDevice([]);
+            ui.uiPobTempSensors.uiFrame7.setDevice([]);
+            ui.uiPobTempSensors.uiFrame8.setDevice([]);
+            ui.uiPobTempSensors.uiFrame9.setDevice([]);
+            ui.uiPobTempSensors.uiFrame10.setDevice([]);
+            ui.uiPobTempSensors.uiFrame11.setDevice([]);
+            ui.uiPobTempSensors.uiFrame12.setDevice([]);
+            
+        end
+        
         function connectCommDataTranslationMeasurPointToUiMetrologyFrame(comm, ui)
+        end
+        
+        function disconnectCommDataTranslationMeasurPointToUiMetrologyFrame(ui)
         end
         
         function connectCommDataTranslationMeasurPointToUiReticle(comm, ui)
@@ -153,18 +221,30 @@ classdef Connect
             
         end
         
-        function connectCommDataTranslationMeasurPointToUiWafer(comm, ui)
-            % POB cap sensors are in Wafer UI
+        function connectCommDataTranslationMeasurPointToUiReticle(comm, ui)
+            % Mod3 cap sensors are in Reticle UI
             
-            deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 31);
-            deviceCap2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 32);
-            deviceCap3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 33);
-            deviceCap4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 34);
+            % {< mic.interface.device.GetNumber}
+            deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 21);
+            deviceCap2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 22);
+            deviceCap3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 23);
+            deviceCap4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 24);
+
                 
-            ui.uiPobCapSensors.uiCap1.setDevice(deviceCap1);
-            ui.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
-            ui.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
-            ui.uiPobCapSensors.uiCap4.setDevice(deviceCap4);
+            ui.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
+            ui.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
+            ui.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
+            ui.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
+            
+        end
+        
+        function disconnectCommDataTranslationMeasurPointToUiWafer(ui)
+            % POB cap sensors are in Wafer UI
+             
+            ui.uiPobCapSensors.uiCap1.setDevice([]);
+            ui.uiPobCapSensors.uiCap2.setDevice([]);
+            ui.uiPobCapSensors.uiCap3.setDevice([]);
+            ui.uiPobCapSensors.uiCap4.setDevice([]);
             
         end
         
@@ -182,21 +262,37 @@ classdef Connect
         function connectCommDeltaTauPowerPmacToReticle(comm, ui)
         end
         
+        function disconnectCommDeltaTauPowerPmacToReticle(ui)
+        end
+        
         function connectCommDeltaTauPowerPmacToUiWafer(comm, ui)
         end
         
+        function disconnectCommDeltaTauPowerPmacToUiWafer(ui)
+        end
+        
         function connectCommKeithley6482WaferToUiWafer(comm, ui)
+        end
+        
+        function disconnectCommKeithley6482WaferToUiWafer(ui)
         end
 
         function connectCommKeithley6482ReticleToUiReticle(comm, ui)
         end
         
+        function disconnectCommKeithley6482ReticleToUiReticle(ui)
+        end
+        
         function connectCommCxroHeightSensorToUiWafer(comm, ui)
-            
-            
+        end
+        
+        function disconnectCommCxroHeightSensorToUiWafer(ui)
         end
         
         function connectCommCxroBeamlineToUiBeamline(comm, ui)
+        end
+        
+        function disconnectCommCxroBeamlineToUiBeamline(ui)
         end
         
         function connectCommNewFocusModel8742ToUiM142(comm, ui)
@@ -220,6 +316,20 @@ classdef Connect
             
         end
         
+        function disconnectCommNewFocusModel8742ToUiM142(ui)
+
+            ui.uiStageTiltX.turnOff()
+            ui.uiStageTiltYMf.turnOff()
+            ui.uiStageTiltYMfr.turnOff()
+            
+            ui.uiStageTiltX.setDevice([]);
+            ui.uiStageTiltYMf.setDevice([]);
+            ui.uiStageTiltYMfr.setDevice([]);
+            
+            
+            
+        end
+        
         % @param {micronix.MMC103 1x1} comm
         % @param {bl12014.ui.M142 1x1} ui
         function connectCommMicronixMmc103ToUiM142(comm, ui)
@@ -238,11 +348,31 @@ classdef Connect
             
         end
         
+        function disconnectCommMicronixMmc103ToUiM142(ui)
+            
+            
+            ui.uiStageX.turnOff()
+            ui.uiStageTiltZMfr.turnOff()
+            
+            ui.uiStageX.setDevice([]);
+            ui.uiStageTiltZMfr.setDevice([]);
+            
+            
+        end
+        
         function connectCommNPointLC400FieldToUiFieldScanner(comm, ui)
             
         end
         
+        function disconnectCommNPointLC400FieldToUiFieldScanner(ui)
+            
+        end
+        
         function connectCommNPointLC400FieldToUiPupilScanner(comm, ui)
+            
+        end
+        
+        function disconnectCommNPointLC400FieldToUiPupilScanner(ui)
             
         end
         
