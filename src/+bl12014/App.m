@@ -60,6 +60,10 @@ classdef App < mic.Base
         % M142 + M142R common x
         commMicronixMmc103
         
+        commGalilD142
+        
+        commGalilM143
+        
         
     end
     
@@ -150,6 +154,14 @@ classdef App < mic.Base
         function l = getMicronixMmc103(this)
             l = ~isempty(this.commMicronixMmc103);
             
+        end
+        
+        function l = getGalilD142(this)
+            l = ~isempty(this.commGalilD142);
+        end
+        
+        function l = getGalilM142(this)
+            l = ~isempty(this.commGalilM143);
         end
         
         function l = getDeltaTauPowerPmac(this)
@@ -470,6 +482,32 @@ classdef App < mic.Base
             this.commNewFocusModel8742.delete();
             this.commNewFocusModel8742 = [];
                             
+        end
+        
+        
+        function initAndConnectGalilD142(this)
+            if this.getGalilD142()
+                return
+            end
+        end
+        
+        function destroyAndDisconnectGalilD142(this)
+            if ~this.getGalilD142()
+                return
+            end
+            
+        end
+        
+        function initAndConnectGalilM143(this)
+            if this.getGalilM143()
+                return
+            end
+        end
+        
+        function destroyAndDisconnectGalilM143(this)
+            if ~this.getGalilM143()
+                return
+            end
         end
         
         function initAndConnectMicronixMmc103(this)

@@ -92,6 +92,35 @@ classdef Connect
             ui.uiMeasurPointVolts.setDevice([]);
         end
         
+        
+        function connectCommGalilToUiM143(comm, ui)
+            
+            u8Channel = 3;
+            
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetSetNumberFromGalil(comm, u8Channel);
+            ui.uiStageY.setDevice(device);
+            
+        end
+        
+        function disconnectCommGalilToUiM143(ui)
+            ui.uiStageY.setDevice([]);
+        end
+        
+        function connectCommGalilToUiD142(comm, ui)
+            
+            u8Channel = 2;
+            
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetSetNumberFromGalil(comm, u8Channel);
+            ui.uiStageY.setDevice(device);
+            
+        end
+        
+        function disconnectCommGalilToUiD142(ui)
+            ui.uiStageY.setDevice([]);
+        end
+        
         function connectCommDataTranslationMeasurPointToUiM143(comm, ui)
             
             u8Channel = 3;
