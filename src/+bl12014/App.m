@@ -1,11 +1,11 @@
 classdef App < mic.Base
         
     properties (Constant)
-        dWidth = 500
+        
+        dWidth = 250
         dHeight = 500
         
         dWidthButton = 150
-        
         
         cTcpipHostMicronix = '192.168.0.2'
         cTcpipHostNewFocus = '192.168.0.3'
@@ -13,6 +13,7 @@ classdef App < mic.Base
     end
     
 	properties
+        
         
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
@@ -59,6 +60,7 @@ classdef App < mic.Base
         % M142 + M142R common x
         commMicronixMmc103
         
+        
     end
     
     properties (SetAccess = private)
@@ -68,23 +70,11 @@ classdef App < mic.Base
     properties (Access = private)
         
         hFigure
-        
         uiApp
-        uiComm
         
-        lConnectedToCommNewFocusModel8742 = false
-        lConnectedToCommSmarActMcsM141 = false
-        lConnectedToCommSmarActMcsGoni = false
-        lConnectedToCommMicronixMmc103 = false
-        lConnectedToCommDeltaTauPowerPmac = false
-        lConnectedToCommDataTranslationMeasurPoint = false
-        lConnectedToCommKeithley6482Reticle = false
-        lConnectedToCommKeithley6482Wafer = false
-        lConnectedToCommCxroHeightSensor = false
-        lConnectedToCommCxroBeamline = false
-        lConnectedToCommNPointLC400Field = false
-        lConnectedToCommNPointLC400Pupil = false
-
+        % {bl12014.Comm 1x1}
+        comm
+        
     end
     
         
@@ -107,19 +97,485 @@ classdef App < mic.Base
             
             this.buildFigure();
             this.uiApp.build(this.hFigure, 10, 10);
-            this.uiComm.build(this.hFigure, 210, 10);
+            % this.uiComm.build(this.hFigure, 210, 10);
         end
         
         %% Destructor
         
         function delete(this)
             delete(this.uiApp)
-            this.destroyComm()
-        end         
+            % this.comm.delete()
+            this.destroyAndDisconnectAll();
+            
+        end
+        
+        
+        
 
     end
     
     methods (Access = private)
+        
+        function destroyAndDisconnectAll(this)
+            this.destroyAndDisconnectCxroBeamline();
+            this.destroyAndDisconnectCxroHeightSensor();
+            this.destroyAndDisconnectDataTranslationMeasurPoint();
+            this.destroyAndDisconnectDeltaTauPowerPmac();
+            this.destroyAndDisconnectKeithley6482Reticle();
+            this.destroyAndDisconnectKeithley6482Wafer();
+            this.destroyAndDisconnectMicronixMmc103();
+            this.destroyAndDisconnectNewFocusModel8742();
+            this.destroyAndDisconnectNPointLC400Field();
+            this.destroyAndDisconnectNPointLC400Pupil();
+            this.destroyAndDisconnectSmarActMcsGoni();
+            this.destroyAndDisconnectSmarActMcsM141();
+            this.destroyAndDisconnectSmarActSmarPod();
+        end
+        
+        % Getters return logical if the COMM class exists.  Used by
+        % GetSetLogicalConnect instances
+        
+        function l = getNewFocusModel8742(this)
+            l = ~isempty(this.commNewFocusModel8742);
+        end
+        
+        function l = getSmarActMcsM141(this)
+            l =  ~isempty(this.commSmarActMcsM141);
+        end
+        
+        function l = getSmarActMcsGoni(this)
+            l = ~isempty(this.commSmarActMcsGoni);
+        end
+        
+        function l = getMicronixMmc103(this)
+            l = ~isempty(this.commMicronixMmc103);
+            
+        end
+        
+        function l = getDeltaTauPowerPmac(this)
+            l = ~isempty(this.commDeltaTauPowerPmac);
+            
+        end
+        
+        function l = getDataTranslationMeasurPoint(this)
+            l = ~isempty(this.commDataTranslationMeasurPoint);
+        end
+        
+        function l = getKeithley6482Reticle(this)
+            l = ~isempty(this.commKeithley6482Reticle);
+            
+        end
+        
+        function l = getKeithley6482Wafer(this)
+            l = ~isempty(this.commKeithley6482Wafer);
+            
+        end
+        
+        function l = getCxroHeightSensor(this)
+            l = ~isempty(this.commCxroHeightSensor);
+            
+        end
+        
+        function l = getCxroBeamline(this)
+            l = ~isempty(this.commCxroBeamline);
+        end
+        
+        function l = getNPointLC400Field(this)
+            l = ~isempty(this.commNPointLC400Field);
+            
+        end
+        
+        function l = getNPointLC400Pupil(this)
+            l = ~isempty(this.commNPointLC400Pupil);
+        end
+        
+        function initAndConnectSmarActMcsM141(this)
+                        
+            if this.getSmarActMcsM141()
+                return
+            end
+            
+            try
+                this.initCommMet5Instruments();
+                this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
+            catch mE
+                this.commSmarActMcsM141 = [];
+                return
+            end
+            bl12014.Connect.connectCommSmarActMcsM141ToUiM141(this.commSmarActMcsM141, this.uiApp.uiM141)
+        end
+        
+        
+        function destroyAndDisconnectSmarActMcsM141(this)
+            
+            bl12014.Connect.disconnectCommSmarActMcsM141ToUiM141(this.uiApp.uiM141);
+            this.commSmarActMcsM141 = [];
+        end
+        
+        
+        function initAndConnectSmarActMcsGoni(this)
+            
+            
+            if this.getSmarActMcsGoni()
+                return
+            end
+            
+            try
+                this.initCommMet5Instruments();
+                this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer();
+            catch mE
+                this.commSmarActMcsGoni = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommSmarActMcsGoniToUiInterferometry(this.commSmarActMcsGoni, this.uiApp.uiInterferometry)
+        end
+        
+        function destroyAndDisconnectSmarActMcsGoni(this)
+            bl12014.Connect.disconnectCommSmarActMcsGoniToUiInterferometry(this.uiApp.uiInterferometry)
+            this.commSmarActMcsGoni = [];
+        end
+        
+        
+        
+        function initAndConnectSmarActSmarPod(this)
+            
+
+            if this.getSmarActSmarPod()
+                return
+            end
+            
+            try
+                this.initCommMet5Instruments();
+                this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod();
+            catch mE
+                this.commSmarActSmarPod = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommSmarActSmarPodToUiInterferometry(this.commSmarActSmarPod, this.uiApp.uiInterferometry)
+        end
+        
+        function destroyAndDisconnectSmarActSmarPod(this)
+            bl12014.Connect.disconnectCommSmarActSmarPodToUiInterferometry(this.uiApp.uiInterferometry)
+            this.commSmarActSmarPod = [];
+        end
+        
+        
+        function initAndConnectDataTranslationMeasurPoint(this)
+            
+            
+            if this.getDataTranslationMeasurPoint()
+                return
+            end
+                        
+            try
+                this.commDataTranslationMeasurPoint = dataTranslation.MeasurPoint();
+            catch mE
+                this.commDataTranslationMeasurPoint = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM141(this.commDataTranslationMeasurPoint, this.uiApp.uiM141)
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD141(this.commDataTranslationMeasurPoint, this.uiApp.uiD141);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
+            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiReticle(this.commDataTranslationMeasurPoint, this.uiApp.uiReticle);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiWafer(this.commDataTranslationMeasurPoint, this.uiApp.uiWafer);
+            bl12014.Connect.connectCommDataTranslationMeasurPointToUiTempSensors(this.commDataTranslationMeasurPoint, this.uiApp.uiTempSensors);
+            
+        end
+        
+        function destroyAndDisconnectDataTranslationMeasurPoint(this)
+            
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiM141(this.uiApp.uiM141)
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiD141(this.uiApp.uiD141);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiD142(this.uiApp.uiD142);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiM143(this.uiApp.uiM143);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiVis(this.uiApp.uiVis);
+            %bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiMetrologyFrame(this.uiApp.uiMetrologyFrame);
+            %bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiMod3(this.uiApp.uiMod3);
+            %bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiPob(this.uiApp.uiPob);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiReticle(this.uiApp.uiReticle);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiWafer(this.uiApp.uiWafer);
+            bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiTempSensors(this.uiApp.uiTempSensors);
+            
+            this.commDataTranslationMeasurPoint.delete();
+            this.commDataTranslationMeasurPoint = [];
+        end
+        
+        function initAndConnectDeltaTauPowerPmac(this)
+           
+            if this.getDeltaTauPowerPmac()
+                return
+            end
+            
+            try
+                this.commDeltaTauPowerPmac = deltaTau.powerPmac.PowerPmac();
+            catch mE
+                this.commDeltaTauPowerPmac = []
+                return
+            end
+            
+            bl12014.Connect.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
+            bl12014.Connect.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
+            
+            
+        end
+        
+        function destroyAndDisconnectDeltaTauPowerPmac(this)
+
+            bl12014.Connect.disconnectCommDeltaTauPowerPmacToUiReticle(this.uiApp.uiReticle);
+            bl12014.Connect.disconnectCommDeltaTauPowerPmacToUiWafer(this.uiApp.uiWafer);
+            this.commDeltaTauPowerPmac.delete();
+            this.commDeltaTauPowerPmac = [];
+            
+        end
+        
+        function initAndConnectKeithley6482Wafer(this)
+            
+            if this.getKeithley6482Wafer()
+                return
+            end
+            
+            try
+                this.commKeithley6482Wafer = keithley.keithley6482.Keithley6482();
+            catch mE
+                this.commKeithley6482Wafer = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommKeithley6482WaferToUiWafer(this.commKeithley6482Wafer, this.uiApp.uiWafer);
+
+        end
+        
+        function destroyAndDisconnectKeithley6482Wafer(this)
+            
+            bl12014.Connect.disconnectCommKeithley6482WaferToUiWafer(this.uiApp.uiWafer);
+            this.commKeithley6482Wafer.delete();
+            this.commKeithley6482Wafer = [];
+        end
+        
+        
+        function initAndConnectKeithley6482Reticle(this)
+            
+            
+            if this.getKeithley6482Reticle()
+                return
+            end
+               
+            try
+                this.commKeithley6482Reticle = keithley.Keithley6482();
+            catch mE
+                this.commKeithley6482Reticle = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommKeithley6482ReticleToUiReticle(this.commKeithley6482Reticle, this.uiApp.uiReticle);
+            
+        end
+        
+        function destroyAndDisconnectKeithley6482Reticle(this)
+            
+                
+            bl12014.Connect.disconnectCommKeithley6482ReticleToUiReticle(this.uiApp.uiReticle);
+            this.commKeithley6482Reticle.delete();
+            this.commKeithley6482Reticle = [];
+        end
+        
+        function initAndConnectCxroHeightSensor(this)
+            
+            if this.getCxroHeightSensor()
+                return
+            end
+               
+            try
+                this.commCxroHeightSensor = cxro.met5.HeightSensor();
+            catch mE
+                this.commCxroHeightSensor = [];
+                return
+            end
+            
+            bl12014.Connect.connectCommCxroHeightSensorToUiWafer(this.commCxroHeightSensor, this.uiApp.uiWafer);
+            
+        end
+        
+        function destroyAndDisconnectCxroHeightSensor(this)
+            
+            bl12014.Connect.disconnectCommCxroHeightSensorToUiWafer(this.uiApp.uiWafer);
+            this.commCxroHeightSensor.delete();
+            this.commCxroHeightSensor = [];
+        end
+        
+        function initAndConnectCxroBeamline(this)
+            
+            if this.getCxroBeamline()
+                return
+            end
+            
+            try
+                this.commCxroBeamline = cxro.bl1201.Beamline();
+            catch mE
+                this.commCxroBeamline = [];
+                return;
+            end
+            
+            bl12014.Connect.connectCommCxroBeamlineToUiBeamline(this.commCxroBeamline, this.uiApp.uiBeamline);
+                        
+        end
+        
+        function destroyAndDisconnectCxroBeamline(this)
+            
+            bl12014.Connect.disconnectCommCxroBeamlineToUiBeamline(this.uiApp.uiBeamline);
+            this.commCxroBeamline.delete();
+            this.commCxroBeamline = [];
+        end
+        
+        function initAndConnectNewFocusModel8742(this)
+            
+
+            if this.getNewFocusModel8742()
+                return
+            end
+            
+            try
+                this.commNewFocusModel8742 = newfocus.Model8742( ...
+                    'cTcpipHost', this.cTcpipHostNewFocus ...
+                );
+                this.commNewFocusModel8742.init();
+                this.commNewFocusModel8742.connect();
+            catch mE
+                this.commNewFocusModel8742 = [];
+                rethrow(mE)
+                return;
+            end
+            
+            bl12014.Connect.connectCommNewFocusModel8742ToUiM142(this.commNewFocusModel8742, this.uiApp.uiM142);
+            
+        end
+        
+        function destroyAndDisconnectNewFocusModel8742(this)
+            
+
+            if ~this.getNewFocusModel8742()
+                return
+            end
+            
+            
+            bl12014.Connect.disconnectCommNewFocusModel8742ToUiM142(this.uiApp.uiM142);
+            this.commNewFocusModel8742.delete();
+            this.commNewFocusModel8742 = [];
+                            
+        end
+        
+        function initAndConnectMicronixMmc103(this)
+            
+            
+            if this.getMicronixMmc103()
+                return
+            end
+            
+            try
+                this.commMicronixMmc103 = micronix.MMC103(...
+                    'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
+                    'cTcpipHost', this.cTcpipHostMicronix ...
+                );
+                % Create tcpip object
+                this.commMicronixMmc103.init();
+
+                % Open connection to tcpip/tcpclient/serial)
+                this.commMicronixMmc103.connect();
+
+                % Clear any bytes sitting in the output buffer
+                this.commMicronixMmc103.clearBytesAvailable()
+
+                % Get Firmware Version
+                % this.commMicronixMmc103.getFirmwareVersion(uint8(1))
+            
+            catch mE
+            
+                this.commMicronixMmc103 = [];
+                return;
+            end
+            
+            bl12014.Connect.connectCommMicronixMmc103ToUiM142(this.commMicronixMmc103, this.uiApp.uiM142);
+            
+        end
+        
+        function destroyAndDisconnectMicronixMmc103(this)
+            
+            
+            if ~this.getMicronixMmc103()
+                return
+            end
+                            
+            bl12014.Connect.disconnectCommMicronixMmc103ToUiM142(this.uiApp.uiM142);
+            this.commMicronixMmc103.delete();
+            this.commMicronixMmc103 = [];
+            
+        end
+        
+        
+        function initAndConnectNPointLC400Pupil(this)
+            
+            if this.getNPointLC400Pupil()
+                return
+            end
+            
+            try
+                this.commNPointLC400Pupil = npoint.LC400();
+            catch mE
+                this.commNPointLC400Pupil = [];
+                return;
+            end
+            
+            bl12014.Connect.connectCommNPointLC400PupilToUiPupilScanner(this.commNPointLC400Pupil, this.uiApp.uiPupilScanner);
+            
+        end
+        
+        function destroyAndDisconnectNPointLC400Pupil(this)
+            
+            if ~this.getNPointLC400Pupil()
+                return
+            end
+
+            bl12014.Connect.disconnectCommNPointLC400PupilToUiPupilScanner(this.uiApp.uiPupilScanner);
+            this.commNPointLC400Pupil.delete();
+            this.commNPointLC400Pupil = [];
+        end
+        
+        function initAndConnectNPointLC400Field(this)
+            
+
+            if this.getNPointLC400Field()
+                return
+            end
+            
+            try
+                this.commNPointLC400Field = npoint.LC400();
+            catch mE
+                this.commNPointLC400Field = [];
+                return;
+            end
+            
+            bl12014.Connect.connectCommNPointLC400FieldToUiFieldScanner(this.commNPointLC400Field, this.uiApp.uiFieldScanner);
+            
+        end
+        
+        function destroyAndDisconnectNPointLC400Field(this)
+            
+            if ~this.getNPointLC400Field()
+                return
+            end
+            
+            bl12014.Connect.disconnectCommNPointLC400FieldToUiFieldScanner(this.uiApp.uiFieldScanner);
+            this.commNPointLC400Field.delete();
+            this.commNPointLC400Field = [];
+        end
         
         
         function buildFigure(this)
@@ -148,6 +604,7 @@ classdef App < mic.Base
             
         end
         
+        %{
         function initUiComm(this)
             
             stCxroBeamline = struct(...
@@ -261,6 +718,137 @@ classdef App < mic.Base
             );
             
         end
+        %}
+        
+        
+        
+        
+        
+        function initGetSetLogicalConnects(this)
+            
+            gslcNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getNewFocusModel8742, ...
+                'fhSetTrue', @initAndConnectNewFocusModel8742, ...
+                'fhSetFalse', @destroyAndDisconnectNewFocusModel8742 ...
+            );
+        
+            gslcSmarActMcsM141 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getSmarActMcsM141, ...
+                'fhSetTrue', @initAndConnectSmarActMcsM141, ...
+                'fhSetFalse', @destroyAndDisconnectSmarActMcsM141 ...
+            );
+        
+            gslcSmarActMcsGoni = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getSmarActMcsGoni, ...
+                'fhSetTrue', @initAndConnectSmarActMcsGoni, ...
+                'fhSetFalse', @destroyAndDisconnectSmarActMcsGoni ...
+            );
+        
+            gslcDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getDeltaTauPowerPmac, ...
+                'fhSetTrue', @initAndConnectDeltaTauPowerPmac, ...
+                'fhSetFalse', @destroyAndDisconnectDeltaTauPowerPmac ...
+            );
+        
+            gslcDataTranslationMeasurPoint = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getDataTranslationMeasurPoint, ...
+                'fhSetTrue', @initAndConnectDataTranslationMeasurPoint, ...
+                'fhSetFalse', @destroyAndDisconnectDataTranslationMeasurPoint ...
+            );
+        
+            %{
+            gslcNPointLC400Field = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getNPointLC400Field, ...
+                'fhSetTrue', @initAndConnectNPointLC400Field, ...
+                'fhSetFalse', @destroyAndDisconnectNPointLC400Field ...
+            );
+        
+            gslcNPointLC400Pupil = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getNPointLC400Pupil, ...
+                'fhSetTrue', @initAndConnectNPointLC400Pupil, ...
+                'fhSetFalse', @destroyAndDisconnectNPointLC400Pupil ...
+            );
+            %}
+            
+            gslcCxroHeightSensor = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getCxroHeightSensor, ...
+                'fhSetTrue', @initAndConnectCxroHeightSensor, ...
+                'fhSetFalse', @destroyAndDisconnectCxroHeightSensor ...
+            );
+        
+            gslcKeithley6482Reticle = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getKeithley6482Reticle, ...
+                'fhSetTrue', @initAndConnectKeithley6482Reticle, ...
+                'fhSetFalse', @destroyAndDisconnectKeithley6482Reticle ...
+            );
+        
+            gslcKeithley6482Wafer = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getKeithley6482Wafer, ...
+                'fhSetTrue', @initAndConnectKeithley6482Wafer, ...
+                'fhSetFalse', @destroyAndDisconnectKeithley6482Wafer ...
+            );
+        
+            gslcCxroBeamline = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getCxroBeamline, ...
+                'fhSetTrue', @initAndConnectCxroBeamline, ...
+                'fhSetFalse', @destroyAndDisconnectCxroBeamline ...
+            );
+        
+            gslcMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getMicronixMmc103, ...
+                'fhSetTrue', @initAndConnectMicronixMmc103, ...
+                'fhSetFalse', @destroyAndDisconnectMicronixMmc103 ...
+            );
+        
+
+            %this.uiApp.uiBeamline.uiCxroBeamline.setDevice(gslcCxroBeamline);
+            %this.uiApp.uiShutter.uiCxroBeamline.setDevice(gslcCxroBeamline);
+            
+            this.uiApp.uiM141.uiSmarActMcsM141.setDevice(gslcSmarActMcsM141);
+            this.uiApp.uiM141.uiSmarActMcsM141.turnOn();
+            this.uiApp.uiM141.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
+            this.uiApp.uiM141.uiDataTranslationMeasurPoint.turnOn();
+            
+            this.uiApp.uiM142.uiMicronixMmc103.setDevice(gslcMicronixMmc103);
+            this.uiApp.uiM142.uiMicronixMmc103.turnOn();
+            this.uiApp.uiM142.uiNewFocusModel8742.setDevice(gslcNewFocusModel8742);
+            this.uiApp.uiM142.uiNewFocusModel8742.turnOn();
+            
+            % this.uiApp.uiM143.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
+            % this.uiApp.uiM143.uiDataTranslationMeasurPoint.turnOn()
+            
+            this.uiApp.uiD141.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
+            this.uiApp.uiD141.uiDataTranslationMeasurPoint.turnOn()
+            
+            this.uiApp.uiD142.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
+            this.uiApp.uiD142.uiDataTranslationMeasurPoint.turnOn()
+            
+            this.uiApp.uiReticle.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
+            this.uiApp.uiReticle.uiKeithley6482.setDevice(gslcKeithley6482Reticle)
+            this.uiApp.uiReticle.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint);
+            this.uiApp.uiReticle.uiDeltaTauPowerPmac.turnOn()
+            this.uiApp.uiReticle.uiKeithley6482.turnOn()
+            this.uiApp.uiReticle.uiDataTranslationMeasurPoint.turnOn()
+           
+            this.uiApp.uiWafer.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
+            this.uiApp.uiWafer.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint);
+            this.uiApp.uiWafer.uiKeithley6482.setDevice(gslcKeithley6482Wafer)
+            this.uiApp.uiWafer.uiCxroHeightSensor.setDevice(gslcCxroHeightSensor)
+            this.uiApp.uiWafer.uiDeltaTauPowerPmac.turnOn()
+            this.uiApp.uiWafer.uiDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiWafer.uiKeithley6482.turnOn()
+            this.uiApp.uiWafer.uiCxroHeightSensor.turnOn()
+            
+            %this.uiApp.uiScannerControlMA.ui
+            %this.uiApp.uiScannerControlM142.ui
+            %this.uiApp.uiPrescriptionTool.ui          
+            %this.uiApp.uiScan.ui
+            
+            this.uiApp.uiTempSensors.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
+            this.uiApp.uiTempSensors.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
+            this.uiApp.uiTempSensors.uiDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiTempSensors.uiDeltaTauPowerPmac.turnOn()
+        end
         
         
         function init(this)
@@ -268,396 +856,11 @@ classdef App < mic.Base
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton ...
             ); 
-            this.initUiComm();
-
-            % this.initComm()
+            this.initGetSetLogicalConnects();
+            % this.initUiComm();
+            % this.initAndConnect()
             % this.loadStateFromDisk();
 
-        end
-        
-
-        function initCommMet5Instruments(this)
-           
-            return
-            
-            if isempty(this.jMet5Instruments)
-                this.jMet5Instruments = cxro.met5.Instruments();
-            end
-        end
-        
-        %{
-        function l = connectWago(this)
-            
-            l = true;
-            return;
-            
-            if this.lConnectedToCommWago
-                this.showMsgConnected('commWago');
-                return
-            end 
-            
-            
-            try
-                this.commWago = wago.Wago()
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommWagoToUiD141(this.commWago, this.uiApp.uiD141)
-            this.lConnectedToCommWago = true;
-            
-        end
-        %}
-                
-        function l = connectCommSmarActMcsM141(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommSmarActMcsM141
-                this.showMsgConnected('commSmarActMcsM141');
-                return
-            end
-            
-            try
-                this.initCommMet5Instruments();
-                this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage()
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommSmarActMcsM141ToUiM141(this.commSmarActMcsM141, this.uiApp.uiM141)
-            this.lConnectedToCommSmarActMcsM141 = true;
-        end
-        
-        function l = connectCommSmarActMcsGoni(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommSmarActMcsGoni
-                this.showMsgConnected('commSmarActMcsGoni');
-                return
-            end
-            
-            try
-                this.initCommMet5Instruments();
-                this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer()
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommSmarActMcsGoniToUiInterferometry(this.commSmarActMcsGoni, this.uiApp.uiInterferometry)
-            this.lConnectedToCommSmarActMcsGoni = true;
-        end
-        
-        function l = connectCommSmarActSmarPod(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommSmarActSmarPod
-                this.showMsgConnected('commSmarActSmarPod');
-                return
-            end
-            
-            try
-                this.initCommMet5Instruments();
-                this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod()
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommSmarActSmarPodToUiInterferometry(this.commSmarActSmarPod, this.uiApp.uiInterferometry)
-            this.lConnectedToCommSmarActSmarPod = true;
-        end
-        
-        
-        function l = connectCommDataTranslationMeasurPoint(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommDataTranslationMeasurPoint
-                this.showMsgConnected('commDataTranslationMeasurPoint');
-                return
-            end
-                        
-            try
-                this.commDataTranslationMeasurPoint = dataTranslation.MeasurPoint();
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM141(this.commDataTranslationMeasurPoint, this.uiApp.uiM141)
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD141(this.commDataTranslationMeasurPoint, this.uiApp.uiD141);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiD142(this.commDataTranslationMeasurPoint, this.uiApp.uiD142);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiM143(this.commDataTranslationMeasurPoint, this.uiApp.uiM143);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiVis(this.commDataTranslationMeasurPoint, this.uiApp.uiVis);
-            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMetrologyFrame(this.commDataTranslationMeasurPoint, this.uiApp.uiMetrologyFrame);
-            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiMod3(this.commDataTranslationMeasurPoint, this.uiApp.uiMod3);
-            %bl12014.Connect.connectCommDataTranslationMeasurPointToUiPob(this.commDataTranslationMeasurPoint, this.uiApp.uiPob);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiReticle(this.commDataTranslationMeasurPoint, this.uiApp.uiReticle);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiWafer(this.commDataTranslationMeasurPoint, this.uiApp.uiWafer);
-            bl12014.Connect.connectCommDataTranslationMeasurPointToUiTempSensors(this.commDataTranslationMeasurPoint, this.uiApp.uiTempSensors);
-            
-            
-            this.lConnectedToCommDataTranslationMeasurPoint = true;
-        end
-        
-        function l = connectCommDeltaTauPowerPmac(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommDeltaTauPowerPmac
-                this.showMsgConnected('commDeltaTauPowerPmac');
-                return
-            end
-            
-            try
-                this.commDeltaTauPowerPmac = deltaTau.powerPmac.PowerPmac();
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
-            bl12014.Connect.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
-            
-            this.lConnectedToCommDeltaTauPowerPmac = true;
-            
-        end
-        
-        function l = connectCommKeithley6482Wafer(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommKeithley6482Wafer
-                this.showMsgConnected('commKeityley6482Wafer');
-                return
-            end
-            
-            try
-                this.commKeithley6482Wafer = keithley.keithley6482.Keithley6482();
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommKeithley6482WaferToUiWafer(this.commKeithley6482Wafer, this.uiApp.uiWafer);
-            
-            this.lConnectedToCommKeithley6482Wafer = true;
-        end
-        
-        
-        function l = connectCommKeithley6482Reticle(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommKeithley6482Reticle
-                this.showMsgConnected('commKeityley6482Reticle');
-                return
-            end
-               
-            try
-                this.commKeithley6482Reticle = keithley.Keithley6482();
-                % DO INITIAL CONNECTION
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommKeithley6482ReticleToUiReticle(this.commKeithley6482Reticle, this.uiApp.uiReticle);
-            
-            this.lConnectedToCommKeithley6482Reticle = true;
-            
-        end
-        
-        function l = connectCommCxroHeightSensor(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommCxroHeightSensor
-                this.showMsgConnected('commCxroHeightSensor');
-                return
-            end
-               
-            try
-                this.commCxroHeightSensor = cxro.met5.HeightSensor();
-            catch mE
-                l = false;
-                return
-            end
-            
-            bl12014.Connect.connectCommCxroHeightSensorToUiWafer(this.commCxroHeightSensor, this.uiApp.uiWafer);
-            
-            this.lConnectedToCommCxroHeightSensor = true;
-            
-        end
-        
-        function l = connectCommCxroBeamline(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommCxroBeamline
-                this.showMsgConnected('commCxroBeamline');
-                return
-            end
-            
-            try
-                this.commCxroBeamline = cxro.bl1201.Beamline();
-            catch mE
-                l = false;
-                return;
-            end
-            
-            bl12014.Connect.connectCommCxroBeamlineToUiBeamline(this.commCxroBeamline, this.uiApp.uiBeamline);
-            
-            this.lConnectedToCommCxroBeamline = true;
-            
-        end
-        
-        function l = connectCommNewFocusModel8742(this)
-            
-            %l = true;
-            %return
-            
-            if this.lConnectedToCommNewFocusModel8742
-                this.showMsgConnected('commNewFocusModel8742');
-                return
-            end
-            
-            try
-                this.commNewFocusModel8742 = newfocus.Model8742( ...
-                    'cTcpipHost', this.cTcpipHostNewFocus ...
-                );
-                this.commNewFocusModel8742.init();
-                this.commNewFocusModel8742.connect();
-            catch mE
-                l = false;
-                rethrow(mE)
-                return;
-            end
-            
-            bl12014.Connect.connectCommNewFocusModel8742ToUiM142(this.commNewFocusModel8742, this.uiApp.uiM142);
-            this.lConnectedToCommNewFocusModel8742 = true;
-            l = true;
-            
-        end
-        
-        function l = connectCommMicronixMmc103(this)
-            
-            %{
-            l = true;
-            return
-            %}
-            
-            if this.lConnectedToCommMicronixMmc103
-                this.showMsgConnected('commMicronixMmc103');
-                return
-            end
-            
-            try
-                this.commMicronixMmc103 = micronix.MMC103(...
-                    'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
-                    'cTcpipHost', this.cTcpipHostMicronix ...
-                );
-                % Create tcpip object
-                this.commMicronixMmc103.init();
-
-                % Open connection to tcpip/tcpclient/serial)
-                this.commMicronixMmc103.connect();
-
-                % Clear any bytes sitting in the output buffer
-                this.commMicronixMmc103.clearBytesAvailable()
-
-                % Get Firmware Version
-                % this.commMicronixMmc103.getFirmwareVersion(uint8(1))
-            
-            catch mE
-            
-                l = false;
-                return;
-            end
-            
-            bl12014.Connect.connectCommMicronixMmc103ToUiM142(this.commMicronixMmc103, this.uiApp.uiM142);
-            this.lConnectedToCommMicronixMmc103 = true;
-            l = true;
-            
-        end
-        
-        
-        function l = connectCommNPointLC400Pupil(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommNPointLC400Pupil
-                this.showMsgConnected('commNPointLC400Pupil');
-                return
-            end
-            
-            try
-                this.commNPointLC400Pupil = npoint.LC400();
-            catch mE
-                l = false;
-                return;
-            end
-            
-            bl12014.Connect.connectCommNPointLC400PupilToUiPupilScanner(this.commNPointLC400Pupil, this.uiApp.uiPupilScanner);
-            
-            this.lConnectedToCommNPointLC400Pupil = true;
-            
-        end
-        
-        function l = connectCommNPointLC400Field(this)
-            
-            l = true;
-            return
-            
-            if this.lConnectedToCommNPointLC400Field
-                this.showMsgConnected('commNPointLC400Field');
-                return
-            end
-            
-            try
-                this.commNPointLC400Field = npoint.LC400();
-            catch mE
-                l = false;
-                return;
-            end
-            
-            bl12014.Connect.connectCommNPointLC400FieldToUiFieldScanner(this.commNPointLC400Field, this.uiApp.uiFieldScanner);
-            
-            this.lConnectedToCommNPointLC400Field = true;
-            
-        end
-        
-               
-        
-        function destroyComm(this)
-            if this.lConnectedToCommMicronixMmc103
-                this.commMicronixMmc103.disconnect();
-            end
-            
-        end
-        
-        function showMsgConnected(this, cMsg)
-            
-        end
-        
-        function showMsgError(this, cMsg)
-            
         end
         
         function onCloseRequestFcn(this, src, evt)

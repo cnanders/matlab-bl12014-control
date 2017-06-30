@@ -3,11 +3,17 @@ classdef TempSensors < mic.Base
     properties (Constant)
       
         dWidth      = 645
-        dHeight     = 425
+        dHeight     = 505
         
     end
     
 	properties
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiDeltaTauPowerPmac
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiDataTranslationMeasurPoint
         
         uiPobTempSensors
         uiMod3TempSensors
@@ -86,6 +92,15 @@ classdef TempSensors < mic.Base
             dLeft = 10;
             dPad = 10;
             
+            dSep = 30;
+            
+            this.uiDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
+            
+            
             % this.mod3cap.build(this.hFigure, dPad, dTop);
             
             this.uiPobTempSensors.build(this.hFigure, dLeft, dTop);
@@ -136,6 +151,52 @@ classdef TempSensors < mic.Base
                        
             this.uiMod3TempSensors = bl12014.ui.Mod3TempSensors(...
                 'clock', this.clock ...
+            );
+        
+            this.initUiDataTranslationMeasurPoint();
+            this.initUiDeltaTauPowerPmac();
+        
+        end
+        
+        function initUiDataTranslationMeasurPoint(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'data-translation-measur-point-temp-sensors', ...
+                'cLabel', 'Data Trans MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiDeltaTauPowerPmac(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'delta-tau-power-pmac-temp-sensors', ...
+                'cLabel', 'DeltaTau Power PMAC' ...
             );
         
         end

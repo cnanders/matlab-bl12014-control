@@ -3,15 +3,12 @@ classdef D141 < mic.Base
     properties
         
         
-        wagoSolenoid
-        measPoint
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiWago
         
-        % {< mic.interface.device.GetSetNumber}
-        deviceStageY
-        
-        % {< mic.interface.device.GetNumber}
-        deviceMeasPointVolts
-        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiDataTranslationMeasurPoint
+                
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
         
@@ -24,7 +21,7 @@ classdef D141 < mic.Base
         
         clock
         dWidth = 580
-        dHeight = 90
+        dHeight = 170
         hFigure
         
         configStageY
@@ -89,6 +86,13 @@ classdef D141 < mic.Base
             dLeft = 10;
             dSep = 30;
             
+            this.uiWago.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
+            
+            
             this.uiStageY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
@@ -118,7 +122,7 @@ classdef D141 < mic.Base
     
     methods (Access = private)
         
-         function initStageY(this)
+         function initUiStageY(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -139,9 +143,9 @@ classdef D141 < mic.Base
         end
         
         
-        function initCurrent(this)
+        function initUiCurrent(this)
             
-            this.msg('initCurrent()');
+            this.msg('initUiCurrent()');
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-number', ...
@@ -162,11 +166,57 @@ classdef D141 < mic.Base
             );
         end
         
+        
+        function initUiDataTranslationMeasurPoint(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'data-translation-measur-point-d141', ...
+                'cLabel', 'DataTrans MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiWago(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiWago = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'wago-d141', ...
+                'cLabel', 'Wago' ...
+            );
+        
+        end
+        
         function init(this)
             
             this.msg('init()');
-            this.initStageY();
-            this.initCurrent();
+            this.initUiStageY();
+            this.initUiCurrent();
+            this.initUiWago();
+            this.initUiDataTranslationMeasurPoint();
         end
         
         function onFigureCloseRequest(this, src, evt)

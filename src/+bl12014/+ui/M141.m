@@ -1,11 +1,12 @@
 classdef M141 < mic.Base
     
     properties
+                
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiSmarActMcsM141
         
-        
-        wagoSolenoid
-        measPoint
-        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiDataTranslationMeasurPoint
 
         
         % {mic.ui.device.GetSetNumber 1x1}}
@@ -26,7 +27,7 @@ classdef M141 < mic.Base
         
         clock
         dWidth = 580
-        dHeight = 150
+        dHeight = 230
         hFigure
         
         configStageY
@@ -84,6 +85,13 @@ classdef M141 < mic.Base
             dLeft = 10;
             dSep = 30;
             
+            this.uiSmarActMcsM141.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
+            
+            
             this.uiStageX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
@@ -136,7 +144,7 @@ classdef M141 < mic.Base
          end
         
          
-        function initStageX(this)
+        function initUiStageX(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -156,7 +164,7 @@ classdef M141 < mic.Base
             );
         end
         
-        function initStageTiltX(this)
+        function initUiStageTiltX(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -177,7 +185,7 @@ classdef M141 < mic.Base
             );
         end
         
-        function initStageTiltY(this)
+        function initUiStageTiltY(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -199,7 +207,7 @@ classdef M141 < mic.Base
         end
         
         
-        function initCurrent(this)
+        function initUiCurrent(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -221,13 +229,58 @@ classdef M141 < mic.Base
             );
         end
         
+        function initUiDataTranslationMeasurPoint(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'data-translation-measur-point-m141', ...
+                'cLabel', 'Data Trans MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiSmarActMcsM141(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiSmarActMcsM141 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'smaract-mcs-m141', ...
+                'cLabel', 'SmarAct MCS M141' ...
+            );
+        
+        end
+        
         function init(this)
             
             this.msg('init');
-            this.initStageX();
-            this.initStageTiltX();
-            this.initStageTiltY();
-            this.initCurrent();
+            this.initUiStageX();
+            this.initUiStageTiltX();
+            this.initUiStageTiltY();
+            this.initUiCurrent();
+            this.initUiSmarActMcsM141();
+            this.initUiDataTranslationMeasurPoint();
         end
         
         

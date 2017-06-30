@@ -49,17 +49,8 @@ classdef Beamline < mic.Base
     
     properties
         
-        % {< mic.interface.device.GetSetNumber}
-        deviceExitSlit
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceUndulatorGap
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceGratingTiltX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceShutter
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCxroBeamline
         
         % {bl12014.device.ShutterVirtual}
         deviceShutterVirtual

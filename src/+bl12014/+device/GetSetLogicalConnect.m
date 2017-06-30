@@ -14,11 +14,13 @@ classdef GetSetLogicalConnect < mic.interface.device.GetSetLogical
     
     properties (Access = private)
         
-        % {function_handle 1x1} that returns a logical
-        fhConnect
+        fhGet
         
         % {function_handle 1x1} that returns a logical
-        fhDisconnect
+        fhSetTrue
+        
+        % {function_handle 1x1} that returns a logical
+        fhSetFalse
         
         % {logical 1x1} if successfully connected to a COMM device
         lConnected = false
@@ -38,14 +40,14 @@ classdef GetSetLogicalConnect < mic.interface.device.GetSetLogical
         end
         
         function l = get(this)
-            l = this.lConnected;
+            l = this.fhGet();
         end
         
         function set(this, lVal)
             if lVal
-                this.lConnected = this.fhConnect();
+                this.fhSetTrue();
             else
-                this.fhDisconnect();
+                this.fhSetFalse();
             end
         end
         
