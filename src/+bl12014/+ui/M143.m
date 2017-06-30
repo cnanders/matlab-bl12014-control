@@ -2,6 +2,13 @@ classdef M143 < mic.Base
     
     properties
         
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiGalil
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiDataTranslationMeasurPoint
+        
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
                 
@@ -14,7 +21,7 @@ classdef M143 < mic.Base
         
         clock
         dWidth = 580
-        dHeight = 90
+        dHeight = 170
         hFigure
         
         configStageY
@@ -71,6 +78,12 @@ classdef M143 < mic.Base
             dTop = 10;
             dLeft = 10;
             dSep = 30;
+                        
+            this.uiGalil.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
             
             this.uiStageY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -161,11 +174,56 @@ classdef M143 < mic.Base
             );
         end
         
+        function initUiDataTranslationMeasurPoint(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'data-translation-measur-point-d142', ...
+                'cLabel', 'DataTrans MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiGalil(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiGalil = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'galil-d142', ...
+                'cLabel', 'Galil' ...
+            );
+        
+        end
+        
         function init(this)
             
             this.msg('init');
             this.initStageY();
             this.initCurrent();
+            this.initUiGalil();
+            this.initUiDataTranslationMeasurPoint();
         end
         
         

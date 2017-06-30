@@ -3,7 +3,7 @@ classdef D142 < mic.Base
     properties
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiWago
+        uiGalil
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiDataTranslationMeasurPoint
@@ -85,7 +85,7 @@ classdef D142 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiWago.build(this.hFigure, dLeft, dTop);
+            this.uiGalil.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
@@ -185,7 +185,7 @@ classdef D142 < mic.Base
         
         end
         
-        function initUiWago(this)
+        function initUiGalil(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -193,15 +193,15 @@ classdef D142 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiWago = mic.ui.device.GetSetLogical(...
+            this.uiGalil = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'wago-d142', ...
-                'cLabel', 'Wago' ...
+                'cName', 'galil-d142', ...
+                'cLabel', 'Galil' ...
             );
         
         end
@@ -210,7 +210,7 @@ classdef D142 < mic.Base
             this.msg('init()');
             this.initStageY();
             this.initCurrent();
-            this.initUiWago();
+            this.initUiGalil();
             this.initUiDataTranslationMeasurPoint();
         end
         

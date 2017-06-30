@@ -221,22 +221,7 @@ classdef Connect
             
         end
         
-        function connectCommDataTranslationMeasurPointToUiReticle(comm, ui)
-            % Mod3 cap sensors are in Reticle UI
-            
-            % {< mic.interface.device.GetNumber}
-            deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 21);
-            deviceCap2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 22);
-            deviceCap3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 23);
-            deviceCap4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, 24);
-
-                
-            ui.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
-            ui.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
-            ui.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
-            ui.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
-            
-        end
+        
         
         function disconnectCommDataTranslationMeasurPointToUiWafer(ui)
             % POB cap sensors are in Wafer UI
