@@ -36,7 +36,7 @@ classdef Mod3CapSensors < mic.Base
         dWidthName = 70
         dWidthUnit = 80
         dWidthVal = 75
-        dWidthPadUnit = 280
+        dWidthPadUnit = 277
         
         configStageY
         configMeasPointVolts

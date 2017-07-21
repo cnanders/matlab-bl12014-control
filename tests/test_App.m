@@ -14,6 +14,7 @@ addpath(genpath(fullfile(cDirCnanders, 'matlab-hex', 'src')));
 addpath(genpath(fullfile(cDirCnanders, 'matlab-ieee', 'src')));
 addpath(genpath(fullfile(cDirCnanders, 'matlab-npoint-lc400', 'src')));
 addpath(genpath(fullfile(cDirCnanders, 'matlab-scanner-control-npoint', 'src')));
+addpath(genpath(fullfile(cDirCnanders, 'matlab-keithley-6482', 'src')));
 
 purge
 

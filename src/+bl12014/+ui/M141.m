@@ -1,7 +1,10 @@
 classdef M141 < mic.Base
     
     properties
-                
+           
+        % These are the UI for activating the hardware that gives the 
+        % software real data
+        
         % {mic.ui.device.GetSetLogical 1x1}
         uiSmarActMcsM141
         
@@ -130,7 +133,49 @@ classdef M141 < mic.Base
             end
             
             
-        end    
+        end   
+        
+        %{
+        function connectSmarActMcsM141(this, comm)
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceX = bl12014.device.GetSetNumberFromStage(comm, 1);
+
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltX = bl12014.device.GetSetNumberFromStage(comm, 2);
+
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltY = bl12014.device.GetSetNumberFromStage(comm, 3);
+            
+            this.uiStageX.setDevice(deviceX);
+            this.uiStageTiltX.setDevice(deviceTiltX);
+            this.uiStageTiltY.setDevice(deviceTiltY);
+            
+        end
+        
+        function disconnectSmarActMcsM141(this)
+            
+            this.uiStageX.setDevice([]);
+            this.uiStageTiltX.setDevice([]);
+            this.uiStageTiltY.setDevice([]);
+            
+        end
+        
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+            
+            u8Channel = 1;
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, u8Channel);
+            this.uiMeasurPointVolts.setDevice(device);
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+            
+            this.uiMeasurPointVolts.setDevice([]);
+        end
+        
+        %}
         
         
     end

@@ -3,6 +3,8 @@ classdef M142 < mic.Base
     properties
         
         
+        % These are the UI for activating the hardware that gives the 
+        % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiNewFocusModel8742
@@ -137,6 +139,68 @@ classdef M142 < mic.Base
         end    
         
         
+        %{
+        
+        function connectMicronixMmc103(this, comm)
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceX = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 1);
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltZMfr = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 2);
+            
+            this.uiStageX.setDevice(deviceX);
+            this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
+            
+            this.uiStageX.turnOn();
+            this.uiStageTiltZMfr.turnOn();
+            
+        end
+        
+        function disconnectMicronixMmc103(this)
+            
+            this.uiStageX.turnOff();
+            this.uiStageTiltZMfr.turnOff();
+            
+            this.uiStageX.setDevice([]);
+            this.uiStageTiltZMfr.setDevice([]);
+            
+        end
+        
+        function connectNewFocusModel8742(this, comm)
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
+
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
+            
+            this.uiStageTiltX.setDevice(deviceTiltX);
+            this.uiStageTiltYMf.setDevice(deviceTiltYMf);
+            this.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
+            
+            this.uiStageTiltX.turnOn()
+            this.uiStageTiltYMf.turnOn()
+            this.uiStageTiltYMfr.turnOn()
+            
+        end
+        
+        function disconnectNewFocusModel8742(this)
+            
+            this.uiStageTiltX.turnOff()
+            this.uiStageTiltYMf.turnOff()
+            this.uiStageTiltYMfr.turnOff()
+            
+            
+            this.uiStageTiltX.setDevice([]);
+            this.uiStageTiltYMf.setDevice([]);
+            this.uiStageTiltYMfr.setDevice([]);
+        end
+        
+        %}
     end
     
     methods (Access = private)

@@ -9,6 +9,7 @@ classdef App < mic.Base
         
         cTcpipHostMicronix = '192.168.0.2'
         cTcpipHostNewFocus = '192.168.0.3'
+        cTcpipHostKeithley6482Wafer = '192.168.0.3'
         
     end
     
@@ -23,6 +24,9 @@ classdef App < mic.Base
         
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsGoni
+        
+        % {FIX ME}
+        commSmarActSmarPod
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
@@ -151,6 +155,10 @@ classdef App < mic.Base
             l = ~isempty(this.commSmarActMcsGoni);
         end
         
+        function l = getSmarActSmarPod(this)
+            l = ~isempty(this.commSmarActSmarPod);
+        end
+        
         function l = getMicronixMmc103(this)
             l = ~isempty(this.commMicronixMmc103);
             
@@ -180,7 +188,6 @@ classdef App < mic.Base
         
         function l = getKeithley6482Wafer(this)
             l = ~isempty(this.commKeithley6482Wafer);
-            
         end
         
         function l = getCxroHeightSensor(this)
@@ -220,6 +227,10 @@ classdef App < mic.Base
         
         function destroyAndDisconnectSmarActMcsM141(this)
             
+            if ~this.getSmarActMcsM141()
+                return
+            end
+            
             bl12014.Connect.disconnectCommSmarActMcsM141ToUiM141(this.uiApp.uiM141);
             this.commSmarActMcsM141 = [];
         end
@@ -244,6 +255,11 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectSmarActMcsGoni(this)
+            
+            if ~this.getSmarActMcsGoni()
+                return
+            end
+            
             bl12014.Connect.disconnectCommSmarActMcsGoniToUiInterferometry(this.uiApp.uiInterferometry)
             this.commSmarActMcsGoni = [];
         end
@@ -269,6 +285,11 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectSmarActSmarPod(this)
+            
+            if ~this.getSmarActSmarPod()
+                return
+            end
+            
             bl12014.Connect.disconnectCommSmarActSmarPodToUiInterferometry(this.uiApp.uiInterferometry)
             this.commSmarActSmarPod = [];
         end
@@ -303,6 +324,10 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
+            
+            if ~this.getDataTranslationMeasurPoint()
+                return
+            end
             
             bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiM141(this.uiApp.uiM141)
             bl12014.Connect.disconnectCommDataTranslationMeasurPointToUiD141(this.uiApp.uiD141);
@@ -341,6 +366,10 @@ classdef App < mic.Base
         
         function destroyAndDisconnectDeltaTauPowerPmac(this)
 
+            if ~this.getDeltaTauPowerPmac()
+                return
+            end
+            
             bl12014.Connect.disconnectCommDeltaTauPowerPmacToUiReticle(this.uiApp.uiReticle);
             bl12014.Connect.disconnectCommDeltaTauPowerPmacToUiWafer(this.uiApp.uiWafer);
             this.commDeltaTauPowerPmac.delete();
@@ -355,7 +384,14 @@ classdef App < mic.Base
             end
             
             try
-                this.commKeithley6482Wafer = keithley.keithley6482.Keithley6482();
+                this.commKeithley6482Wafer = keithley.Keithley6482(...
+                    'cTcpipHost', this.cTcpipHostKeithley6482Wafer, ...
+                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+                );
+            
+                this.commKeithley6482Wafer.init()
+                this.commKeithley6482Wafer.connect()
+                % this.commKeithley6482Wafer.identity()
             catch mE
                 this.commKeithley6482Wafer = [];
                 return
@@ -366,6 +402,10 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
+            
+            if ~this.getKeithley6482Wafer()
+                return
+            end
             
             bl12014.Connect.disconnectCommKeithley6482WaferToUiWafer(this.uiApp.uiWafer);
             this.commKeithley6482Wafer.delete();
@@ -393,6 +433,9 @@ classdef App < mic.Base
         
         function destroyAndDisconnectKeithley6482Reticle(this)
             
+            if ~this.getKeithley6482Reticle()
+                return
+            end
                 
             bl12014.Connect.disconnectCommKeithley6482ReticleToUiReticle(this.uiApp.uiReticle);
             this.commKeithley6482Reticle.delete();
@@ -418,6 +461,10 @@ classdef App < mic.Base
         
         function destroyAndDisconnectCxroHeightSensor(this)
             
+            if ~this.getCxroHeightSensor()
+                return
+            end
+            
             bl12014.Connect.disconnectCommCxroHeightSensorToUiWafer(this.uiApp.uiWafer);
             this.commCxroHeightSensor.delete();
             this.commCxroHeightSensor = [];
@@ -441,6 +488,10 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectCxroBeamline(this)
+            
+            if ~this.getCxroBeamline()
+                return
+            end
             
             bl12014.Connect.disconnectCommCxroBeamlineToUiBeamline(this.uiApp.uiBeamline);
             this.commCxroBeamline.delete();

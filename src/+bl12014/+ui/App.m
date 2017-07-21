@@ -6,7 +6,8 @@ classdef App < mic.Base
         dWidth          = 140
         
         cTcpipHostLC400MA = '192.168.0.2'
-        cTcpipHostLC400M142 = '192.168.0.3'
+        cTcpipHostLC400M142 = '192.168.0.4'
+        
         
     end
 	properties
@@ -164,6 +165,7 @@ classdef App < mic.Base
             this.uiScannerControlM142 = ScannerControl(...
                 'clock', this.clock, ...
                 'cDevice', 'M142', ...
+                'dThetaX', 43.862, ... % Tilt about x-axis
                 'cLC400TcpipHost', this.cTcpipHostLC400M142 ...
             );
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();

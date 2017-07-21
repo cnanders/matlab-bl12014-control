@@ -2,12 +2,15 @@ classdef Reticle < mic.Base
         
     properties (Constant)
       
-        dWidth      = 1210
-        dHeight     = 600
+        dWidth      = 1285
+        dHeight     = 675
         
     end
     
 	properties
+        
+        % These are the UI for activating the hardware that gives the 
+        % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiDeltaTauPowerPmac
@@ -24,7 +27,7 @@ classdef Reticle < mic.Base
         uiCoarseStage
         uiFineStage
         uiAxes
-        mod3cap
+        uiDiode
         uiMod3CapSensors
     end
     
@@ -125,6 +128,9 @@ classdef Reticle < mic.Base
             this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
+            this.uiDiode.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiDiode.dHeight + dPad;
+            
             this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
@@ -175,7 +181,8 @@ classdef Reticle < mic.Base
             % Make sure the hggroup of the carriage is at the correct
             % location.  
             
-            dX = this.uiCoarseStage.uiX.getValCalDisplay();
+            dX = this.uiCoarseStage.uiX.getValCalDisplay(); 
+            % don't use display since need units of meters for setStatePosition
             dY = this.uiCoarseStage.uiY.getValCalDisplay();
             this.uiAxes.setStagePosition(dX, dY);
                         
@@ -192,6 +199,12 @@ classdef Reticle < mic.Base
             this.uiFineStage = bl12014.ui.ReticleFineStage(...
                 'clock', this.clock ...
             );
+        
+            this.uiDiode = bl12014.ui.ReticleDiode(...
+                'clock', this.clock ...
+            );
+        
+        
         
             dHeight = this.dHeight - 20;
             this.uiAxes = bl12014.ui.ReticleAxes(...

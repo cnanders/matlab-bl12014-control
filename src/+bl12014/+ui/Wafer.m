@@ -3,12 +3,16 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1435 %1295
-        dHeight     = 825
+        dWidth      = 1515 %1295
+        dHeight     = 905
         
     end
     
 	properties
+        
+        
+        % These are the UI for activating the hardware that gives the 
+        % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiDeltaTauPowerPmac
@@ -22,9 +26,11 @@ classdef Wafer < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiDataTranslationMeasurPoint
         
+                
         uiCoarseStage
         uiFineStage
         uiAxes
+        uiDiode
         uiPobCapSensors
         uiHeightSensor
        
@@ -131,6 +137,9 @@ classdef Wafer < mic.Base
             this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
+            this.uiDiode.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiDiode.dHeight + dPad;
+            
             this.uiPobCapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiPobCapSensors.dHeight + dPad;
             
@@ -188,6 +197,10 @@ classdef Wafer < mic.Base
                 'clock', this.clock ...
             );
             this.uiFineStage = bl12014.ui.WaferFineStage(...
+                'clock', this.clock ...
+            );
+        
+            this.uiDiode = bl12014.ui.WaferDiode(...
                 'clock', this.clock ...
             );
             this.uiPobCapSensors = bl12014.ui.PobCapSensors(...
@@ -307,12 +320,6 @@ classdef Wafer < mic.Base
             % this.saveState();
             
         end
-        
-       
-        
-        
-        
-        
         
         
     end % private

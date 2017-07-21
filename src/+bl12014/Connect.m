@@ -285,16 +285,60 @@ classdef Connect
         function disconnectCommDeltaTauPowerPmacToUiWafer(ui)
         end
         
+        
+        function connectCommKeithley6482WaferToUiFocusSensor(comm, ui)
+            
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 2);
+            ui.uiDiode.setDevice(device);
+            ui.uiDiode.turnOn();
+        end
+        
+        function disconnectCommKeithley6482WaferToUiFocusSensor(ui)
+            
+            ui.uiDiode.turnOff()
+            ui.uiDiode.setDevice([]);
+            
+        end
+        
+        function connectCommSmarActToUiFocusSensor(comm, ui)
+                        
+        end
+        
+        function disconnectCommSmarActToUiFocusSensor(ui)
+            
+        end
+
+        
         function connectCommKeithley6482WaferToUiWafer(comm, ui)
+            
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            ui.uiDiode.uiCurrent.setDevice(device);
+            ui.uiDiode.uiCurrent.turnOn();
+            
         end
         
         function disconnectCommKeithley6482WaferToUiWafer(ui)
+            
+            ui.uiDiode.uiCurrent.turnOff()
+            ui.uiDiode.uiCurrent.setDevice([]);
+            
         end
 
         function connectCommKeithley6482ReticleToUiReticle(comm, ui)
+            
+            % {< mic.interface.device.GetNumber}
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            ui.uiDiode.uiCurrent.setDevice(device);
+            ui.uiDiode.uiCurrent.turnOn();
+            
         end
         
         function disconnectCommKeithley6482ReticleToUiReticle(ui)
+            
+            ui.uiDiode.uiCurrent.turnOff()
+            ui.uiDiode.uiCurrent.setDevice([]);
         end
         
         function connectCommCxroHeightSensorToUiWafer(comm, ui)
@@ -312,10 +356,10 @@ classdef Connect
         function connectCommNewFocusModel8742ToUiM142(comm, ui)
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1);
+            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2);
+            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
             
             % {< mic.interface.device.GetSetNumber}
             deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
@@ -335,6 +379,7 @@ classdef Connect
             ui.uiStageTiltX.turnOff()
             ui.uiStageTiltYMf.turnOff()
             ui.uiStageTiltYMfr.turnOff()
+            
             
             ui.uiStageTiltX.setDevice([]);
             ui.uiStageTiltYMf.setDevice([]);

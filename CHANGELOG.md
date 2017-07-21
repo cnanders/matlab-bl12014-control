@@ -7,6 +7,14 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.11
+
+- Linked Keithley6482Wafer into App and Connect
+- Created `bl12014.ui.ReticleDiode`
+- Created `bl12014.ui.WaferDiode`
+- Integrated `bl12014.ui.ReticleDiode` into `bl12014.ui.Reticle`
+- Integrated `bl12014.ui.WaferDiode` into `bl12014.ui.Wafer`
+
 # 1.0.0-alpha.10
 
 - Linked ScannerControl (MA and M142) into the App and they are incorporated into `save()` and `load()` to persist their state across sessions.
