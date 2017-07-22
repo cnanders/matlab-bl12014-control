@@ -49,13 +49,8 @@ classdef Beamline < mic.Base
     
     properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCxroBeamline
         
-        % {bl12014.device.ShutterVirtual}
         deviceShutterVirtual
-        
-        
         
         % {mic.ui.device.GetSetNumber 1x1}
         uiDeviceExitSlit

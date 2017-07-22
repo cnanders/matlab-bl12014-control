@@ -7,6 +7,10 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.12
+
+- Removed `Connect` class and put everything in `App`.  Simpler this way
+
 # 1.0.0-alpha.11
 
 - Linked Keithley6482Wafer into App and Connect
