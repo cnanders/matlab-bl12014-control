@@ -13,16 +13,16 @@ classdef Reticle < mic.Base
         % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiDeltaTauPowerPmac
+        uiCommDeltaTauPowerPmac
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCxroHeightSensor
+        uiCommCxroHeightSensor
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiKeithley6482
+        uiCommKeithley6482
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiDataTranslationMeasurPoint
+        uiCommDataTranslationMeasurPoint
         
         uiCoarseStage
         uiFineStage
@@ -110,13 +110,13 @@ classdef Reticle < mic.Base
             dSep = 30;
             
             
-            this.uiDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiKeithley6482.build(this.hFigure, dLeft, dTop);
+            this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
@@ -216,9 +216,9 @@ classdef Reticle < mic.Base
                 'clock', this.clock ...
             );
         
-            this.initUiDataTranslationMeasurPoint();
-            this.initUiDeltaTauPowerPmac();
-            this.initUiKeithley6482();
+            this.initUiCommDataTranslationMeasurPoint();
+            this.initUiCommDeltaTauPowerPmac();
+            this.initUiCommKeithley6482();
         
             addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);
             this.clock.add(@this.onClock, this.id(), this.dDelay);
@@ -234,7 +234,7 @@ classdef Reticle < mic.Base
         end
         
         
-        function initUiDataTranslationMeasurPoint(this)
+        function initUiCommDataTranslationMeasurPoint(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -243,7 +243,7 @@ classdef Reticle < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -256,7 +256,7 @@ classdef Reticle < mic.Base
         
         end
         
-        function initUiDeltaTauPowerPmac(this)
+        function initUiCommDeltaTauPowerPmac(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -264,7 +264,7 @@ classdef Reticle < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
+            this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -279,7 +279,7 @@ classdef Reticle < mic.Base
         
         
         
-        function initUiKeithley6482(this)
+        function initUiCommKeithley6482(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -287,7 +287,7 @@ classdef Reticle < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiKeithley6482 = mic.ui.device.GetSetLogical(...
+            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...

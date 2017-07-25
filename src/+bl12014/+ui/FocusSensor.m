@@ -1,41 +1,53 @@
-classdef TempSensors < mic.Base
+classdef FocusSensor < mic.Base
         
     properties (Constant)
-      
-        dWidth      = 645
-        dHeight     = 505
+       
+        
+        dWidth      = 620
+        dHeight     = 510
         
     end
     
 	properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
+        
+        % UI for activating the hardware that gives the 
+        % software real data
+        
+        % { mic.ui.device.GetSetLogical 1x1}
         uiCommDeltaTauPowerPmac
+                
+        % { mic.ui.device.GetSetLogical 1x1}
+        uiCommKeithley6482
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDataTranslationMeasurPoint
+        % { mic.ui.device.GetSetLogical 1x1}
+        uiCommSmarActRotary
+             
         
-        uiPobTempSensors
-        uiMod3TempSensors
-        
+        % UI general
+        uiCoarseStage
+        uiFineStage
+        uiFocusSensor
+       
     end
     
     properties (SetAccess = private)
-    
-        cName = 'Temp Sensors'
+        
+        hFigure
+        
     end
     
     properties (Access = private)
-         
-        % { mic.clock 1x1} passed in
+                      
         clock
-        hFigure
         
     end
     
         
     events
-                
+        
+        eName
+        
     end
     
 
@@ -43,7 +55,7 @@ classdef TempSensors < mic.Base
     methods
         
         
-        function this = TempSensors(varargin)
+        function this = FocusSensor(varargin)
             
             for k = 1 : 2: length(varargin)
                 % this.msg(sprintf('passed in %s', varargin{k}));
@@ -53,6 +65,7 @@ classdef TempSensors < mic.Base
                 end
             end
             this.init();
+            
             
         end
         
@@ -70,48 +83,57 @@ classdef TempSensors < mic.Base
             dScreenSize = get(0, 'ScreenSize');
             
             this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Temp Sensor Monitor', ...
+                'NumberTitle', 'off',...
+                'MenuBar', 'none',...
+                'Name', 'Focus Sensor',...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
                     (dScreenSize(4) - this.dHeight)/2 ...
                     this.dWidth ...
                     this.dHeight ...
                  ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
+                'Resize', 'off',...
+                'HandleVisibility', 'on',... % lets close all close the figure
                 'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequest ...
-            );
+                'CloseRequestFcn', @this.onCloseRequestFcn ...
+                );
             
+            % There is a bug in the default 'painters' renderer when
+            % drawing stacked patches.  This is required to make ordering
+            % work as expected
+            
+            % set(this.hFigure, 'renderer', 'OpenGL');
             
             drawnow;
 
             dTop = 10;
-            dLeft = 10;
             dPad = 10;
-            
+            dLeft = 10;
             dSep = 30;
+
+            
+            
             
             this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommSmarActRotary.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
-            % this.mod3cap.build(this.hFigure, dPad, dTop);
+            this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            this.uiPobTempSensors.build(this.hFigure, dLeft, dTop);
-            % dTop = dTop + this.uiPobTempSensors.dHeight + dPad;
-            dLeft = dLeft + this.uiPobTempSensors.dWidth + dPad;
+            this.uiFineStage.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            this.uiMod3TempSensors.build(this.hFigure, dLeft, dTop);
-            % dTop = dTop + this.uiMod3TempSensors.dHeight + dPad;
-            dLeft = dLeft + this.uiMod3TempSensors.dWidth + dPad;
-                     
+            this.uiFocusSensor.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiFocusSensor.dHeight + dPad;
             
+                        
         end
         
                         
@@ -120,45 +142,45 @@ classdef TempSensors < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-                        
+            
             % Delete the figure
             
             if ishandle(this.hFigure)
                 delete(this.hFigure);
             end
             
-            
         end
+               
         
-       
         
         
-            
-
     end
     
     methods (Access = private)
- 
         
         function init(this)
             
             this.msg('init()');
             
-            this.uiPobTempSensors = bl12014.ui.PobTempSensors(...
+            this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'clock', this.clock ...
             );
-                       
-            this.uiMod3TempSensors = bl12014.ui.Mod3TempSensors(...
+            this.uiFineStage = bl12014.ui.WaferFineStage(...
+                'clock', this.clock ...
+            );
+
+            this.uiFocusSensor = bl12014.ui.WaferFocusSensor( ...
                 'clock', this.clock ...
             );
         
-            this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDeltaTauPowerPmac();
+            this.initUiCommSmarActRotary();
+            this.initUiCommKeithley6482();
         
+
         end
         
-        function initUiCommDataTranslationMeasurPoint(this)
+        function initUiCommSmarActRotary(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -167,15 +189,15 @@ classdef TempSensors < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommSmarActRotary = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-temp-sensors', ...
-                'cLabel', 'Data Trans MeasurPoint' ...
+                'cName', 'smar-act-rotary-stage', ...
+                'cLabel', 'SmarAct Rotary Stage' ...
             );
         
         end
@@ -195,21 +217,43 @@ classdef TempSensors < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'delta-tau-power-pmac-temp-sensors', ...
+                'cName', 'delta-tau-power-pmac-wafer', ...
                 'cLabel', 'DeltaTau Power PMAC' ...
             );
         
         end
         
+        function initUiCommKeithley6482(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
         
-        function onCloseRequest(this, src, evt)
-            this.msg('TempSensorsControl.closeRequestFcn()');
+            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'keithley-6482-wafer-focus-sensor', ...
+                'cLabel', 'Keithley 6482 (Wafer)' ...
+            );
+        
+        end
+        
+        
+        function onCloseRequestFcn(this, src, evt)
+            
             delete(this.hFigure);
             this.hFigure = [];
             % this.saveState();
+            
         end
         
-
+        
     end % private
     
     

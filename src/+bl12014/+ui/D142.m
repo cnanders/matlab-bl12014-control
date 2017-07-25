@@ -3,10 +3,10 @@ classdef D142 < mic.Base
     properties
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiGalil
+        uiCommGalil
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiDataTranslationMeasurPoint
+        uiCommDataTranslationMeasurPoint
         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
@@ -85,10 +85,10 @@ classdef D142 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiGalil.build(this.hFigure, dLeft, dTop);
+            this.uiCommGalil.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             this.uiStageY.build(this.hFigure, dLeft, dTop);
@@ -163,7 +163,7 @@ classdef D142 < mic.Base
             );
         end
         
-        function initUiDataTranslationMeasurPoint(this)
+        function initUiCommDataTranslationMeasurPoint(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -172,7 +172,7 @@ classdef D142 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -185,7 +185,7 @@ classdef D142 < mic.Base
         
         end
         
-        function initUiGalil(this)
+        function initUiCommGalil(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -193,7 +193,7 @@ classdef D142 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiGalil = mic.ui.device.GetSetLogical(...
+            this.uiCommGalil = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -210,8 +210,8 @@ classdef D142 < mic.Base
             this.msg('init()');
             this.initStageY();
             this.initCurrent();
-            this.initUiGalil();
-            this.initUiDataTranslationMeasurPoint();
+            this.initUiCommGalil();
+            this.initUiCommDataTranslationMeasurPoint();
         end
         
         function onFigureCloseRequest(this, src, evt)

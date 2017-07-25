@@ -66,9 +66,15 @@ classdef App < mic.Base
         % M142 + M142R common x
         commMicronixMmc103
         
+        % {cxro.common.device.motion.Stage}
         commGalilD142
         
+        % {cxro.common.device.motion.Stage}
         commGalilM143
+        
+        % {cxro.common.device.motion.Stage}
+        commGalilVIS
+        
         
         
     end
@@ -126,7 +132,34 @@ classdef App < mic.Base
     
     methods (Access = private)
         
+        function initAndConnectMet5Instruments(this)
+            
+           if ~isempty(this.jMet5Instruments)
+               return
+           end
+           
+           try
+                this.jMet5Instruments = cxro.met5.Instruments();
+           catch mE
+                this.jMet5Instruments = []; 
+           end
+            
+        end
+        
+        function destroyAndDisconnectMet5Instruments(this)
+            
+           if isempty(this.jMet5Instruments)
+               return
+           end
+           
+           this.jMet5Instruments.disconnect();
+           
+            
+        end
+        
+        
         function destroyAndDisconnectAll(this)
+            
             this.destroyAndDisconnectCxroBeamline();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
@@ -145,6 +178,7 @@ classdef App < mic.Base
         
         % Getters return logical if the COMM class exists.  Used by
         % GetSetLogicalConnect instances
+        
         
         function l = getNewFocusModel8742(this)
             l = ~isempty(this.commNewFocusModel8742);
@@ -175,7 +209,11 @@ classdef App < mic.Base
             l = ~isempty(this.commGalilD142);
         end
         
-        function l = getGalilM142(this)
+        function l = getGalilVIS(this)
+            l = ~isempty(this.commGalilVIS);
+        end
+        
+        function l = getGalilM143(this)
             l = ~isempty(this.commGalilM143);
         end
         
@@ -222,7 +260,7 @@ classdef App < mic.Base
             end
             
             try
-                this.initCommMet5Instruments();
+                this.initAndConnectMet5Instruments();
                 this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
             catch mE
                 this.commSmarActMcsM141 = [];
@@ -271,16 +309,19 @@ classdef App < mic.Base
                 return
             end
             
-            try 
-                
+            try
+                this.initAndConnectMet5Instruments();
+                this.commSmarActRotary = this.jMet5Instruments.getFmStage();
             catch mE
-                
+                this.commSmarActRotary = [];
+                return
             end
             
-            % Wafer Focus Sensor
             
+            % Wafer Focus Sensor
             device = bl12014.device.GetSetNumberFromStage(this.commSmarActRotary, 1);
-            % 
+            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.setDevice(device);
+            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.turnOn();
 
             
         end
@@ -291,8 +332,9 @@ classdef App < mic.Base
             end
             
             % Wafer Focus Sensor
-            
-            
+            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.turnOff();
+            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.setDevice([]);
+                        
         end
         
         
@@ -304,7 +346,7 @@ classdef App < mic.Base
             end
             
             try
-                this.initCommMet5Instruments();
+                this.initAndConnectMet5Instruments();
                 this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer();
             catch mE
                 this.commSmarActMcsGoni = [];
@@ -335,7 +377,7 @@ classdef App < mic.Base
             end
             
             try
-                this.initCommMet5Instruments();
+                this.initAndConnectMet5Instruments();
                 this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod();
             catch mE
                 this.commSmarActSmarPod = [];
@@ -374,19 +416,19 @@ classdef App < mic.Base
             
             % M141
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
-            this.uiApp.uiM141.uiMeasurPointVolts.setDevice(device);
+            this.uiApp.uiM141.uiCurrent.setDevice(device);
             
             % D141
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
-            this.uiApp.uiD141.uiMeasurPointVolts.setDevice(device);
+            this.uiApp.uiD141.uiCurrent.setDevice(device);
             
             % D142
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
-            this.uiApp.uiD142.uiMeasurPointVolts.setDevice(device);
+            this.uiApp.uiD142.uiCurrent.setDevice(device);
             
             % M143
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
-            this.uiApp.uiM143.uiMeasurPointVolts.setDevice(device);
+            this.uiApp.uiM143.uiCurrent.setDevice(device);
             
             % Vibration Isolation System
             
@@ -471,24 +513,22 @@ classdef App < mic.Base
             if ~this.getDataTranslationMeasurPoint()
                 return
             end
-            
-            
-            
+                        
             % M141
-            this.uiApp.uiM141.uiMeasurPointVolts.turnOff();
-            this.uiApp.uiM141.uiMeasurPointVolts.setDevice([]);
+            this.uiApp.uiM141.uiCurrent.turnOff();
+            this.uiApp.uiM141.uiCurrent.setDevice([]);
             
             % D141
-            this.uiApp.uiD141.uiMeasurPointVolts.turnOff();
-            this.uiApp.uiD141.uiMeasurPointVolts.setDevice([]);
+            this.uiApp.uiD141.uiCurrent.turnOff();
+            this.uiApp.uiD141.uiCurrent.setDevice([]);
             
             % D142
-            this.uiApp.uiD142.uiMeasurPointVolts.turnOff();
-            this.uiApp.uiD142.uiMeasurPointVolts.setDevice([]);
+            this.uiApp.uiD142.uiCurrent.turnOff();
+            this.uiApp.uiD142.uiCurrent.setDevice([]);
             
             % M143
-            this.uiApp.uiM143.uiMeasurPointVolts.turnOff();
-            this.uiApp.uiM143.uiMeasurPointVolts.setDevice([]);
+            this.uiApp.uiM143.uiCurrent.turnOff();
+            this.uiApp.uiM143.uiCurrent.setDevice([]);
             
             % Vibration Isolation System
             
@@ -855,18 +895,22 @@ classdef App < mic.Base
         
         
         function initAndConnectGalilD142(this)
+            
             if this.getGalilD142()
                 return
             end
             
             try
-                
+                this.initAndConnectMet5Instruments();
+                this.commGalilD142 = this.jMet5Instruments.getDiag142Stage();
             catch mE
-                
+                this.commGalilD142 = [];
             end
             
-            device = bl12014.device.GetSetNumberFromGalil(this.commGalilD142, 1);
+            device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 1);
+            
             this.uiApp.uiD142.uiStageY.setDevice(device);
+            this.uiApp.uiD142.uiStageY.turnOn();
             
         end
         
@@ -888,13 +932,15 @@ classdef App < mic.Base
             end
             
             try
-                
+                this.initAndConnectMet5Instruments();
+                this.commGalilM143 = this.jMet5Instruments.getDiagM143Stage();
             catch mE
-                
+                this.commGalilM143 = [];
             end
             
-            device = bl12014.device.GetSetNumberFromGalil(this.commGalilM143, 1);
+            device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 1);
             this.uiApp.uiM143.uiStageY.setDevice(device);
+            this.uiApp.uiM143.uiStageY.turnOn();
             
             
         end
@@ -908,6 +954,42 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiStageY.setDevice([]);
             
             this.commGalilM143 = [];
+            
+        end
+        
+        
+        function initAndConnectGalilVIS(this)
+            if this.getGalilVIS()
+                return
+            end
+            
+            try
+                this.initAndConnectMet5Instruments();
+                this.commGalilVIS = this.jMet5Instruments.getDiagM141Stage();
+            catch mE
+                this.commGalilVIS = [];
+            end
+            
+            %{
+            device = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
+            this.uiApp.uiM141.uiStageY.setDevice(device);
+            this.uiApp.uiM141.uiStageY.turnOn();
+            %}
+            
+            
+        end
+        
+        function destroyAndDisconnectGalilVIS(this)
+            if ~this.getGalilM143()
+                return
+            end
+            
+            %{
+            this.uiApp.uiM141.uiStageY.turnOff();
+            this.uiApp.uiM141.uiStageY.setDevice([]);
+            %}
+            
+            this.commGalilVIS = [];
             
         end
         
@@ -1182,128 +1264,173 @@ classdef App < mic.Base
         
         function initGetSetLogicalConnects(this)
             
-            gslcNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
+            gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getNewFocusModel8742, ...
                 'fhSetTrue', @this.initAndConnectNewFocusModel8742, ...
                 'fhSetFalse', @this.destroyAndDisconnectNewFocusModel8742 ...
             );
         
-            gslcSmarActMcsM141 = bl12014.device.GetSetLogicalConnect(...
+            gslcCommSmarActMcsM141 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getSmarActMcsM141, ...
                 'fhSetTrue', @this.initAndConnectSmarActMcsM141, ...
                 'fhSetFalse', @this.destroyAndDisconnectSmarActMcsM141 ...
             );
         
-            gslcSmarActMcsGoni = bl12014.device.GetSetLogicalConnect(...
+            gslcCommSmarActRotary = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getSmarActRotary, ...
+                'fhSetTrue', @this.initAndConnectSmarActRotary, ...
+                'fhSetFalse', @this.destroyAndDisconnectSmarActRotary ...
+            );
+        
+            gslcCommSmarActMcsGoni = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getSmarActMcsGoni, ...
                 'fhSetTrue', @this.initAndConnectSmarActMcsGoni, ...
                 'fhSetFalse', @this.destroyAndDisconnectSmarActMcsGoni ...
             );
         
-            gslcDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
+            gslcCommDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getDeltaTauPowerPmac, ...
                 'fhSetTrue', @this.initAndConnectDeltaTauPowerPmac, ...
                 'fhSetFalse', @this.destroyAndDisconnectDeltaTauPowerPmac ...
             );
         
-            gslcDataTranslationMeasurPoint = bl12014.device.GetSetLogicalConnect(...
+            gslcCommDataTranslationMeasurPoint = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getDataTranslationMeasurPoint, ...
                 'fhSetTrue', @this.initAndConnectDataTranslationMeasurPoint, ...
                 'fhSetFalse', @this.destroyAndDisconnectDataTranslationMeasurPoint ...
             );
         
             %{
-            gslcNPointLC400Field = bl12014.device.GetSetLogicalConnect(...
+            gslcCommNPointLC400Field = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getNPointLC400Field, ...
                 'fhSetTrue', @this.initAndConnectNPointLC400Field, ...
                 'fhSetFalse', @this.destroyAndDisconnectNPointLC400Field ...
             );
         
-            gslcNPointLC400Pupil = bl12014.device.GetSetLogicalConnect(...
+            gslcCommNPointLC400Pupil = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getNPointLC400Pupil, ...
                 'fhSetTrue', @this.initAndConnectNPointLC400Pupil, ...
                 'fhSetFalse', @this.destroyAndDisconnectNPointLC400Pupil ...
             );
             %}
             
-            gslcCxroHeightSensor = bl12014.device.GetSetLogicalConnect(...
+            gslcCommCxroHeightSensor = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getCxroHeightSensor, ...
                 'fhSetTrue', @this.initAndConnectCxroHeightSensor, ...
                 'fhSetFalse', @this.destroyAndDisconnectCxroHeightSensor ...
             );
         
-            gslcKeithley6482Reticle = bl12014.device.GetSetLogicalConnect(...
+            gslcCommKeithley6482Reticle = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getKeithley6482Reticle, ...
                 'fhSetTrue', @this.initAndConnectKeithley6482Reticle, ...
                 'fhSetFalse', @this.destroyAndDisconnectKeithley6482Reticle ...
             );
         
-            gslcKeithley6482Wafer = bl12014.device.GetSetLogicalConnect(...
+            gslcCommKeithley6482Wafer = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getKeithley6482Wafer, ...
                 'fhSetTrue', @this.initAndConnectKeithley6482Wafer, ...
                 'fhSetFalse', @this.destroyAndDisconnectKeithley6482Wafer ...
             );
         
-            gslcCxroBeamline = bl12014.device.GetSetLogicalConnect(...
+            gslcCommCxroBeamline = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getCxroBeamline, ...
                 'fhSetTrue', @this.initAndConnectCxroBeamline, ...
                 'fhSetFalse', @this.destroyAndDisconnectCxroBeamline ...
             );
         
-            gslcMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
+            gslcCommMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getMicronixMmc103, ...
                 'fhSetTrue', @this.initAndConnectMicronixMmc103, ...
                 'fhSetFalse', @this.destroyAndDisconnectMicronixMmc103 ...
             );
         
+        
+            gslcCommGalilM143 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getGalilM143, ...
+                'fhSetTrue', @this.initAndConnectGalilM143, ...
+                'fhSetFalse', @this.destroyAndDisconnectGalilM143 ...
+            );
+        
+            gslcCommGalilD142 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getGalilD142, ...
+                'fhSetTrue', @this.initAndConnectGalilD142, ...
+                'fhSetFalse', @this.destroyAndDisconnectGalilD142 ...
+            );
+        
 
-            %this.uiApp.uiBeamline.uiCxroBeamline.setDevice(gslcCxroBeamline);
-            %this.uiApp.uiShutter.uiCxroBeamline.setDevice(gslcCxroBeamline);
+            %this.uiApp.uiBeamline.uiCommCxroBeamline.setDevice(gslcCommCxroBeamline);
+            %this.uiApp.uiShutter.uiCommCxroBeamline.setDevice(gslcCommCxroBeamline);
             
-            this.uiApp.uiM141.uiSmarActMcsM141.setDevice(gslcSmarActMcsM141);
-            this.uiApp.uiM141.uiSmarActMcsM141.turnOn();
-            this.uiApp.uiM141.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
-            this.uiApp.uiM141.uiDataTranslationMeasurPoint.turnOn();
+            % M141
+            this.uiApp.uiM141.uiCommSmarActMcsM141.setDevice(gslcCommSmarActMcsM141);
+            this.uiApp.uiM141.uiCommSmarActMcsM141.turnOn();
+            this.uiApp.uiM141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            this.uiApp.uiM141.uiCommDataTranslationMeasurPoint.turnOn();
             
-            this.uiApp.uiM142.uiMicronixMmc103.setDevice(gslcMicronixMmc103);
-            this.uiApp.uiM142.uiMicronixMmc103.turnOn();
-            this.uiApp.uiM142.uiNewFocusModel8742.setDevice(gslcNewFocusModel8742);
-            this.uiApp.uiM142.uiNewFocusModel8742.turnOn();
             
-            % this.uiApp.uiM143.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
-            % this.uiApp.uiM143.uiDataTranslationMeasurPoint.turnOn()
+            % M142
+            this.uiApp.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
+            this.uiApp.uiM142.uiCommMicronixMmc103.turnOn();
+            this.uiApp.uiM142.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742);
+            this.uiApp.uiM142.uiCommNewFocusModel8742.turnOn();
             
-            this.uiApp.uiD141.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
-            this.uiApp.uiD141.uiDataTranslationMeasurPoint.turnOn()
+            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn()
             
-            this.uiApp.uiD142.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
-            this.uiApp.uiD142.uiDataTranslationMeasurPoint.turnOn()
+            % D141
             
-            this.uiApp.uiReticle.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
-            this.uiApp.uiReticle.uiKeithley6482.setDevice(gslcKeithley6482Reticle)
-            this.uiApp.uiReticle.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint);
-            this.uiApp.uiReticle.uiDeltaTauPowerPmac.turnOn()
-            this.uiApp.uiReticle.uiKeithley6482.turnOn()
-            this.uiApp.uiReticle.uiDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.turnOn()
+            
+            % D142
+            this.uiApp.uiD142.uiCommGalil.setDevice(gslcCommGalilD142);
+            this.uiApp.uiD142.uiCommGalil.turnOn();
+            this.uiApp.uiD142.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            this.uiApp.uiD142.uiCommDataTranslationMeasurPoint.turnOn()
+            
+            % M143
+            this.uiApp.uiM143.uiCommGalil.setDevice(gslcCommGalilM143)
+            this.uiApp.uiM143.uiCommGalil.turnOn();
+            this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
+            
+            
+            % Reticle
+            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
+            this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
+            this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
+            this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
            
-            this.uiApp.uiWafer.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
-            this.uiApp.uiWafer.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint);
-            this.uiApp.uiWafer.uiKeithley6482.setDevice(gslcKeithley6482Wafer)
-            this.uiApp.uiWafer.uiCxroHeightSensor.setDevice(gslcCxroHeightSensor)
-            this.uiApp.uiWafer.uiDeltaTauPowerPmac.turnOn()
-            this.uiApp.uiWafer.uiDataTranslationMeasurPoint.turnOn()
-            this.uiApp.uiWafer.uiKeithley6482.turnOn()
-            this.uiApp.uiWafer.uiCxroHeightSensor.turnOn()
+            % Wafer
+            this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
+            this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
+            this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
+            this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
+            this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
             %this.uiApp.uiScannerControlMA.ui
             %this.uiApp.uiScannerControlM142.ui
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui
             
-            this.uiApp.uiTempSensors.uiDataTranslationMeasurPoint.setDevice(gslcDataTranslationMeasurPoint)
-            this.uiApp.uiTempSensors.uiDeltaTauPowerPmac.setDevice(gslcDeltaTauPowerPmac)
-            this.uiApp.uiTempSensors.uiDataTranslationMeasurPoint.turnOn()
-            this.uiApp.uiTempSensors.uiDeltaTauPowerPmac.turnOn()
+            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.turnOn()
+            
+            
+            % Focus Sensor
+            this.uiApp.uiFocusSensor.uiCommSmarActRotary.setDevice(gslcCommSmarActRotary);
+            this.uiApp.uiFocusSensor.uiCommSmarActRotary.turnOn();
+            this.uiApp.uiFocusSensor.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer);
+            this.uiApp.uiFocusSensor.uiCommKeithley6482.turnOn();
+            this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.turnOn();
         end
         
         

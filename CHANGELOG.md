@@ -7,6 +7,14 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.13
+
+- Renamed UI for controlling hardware comm to `uiComm*`
+- Made UI for diodes consistent throughout.  Now called `uiCurrent`
+- Linked SmarAct rotary stage for `WaferFocusSensor` into `App`
+- Linked Galil stages for `M143` and `D142` into `App`
+- Built `FocusSensor`, which is a temporary UI that contains most of the elements that I believe will be needed for the final UI
+
 # 1.0.0-alpha.12
 
 - Removed `Connect` class and put everything in `App`.  Simpler this way

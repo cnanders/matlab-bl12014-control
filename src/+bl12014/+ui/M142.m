@@ -7,10 +7,10 @@ classdef M142 < mic.Base
         % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiNewFocusModel8742
+        uiCommNewFocusModel8742
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiMicronixMmc103
+        uiCommMicronixMmc103
         
         
         % {mic.ui.device.GetSetNumber 1x1}
@@ -98,10 +98,10 @@ classdef M142 < mic.Base
             dSep = 30;
             
            
-            this.uiMicronixMmc103.build(this.hFigure, dLeft, dTop);
+            this.uiCommMicronixMmc103.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiNewFocusModel8742.build(this.hFigure, dLeft, dTop);
+            this.uiCommNewFocusModel8742.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
                          
@@ -253,7 +253,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'cName', 'm142-stage-tilt-x', ...
                 'config', uiConfig, ...
-                'cLabel', 'Tilt X' ...
+                'cLabel', 'Tilt X (neg=down)' ...
             );
         end
         
@@ -276,7 +276,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'cName', 'm142-stage-tilt-y-mf', ...
                 'config', uiConfig, ...
-                'cLabel', 'Tilt Y (MF)' ...
+                'cLabel', 'Tilt Y (MF) (neg=out)' ...
             );
         end
         
@@ -299,7 +299,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'cName', 'm142-stage-tilt-y-mfr', ...
                 'config', uiConfig, ...
-                'cLabel', 'Tilt Y (MFR)' ...
+                'cLabel', 'Tilt Y (MFR) (neg=out)' ...
             );
         end
         
@@ -326,7 +326,7 @@ classdef M142 < mic.Base
             );
         end
         
-        function initUiNewFocusModel8742(this)
+        function initUiCommNewFocusModel8742(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -335,7 +335,7 @@ classdef M142 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiNewFocusModel8742 = mic.ui.device.GetSetLogical(...
+            this.uiCommNewFocusModel8742 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -348,7 +348,7 @@ classdef M142 < mic.Base
         
         end
         
-        function initUiMicronixMmc103(this)
+        function initUiCommMicronixMmc103(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -356,7 +356,7 @@ classdef M142 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiMicronixMmc103 = mic.ui.device.GetSetLogical(...
+            this.uiCommMicronixMmc103 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -373,8 +373,8 @@ classdef M142 < mic.Base
         function init(this)
             this.msg('init');
             
-            this.initUiNewFocusModel8742();
-            this.initUiMicronixMmc103()
+            this.initUiCommNewFocusModel8742();
+            this.initUiCommMicronixMmc103()
             this.initUiStageX();
             this.initUiStageTiltX();
             this.initUiStageTiltYMf();

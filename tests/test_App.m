@@ -16,10 +16,11 @@ addpath(genpath(fullfile(cDirCnanders, 'matlab-npoint-lc400', 'src')));
 addpath(genpath(fullfile(cDirCnanders, 'matlab-scanner-control-npoint', 'src')));
 addpath(genpath(fullfile(cDirCnanders, 'matlab-keithley-6482', 'src')));
 
-addpath(genpath(fullfile(cDirThis, '..', 'vendor', 'pnaulleau', 'bl-1201-exit-slits')));
+addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits')));
+javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCorbaProxy.jar'));
 
 
-javaaddpath(fullfile(cDirThis, '..', 'vendor', 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCorbaProxy.jar'));
+javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 
 purge
 

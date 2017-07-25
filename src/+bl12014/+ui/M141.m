@@ -1,15 +1,12 @@
 classdef M141 < mic.Base
     
     properties
-           
-        % These are the UI for activating the hardware that gives the 
-        % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiSmarActMcsM141
+        uiCommSmarActMcsM141
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiDataTranslationMeasurPoint
+        uiCommDataTranslationMeasurPoint
 
         
         % {mic.ui.device.GetSetNumber 1x1}}
@@ -22,7 +19,7 @@ classdef M141 < mic.Base
         uiStageTiltY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiMeasurPointVolts
+        uiCurrent
         
     end
     
@@ -88,10 +85,10 @@ classdef M141 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiSmarActMcsM141.build(this.hFigure, dLeft, dTop);
+            this.uiCommSmarActMcsM141.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
@@ -104,7 +101,7 @@ classdef M141 < mic.Base
             this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiMeasurPointVolts.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
 
             
@@ -167,12 +164,12 @@ classdef M141 < mic.Base
             u8Channel = 1;
             % {< mic.interface.device.GetNumber}
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, u8Channel);
-            this.uiMeasurPointVolts.setDevice(device);
+            this.uiCurrent.setDevice(device);
         end
         
         function disconnectDataTranslationMeasurPoint(this)
             
-            this.uiMeasurPointVolts.setDevice([]);
+            this.uiCurrent.setDevice([]);
         end
         
         %}
@@ -264,7 +261,7 @@ classdef M141 < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            this.uiMeasurPointVolts = mic.ui.device.GetNumber(...
+            this.uiCurrent = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
                 'cName', 'm141-current', ...
                 'config', uiConfig, ...
@@ -274,7 +271,7 @@ classdef M141 < mic.Base
             );
         end
         
-        function initUiDataTranslationMeasurPoint(this)
+        function initUiCommDataTranslationMeasurPoint(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -283,7 +280,7 @@ classdef M141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -296,7 +293,7 @@ classdef M141 < mic.Base
         
         end
         
-        function initUiSmarActMcsM141(this)
+        function initUiCommSmarActMcsM141(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -304,7 +301,7 @@ classdef M141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiSmarActMcsM141 = mic.ui.device.GetSetLogical(...
+            this.uiCommSmarActMcsM141 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -324,8 +321,8 @@ classdef M141 < mic.Base
             this.initUiStageTiltX();
             this.initUiStageTiltY();
             this.initUiCurrent();
-            this.initUiSmarActMcsM141();
-            this.initUiDataTranslationMeasurPoint();
+            this.initUiCommSmarActMcsM141();
+            this.initUiCommDataTranslationMeasurPoint();
         end
         
         

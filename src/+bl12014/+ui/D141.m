@@ -7,7 +7,7 @@ classdef D141 < mic.Base
         uiWago
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiDataTranslationMeasurPoint
+        uiCommDataTranslationMeasurPoint
                 
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
@@ -89,7 +89,7 @@ classdef D141 < mic.Base
             this.uiWago.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
@@ -167,7 +167,7 @@ classdef D141 < mic.Base
         end
         
         
-        function initUiDataTranslationMeasurPoint(this)
+        function initUiCommDataTranslationMeasurPoint(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -176,7 +176,7 @@ classdef D141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -216,7 +216,7 @@ classdef D141 < mic.Base
             this.initUiStageY();
             this.initUiCurrent();
             this.initUiWago();
-            this.initUiDataTranslationMeasurPoint();
+            this.initUiCommDataTranslationMeasurPoint();
         end
         
         function onFigureCloseRequest(this, src, evt)
