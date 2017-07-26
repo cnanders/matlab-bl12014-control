@@ -7,6 +7,14 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.14
+
+- Integrated `DctCorbaProxy` into `App`
+- Integrated `BL1201CorbaProxy` into `App`
+- Built `bl12014.device.GetSetNumberFromDctCorbaProxy`
+- Built `bl12014.device.GetSetNumberFromBL1201CorbaProxy`
+- Updated `bl12014.ui.Beamline` with `uiCommDctCorbaProxy` and `uiCommBL1201CorbaProxy`
+
 # 1.0.0-alpha.13
 
 - Renamed UI for controlling hardware comm to `uiComm*`

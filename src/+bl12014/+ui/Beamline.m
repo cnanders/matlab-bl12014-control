@@ -6,6 +6,8 @@ classdef Beamline < mic.Base
         dWidth = 640
         % dHeight = 740 % Calculated in buildFigure()
         
+        dHeightPanelComm = 145
+        
         dWidthPanelRecipe = 620
         dHeightPanelRecipe = 120
         
@@ -52,23 +54,41 @@ classdef Beamline < mic.Base
         
         deviceShutterVirtual
         
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiDeviceExitSlit
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCommExitSlit
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCommBL1201CorbaProxy
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCommDctCorbaProxy
+        
+        % {mic.ui.device.GetSetLogical 1x1} % D142 Diode Current
+        uiCommDataTranslationMeasurPoint
+        
+        % {mic.ui.device.GetSetLogical 1x1} 
+        uiCommGalilD142
+        
+        
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiDeviceUndulatorGap
+        uiExitSlit
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiDeviceShutter
+        uiUndulatorGap
         
         % {mic.ui.device.GetSetNumber 1x1}
-        uiDeviceGratingTiltX
+        uiShutter
+        
+        % {mic.ui.device.GetSetNumber 1x1}
+        uiGratingTiltX
         
          % {mic.ui.device.GetSetNumber 1x1}
-        uiDeviceD142StageY
+        uiD142StageY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiDeviceMeasurPointD142
+        uiD142Current
         
         
     end
@@ -167,24 +187,24 @@ classdef Beamline < mic.Base
         
         function turnOn(this)
             
-            this.uiDeviceExitSlit.turnOn();
-            this.uiDeviceUndulatorGap.turnOn();
-            this.uiDeviceShutter.turnOn();
-            this.uiDeviceGratingTiltX.turnOn();
+            this.uiExitSlit.turnOn();
+            this.uiUndulatorGap.turnOn();
+            this.uiShutter.turnOn();
+            this.uiGratingTiltX.turnOn();
             this.uiTiltY.turnOn();
-            this.uiDeviceD142StageY.turnOn();
-            this.uiDeviceMeasurPointD142.turnOn();
+            this.uiD142StageY.turnOn();
+            this.uiD142Current.turnOn();
             
         end
         
         function turnOff(this)
-            this.uiDeviceExitSlit.turnOff();
-            this.uiDeviceUndulatorGap.turnOff();
-            this.uiDeviceShutter.turnOff();
-            this.uiDeviceGratingTiltX.turnOff();
+            this.uiExitSlit.turnOff();
+            this.uiUndulatorGap.turnOff();
+            this.uiShutter.turnOff();
+            this.uiGratingTiltX.turnOff();
             this.uiTiltY.turnOff();
-            this.uiDeviceD142StageY.turnOff();
-            this.uiDeviceMeasurPointD142.turnOff();
+            this.uiD142StageY.turnOff();
+            this.uiD142Current.turnOff();
             
         end
         
@@ -195,6 +215,10 @@ classdef Beamline < mic.Base
         function build(this)
             
             this.buildFigure();
+            
+            this.buildCommUi();
+            
+            
             this.buildPanelDevices();
             this.buildUiDevices()
             this.buildPanelRecipe();
@@ -243,6 +267,8 @@ classdef Beamline < mic.Base
             
                 
                 dHeight = this.dHeightFigurePad + ...
+                    this.dHeightPanelComm + ...
+                    this.dHeightFigurePad + ...
                     this.dHeightPanelRecipe + ...
                     this.dHeightPanelData + ...
                     this.dHeightFigurePad + ...
@@ -281,7 +307,9 @@ classdef Beamline < mic.Base
             
             dLeft = this.dWidthFigurePad;
             dTop = this.dHeightFigurePad + ...
+                this.dHeightPanelComm + ...
                 this.dHeightPanelRecipe; % No vertical pad between scan and data panels
+            
             this.hPanelData = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
@@ -336,10 +364,37 @@ classdef Beamline < mic.Base
 
         end
         
+        
+        function buildCommUi(this)
+         
+            dTop = 10;
+            dLeft = 10;
+            dSep = 30;
+            
+            this.uiCommGalilD142.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommExitSlit.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommDctCorbaProxy.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommBL1201CorbaProxy.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+        end
+        
+        
         function buildPanelDevices(this)
             
             dLeft = this.dWidthFigurePad;
             dTop = this.dHeightFigurePad + ...
+                this.dHeightPanelComm + ...
+                this.dHeightFigurePad + ...
                 this.dHeightPanelRecipe + ...
                 this.dHeightPanelData + ...
                 this.dHeightFigurePad;
@@ -369,25 +424,25 @@ classdef Beamline < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiDeviceGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
+            this.uiGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop  + 15 + dSep;
             
-            this.uiDeviceUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
+            this.uiUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDeviceExitSlit.build(this.hPanelDevices, dLeft, dTop);
+            this.uiExitSlit.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDeviceD142StageY.build(this.hPanelDevices, dLeft, dTop);
+            this.uiD142StageY.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDeviceShutter.build(this.hPanelDevices, dLeft, dTop);
+            this.uiShutter.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
             
             
             
-            this.uiDeviceMeasurPointD142.build(this.hPanelDevices, dLeft, dTop);
+            this.uiD142Current.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
             
@@ -396,7 +451,10 @@ classdef Beamline < mic.Base
         function buildPanelRecipe(this)
             
             dLeft = this.dWidthFigurePad;
-            dTop = this.dHeightFigurePad;
+            dTop = this.dHeightFigurePad + ...
+                this.dHeightPanelComm + ...
+                this.dHeightFigurePad;
+                        
             this.hPanelScan = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
@@ -497,7 +555,7 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiDeviceD142StageY = mic.ui.device.GetSetNumber(...
+            this.uiD142StageY = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'cName', 'beamline-d142-stage-y', ...
                 'config', uiConfig, ...
@@ -507,7 +565,7 @@ classdef Beamline < mic.Base
                 'cLabel', 'D142 Stage Y' ...
             );
         
-            addlistener(this.uiDeviceD142StageY, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiD142StageY, 'eUnitChange', @this.onUnitChange);
         end
         
         
@@ -523,18 +581,18 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            this.uiDeviceMeasurPointD142 = mic.ui.device.GetNumber(...
+            this.uiD142Current = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
                 'cName', 'beamline-measur-point-d142-diode', ...
                 'config', uiConfig, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
                 'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cLabel', 'MeasurPoint (D142)', ...
+                'cLabel', 'D142 Current', ...
                 'dWidthPadUnit', 277, ...
                 'lShowLabels', false ...
             );
         
-            addlistener(this.uiDeviceMeasurPointD142, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiD142Current, 'eUnitChange', @this.onUnitChange);
         end 
          
         function initUiDeviceExitSlit(this)
@@ -549,7 +607,7 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiDeviceExitSlit = mic.ui.device.GetSetNumber(...
+            this.uiExitSlit = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
                 'dWidthUnit', this.dWidthUiDeviceUnit, ...
@@ -559,7 +617,7 @@ classdef Beamline < mic.Base
                 'cLabel', 'Exit Slit' ...
             );
         
-            addlistener(this.uiDeviceExitSlit, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiExitSlit, 'eUnitChange', @this.onUnitChange);
         end
         
         function initUiDeviceUndulatorGap(this)
@@ -574,7 +632,7 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiDeviceUndulatorGap = mic.ui.device.GetSetNumber(...
+            this.uiUndulatorGap = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -584,7 +642,7 @@ classdef Beamline < mic.Base
                 'cLabel', 'Undulator Gap' ...
             );
         
-            addlistener(this.uiDeviceUndulatorGap, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiUndulatorGap, 'eUnitChange', @this.onUnitChange);
         end
         
         function initUiDeviceShutter(this)
@@ -601,7 +659,7 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiDeviceShutter = mic.ui.device.GetSetNumber(...
+            this.uiShutter = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -611,8 +669,8 @@ classdef Beamline < mic.Base
                 'cLabel', 'Shutter' ...
             );
             
-        	this.uiDeviceShutter.setDeviceVirtual(this.deviceShutterVirtual);
-            addlistener(this.uiDeviceShutter, 'eUnitChange', @this.onUnitChange);
+        	this.uiShutter.setDeviceVirtual(this.deviceShutterVirtual);
+            addlistener(this.uiShutter, 'eUnitChange', @this.onUnitChange);
         end
         
         
@@ -628,7 +686,7 @@ classdef Beamline < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.uiDeviceGratingTiltX = mic.ui.device.GetSetNumber(...
+            this.uiGratingTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', true, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -638,7 +696,7 @@ classdef Beamline < mic.Base
                 'cLabel', 'Grating Tilt X' ...
             );
         
-            addlistener(this.uiDeviceGratingTiltX, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiGratingTiltX, 'eUnitChange', @this.onUnitChange);
         end
         
         function initUiRecipe(this)
@@ -740,10 +798,17 @@ classdef Beamline < mic.Base
         
         function init(this)
             this.msg('init()');
+            
+            this.initUiCommExitSlit();
+            this.initUiCommGalil();
+            this.initUiCommDataTranslationMeasurPoint();
+            this.initUiCommDctCorbaProxy();
+            this.initUiCommBL1201CorbaProxy();
+            
             this.initUiDeviceExitSlit();
-            this.initUiDeviceUndulatorGap();
-            this.initUiDeviceShutter();
-            this.initUiDeviceGratingTiltX();
+            this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
+            this.initUiDeviceShutter(); % DCT Corba Proxy
+            this.initUiDeviceGratingTiltX(); % BL1201 Corba Proxy
             this.initUiDeviceD142StageY()
             this.initUiDeviceMeasurPointD142();
             
@@ -979,7 +1044,7 @@ classdef Beamline < mic.Base
             
             cLabelY = sprintf(...
                 'MeasurPoint D142 (%s)', ...
-                this.uiDeviceMeasurPointD142.getUnit().name ...
+                this.uiD142Current.getUnit().name ...
             );
             ylabel(this.hAxes, cLabelY);
         end
@@ -1051,15 +1116,15 @@ classdef Beamline < mic.Base
         function c = getRecipeDeviceUnit(this)
             switch this.uiPopupRecipeDevice.get().cValue
                 case 'grating_tilt_x'
-                    c = this.uiDeviceGratingTiltX.getUnit().name;
+                    c = this.uiGratingTiltX.getUnit().name;
                 case 'shutter'
-                    c = this.uiDeviceShutter.getUnit().name;
+                    c = this.uiShutter.getUnit().name;
                 case 'exit_slit'
-                    c = this.uiDeviceExitSlit.getUnit().name;
+                    c = this.uiExitSlit.getUnit().name;
                 case 'undulator_gap'
-                    c = this.uiDeviceUndulatorGap.getUnit().name;
+                    c = this.uiUndulatorGap.getUnit().name;
                 case 'd142_stage_y'
-                    c = this.uiDeviceD142StageY.getUnit().name;
+                    c = this.uiD142StageY.getUnit().name;
                 otherwise 
                     c = 'unknown';
             end
@@ -1101,12 +1166,12 @@ classdef Beamline < mic.Base
         
         function st = getDeviceUnits(this)
             st = struct();
-            st.(this.cNameDeviceGratingTiltX) = this.uiDeviceGratingTiltX.getUnit().name;
-            st.(this.cNameDeviceShutter) = this.uiDeviceShutter.getUnit().name;
-            st.(this.cNameDeviceExitSlit) = this.uiDeviceExitSlit.getUnit().name;
-            st.(this.cNameDeviceUndulatorGap) = this.uiDeviceUndulatorGap.getUnit().name;
-            st.(this.cNameDeviceD142StageY) = this.uiDeviceD142StageY.getUnit().name;
-            st.(this.cNameDeviceMeasurPointD142) = this.uiDeviceMeasurPointD142.getUnit().name;
+            st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getUnit().name;
+            st.(this.cNameDeviceShutter) = this.uiShutter.getUnit().name;
+            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getUnit().name;
+            st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getUnit().name;
+            st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getUnit().name;
+            st.(this.cNameDeviceMeasurPointD142) = this.uiD142Current.getUnit().name;
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1289,17 +1354,17 @@ classdef Beamline < mic.Base
 
                 switch ceFields{n}
                     case this.cNameDeviceExitSlit
-                        this.uiDeviceExitSlit.setDestCalDisplay(dValue, cUnit);
-                        this.uiDeviceExitSlit.moveToDest(); % click
+                        this.uiExitSlit.setDestCalDisplay(dValue, cUnit);
+                        this.uiExitSlit.moveToDest(); % click
                     case this.cNameDeviceUndulatorGap
-                        this.uiDeviceUndulatorGap.setDestCalDisplay(dValue, cUnit);
-                        this.uiDeviceUndulatorGap.moveToDest(); % click
+                        this.uiUndulatorGap.setDestCalDisplay(dValue, cUnit);
+                        this.uiUndulatorGap.moveToDest(); % click
                     case this.cNameDeviceGratingTiltX 
-                        this.uiDeviceGratingTiltX.setDestCalDisplay(dValue, cUnit);
-                        this.uiDeviceGratingTiltX.moveToDest(); % click
+                        this.uiGratingTiltX.setDestCalDisplay(dValue, cUnit);
+                        this.uiGratingTiltX.moveToDest(); % click
                     case this.cNameDeviceD142StageY
-                        this.uiDeviceD142StageY.setDestCalDisplay(dValue, cUnit);
-                        this.uiDeviceD142StageY.moveToDest(); % click 
+                        this.uiD142StageY.setDestCalDisplay(dValue, cUnit);
+                        this.uiD142StageY.moveToDest(); % click 
                     otherwise
                         % do nothing
                 end
@@ -1345,17 +1410,17 @@ classdef Beamline < mic.Base
                         % Check if the set operation on the current device is
                         % complete by calling isReady() on devices.  This will
                         % often be a switch on cField that does something like:
-                        % this.uiDeviceStage.getDevice().isReady()
+                        % this.uiStage.getDevice().isReady()
 
                         switch ceFields{n}
                             case this.cNameDeviceExitSlit
-                                lReady = this.uiDeviceExitSlit.getDevice().isReady();
+                                lReady = this.uiExitSlit.getDevice().isReady();
                             case this.cNameDeviceUndulatorGap
-                                lReady = this.uiDeviceUndulatorGap.getDevice().isReady();
+                                lReady = this.uiUndulatorGap.getDevice().isReady();
                             case this.cNameDeviceGratingTiltX 
-                                lReady = this.uiDeviceGratingTiltX.getDevice().isReady();
+                                lReady = this.uiGratingTiltX.getDevice().isReady();
                             case this.cNameDeviceD142StageY
-                                lReady = this.uiDeviceD142StageY.getDevice().isReady();
+                                lReady = this.uiD142StageY.getDevice().isReady();
                             otherwise
                                 lReady = true;
                                 % do nothing
@@ -1426,8 +1491,8 @@ classdef Beamline < mic.Base
             switch stTask.type
                 case this.cScanAcquireTypeMeasurPointD142
                     % Open the shutter
-                    this.uiDeviceShutter.setDestCal(10000, 'ms (1x)');
-                    this.uiDeviceShutter.moveToDest();
+                    this.uiShutter.setDestCal(10000, 'ms (1x)');
+                    this.uiShutter.moveToDest();
                     % Pause
                     pause(stTask.pause);
                     
@@ -1443,7 +1508,7 @@ classdef Beamline < mic.Base
                     % this.dScanDataParam(this.scan.u8Index) = stValue.(this.uiPopupDeviceName.get().cValue)
                     
                     % Close the shutter
-                    this.uiDeviceShutter.stop();
+                    this.uiShutter.stop();
                     % Update the contract lIssued
                     this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lIssued = true;
                 otherwise 
@@ -1476,7 +1541,7 @@ classdef Beamline < mic.Base
                         % Check if the set operation on the current device is
                         % complete by calling isReady() on devices.  This will
                         % often be a switch on cField that does something like:
-                        % this.uiDeviceStage.getDevice().isReady()
+                        % this.uiStage.getDevice().isReady()
                         
                         
                         lReady = true;
@@ -1639,13 +1704,122 @@ classdef Beamline < mic.Base
         function st = getState(this, stUnit)
             
         	st = struct();
-            st.(this.cNameDeviceMeasurPointD142) = this.uiDeviceMeasurPointD142.getValCal(stUnit.(this.cNameDeviceMeasurPointD142));
-            st.(this.cNameDeviceExitSlit) = this.uiDeviceExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
-            st.(this.cNameDeviceUndulatorGap) = this.uiDeviceUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
-            st.(this.cNameDeviceGratingTiltX) = this.uiDeviceGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
-            st.(this.cNameDeviceD142StageY) = this.uiDeviceD142StageY.getValCal(stUnit.(this.cNameDeviceD142StageY));
+            st.(this.cNameDeviceMeasurPointD142) = this.uiD142Current.getValCal(stUnit.(this.cNameDeviceMeasurPointD142));
+            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
+            st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
+            st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
+            st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getValCal(stUnit.(this.cNameDeviceD142StageY));
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
+        end
+        
+        function initUiCommDctCorbaProxy(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiCommDctCorbaProxy = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'dct-corba-proxy', ...
+                'cLabel', 'DCT Corba Proxy (Shutter)' ...
+            );
+        
+        end
+        
+        function initUiCommBL1201CorbaProxy(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiCommBL1201CorbaProxy = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'bl1201-corba-proxy', ...
+                'cLabel', 'BL1201 Corba Proxy' ...
+            );
+        
+        end
+        
+        function initUiCommExitSlit(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiCommExitSlit = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'exit-slit', ...
+                'cLabel', 'Exit Slit' ...
+            );
+        
+        end
+        
+        function initUiCommDataTranslationMeasurPoint(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'data-translation-measur-point-d142-beamline', ...
+                'cLabel', 'DataTrans MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiCommGalil(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiCommGalilD142 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'galil-d142-beamline', ...
+                'cLabel', 'Galil' ...
+            );
+        
         end
         
         

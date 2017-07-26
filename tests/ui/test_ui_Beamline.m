@@ -2,7 +2,7 @@
 
 cDirApp = fullfile(cDirThis, '..', '..');
 
-% skg
+% src
 cDirBl12014 = fullfile(cDirApp, 'src');
 addpath(genpath(cDirBl12014));
 

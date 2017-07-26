@@ -22,6 +22,12 @@ javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCor
 
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 
+
+javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL12PICOCorbaProxy.jar'));
+javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
+
+
+
 purge
 
 app = bl12014.App();

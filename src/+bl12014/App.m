@@ -51,8 +51,11 @@ classdef App < mic.Base
         % {keithley.Keithley6482 1x1}
         commKeithley6482Wafer
         
-        % {cxro.bl1201.Beamline 1x1}
-        commCxroBeamline
+        % {cxro.bl1201.beamline.BL1201CorbaProxy 1x1}
+        commBL1201CorbaProxy
+        
+        % {cxro.bl1201.dct.DctCorbaProxy 1x1}
+        commDctCorbaProxy
         
         % {newFocus.NewFocusModel8742 1x1} 
         % May cheat and use DLL directly with {mic.interface.device.*}
@@ -74,6 +77,9 @@ classdef App < mic.Base
         
         % {cxro.common.device.motion.Stage}
         commGalilVIS
+        
+        % see vendor/pnaulleau/bl12-exit-slits/readme.txt
+        commExitSlit
         
         
         
@@ -160,7 +166,7 @@ classdef App < mic.Base
         
         function destroyAndDisconnectAll(this)
             
-            this.destroyAndDisconnectCxroBeamline();
+            this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
             this.destroyAndDisconnectDeltaTauPowerPmac();
@@ -179,6 +185,9 @@ classdef App < mic.Base
         % Getters return logical if the COMM class exists.  Used by
         % GetSetLogicalConnect instances
         
+        function l = getExitSlit(this)
+            l = ~isempty(this.commExitSlit);
+        end
         
         function l = getNewFocusModel8742(this)
             l = ~isempty(this.commNewFocusModel8742);
@@ -240,8 +249,12 @@ classdef App < mic.Base
             
         end
         
-        function l = getCxroBeamline(this)
-            l = ~isempty(this.commCxroBeamline);
+        function l = getBL1201CorbaProxy(this)
+            l = ~isempty(this.commBL1201CorbaProxy);
+        end
+        
+        function l = getDctCorbaProxy(this)
+            l = ~isempty(this.commDctCorbaProxy);
         end
         
         function l = getNPointLC400Field(this)
@@ -414,21 +427,28 @@ classdef App < mic.Base
             end
             
             
+            
             % M141
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
             this.uiApp.uiM141.uiCurrent.setDevice(device);
+            this.uiApp.uiM141.uiCurrent.turnOn()
             
             % D141
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
             this.uiApp.uiD141.uiCurrent.setDevice(device);
+            this.uiApp.uiD141.uiCurrent.turnOn()
             
-            % D142
+            % D142 & Beamline (share a device)
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
             this.uiApp.uiD142.uiCurrent.setDevice(device);
+            this.uiApp.uiD142.uiCurrent.turnOn()
+            this.uiApp.uiBeamline.uiD142Current.setDevice(device);
+            this.uiApp.uiBeamline.uiD142Current.turnOn();
             
             % M143
             device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
             this.uiApp.uiM143.uiCurrent.setDevice(device);
+            this.uiApp.uiM143.uiCurrent.turnOn()
             
             % Vibration Isolation System
             
@@ -444,6 +464,11 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
             
+            this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.turnOn();
+            this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.turnOn();
+            this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.turnOn();
+            this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.turnOn();
+            
             % Wafer
             
             deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 21);
@@ -455,6 +480,11 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
             this.uiApp.uiWafer.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
             this.uiApp.uiWafer.uiPobCapSensors.uiCap4.setDevice(deviceCap4);
+            
+            this.uiApp.uiWafer.uiPobCapSensors.uiCap1.turnOn();
+            this.uiApp.uiWafer.uiPobCapSensors.uiCap2.turnOn();
+            this.uiApp.uiWafer.uiPobCapSensors.uiCap3.turnOn();
+            this.uiApp.uiWafer.uiPobCapSensors.uiCap4.turnOn();
             
             % TempSensors
             
@@ -479,6 +509,17 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.setDevice(deviceMod3Frame4);
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.setDevice(deviceMod3Frame5);
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.setDevice(deviceMod3Frame6);
+            
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam1.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam2.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame1.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame2.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame3.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.turnOn();
+            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.turnOn();
             
             devicePobFrame1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 11);
             devicePobFrame2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 12);
@@ -506,6 +547,20 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.setDevice(devicePobFrame11);
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.setDevice(devicePobFrame12);
             
+            
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame3.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame4.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame5.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame6.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame7.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame8.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame9.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.turnOn();
+            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
+            
         end
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
@@ -513,7 +568,12 @@ classdef App < mic.Base
             if ~this.getDataTranslationMeasurPoint()
                 return
             end
-                        
+            
+            % Beamline
+            this.uiApp.uiBeamline.uiD142Current.turnOff();
+            this.uiApp.uiBeamline.uiD142Current.setDevice([]);
+            
+            
             % M141
             this.uiApp.uiM141.uiCurrent.turnOff();
             this.uiApp.uiM141.uiCurrent.setDevice([]);
@@ -653,36 +713,42 @@ classdef App < mic.Base
         end
         
         
-        function initAndConnectBeamline12ExitSlits(this)
+        function initAndConnectExitSlit(this)
             
-            if this.getBeamline12ExitSlits()
+            if this.getExitSlit()
                 return
             end
             
             try
-                [this.commBeamline12ExitSlits, e] = bl12pico_attach();
+                [this.commExitSlit, e] = bl12pico_attach();
             catch mE
-                this.commBeamline12ExitSlits = [];
+                this.commExitSlit = [];
+                return;
             end
             
-            device = bl12014.device.GetSetNumberFromBeamline12ExitSlits(comm);
-            this.uiApp.uiBeamline.uiDeviceExitSlit.setDevice(device);
-            this.uiApp.uiBeamline.uiDeviceExitSlit.turnOn();
+            if e == 1
+                this.commExitSlit = [];
+                return;
+            end
+            
+            device = bl12014.device.GetSetNumberFromExitSlit(commExitSlit);
+            this.uiApp.uiBeamline.uiExitSlit.setDevice(device);
+            this.uiApp.uiBeamline.uiExitSlit.turnOn();
         
             
         end
         
-        function destroyAndDisconnectBeamline12ExitSlits(this)
+        function destroyAndDisconnectExitSlit(this)
             
-            if ~this.getBeamline12ExitSlits()
+            if ~this.getExitSlit()
                 return
             end
             
-            this.uiApp.uiBeamline.uiDeviceExitSlit.turnOff();
-            this.uiApp.uiBeamline.uiDeviceExitSlit.setDevice([]);
+            this.uiApp.uiBeamline.uiExitSlit.turnOff();
+            this.uiApp.uiBeamline.uiExitSlit.setDevice([]);
             
-            % this.commBeamline12ExitSlits.delete();
-            this.commBeamline12ExitSlits = [];
+            % this.commExitSlit.delete();
+            this.commExitSlit = [];
         end
         
         
@@ -803,34 +869,92 @@ classdef App < mic.Base
             this.commCxroHeightSensor = [];
         end
         
-        function initAndConnectCxroBeamline(this)
+        function initAndConnectDctCorbaProxy(this)
             
-            if this.getCxroBeamline()
+            if this.getDctCorbaProxy()
                 return
             end
             
             try
-                this.commCxroBeamline = cxro.bl1201.Beamline();
+                this.commDctCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
             catch mE
-                this.commCxroBeamline = [];
+                this.commDctCorbaProxy = [];
+                return;
+            end
+            
+            device = bl12014.device.GetSetNumberFromDctCorbaProxy(...
+                this.commDctCorbaProxy, ...
+                bl12014.device.GetSetNumberFromDctCorbaProxy.cDEVICE_SHUTTER ...
+            );
+        
+            this.uiApp.uiBeamline.uiShutter.setDevice(device)
+            this.uiApp.uiBeamline.uiShutter.turnOn()
+        
+            
+            
+        end
+        
+        function destroyAndDisconnectDctCorbaProxy(this)
+            
+            if ~this.getDctCorbaProxy()
+                return
+            end
+            
+            % Beamline
+            
+            this.uiApp.uiBeamline.uiShutter.turnOff()
+            this.uiApp.uiBeamline.uiShutter.setDevice([])
+                        
+            this.commDctCorbaProxy = [];
+        end
+        
+        
+        function initAndConnectBL1201CorbaProxy(this)
+            
+            if this.getBL1201CorbaProxy()
+                return
+            end
+            
+            try
+                this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
+            catch mE
+                this.commBL1201CorbaProxy = [];
                 return;
             end
             
             % Beamline
             
+            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(this.commBL1201CorbaProxy, 'undulator_gap');
+            deviceGratingTiltX = bl12014.device.GetSetNumberFromBL1201CorbaProxy(this.commBL1201CorbaProxy, 'grating_tilt_x');
+            
+            this.uiApp.uiBeamline.uiUndulatorGap.setDevice(deviceUndulatorGap)
+            this.uiApp.uiBeamline.uiUndulatorGap.turnOn()
+
+            
+            this.uiApp.uiBeamline.uiGratingTiltX.setDevice(deviceGratingTiltX)
+            this.uiApp.uiBeamline.uiGratingTiltX.turnOn()
                         
         end
         
-        function destroyAndDisconnectCxroBeamline(this)
+        function destroyAndDisconnectBL1201CorbaProxy(this)
             
-            if ~this.getCxroBeamline()
+            if ~this.getBL1201CorbaProxy()
                 return
             end
             
             % Beamline
+            this.uiApp.uiBeamline.uiUndulatorGap.turnOff()
+            this.uiApp.uiBeamline.uiUndulatorGap.setDevice([])
             
-            this.commCxroBeamline.delete();
-            this.commCxroBeamline = [];
+            this.uiApp.uiBeamline.uiShutter.turnOff()
+            this.uiApp.uiBeamline.uiShutter.setDevice([])
+            
+            this.uiApp.uiBeamline.uiGratingTiltX.turnOff()
+            this.uiApp.uiBeamline.uiGratingTiltX.setDevice([])
+            
+            
+            % this.commBL1201CorbaProxy.delete();
+            this.commBL1201CorbaProxy = [];
         end
         
         function initAndConnectNewFocusModel8742(this)
@@ -912,6 +1036,9 @@ classdef App < mic.Base
             this.uiApp.uiD142.uiStageY.setDevice(device);
             this.uiApp.uiD142.uiStageY.turnOn();
             
+            this.uiApp.uiBeamline.uiD142StageY.setDevice(device);
+            this.uiApp.uiBeamline.uiD142StageY.turnOn()
+            
         end
         
         function destroyAndDisconnectGalilD142(this)
@@ -921,6 +1048,9 @@ classdef App < mic.Base
             
             this.uiApp.uiD142.uiStageY.turnOff();
             this.uiApp.uiD142.uiStageY.setDevice([]);
+            
+            this.uiApp.uiBeamline.uiD142StageY.turnOff()
+            this.uiApp.uiBeamline.uiD142StageY.setDevice([]);
             
             this.commGalilD142 = [];
             
@@ -1145,9 +1275,9 @@ classdef App < mic.Base
         %{
         function initUiComm(this)
             
-            stCxroBeamline = struct(...
+            stBL1201CorbaProxy = struct(...
                 'cLabel',  'CXRO Beamline', ...
-                'fhOnClick',  @this.connectCommCxroBeamline, ...
+                'fhOnClick',  @this.connectCommBL1201CorbaProxy, ...
                 'cTooltip',  'Mono grating TiltX, Exit Slit, shutter' ...
             );
         
@@ -1233,7 +1363,7 @@ classdef App < mic.Base
         % stWago, ...
 
             stButtons = [...
-                stCxroBeamline ...
+                stBL1201CorbaProxy ...
                 stKeithley6482Reticle, ...
                 stKeithley6482Wafer, ...
                 stDeltaTauPowerPmac, ...
@@ -1264,6 +1394,13 @@ classdef App < mic.Base
         
         function initGetSetLogicalConnects(this)
             
+            
+            gslcCommExitSlit = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getExitSlit, ...
+                'fhSetTrue', @this.initAndConnectExitSlit, ...
+                'fhSetFalse', @this.destroyAndDisconnectExitSlit ...
+            );
+        
             gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getNewFocusModel8742, ...
                 'fhSetTrue', @this.initAndConnectNewFocusModel8742, ...
@@ -1332,10 +1469,17 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectKeithley6482Wafer ...
             );
         
-            gslcCommCxroBeamline = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getCxroBeamline, ...
-                'fhSetTrue', @this.initAndConnectCxroBeamline, ...
-                'fhSetFalse', @this.destroyAndDisconnectCxroBeamline ...
+        
+            gslcCommDctCorbaProxy = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getDctCorbaProxy, ...
+                'fhSetTrue', @this.initAndConnectDctCorbaProxy, ...
+                'fhSetFalse', @this.destroyAndDisconnectDctCorbaProxy ...
+            );
+        
+            gslcCommBL1201CorbaProxy = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getBL1201CorbaProxy, ...
+                'fhSetTrue', @this.initAndConnectBL1201CorbaProxy, ...
+                'fhSetFalse', @this.destroyAndDisconnectBL1201CorbaProxy ...
             );
         
             gslcCommMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
@@ -1358,8 +1502,24 @@ classdef App < mic.Base
             );
         
 
-            %this.uiApp.uiBeamline.uiCommCxroBeamline.setDevice(gslcCommCxroBeamline);
-            %this.uiApp.uiShutter.uiCommCxroBeamline.setDevice(gslcCommCxroBeamline);
+            %this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
+            %this.uiApp.uiShutter.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
+            
+            % Beamline
+            this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
+            this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
+            
+            this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy)
+            this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.turnOn()
+            
+            this.uiApp.uiBeamline.uiCommExitSlit.setDevice(gslcCommExitSlit);
+            this.uiApp.uiBeamline.uiCommExitSlit.turnOn()
+            
+            this.uiApp.uiBeamline.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            this.uiApp.uiBeamline.uiCommDataTranslationMeasurPoint.turnOn()
+            
+            this.uiApp.uiBeamline.uiCommGalilD142.setDevice(gslcCommGalilD142);
+            this.uiApp.uiBeamline.uiCommGalilD142.turnOn()
             
             % M141
             this.uiApp.uiM141.uiCommSmarActMcsM141.setDevice(gslcCommSmarActMcsM141);

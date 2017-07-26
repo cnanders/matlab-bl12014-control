@@ -12,7 +12,7 @@ classdef D142 < mic.Base
         uiStageY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiMeasPointVolts
+        uiCurrent
         
     end
     
@@ -94,7 +94,7 @@ classdef D142 < mic.Base
             this.uiStageY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiMeasPointVolts.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hFigure, dLeft, dTop);
             
         end
         
@@ -153,7 +153,7 @@ classdef D142 < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            this.uiMeasPointVolts = mic.ui.device.GetNumber(...
+            this.uiCurrent = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
                 'cName', 'measur-point-d142-diode', ...
                 'config', uiConfig, ...
