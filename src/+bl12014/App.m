@@ -924,13 +924,18 @@ classdef App < mic.Base
             
             % Beamline
             
-            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(this.commBL1201CorbaProxy, 'undulator_gap');
-            deviceGratingTiltX = bl12014.device.GetSetNumberFromBL1201CorbaProxy(this.commBL1201CorbaProxy, 'grating_tilt_x');
+            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+                this.commBL1201CorbaProxy, ...
+                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
+            );
+            deviceGratingTiltX = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+                this.commBL1201CorbaProxy, ...
+                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_GRATING_TILT_X ...
+            );
             
             this.uiApp.uiBeamline.uiUndulatorGap.setDevice(deviceUndulatorGap)
             this.uiApp.uiBeamline.uiUndulatorGap.turnOn()
 
-            
             this.uiApp.uiBeamline.uiGratingTiltX.setDevice(deviceGratingTiltX)
             this.uiApp.uiBeamline.uiGratingTiltX.turnOn()
                         
@@ -946,12 +951,8 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiUndulatorGap.turnOff()
             this.uiApp.uiBeamline.uiUndulatorGap.setDevice([])
             
-            this.uiApp.uiBeamline.uiShutter.turnOff()
-            this.uiApp.uiBeamline.uiShutter.setDevice([])
-            
             this.uiApp.uiBeamline.uiGratingTiltX.turnOff()
             this.uiApp.uiBeamline.uiGratingTiltX.setDevice([])
-            
             
             % this.commBL1201CorbaProxy.delete();
             this.commBL1201CorbaProxy = [];
