@@ -7,6 +7,11 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.15
+
+- Added `cName` property (SetAccess = private) to several of the `bl12014.ui` classes and use it when setting the `cName` of the `mic.ui.device.*` instances to avoid name conflicts in the project when multiple `mic.ui.device.*` communicate with the same comm.
+
+
 # 1.0.0-alpha.14
 
 - Integrated `DctCorbaProxy` into `App`

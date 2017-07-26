@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 150
-        dHeight = 440
+        dHeight = 490
         
         dWidthButton = 110
         

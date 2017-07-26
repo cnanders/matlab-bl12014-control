@@ -35,7 +35,7 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
         function d = get(this)
             switch (this.cDevice)
                 case this.cDEVICE_UNDULATOR_GAP
-                    d = this.comm.SCA_getIDGap12();
+                    d = this.comm.SCA_getIDGap();
                 case this.cDEVICE_GRATING_TILT_X
                     d = this.comm.Mono_GetPositionRaw();
             end
@@ -65,15 +65,18 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
                     % there is no 'is_there' method so need to build our
                     % own
                     
-                    dError = this.comm.SCA_getIDGap12() - this.dGoalUndulator;
+                    %{
+                    dError = this.comm.SCA_getIDGap() - this.dGoalUndulator;
                     if (abs(dError) > 0.1) 
                         l = true;
                     else
                         l = false;
                     end
+                    %}
+                    l = this.comm.SCA_getIDMotionComplete(0.1);
                                         
                 case this.cDEVICE_GRATING_TILT_X
-                    this.comm.Mono_MotionCompleteRaw(50)
+                    l = this.comm.Mono_MotionCompleteRaw(50);
                 
             end
             
