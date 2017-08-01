@@ -31,12 +31,20 @@ purge
 
 jBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
             
-device = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
     jBL1201CorbaProxy, ...
     bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
 );
 
-device.get()
-% device.isReady()
+deviceUndulatorGap.get()
+deviceUndulatorGap.isReady()
  
+
+deviceMono = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+    jBL1201CorbaProxy, ...
+    bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_GRATING_TILT_X ...
+);
+
+deviceMono.get()
+deviceMono.isReady()
 

@@ -20,6 +20,8 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 <a name="dependencies"></a>
 ## Dependencies
 
+- [github/cnanders/matlab-keithley-6482](https://github.com/cnanders/matlab-keithley-6482)
+- [github/cnanders/matlab-scanner-control-npoint](https://github.com/cnanders/matlab-scanner-control-npoint)
 - [github/cnanders/matlab-micronix-mmc-103](https://github.com/cnanders/matlab-micronix-mmc-103)
 - [github/cnanders/matlab-newfocus-model-8742](https://github.com/cnanders/matlab-newfocus-model-8742)
 - [github/cnanders/matlab-instrument-control](https://github.com/cnanders/matlab-instrument-control) (for the UI)

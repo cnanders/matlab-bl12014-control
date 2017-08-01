@@ -73,10 +73,10 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
                         l = false;
                     end
                     %}
-                    l = this.comm.SCA_getIDMotionComplete(0.1);
+                    l = ~this.comm.SCA_getIDMotionComplete();
                                         
                 case this.cDEVICE_GRATING_TILT_X
-                    l = this.comm.Mono_MotionCompleteRaw(50);
+                    l = logical(this.comm.Mono_MotionCompleteRaw(50));
                 
             end
             

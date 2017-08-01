@@ -27,11 +27,11 @@ classdef GetSetNumberFromExitSlit < mic.interface.device.GetSetNumber
         end
         
         function l = isReady(this)
-            l = 
+            l = true; 
         end
         
         function stop(this)
-            
+            [e,estr]=bl12pico_stopAll(this.bl12pico);
         end
         
         function initialize(this)
