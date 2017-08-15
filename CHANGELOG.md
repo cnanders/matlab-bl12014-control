@@ -7,6 +7,10 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.17
+
+- Partial build of src/+bl12014/+device/GetSetNumberFromDeltaTauPowerPMAC.m
+
 # 1.0.0-alpha.16
 
 - Added `tests/test_network_communication` which performs a ping for every device that the software can communicate with
