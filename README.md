@@ -20,12 +20,13 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 <a name="dependencies"></a>
 ## Dependencies
 
-- [github/cnanders/matlab-keithley-6482](https://github.com/cnanders/matlab-keithley-6482)
-- [github/cnanders/matlab-scanner-control-npoint](https://github.com/cnanders/matlab-scanner-control-npoint)
-- [github/cnanders/matlab-micronix-mmc-103](https://github.com/cnanders/matlab-micronix-mmc-103)
-- [github/cnanders/matlab-newfocus-model-8742](https://github.com/cnanders/matlab-newfocus-model-8742)
-- [github/cnanders/matlab-instrument-control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
-- [github/cnanders/matlab-npoint-lc400](https://github.com/cnanders/matlab-npoint-lc400) (for MATLAB USB serial communication with nPoint LC.400 controller)
+- [https://github.com/awojdyla/matlab-datatranslation-measurpoint](https://github.com/awojdyla/matlab-datatranslation-measurpoint)
+- [https://github.com/cnanders/matlab-keithley-6482](https://github.com/cnanders/matlab-keithley-6482)
+- [https://github.com/cnanders/matlab-scanner-control-npoint](https://github.com/cnanders/matlab-scanner-control-npoint)
+- [https://github.com/cnanders/matlab-micronix-mmc-103](https://github.com/cnanders/matlab-micronix-mmc-103)
+- [https://github.com/cnanders/matlab-newfocus-model-8742](https://github.com/cnanders/matlab-newfocus-model-8742)
+- [https://github.com/cnanders/matlab-instrument-control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
+- [https://github.com/cnanders/matlab-npoint-lc400](https://github.com/cnanders/matlab-npoint-lc400) (for MATLAB USB serial communication with nPoint LC.400 controller)
 - [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 
 <a name="project-structure"></a>
@@ -52,6 +53,7 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 
 
+# STOP READING HERE.  RANDOM BRAINSTORMING BELOW
 
 # Thoughts / Philosophy on Project Structure
 
