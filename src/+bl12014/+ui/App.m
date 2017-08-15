@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
        
         dHeight         = 550
-        dWidth          = 175
+        dWidth          = 250
         
         cTcpipHostLC400MA = '192.168.0.2'
         cTcpipHostLC400M142 = '192.168.0.4'
@@ -37,7 +37,7 @@ classdef App < mic.Base
     properties (Access = private)
          
         dHeightEdit = 24
-        dWidthButtonButtonList = 100
+        dWidthButtonButtonList = 200
         cTitleButtonList = 'UI'
         clock
         hFigure

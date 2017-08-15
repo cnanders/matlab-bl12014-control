@@ -7,6 +7,11 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.16
+
+- Added `tests/test_network_communication` which performs a ping for every device that the software can communicate with
+- Integrating correct IPs for devices in App.
+
 # 1.0.0-alpha.15
 
 - Added `cName` property (SetAccess = private) to several of the `bl12014.ui` classes and use it when setting the `cName` of the `mic.ui.device.*` instances to avoid name conflicts in the project when multiple `mic.ui.device.*` communicate with the same comm.

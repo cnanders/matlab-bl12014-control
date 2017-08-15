@@ -53,7 +53,7 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 
 
-# Thoughts on Project Structure
+# Thoughts / Philosophy on Project Structure
 
 There are two ways the UI can be connected to real hardware.  
 

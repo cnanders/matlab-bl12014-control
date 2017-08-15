@@ -2,34 +2,19 @@ classdef App < mic.Base
         
     properties (Constant)
         
-        dWidth = 250
-        dHeight = 460
+        dWidth = 150
+        dHeight = 490
         
-        dWidthButton = 210
+        dWidthButton = 110
         
-        % Branchline Subnet
-        cTcpipSmarActM141 = '192.168.10.20'
         cTcpipHostMicronix = '192.168.10.21'
         cTcpipHostNewFocus = '192.168.10.23'
+        
         cTcpipGalilD142 = '192.168.10.24'
         cTcpipGalilM143 = '192.168.10.25'
         
-        % Endstation 1 Subnet
-        cTcpipLc400MA = '192.168.20.20'
-        cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
-        cTcpipAcromag = '192.168.20.22'
-        cTcpipDeltaTau = '192.168.20.23'
-        cTcpipSmarActLSIGoni = '192.168.20.24'
-        cTcpipSmarActLSIHexapod = '192.168.20.25'
-        cTcpipSmarActFocusMonitor = '192.168.20.26'
-        cTcpipDataTranslation = '192.168.20.27'
-        cTcpipKeithley6482Wafer = '192.168.20.28'
-        cTcpipKeithley6482Reticle = '192.168.20.29'
-        
-        % Video Subnet
-        
-        % Endstation 2 Subnet
-        
+        cTcpipLc400M
+        cTcpipHostKeithley6482Wafer = '192.168.0.3'
         
     end
     
@@ -1281,7 +1266,7 @@ classdef App < mic.Base
                     'NumberTitle', 'off', ...
                     'MenuBar', 'none', ...
                     'Name', 'MET5', ...
-                    'Position', [50 50 this.dWidth this.dHeight], ... % left bottom width height
+                    'Position', [0 0 this.dWidth this.dHeight], ... % left bottom width height
                     'Resize', 'off', ...
                     'HandleVisibility', 'on', ... % lets close all close the figure
                     'Visible', 'on'...
