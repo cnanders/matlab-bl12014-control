@@ -10,6 +10,7 @@ classdef App < mic.Base
         % Branchline Subnet
         cTcpipSmarActM141 = '192.168.10.20'
         cTcpipHostMicronix = '192.168.10.21'
+        cTcpipLc400M142 = '192.168.10.22'
         cTcpipHostNewFocus = '192.168.10.23'
         cTcpipGalilD142 = '192.168.10.24'
         cTcpipGalilM143 = '192.168.10.25'

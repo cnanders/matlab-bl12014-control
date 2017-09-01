@@ -5,9 +5,8 @@ classdef App < mic.Base
         dHeight         = 550
         dWidth          = 250
         
-        cTcpipHostLC400MA = '192.168.0.2'
-        cTcpipHostLC400M142 = '192.168.0.4'
-        
+        cTcpipHostLC400M142 = '192.168.10.22'
+        cTcpipHostLC400MA = '192.168.20.30' % supposed to be .20 but that was not working
         
     end
 	properties
