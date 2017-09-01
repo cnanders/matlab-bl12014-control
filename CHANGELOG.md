@@ -7,6 +7,21 @@ TO DO
 
 -->
 
+
+# 1.0.0-alpha.17
+
+- Partial build of src/+bl12014/+device/GetSetNumberFromDeltaTauPowerPMAC.m
+
+### bl12014.device.GetLogicalPing
+
+- This device, which extends `mic.interface.device.GetLogical`, pings the provided IP address.  If the address is reachable, it returns true.  Otherwise it returns false.
+
+### bl12014.ui.NetworkCommunication
+
+- New UI to show status of network communication with every device
+
+
+
 # 1.0.0-alpha.16
 
 - Added `tests/test_network_communication` which performs a ping for every device that the software can communicate with
