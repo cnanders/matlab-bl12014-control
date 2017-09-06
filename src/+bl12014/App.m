@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 250
-        dHeight = 500
+        dHeight = 550
         
         dWidthButton = 210
         
@@ -1116,30 +1116,45 @@ classdef App < mic.Base
             
             try
                 this.initAndConnectMet5Instruments();
-                this.commGalilVIS = this.jMet5Instruments.getDiagM141Stage();
+                this.commGalilVIS = this.jMet5Instruments.getVISStage();
             catch mE
                 this.commGalilVIS = [];
             end
             
-            %{
-            device = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
-            this.uiApp.uiM141.uiStageY.setDevice(device);
-            this.uiApp.uiM141.uiStageY.turnOn();
-            %}
             
+            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
+            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
+            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
+            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 4);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice(device1);
+            this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice(device2);
+            this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice(device3);
+            this.uiApp.uiVibrationIsolationSystem.uiStage4.setDevice(device4);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiStage1.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOn();
             
         end
         
         function destroyAndDisconnectGalilVIS(this)
-            if ~this.getGalilM143()
+            if ~this.getGalilVIS()
                 return
             end
             
-            %{
-            this.uiApp.uiM141.uiStageY.turnOff();
-            this.uiApp.uiM141.uiStageY.setDevice([]);
-            %}
+            this.uiApp.uiVibrationIsolationSystem.uiStage1.turnOff();
+            this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOff();
+            this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOff();
+            this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOff();
             
+            this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice([]);
+            this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice([]);
+            this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice([]);
+            this.uiApp.uiVibrationIsolationSystem.uiStage4.setDevice([]);
+            
+            % this.commGalilVIS.delete(); May not be needed
             this.commGalilVIS = [];
             
         end
@@ -1516,6 +1531,12 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectGalilM143 ...
             );
         
+            gslcCommGalilVIS = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getGalilVIS, ...
+                'fhSetTrue', @this.initAndConnectGalilVIS, ...
+                'fhSetFalse', @this.destroyAndDisconnectGalilVIS ...
+            );
+        
             gslcCommGalilD142 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getGalilD142, ...
                 'fhSetTrue', @this.initAndConnectGalilD142, ...
@@ -1575,6 +1596,9 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
             
+            % Vibration Isolation System
+            this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)
+            this.uiApp.uiVibrationIsolationSystem.uiCommGalil.turnOn();
             
             % Reticle
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
