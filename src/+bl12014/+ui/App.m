@@ -1,14 +1,21 @@
 classdef App < mic.Base
         
     properties (Constant)
+<<<<<<< HEAD
        
         dHeight         = 550
         dWidth          = 250
         
         cTcpipHostLC400M142 = '192.168.10.22'
         cTcpipHostLC400MA = '192.168.20.30' % supposed to be .20 but that was not working
+=======
+               
+        cTcpipHostLC400MA = '192.168.0.2'
+        cTcpipHostLC400M142 = '192.168.0.4'
+>>>>>>> fbdf117ca4a79080d06d6fae919d61c54d77fa44
         
     end
+    
 	properties
         
         uiNetworkCommunication
@@ -19,6 +26,7 @@ classdef App < mic.Base
         uiM143
         uiD141
         uiD142
+        uiVibrationIsolationSystem
         uiReticle
         uiWafer
         uiScannerControlMA
@@ -114,6 +122,7 @@ classdef App < mic.Base
             delete(this.uiM143)
             delete(this.uiD141)
             delete(this.uiD142)
+            delete(this.uiVibrationIsolationSystem)
             delete(this.uiReticle)
             delete(this.uiWafer)
             delete(this.uiScannerControlMA)
@@ -151,6 +160,7 @@ classdef App < mic.Base
             
             this.clock = mic.Clock('Master');
             this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clock)
+            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clock);
             this.uiBeamline = bl12014.ui.Beamline('clock', this.clock);
             this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
             this.uiD141 = bl12014.ui.D141('clock', this.clock);
@@ -197,9 +207,9 @@ classdef App < mic.Base
               
             
             stNetworkCommunication = struct(...
-                'cLabel',  'Network', ...
+                'cLabel',  'Network Status', ...
                 'fhOnClick',  @() this.uiNetworkCommunication.build(), ...
-                'cTooltip',  'Network' ...
+                'cTooltip',  'Network Status' ...
             );
         
             stBeamline = struct(...
@@ -238,6 +248,11 @@ classdef App < mic.Base
             'cLabel',  'M143', ...
             'fhOnClick',  @() this.uiM143.build(), ...
             'cTooltip',  'Beamline');
+        
+            stVibrationIsolationSystem = struct(...
+            'cLabel',  'Vibration Isolation System', ...
+            'fhOnClick',  @() this.uiVibrationIsolationSystem.build(), ...
+            'cTooltip',  'Vibration Isolation System');
         
             stReticle = struct(...
             'cLabel',  'Reticle', ...
@@ -294,6 +309,7 @@ classdef App < mic.Base
               stD142, ...
               stScannerControlM142, ...
               stM143, ...
+              stVibrationIsolationSystem, ...
               stScannerControlMA, ...
               stReticle, ...
               stWafer, ...
