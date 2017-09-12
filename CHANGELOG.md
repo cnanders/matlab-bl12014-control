@@ -7,6 +7,16 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.18
+
+
+### bl12014.device.GetLogicalPing
+
+- Updated it to use more rubust java class that establishes a  `Socket` connection with the server on the specified port
+
+### bl12014.ui.NetworkCommunication
+
+- Added port to all device configurations
 
 # 1.0.0-alpha.17
 
