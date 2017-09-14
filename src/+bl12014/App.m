@@ -696,12 +696,14 @@ classdef App < mic.Base
         
         function initAndConnectDeltaTauPowerPmac(this)
            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            
             if this.getDeltaTauPowerPmac()
                 return
             end
             
             try
-                this.commDeltaTauPowerPmac = deltaTau.powerPmac.PowerPmac();
+                this.commDeltaTauPowerPmac = deltaTau.PowerPmac();
             catch mE
                 this.commDeltaTauPowerPmac = []
                 return
@@ -709,9 +711,58 @@ classdef App < mic.Base
             
             % Reticle
             
+            deviceReticleCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_X);
+            deviceReticleCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_Y);
+            deviceReticleCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_Z);
+            deviceReticleCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_TIP);
+            deviceReticleCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_TILT);
+            deviceReticleFineX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_FINE_X);
+            deviceReticleFineY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_FINE_Y);
+            
             % Wafer
             
+            deviceWaferCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_X);
+            deviceWaferCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_Y);
+            deviceWaferCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_Z);
+            deviceWaferCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_TIP);
+            deviceWaferCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_TILT);
+            deviceWaferFineZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_FINE_Z);
             
+            % LSI (need to figure out what UI to wire it to)
+            % deviceLsiCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_LSI_COARSE_X);
+            
+            % Set Devices 
+            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice(deviceReticleCoarseX);
+            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice(deviceReticleCoarseY);
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice(deviceReticleCoarseZ);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice(deviceReticleCoarseTiltX);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice(deviceReticleCoarseTiltY);
+            this.uiApp.uiReticle.uiFineStage.uiX.setDevice(deviceReticleFineX);
+            this.uiApp.uiReticle.uiFineStage.uiY.setDevice(deviceReticleFineY);
+            
+            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice(deviceWaferCoarseX);
+            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice(deviceWaferCoarseY);
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice(deviceWaferCoarseZ);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice(deviceWaferCoarseTiltX);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice(deviceWaferCoarseTiltY);
+            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice(deviceWaferFineZ);
+            
+            
+            % Turn on
+            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOn();
+            this.uiApp.uiReticle.uiFineStage.uiX.turnOn();
+            this.uiApp.uiReticle.uiFineStage.uiY.turnOn();
+            
+            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOn();
+            this.uiApp.uiWafer.uiFineStage.uiZ.turnOn();
             
             
         end
@@ -721,12 +772,39 @@ classdef App < mic.Base
             if ~this.getDeltaTauPowerPmac()
                 return
             end
+                        
+            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOff();
+            this.uiApp.uiReticle.uiFineStage.uiX.turnOff();
+            this.uiApp.uiReticle.uiFineStage.uiY.turnOff();
             
-            % Reticle
+            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOff();
+            this.uiApp.uiWafer.uiFineStage.uiZ.turnOff();
             
-            % Wafer
             
+            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiApp.uiReticle.uiFineStage.uiX.setDevice([]);
+            this.uiApp.uiReticle.uiFineStage.uiY.setDevice([]);
             
+            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice([]);
+            
+                        
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
             

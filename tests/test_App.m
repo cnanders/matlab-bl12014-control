@@ -6,25 +6,28 @@ addpath(genpath(cDirBl12014));
 
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', 'vendor');
-cDirCnanders = fullfile(cDirVendor, 'github', 'cnanders');
-addpath(genpath(fullfile(cDirCnanders, 'matlab-instrument-control', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-micronix-mmc-103', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-newfocus-model-8742', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-hex', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-ieee', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-npoint-lc400', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-scanner-control-npoint', 'src')));
-addpath(genpath(fullfile(cDirCnanders, 'matlab-keithley-6482', 'src')));
+
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-micronix-mmc-103', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-newfocus-model-8742', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-hex', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-ieee', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-scanner-control-npoint', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-keithley-6482', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
 
 addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits')));
 javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCorbaProxy.jar'));
 
-
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
-
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
 
+javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'));
+
+% Used by GetLogicalPing
+javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
 
 
 purge
