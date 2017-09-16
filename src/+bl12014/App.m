@@ -703,33 +703,36 @@ classdef App < mic.Base
             end
             
             try
-                this.commDeltaTauPowerPmac = deltaTau.PowerPmac();
+                this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
+                    'cHostname', this.cTcpipDeltaTau ...
+                );
+                this.commDeltaTauPowerPmac.init();
             catch mE
-                this.commDeltaTauPowerPmac = []
+                this.commDeltaTauPowerPmac = [];
                 return
             end
             
             % Reticle
             
-            deviceReticleCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_X);
-            deviceReticleCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_Y);
-            deviceReticleCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_Z);
-            deviceReticleCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_TIP);
-            deviceReticleCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_COARSE_TILT);
-            deviceReticleFineX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_FINE_X);
-            deviceReticleFineY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_RETICLE_FINE_Y);
+            deviceReticleCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceReticleCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceReticleCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceReticleCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceReticleCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            deviceReticleFineX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceReticleFineY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
             
             % Wafer
             
-            deviceWaferCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_X);
-            deviceWaferCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_Y);
-            deviceWaferCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_Z);
-            deviceWaferCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_TIP);
-            deviceWaferCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_COARSE_TILT);
-            deviceWaferFineZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_WAFER_FINE_Z);
+            deviceWaferCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceWaferCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceWaferCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceWaferCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceWaferCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            deviceWaferFineZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
             
             % LSI (need to figure out what UI to wire it to)
-            % deviceLsiCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPMAC.cAXIS_LSI_COARSE_X);
+            % deviceLsiCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
             
             % Set Devices 
             this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice(deviceReticleCoarseX);
@@ -1445,7 +1448,7 @@ classdef App < mic.Base
             );
             
             stDeltaTauPowerPmac = struct( ...
-                'cLabel',   'Delta Tau PowerPMAC', ...
+                'cLabel',   'Delta Tau Power PMAC', ...
                 'fhOnClick',  @this.connectCommDeltaTauPowerPmac, ...
                 'cTooltip',  'Reticle Stage, Reticle RTDs, Wafer Stage, Wafer RTDs' ...
             );

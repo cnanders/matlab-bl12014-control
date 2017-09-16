@@ -33,7 +33,7 @@ javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
 purge
 
 app = bl12014.App();
-app.build()
+app.build();
 
 
  

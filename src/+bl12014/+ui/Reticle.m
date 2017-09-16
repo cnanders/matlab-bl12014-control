@@ -181,9 +181,9 @@ classdef Reticle < mic.Base
             % Make sure the hggroup of the carriage is at the correct
             % location.  
             
-            dX = this.uiCoarseStage.uiX.getValCalDisplay(); 
-            % don't use display since need units of meters for setStatePosition
-            dY = this.uiCoarseStage.uiY.getValCalDisplay();
+            
+            dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
+            dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
             this.uiAxes.setStagePosition(dX, dY);
                         
         end
