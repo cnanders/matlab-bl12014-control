@@ -1,9 +1,18 @@
 classdef App < mic.Base
         
     properties (Constant)
+<<<<<<< HEAD
+       
+        dHeight         = 550
+        dWidth          = 250
+        
+        cTcpipHostLC400M142 = '192.168.10.22'
+        cTcpipHostLC400MA = '192.168.20.30' % supposed to be .20 but that was not working
+=======
                
         cTcpipHostLC400MA = '192.168.0.2'
         cTcpipHostLC400M142 = '192.168.0.4'
+>>>>>>> fbdf117ca4a79080d06d6fae919d61c54d77fa44
         
     end
     

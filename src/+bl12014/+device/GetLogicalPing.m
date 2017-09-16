@@ -17,6 +17,7 @@ classdef GetLogicalPing < mic.interface.device.GetLogical
         
         % {double 1x1} timeout (ms) for the ping test
         dTimeout = 500
+
     end
     
     
