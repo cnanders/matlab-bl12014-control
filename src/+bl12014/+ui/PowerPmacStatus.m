@@ -271,14 +271,8 @@ classdef PowerPmacStatus < mic.Base
             
             for m = 1 : length(this.ceceTypes)
                 for n = 1 : length(this.ceceTypes{m})
-                    
                     this.uiGetLogicals{m}{n}.build(this.hFigure, dLeft, dTop);
-                
-                    if n == 1
-                        dTop = dTop + 15 + dSep;
-                    else
-                        dTop = dTop + dSep;
-                    end
+                    dTop = dTop + dSep;
                 end
                 
                 % Update dLeft (shift to right)
@@ -421,11 +415,7 @@ classdef PowerPmacStatus < mic.Base
                         this.uiGetLogicals{m} = {};
                     end
             
-                    if n == 1
-                        lShowLabels = true;
-                    else
-                        lShowLabels = false;
-                    end
+                    lShowLabels = false;                    
 
                     cPathConfig = fullfile(...
                         bl12014.Utils.pathUiConfig(), ...
