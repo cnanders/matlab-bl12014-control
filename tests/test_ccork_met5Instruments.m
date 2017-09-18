@@ -10,7 +10,7 @@ jFile = java.io.File(cDirCwcork);
 c = char(jFile.getCanonicalPath);
 
 try
-    jMet5Instruments = cxro.met5.Instruments();
+    jMet5Instruments = cxro.met5.Instruments(cDirCwcork);
     fprintf('success\n');
 catch mE
     jMet5Instruments = [];

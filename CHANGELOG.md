@@ -7,8 +7,19 @@ TO DO
 
 -->
 
-# 1.0.0-alpha.18
 
+# 1.0.0-alpha.19
+
+### bl12014.ui.PowerPmacStatus
+
+- UI that shows every status / error flag that the Power PMAC exposes
+
+### bl12014.App
+
+- Now show error message in the initAndConnect*() methods in the `catch` block
+- Integrated the Galil that controls D142
+
+# 1.0.0-alpha.18
 
 ### bl12014.device.GetLogicalPing
 

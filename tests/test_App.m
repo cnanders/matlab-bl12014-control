@@ -1,11 +1,13 @@
-[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+%purge
 
-% bl12014
+[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+cDirVendor = fullfile(cDirThis, '..', 'vendor');
+
+% src
 cDirBl12014 = fullfile(cDirThis, '..', 'src');
 addpath(genpath(cDirBl12014));
 
 % dependencies
-cDirVendor = fullfile(cDirThis, '..', 'vendor');
 
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-micronix-mmc-103', 'src')));
@@ -24,15 +26,20 @@ javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
 
+
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'));
 
 % Used by GetLogicalPing
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
 
 
-purge
+% Required by cwcork cxro.met5.Instruments
+cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
 
-app = bl12014.App();
+
+app = bl12014.App(...
+    'cDirMet5InstrumentsConfig', cDirMet5InstrumentsConfig ...
+);
 app.build();
 
 
