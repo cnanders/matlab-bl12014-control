@@ -90,7 +90,7 @@ classdef App < mic.Base
         end
         
         function build(this, hParent, dLeft, dTop)
-            this.uiButtonList.build(hParent, dLeft, dTop)
+            this.uiButtonList.build(hParent, dLeft, dTop);
         end
         
                         
@@ -154,7 +154,7 @@ classdef App < mic.Base
         function init(this)
             
             this.clock = mic.Clock('Master');
-            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clock)
+            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clock);
             this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clock);
             this.uiBeamline = bl12014.ui.Beamline('clock', this.clock);
             this.uiShutter = bl12014.ui.Shutter('clock', this.clock);

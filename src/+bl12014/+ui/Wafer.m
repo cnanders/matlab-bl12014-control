@@ -180,8 +180,8 @@ classdef Wafer < mic.Base
             % Make sure the hggroup of the carriage is at the correct
             % location.  
             
-            dX = this.uiCoarseStage.uiX.getValCal('m');
-            dY = this.uiCoarseStage.uiY.getValCal('m');
+            dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
+            dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
             this.uiAxes.setStagePosition(dX, dY);
                         
         end

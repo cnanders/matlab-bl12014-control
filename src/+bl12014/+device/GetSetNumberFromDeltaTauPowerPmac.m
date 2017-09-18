@@ -1,6 +1,6 @@
-classdef GetSetNumberFromDeltaTauPowerPMAC < mic.interface.device.GetSetNumber
+classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
     
-    % Translates deltatau.PowerPMAC to mic.interface.device.GetSetNumber
+    % Translates deltatau.PowerPmac to mic.interface.device.GetSetNumber
     
     properties (Constant)
         
@@ -26,7 +26,7 @@ classdef GetSetNumberFromDeltaTauPowerPMAC < mic.interface.device.GetSetNumber
     
     properties (Access = private)
         
-        % {< deltatau.PowerPMAC (MET5) 1x1}
+        % {< deltatau.PowerPmac (MET5) 1x1}
         comm
         
         % {char 1xm} the axis to control (see cAXIS_* constants)
@@ -35,12 +35,13 @@ classdef GetSetNumberFromDeltaTauPowerPMAC < mic.interface.device.GetSetNumber
     
     methods
         
-        function this = GetSetNumberFromDeltaTauPowerPMAC(comm, cAxis)
+        function this = GetSetNumberFromDeltaTauPowerPmac(comm, cAxis)
             this.comm = comm;
             this.cAxis = cAxis;
         end
         
         function d = get(this)
+            
             switch this.cAxis
                 case this.cAXIS_WAFER_COARSE_X
                     d = this.comm.getWaferCoarseX();
@@ -108,8 +109,36 @@ classdef GetSetNumberFromDeltaTauPowerPMAC < mic.interface.device.GetSetNumber
         end
         
         function l = isReady(this)
-            l = true;
-            % unknown - email to PI 2017.08.02
+            switch this.cAxis
+                case this.cAXIS_WAFER_COARSE_X
+                    l = ~this.comm.getStatusWaferCoarseXIsMoving();
+                case this.cAXIS_WAFER_COARSE_Y
+                    l = ~this.comm.getStatusWaferCoarseYIsMoving();
+                case this.cAXIS_WAFER_COARSE_Z
+                    l = ~this.comm.getStatusWaferCoarseZIsMoving();
+                case this.cAXIS_WAFER_COARSE_TIP
+                    l = ~this.comm.getStatusWaferCoarseTipIsMoving();
+                case this.cAXIS_WAFER_COARSE_TILT
+                    l = ~this.comm.getStatusWaferCoarseTiltIsMoving();
+                case this.cAXIS_WAFER_FINE_Z
+                    l = ~this.comm.getStatusWaferFineZXIsMoving();
+                case this.cAXIS_LSI_COARSE_X
+                    l = ~this.comm.getStatusLsiCoarseXIsMoving();
+                case this.cAXIS_RETICLE_COARSE_X
+                    l = ~this.comm.getStatusReticleCoarseXIsMoving();
+                case this.cAXIS_RETICLE_COARSE_Y
+                    l = ~this.comm.getStatusReticleCoarseYIsMoving();
+                case this.cAXIS_RETICLE_COARSE_Z
+                    l = ~this.comm.getStatusReticleCoarseZIsMoving();
+                case this.cAXIS_RETICLE_COARSE_TIP
+                    l = ~this.comm.getStatusReticleCoarseTipIsMoving();
+                case this.cAXIS_RETICLE_COARSE_TILT
+                    l = ~this.comm.getStatusReticleCoarseTiltIsMoving();
+                case this.cAXIS_RETICLE_FINE_X
+                    l = ~this.comm.getStatusReticleFineXIsMoving();
+                case this.cAXIS_RETICLE_FINE_Y
+                    l = ~this.comm.getStatusReticleFineXIsMoving();
+            end
         end
         
         function stop(this)

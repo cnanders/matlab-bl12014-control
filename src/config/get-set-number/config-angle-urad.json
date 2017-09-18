@@ -1,0 +1,26 @@
+{
+	"delay": 0.5,
+	"units": [
+    {
+			"name": "urad",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+    },
+    {
+			"name": "mrad",
+			"slope": 0.001,
+			"offset": 0,
+			"precision": 3
+    },
+    {
+			"name": "deg",
+			"slope": "5.729577951308232e-05",
+			"offset": 0,
+			"precision": 3
+    }
+	],
+    "step": 0.1
+}	
+	
+	

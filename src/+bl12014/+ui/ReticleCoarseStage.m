@@ -4,25 +4,7 @@ classdef ReticleCoarseStage < mic.Base
         
         
       
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceY
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceZ
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceTiltX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceTiltY
-        
-        
-        
-        
+
         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiX
@@ -232,7 +214,7 @@ classdef ReticleCoarseStage < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-reticle-coarse-stage-tilt-x.json' ...
+                'config-angle-urad.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -254,7 +236,7 @@ classdef ReticleCoarseStage < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-reticle-coarse-stage-tilt-y.json' ...
+                'config-angle-urad.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...

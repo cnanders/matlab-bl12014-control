@@ -23,7 +23,8 @@ classdef GetSetNumberFromStage < mic.interface.device.GetSetNumber
         end
         
         function set(this, dVal)
-            this.stage.setAxisPosition(this.u8Axis, dVal);
+            % this.stage.setAxisPosition(this.u8Axis, dVal);
+            this.stage.moveAxisAbsolute(this.u8Axis, dVal);
         end
         
         function l = isReady(this)

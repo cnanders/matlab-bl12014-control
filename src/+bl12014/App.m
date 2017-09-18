@@ -118,6 +118,10 @@ classdef App < mic.Base
         % {bl12014.Comm 1x1}
         comm
         
+        % {char 1xm} - base directory for configuration and library files
+        % for cwcork's cxro.met5.Instruments class
+        cDirMet5InstrumentsConfig
+        
     end
     
         
@@ -131,8 +135,19 @@ classdef App < mic.Base
     methods
         
         
-        function this = App()
+        function this = App(varargin)
+            
+            for k = 1 : 2: length(varargin)
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf('settting %s', varargin{k}),  this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
+            
             this.init();
+            
+            
         end
         
                 
@@ -166,9 +181,10 @@ classdef App < mic.Base
            end
            
            try
-                this.jMet5Instruments = cxro.met5.Instruments();
+                this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
            catch mE
                 this.jMet5Instruments = []; 
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
            end
             
         end
@@ -297,18 +313,21 @@ classdef App < mic.Base
                 this.initAndConnectMet5Instruments();
                 this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
             catch mE
+                
+                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 this.commSmarActMcsM141 = [];
                 return
             end
             
             % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
+            deviceX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 0);
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
+            deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 3);
+            deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
             
             this.uiApp.uiM141.uiStageX.setDevice(deviceX);
             this.uiApp.uiM141.uiStageTiltX.setDevice(deviceTiltX);
@@ -346,8 +365,11 @@ classdef App < mic.Base
             try
                 this.initAndConnectMet5Instruments();
                 this.commSmarActRotary = this.jMet5Instruments.getFmStage();
+                
             catch mE
                 this.commSmarActRotary = [];
+                cMsg = sprintf('initAndConnectSmarActRotary %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -384,6 +406,9 @@ classdef App < mic.Base
                 this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer();
             catch mE
                 this.commSmarActMcsGoni = [];
+                cMsg = sprintf('initAndConnectSmarActMcsGoni() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
                 return
             end
             
@@ -415,6 +440,8 @@ classdef App < mic.Base
                 this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod();
             catch mE
                 this.commSmarActSmarPod = [];
+                cMsg = sprintf('initAndConnectSmarSmarPod() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -444,6 +471,8 @@ classdef App < mic.Base
                 this.commDataTranslationMeasurPoint = dataTranslation.MeasurPoint();
             catch mE
                 this.commDataTranslationMeasurPoint = [];
+                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -697,22 +726,78 @@ classdef App < mic.Base
         
         function initAndConnectDeltaTauPowerPmac(this)
            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            
             if this.getDeltaTauPowerPmac()
                 return
             end
             
             try
-                this.commDeltaTauPowerPmac = deltaTau.powerPmac.PowerPmac();
+                this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
+                    'cHostname', this.cTcpipDeltaTau ...
+                );
+                this.commDeltaTauPowerPmac.init();
             catch mE
-                this.commDeltaTauPowerPmac = []
+                this.commDeltaTauPowerPmac = [];
+                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
             % Reticle
             
+            deviceReticleCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceReticleCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceReticleCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceReticleCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceReticleCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            deviceReticleFineX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceReticleFineY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
+            
             % Wafer
             
+            deviceWaferCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceWaferCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceWaferCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceWaferCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceWaferCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            deviceWaferFineZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
             
+            % LSI (need to figure out what UI to wire it to)
+            % deviceLsiCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
+            
+            % Set Devices 
+            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice(deviceReticleCoarseX);
+            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice(deviceReticleCoarseY);
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice(deviceReticleCoarseZ);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice(deviceReticleCoarseTiltX);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice(deviceReticleCoarseTiltY);
+            this.uiApp.uiReticle.uiFineStage.uiX.setDevice(deviceReticleFineX);
+            this.uiApp.uiReticle.uiFineStage.uiY.setDevice(deviceReticleFineY);
+            
+            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice(deviceWaferCoarseX);
+            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice(deviceWaferCoarseY);
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice(deviceWaferCoarseZ);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice(deviceWaferCoarseTiltX);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice(deviceWaferCoarseTiltY);
+            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice(deviceWaferFineZ);
+            
+            
+            % Turn on
+            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOn();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOn();
+            this.uiApp.uiReticle.uiFineStage.uiX.turnOn();
+            this.uiApp.uiReticle.uiFineStage.uiY.turnOn();
+            
+            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOn();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOn();
+            this.uiApp.uiWafer.uiFineStage.uiZ.turnOn();
             
             
         end
@@ -722,12 +807,39 @@ classdef App < mic.Base
             if ~this.getDeltaTauPowerPmac()
                 return
             end
+                        
+            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOff();
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOff();
+            this.uiApp.uiReticle.uiFineStage.uiX.turnOff();
+            this.uiApp.uiReticle.uiFineStage.uiY.turnOff();
             
-            % Reticle
+            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOff();
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOff();
+            this.uiApp.uiWafer.uiFineStage.uiZ.turnOff();
             
-            % Wafer
             
+            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiApp.uiReticle.uiFineStage.uiX.setDevice([]);
+            this.uiApp.uiReticle.uiFineStage.uiY.setDevice([]);
             
+            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice([]);
+            
+                        
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
             
@@ -744,6 +856,8 @@ classdef App < mic.Base
                 [this.commExitSlit, e] = bl12pico_attach();
             catch mE
                 this.commExitSlit = [];
+                cMsg = sprintf('initAndConnectExitSlit() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -791,6 +905,8 @@ classdef App < mic.Base
                 % this.commKeithley6482Wafer.identity()
             catch mE
                 this.commKeithley6482Wafer = [];
+                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -838,6 +954,8 @@ classdef App < mic.Base
                 this.commKeithley6482Reticle = keithley.Keithley6482();
             catch mE
                 this.commKeithley6482Reticle = [];
+                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
                         
@@ -871,6 +989,7 @@ classdef App < mic.Base
                 this.commCxroHeightSensor = cxro.met5.HeightSensor();
             catch mE
                 this.commCxroHeightSensor = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -900,6 +1019,7 @@ classdef App < mic.Base
                 this.commDctCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
             catch mE
                 this.commDctCorbaProxy = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -940,6 +1060,7 @@ classdef App < mic.Base
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
             catch mE
                 this.commBL1201CorbaProxy = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -994,7 +1115,7 @@ classdef App < mic.Base
                 this.commNewFocusModel8742.connect();
             catch mE
                 this.commNewFocusModel8742 = [];
-                rethrow(mE)
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1051,9 +1172,10 @@ classdef App < mic.Base
                 this.commGalilD142 = this.jMet5Instruments.getDiag142Stage();
             catch mE
                 this.commGalilD142 = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
             end
             
-            device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 1);
+            device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 0);
             
             this.uiApp.uiD142.uiStageY.setDevice(device);
             this.uiApp.uiD142.uiStageY.turnOn();
@@ -1088,6 +1210,7 @@ classdef App < mic.Base
                 this.commGalilM143 = this.jMet5Instruments.getDiagM143Stage();
             catch mE
                 this.commGalilM143 = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
             end
             
             device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 1);
@@ -1120,6 +1243,7 @@ classdef App < mic.Base
                 this.commGalilVIS = this.jMet5Instruments.getVISStage();
             catch mE
                 this.commGalilVIS = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
             end
             
             
@@ -1187,6 +1311,7 @@ classdef App < mic.Base
             catch mE
             
                 this.commMicronixMmc103 = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
                         
@@ -1234,6 +1359,7 @@ classdef App < mic.Base
                 this.commNPointLC400Pupil = npoint.LC400();
             catch mE
                 this.commNPointLC400Pupil = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1264,6 +1390,7 @@ classdef App < mic.Base
                 this.commNPointLC400Field = npoint.LC400();
             catch mE
                 this.commNPointLC400Field = [];
+                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1368,7 +1495,7 @@ classdef App < mic.Base
             );
             
             stDeltaTauPowerPmac = struct( ...
-                'cLabel',   'Delta Tau PowerPMAC', ...
+                'cLabel',   'Delta Tau Power PMAC', ...
                 'fhOnClick',  @this.connectCommDeltaTauPowerPmac, ...
                 'cTooltip',  'Reticle Stage, Reticle RTDs, Wafer Stage, Wafer RTDs' ...
             );
@@ -1657,8 +1784,9 @@ classdef App < mic.Base
             % purge;
             delete(this.hFigure);
             % this.saveState();
-         end
-        
+        end
+         
+                
 
     end % private
     
