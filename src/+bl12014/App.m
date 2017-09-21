@@ -196,6 +196,7 @@ classdef App < mic.Base
            end
            
            this.jMet5Instruments.disconnect();
+           this.jMet5Instruments = []
            
             
         end
@@ -312,6 +313,7 @@ classdef App < mic.Base
             try
                 this.initAndConnectMet5Instruments();
                 this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
+                this.commSmarActMcsM141.connect()
             catch mE
                 
                 cMsg = sprintf('initAndConnectSmarActMcsM141() %s', getReport(mE));
@@ -334,6 +336,10 @@ classdef App < mic.Base
             this.uiApp.uiM141.uiStageTiltY.setDevice(deviceTiltY);
             
             
+            this.uiApp.uiM141.uiStageX.turnOn();
+            this.uiApp.uiM141.uiStageTiltX.turnOn();
+            this.uiApp.uiM141.uiStageTiltY.turnOn();
+            
         end
         
         
@@ -352,6 +358,7 @@ classdef App < mic.Base
             this.uiApp.uiM141.uiStageTiltY.setDevice([]);
             
             
+            this.commSmarActMcsM141.disconnect();
             this.commSmarActMcsM141 = [];
         end
         
@@ -1170,6 +1177,7 @@ classdef App < mic.Base
             try
                 this.initAndConnectMet5Instruments();
                 this.commGalilD142 = this.jMet5Instruments.getDiag142Stage();
+                this.commGalilD142.connect();
             catch mE
                 this.commGalilD142 = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
@@ -1196,6 +1204,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiD142StageY.turnOff()
             this.uiApp.uiBeamline.uiD142StageY.setDevice([]);
             
+            this.commGalilD142.disconnect();
             this.commGalilD142 = [];
             
         end
@@ -1228,6 +1237,7 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiStageY.turnOff();
             this.uiApp.uiM143.uiStageY.setDevice([]);
             
+            this.commGalilM143.disconnect();
             this.commGalilM143 = [];
             
         end
@@ -1241,16 +1251,17 @@ classdef App < mic.Base
             try
                 this.initAndConnectMet5Instruments();
                 this.commGalilVIS = this.jMet5Instruments.getVISStage();
+                this.commGalilVIS.connect();
             catch mE
                 this.commGalilVIS = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
             end
             
             
-            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
-            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
-            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
-            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 4);
+            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 0);
+            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
+            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
+            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
             
             this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice(device1);
             this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice(device2);
@@ -1279,7 +1290,7 @@ classdef App < mic.Base
             this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice([]);
             this.uiApp.uiVibrationIsolationSystem.uiStage4.setDevice([]);
             
-            % this.commGalilVIS.delete(); May not be needed
+            this.commGalilVIS.disconnect(); 
             this.commGalilVIS = [];
             
         end

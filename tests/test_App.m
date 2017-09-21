@@ -27,7 +27,7 @@ javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaPro
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
 
 
-javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'));
+javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7-v2.jar'));
 
 % Used by GetLogicalPing
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
