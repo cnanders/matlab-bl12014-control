@@ -1,4 +1,6 @@
-%purge
+if exist('purge', 'file')
+    purge;
+end
 
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 cDirVendor = fullfile(cDirThis, '..', 'vendor');

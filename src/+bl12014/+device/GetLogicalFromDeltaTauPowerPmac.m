@@ -406,29 +406,47 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
                 
         function l = getCsError(this)
             
-            l = true;
             switch this.cType
-                case this.cTYPE_CS_ERROR_WAFER_COARSE_SOFT_LIMIT 
+                case this.cTYPE_CS_ERROR_WAFER_COARSE_SOFT_LIMIT
+                    l = this.comm.getCsErrorWaferCoarseSoftLimit();
                 case this.cTYPE_CS_ERROR_WAFER_COARSE_RUN_TIME 
+                    l = this.comm.getCsErrorWaferCoarseRunTime();
                 case this.cTYPE_CS_ERROR_WAFER_COARSE_LIMIT_STOP 
+                    l = this.comm.getCsErrorWaferCoarseLimitStop();
                 case this.cTYPE_CS_ERROR_WAFER_COARSE_ERROR_STATUS
                     l = this.comm.getCsErrorWaferCoarseErrorStatus();
-                case this.cTYPE_CS_ERROR_WAFER_FINE_SOFT_LIMIT 
-                case this.cTYPE_CS_ERROR_WAFER_FINE_RUN_TIME 
-                case this.cTYPE_CS_ERROR_WAFER_FINE_LIMIT_STOP 
+                case this.cTYPE_CS_ERROR_WAFER_FINE_SOFT_LIMIT
+                    l = this.comm.getCsErrorWaferFineSoftLimit();
+                case this.cTYPE_CS_ERROR_WAFER_FINE_RUN_TIME
+                    l = this.comm.getCsErrorWaferFineRunTime();
+                case this.cTYPE_CS_ERROR_WAFER_FINE_LIMIT_STOP
+                    l = this.comm.getCsErrorWaferFineLimitStop();
                 case this.cTYPE_CS_ERROR_WAFER_FINE_ERROR_STATUS 
+                    l = this.comm.getCsErrorWaferFineErrorStatus();
                 case this.cTYPE_CS_ERROR_RETICLE_COARSE_SOFT_LIMIT 
+                    l = this.comm.getCsErrorReticleCoarseSoftLimit();
                 case this.cTYPE_CS_ERROR_RETICLE_COARSE_RUN_TIME
+                    l = this.comm.getCsErrorReticleCoarseRunTime();
                 case this.cTYPE_CS_ERROR_RETICLE_COARSE_LIMIT_STOP
+                    l = this.comm.getCsErrorReticleCoarseLimitStop();
                 case this.cTYPE_CS_ERROR_RETICLE_COARSE_ERROR_STATUS
+                    l = this.comm.getCsErrorReticleCoarseErrorStatus();
                 case this.cTYPE_CS_ERROR_RETICLE_FINE_SOFT_LIMIT
+                    l = this.comm.getCsErrorReticleFineSoftLimit();
                 case this.cTYPE_CS_ERROR_RETICLE_FINE_RUN_TIME
+                    l = this.comm.getCsErrorReticleFineRunTime();
                 case this.cTYPE_CS_ERROR_RETICLE_FINE_LIMIT_STOP
+                    l = this.comm.getCsErrorReticleFineLimitStop();
                 case this.cTYPE_CS_ERROR_RETICLE_FINE_ERROR_STATUS
+                    l = this.comm.getCsErrorReticleFineErrorStatus();
                 case this.cTYPE_CS_ERROR_LSI_COARSE_SOFT_LIMIT
+                    l = this.comm.getCsErrorLsiCoarseSoftLimit();
                 case this.cTYPE_CS_ERROR_LSI_COARSE_RUN_TIME
+                    l = this.comm.getCsErrorLsiCoarseRunTime();
                 case this.cTYPE_CS_ERROR_LSI_COARSE_LIMIT_STOP
+                    l = this.comm.getCsErrorLsiCoarseLimitStop();
                 case this.cTYPE_CS_ERROR_LSI_COARSE_ERROR_STATUS
+                    l = this.comm.getCsErrorLsiCoarseErrorStatus();
             end
         
         end
@@ -439,20 +457,35 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
             switch this.cType
                 
                 case this.cTYPE_CS_STATUS_WAFER_COARSE_NOT_HOMED
+                     l = this.comm.getCsStatusWaferCoarseNotHomed();
                 case this.cTYPE_CS_STATUS_WAFER_COARSE_TIMEBASE_DEVIATION
+                    l = this.comm.getCsStatusWaferCoarseTimebaseDeviation();
                 case this.cTYPE_CS_STATUS_WAFER_COARSE_PROGRAM_RUNNING
+                     l = this.comm.getCsStatusWaferCoarseProgramRunning();
                 case this.cTYPE_CS_STATUS_WAFER_FINE_NOT_HOMED
+                     l = this.comm.getCsStatusWaferFineNotHomed();
                 case this.cTYPE_CS_STATUS_WAFER_FINE_TIMEBASE_DEVIATION
+                     l = this.comm.getCsStatusWaferFineTimebaseDeviation();
                 case this.cTYPE_CS_STATUS_WAFER_FINE_PROGRAM_RUNNING
+                     l = this.comm.getCsStatusWaferFineProgramRunning();
                 case this.cTYPE_CS_STATUS_RETICLE_COARSE_NOT_HOMED
+                     l = this.comm.getCsStatusReticleCoarseNotHomed();
                 case this.cTYPE_CS_STATUS_RETICLE_COARSE_TIMEBASE_DEVIATION
+                     l = this.comm.getCsStatusReticleCoarseTimebaseDeviation();
                 case this.cTYPE_CS_STATUS_RETICLE_COARSE_PROGRAM_RUNNING
+                     l = this.comm.getCsStatusReticleCoarseProgramRunning();
                 case this.cTYPE_CS_STATUS_RETICLE_FINE_NOT_HOMED
+                     l = this.comm.getCsStatusReticleFineNotHomed();
                 case this.cTYPE_CS_STATUS_RETICLE_FINE_TIMEBASE_DEVIATION
+                     l = this.comm.getCsStatusReticleFineTimebaseDeviation();
                 case this.cTYPE_CS_STATUS_RETICLE_FINE_PROGRAM_RUNNING
+                     l = this.comm.getCsStatusReticleFineProgramRunning();
                 case this.cTYPE_CS_STATUS_LSI_COARSE_NOT_HOMED
+                     l = this.comm.getCsStatusLsiCoarseNotHomed();
                 case this.cTYPE_CS_STATUS_LSI_COARSE_TIMEBASE_DEVIATION
+                     l = this.comm.getCsStatusLsiCoarseTimebaseDeviation();
                 case this.cTYPE_CS_STATUS_LSI_COARSE_PROGRAM_RUNNING
+                     l = this.comm.getCsStatusLsiCoarseProgramRunning();
 
             end
         end
@@ -464,42 +497,66 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
                 
                 % Hydra 1
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_X
+                    l = this.comm.getMotorErrorWaferCoarseX();
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_Y
+                    l = this.comm.getMotorErrorWaferCoarseY();
                 % Hyrda 2
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_X
+                    l = this.comm.getMotorErrorReticleCoarseX();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_Y
+                    l = this.comm.getMotorErrorReticleCoarseY();
                 % Hydra 3
                 case this.cTYPE_MOTOR_ERROR_LSI_COARSE_X
+                    l = this.comm.getMotorErrorLsiCoarseX();
                 % 712 1
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_Z
+                    l = this.comm.getMotorErrorWaferCoarseZ();
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_TIP
+                    l = this.comm.getMotorErrorWaferCoarseTip();
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_TILT
+                    l = this.comm.getMotorErrorWaferCoarseTilt();
                 case this.cTYPE_MOTOR_ERROR_WAFER_FINE_Z
+                    l = this.comm.getMotorErrorWaferFineZ();
                 % 712 2
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_Z
+                    l = this.comm.getMotorErrorReticleCoarseZ();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_TIP
+                    l = this.comm.getMotorErrorReticleCoarseTip();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_TILT
+                    l = this.comm.getMotorErrorReticleCoarseTilt();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_FINE_X
+                    l = this.comm.getMotorErrorReticleFineX();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_FINE_Y
+                    l = this.comm.getMotorErrorReticleFineY();
 
                 % Hydra 1
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_X_HOMING
+                    l = this.comm.getMotorErrorWaferCoarseXHoming();
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_Y_HOMING
+                    l = this.comm.getMotorErrorWaferCoarseYHoming();
                 % Hyrda 2
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_X_HOMING
+                    l = this.comm.getMotorErrorReticleCoarseXHoming();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_Y_HOMING
+                    l = this.comm.getMotorErrorReticleCoarseYHoming();
                 % Hydra 3
                 case this.cTYPE_MOTOR_ERROR_LSI_COARSE_X_HOMING
+                    l = this.comm.getMotorErrorLsiCoarseXHoming();
 
 
                 % Hydra 1
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_X_ALTERA
+                    l = this.comm.getMotorErrorWaferCoarseXAltera();
                 case this.cTYPE_MOTOR_ERROR_WAFER_COARSE_Y_ALTERA
+                    l = this.comm.getMotorErrorWaferCoarseYAltera();
                 % Hyrda 2
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_X_ALTERA
+                    l = this.comm.getMotorErrorReticleCoarseXAltera();
                 case this.cTYPE_MOTOR_ERROR_RETICLE_COARSE_Y_ALTERA
+                    l = this.comm.getMotorErrorReticleCoarseYAltera();
                 % Hydra 3
                 case this.cTYPE_MOTOR_ERROR_LSI_COARSE_X_ALTERA
+                    l = this.comm.getMotorErrorLsiCoarseXAltera();
             end
         end
         

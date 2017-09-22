@@ -807,6 +807,7 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiFineStage.uiZ.turnOn();
             
             % uiApp.uiPowerPmacStatus
+            %{
             for m = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes)
                 for n = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes{m}) 
                     device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
@@ -817,6 +818,7 @@ classdef App < mic.Base
                     this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.turnOn();
                 end
             end
+            %}
             
         end
         
