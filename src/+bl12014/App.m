@@ -806,6 +806,17 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOn();
             this.uiApp.uiWafer.uiFineStage.uiZ.turnOn();
             
+            % uiApp.uiPowerPmacStatus
+            for m = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes)
+                for n = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes{m}) 
+                    device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
+                        this.commDeltaTauPowerPmac, ...
+                        this.uiApp.uiPowerPmacStatus.ceceTypes{m}{n}...
+                    );
+                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.setDevice(device);
+                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.turnOn();
+                end
+            end
             
         end
         
@@ -830,7 +841,6 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOff();
             this.uiApp.uiWafer.uiFineStage.uiZ.turnOff();
             
-            
             this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice([]);
             this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice([]);
             this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice([]);
@@ -845,6 +855,15 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice([]);
             this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice([]);
             this.uiApp.uiWafer.uiFineStage.uiZ.setDevice([]);
+            
+            
+            % Connect uiApp.uiPowerPmacStatus
+            for m = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes)
+                for n = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes{m}) 
+                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.turnOff();
+                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.setDevice([]);
+                end
+            end
             
                         
             this.commDeltaTauPowerPmac.delete();

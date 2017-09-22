@@ -1,15 +1,14 @@
 classdef PowerPmacStatus < mic.Base
     
-    properties
-
-               
-    end
-    
     properties (Access = private)
         
         dWidth = 1600
         dHeight = 800
-       
+               
+    end
+    
+    properties
+               
         % {cell of mic.ui.device.GetLogical m x n}
         uiGetLogicals = {}
         
@@ -332,8 +331,8 @@ classdef PowerPmacStatus < mic.Base
         
         function buildFigure(this)
             
-            this.connect();
-            this.turnOn();
+            % this.connect();
+            % this.turnOn();
             
             if ishghandle(this.hFigure)
                 % Bring to front
@@ -370,19 +369,7 @@ classdef PowerPmacStatus < mic.Base
             this.hFigure = [];
         end
         
-        % Creates bl12014.device.GetLogicalPing device for each device UI
-        % and pass it to the device UI through the setDevice() method
-        function connect(this)
-            
-            for m = 1 : length(this.ceceTypes)
-                for n = 1 : length(this.ceceTypes{m}) 
-                    device = bl12014.device.GetLogicalPing(...
-                        'cType', this.ceceTypes{m}{n}...
-                    );
-                    this.uiGetLogicals{m}{n}.setDevice(device);
-                end
-            end
-        end
+        
                 
         function init(this)
             
