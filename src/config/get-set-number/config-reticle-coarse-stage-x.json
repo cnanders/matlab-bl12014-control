@@ -11,7 +11,7 @@
 			"name": "um",
 			"slope": 1000,
 			"offset": 0,
-			"precision": 3
+			"precision": 6
 		}
 	],
     "step": 0.1,

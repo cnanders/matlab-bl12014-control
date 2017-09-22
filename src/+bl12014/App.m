@@ -102,7 +102,7 @@ classdef App < mic.Base
         % see vendor/pnaulleau/bl12-exit-slits/readme.txt
         commExitSlit
         
-        
+        uiApp
         
     end
     
@@ -113,7 +113,7 @@ classdef App < mic.Base
     properties (Access = private)
         
         hFigure
-        uiApp
+        
         
         % {bl12014.Comm 1x1}
         comm

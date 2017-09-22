@@ -111,33 +111,33 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
         function l = isReady(this)
             switch this.cAxis
                 case this.cAXIS_WAFER_COARSE_X
-                    l = ~this.comm.getStatusWaferCoarseXIsMoving();
+                    l = ~this.comm.getMotorStatusWaferCoarseXIsMoving();
                 case this.cAXIS_WAFER_COARSE_Y
-                    l = ~this.comm.getStatusWaferCoarseYIsMoving();
+                    l = ~this.comm.getMotorStatusWaferCoarseYIsMoving();
                 case this.cAXIS_WAFER_COARSE_Z
-                    l = ~this.comm.getStatusWaferCoarseZIsMoving();
+                    l = ~this.comm.getMotorStatusWaferCoarseZIsMoving();
                 case this.cAXIS_WAFER_COARSE_TIP
-                    l = ~this.comm.getStatusWaferCoarseTipIsMoving();
+                    l = ~this.comm.getMotorStatusWaferCoarseTipIsMoving();
                 case this.cAXIS_WAFER_COARSE_TILT
-                    l = ~this.comm.getStatusWaferCoarseTiltIsMoving();
+                    l = ~this.comm.getMotorStatusWaferCoarseTiltIsMoving();
                 case this.cAXIS_WAFER_FINE_Z
-                    l = ~this.comm.getStatusWaferFineZXIsMoving();
+                    l = ~this.comm.getMotorStatusWaferFineZIsMoving();
                 case this.cAXIS_LSI_COARSE_X
-                    l = ~this.comm.getStatusLsiCoarseXIsMoving();
+                    l = ~this.comm.getMotorStatusLsiCoarseXIsMoving();
                 case this.cAXIS_RETICLE_COARSE_X
-                    l = ~this.comm.getStatusReticleCoarseXIsMoving();
+                    l = ~this.comm.getMotorStatusReticleCoarseXIsMoving();
                 case this.cAXIS_RETICLE_COARSE_Y
-                    l = ~this.comm.getStatusReticleCoarseYIsMoving();
+                    l = ~this.comm.getMotorStatusReticleCoarseYIsMoving();
                 case this.cAXIS_RETICLE_COARSE_Z
-                    l = ~this.comm.getStatusReticleCoarseZIsMoving();
+                    l = ~this.comm.getMotorStatusReticleCoarseZIsMoving();
                 case this.cAXIS_RETICLE_COARSE_TIP
-                    l = ~this.comm.getStatusReticleCoarseTipIsMoving();
+                    l = ~this.comm.getMotorStatusReticleCoarseTipIsMoving();
                 case this.cAXIS_RETICLE_COARSE_TILT
-                    l = ~this.comm.getStatusReticleCoarseTiltIsMoving();
+                    l = ~this.comm.getMotorStatusReticleCoarseTiltIsMoving();
                 case this.cAXIS_RETICLE_FINE_X
-                    l = ~this.comm.getStatusReticleFineXIsMoving();
+                    l = ~this.comm.getMotorStatusReticleFineXIsMoving();
                 case this.cAXIS_RETICLE_FINE_Y
-                    l = ~this.comm.getStatusReticleFineXIsMoving();
+                    l = ~this.comm.getMotorStatusReticleFineXIsMoving();
             end
         end
         
