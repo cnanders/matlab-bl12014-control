@@ -821,6 +821,7 @@ classdef App < mic.Base
                     );
                     ui.uiGetLogicals{m}{n}.setDevice(device);
                     ui.uiGetLogicals{m}{n}.turnOn();
+                    fprintf('connectCommDeltaTauPowerPmacToUiPowerPmacStatus %s\n', ui.ceceTypes{m}{n});
                 end
             end
         end

@@ -453,7 +453,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getCsStatus(this)
             
-            l = false;
             switch this.cType
                 
                 case this.cTYPE_CS_STATUS_WAFER_COARSE_NOT_HOMED
@@ -492,7 +491,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getMotorError(this)
             
-            l = true;
             switch this.cType
                 
                 % Hydra 1
@@ -562,7 +560,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getMotorStatus(this)
             
-            l = false;
             switch this.cType
                 
                 % Hydra 1
@@ -603,7 +600,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getEncoderError(this)
             
-            l = true;
             switch this.cType
                 % Hydra 1
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_X
@@ -643,7 +639,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getGlobError(this)
             
-            l = false;
             switch this.cType
                 
                 case this.cTYPE_GLOB_ERROR_HW_CHANGE_ERROR
@@ -667,7 +662,6 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getIoInfo(this)
             
-            l = true;
             switch this.cType
                 case this.cTYPE_IO_INFO_AT_RETICLE_TRANSFER_POSITION
                     l = this.comm.getIoInfoAtReticleTransferPosition();
@@ -691,49 +685,48 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         function l = getMet50Error(this)
             
-            l = true;
-            
+            % fprintf('getMet50Error\n');
             switch this.cType
                 case this.cTYPE_MET50_ERROR_712_1_NOT_CONNECTED
-                    l = this.getMet50Error7121NotConnected();
+                    l = this.comm.getMet50Error7121NotConnected();
                 case this.cTYPE_MET50_ERROR_712_1_READ_ERROR
-                    l = this.getMet50Error7121ReadError();
+                    l = this.comm.getMet50Error7121ReadError();
                 case this.cTYPE_MET50_ERROR_712_1_WRITE_ERROR
-                    l = this.getMet50Error7121WriteError();
+                    l = this.comm.getMet50Error7121WriteError();
                 case this.cTYPE_MET50_ERROR_712_2_NOT_CONNECTED
-                    l = this.getMet50Error7122NotConnected();
+                    l = this.comm.getMet50Error7122NotConnected();
                 case this.cTYPE_MET50_ERROR_712_2_READ_ERROR
-                    l = this.getMet50Error7122ReadError();
+                    l = this.comm.getMet50Error7122ReadError();
                 case this.cTYPE_MET50_ERROR_712_2_WRITE_ERROR
-                    l = this.getMet50Error7122WriteError();
+                    l = this.comm.getMet50Error7122WriteError();
                 case this.cTYPE_MET50_ERROR_C_APP_NOT_RUNNING
-                    l = this.getMet50ErrorCAppNotRunning();
+                    l = this.comm.getMet50ErrorCAppNotRunning();
                 case this.cTYPE_MET50_ERROR_DMI_STATUS
-                    l = this.getMet50ErrorDmiStatus();
+                    l = this.comm.getMet50ErrorDmiStatus();
                 case this.cTYPE_MET50_ERROR_HS_STATUS
-                    l = this.getMet50ErrorHsStatus();
+                    l = this.comm.getMet50ErrorHsStatus();
                 case this.cTYPE_MET50_ERROR_HYDRA_1_NOT_CONNECTED
-                    l = this.getMet50ErrorHydra1NotConnected();
+                    l = this.comm.getMet50ErrorHydra1NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_1_MACHINE_ERROR
-                    l = this.getMet50ErrorHydra1MachineError();
+                    l = this.comm.getMet50ErrorHydra1MachineError();
                 case this.cTYPE_MET50_ERROR_HYDRA_2_NOT_CONNECTED
-                    l = this.getMet50ErrorHydra2NotConnected();
+                    l = this.comm.getMet50ErrorHydra2NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_2_MACHINE_ERROR
-                    l = this.getMet50ErrorHydra2MachineError();
+                    l = this.comm.getMet50ErrorHydra2MachineError();
                 case this.cTYPE_MET50_ERROR_HYDRA_3_NOT_CONNECTED
-                    l = this.getMet50ErrorHydra2NotConnected();
+                    l = this.comm.getMet50ErrorHydra2NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_3_MACHINE_ERROR
-                    l = this.getMet50ErrorHydra3MachineError();
+                    l = this.comm.getMet50ErrorHydra3MachineError();
                 case this.cTYPE_MET50_ERROR_MOD_BUS_NOT_CONNECTED
-                    l = this.getMet50ErrorModBusNotConnected();
+                    l = this.comm.getMet50ErrorModBusNotConnected();
                 case this.cTYPE_MET50_ERROR_MOXA_NOT_CONNECTED
-                    l = this.getMet50ErrorMoxaNotConnected();
+                    l = this.comm.getMet50ErrorMoxaNotConnected();
                 case this.cTYPE_MET50_ERROR_PROXIMITY_SWITCH_WAFER_X_LSI
-                    l = this.getMet50ErrorProximitySwitchWaferXLsi();
+                    l = this.comm.getMet50ErrorProximitySwitchWaferXLsi();
                 case this.cTYPE_MET50_ERROR_TEMPERATURE_ERROR
-                    l = this.getMet50ErrorTemperatureError();
+                    l = this.comm.getMet50ErrorTemperatureError();
                 case this.cTYPE_MET50_ERROR_TEMPERATURE_WARNING
-                    l = this.getMet50ErrorTemperatureWarning();
+                    l = this.comm.getMet50ErrorTemperatureWarning();
 
             end
             
