@@ -6,7 +6,28 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+### bl12014.device.GetLogicalFromDeltaTauPowerPmac
 
+- Completed
+
+### bl12014.ui.PowerPmacWorkingMode
+
+- Built new UI panel to set / get working mode
+
+### bl12014.ui.Reticle, bl12014.ui.Wafer
+
+- Integrated bl12014.ui.PowerPmacWorkingMode into both of these
+
+
+### bl12014.ui.PowerPmacStatus
+
+- Added a "connect to DeltaTau Power PMAC" button at the top
+
+### bl12014.App
+
+- Wired the connect logical to bl12014.ui.PowerPmacStatus
+- Wired bl12014.ui.PowerPmacStatus into the initAndConnect / destroyAndDisconnect methods for PowerPmac
+- Refactored the initAndConnect / destroyAndDisconnect methods for PowerPmac with some helper functions that hanldle each main UI panel that the comm connects to
 
 # 1.0.0-alpha.19
 

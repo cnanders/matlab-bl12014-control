@@ -567,23 +567,37 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
                 
                 % Hydra 1
                 case this.cTYPE_MOTOR_STATUS_WAFER_COARSE_X
+                    l = this.comm.getMotorStatusWaferCoarseXIsMoving();
                 case this.cTYPE_MOTOR_STATUS_WAFER_COARSE_Y
+                    l = this.comm.getMotorStatusWaferCoarseYIsMoving();
                 % Hyrda 2
                 case this.cTYPE_MOTOR_STATUS_RETICLE_COARSE_X
+                    l = this.comm.getMotorStatusReticleCoarseXIsMoving();
                 case this.cTYPE_MOTOR_STATUS_RETICLE_COARSE_Y
+                    l = this.comm.getMotorStatusReticleCoarseYIsMoving();
                 % Hydra 3
                 case this.cTYPE_MOTOR_STATUS_LSI_COARSE_X
+                    l = this.comm.getMotorStatusLsiCoarseXIsMoving();
                 % 712 1
                 case this.cTYPE_MOTOR_STATUS_WAFER_COARSE_Z
+                    l = this.comm.getMotorStatusWaferCoarseZIsMoving();
                 case this.cTYPE_MOTOR_STATUS_WAFER_COARSE_TIP
+                    l = this.comm.getMotorStatusWaferCoarseTipIsMoving();
                 case this.cTYPE_MOTOR_STATUS_WAFER_COARSE_TILT
+                    l = this.comm.getMotorStatusWaferCoarseTiltIsMoving();
                 case this.cTYPE_MOTOR_STATUS_WAFER_FINE_Z
+                    l = this.comm.getMotorStatusWaferFineZIsMoving();
                 % 712 2
                 case this.cTYPE_MOTOR_STATUS_RETICLE_COARSE_Z
+                    l = this.comm.getMotorStatusReticleCoarseZIsMoving();
                 case this.cTYPE_MOTOR_STATUS_RETICLE_COARSE_TIP
+                    l = this.comm.getMotorStatusReticleCoarseTipIsMoving();
                 case this.cTYPE_MOTOR_STATUS_RETICLE_COARSE_TILT
+                    l = this.comm.getMotorStatusReticleCoarseTiltIsMoving();
                 case this.cTYPE_MOTOR_STATUS_RETICLE_FINE_X
+                    l = this.comm.getMotorStatusReticleFineXIsMoving();
                 case this.cTYPE_MOTOR_STATUS_RETICLE_FINE_Y
+                    l = this.comm.getMotorStatusReticleFineYIsMoving();
             end
         end
         
@@ -593,23 +607,37 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
             switch this.cType
                 % Hydra 1
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_X
+                    l = this.comm.getEncoderErrorWaferCoarseX();
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_Y
+                    l = this.comm.getEncoderErrorWaferCoarseY();
                 % Hyrda 2
                 case this.cTYPE_ENCODER_ERROR_RETICLE_COARSE_X
+                    l = this.comm.getEncoderErrorReticleCoarseX();
                 case this.cTYPE_ENCODER_ERROR_RETICLE_COARSE_Y
+                    l = this.comm.getEncoderErrorReticleCoarseY();
                 % Hydra 3
                 case this.cTYPE_ENCODER_ERROR_LSI_COARSE_X
+                    l = this.comm.getEncoderErrorLsiCoarseX();
                 % 712 1
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_Z
+                    l = this.comm.getEncoderErrorWaferCoarseZ();
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_TIP
+                    l = this.comm.getEncoderErrorWaferCoarseTip();
                 case this.cTYPE_ENCODER_ERROR_WAFER_COARSE_TILT
+                    l = this.comm.getEncoderErrorWaferCoarseTilt();
                 case this.cTYPE_ENCODER_ERROR_WAFER_FINE_Z
+                    l = this.comm.getEncoderErrorWaferFineZ();
                 % 712 2
                 case this.cTYPE_ENCODER_ERROR_RETICLE_COARSE_Z
+                    l = this.comm.getEncoderErrorReticleCoarseZ();
                 case this.cTYPE_ENCODER_ERROR_RETICLE_COARSE_TIP
+                    l = this.comm.getEncoderErrorReticleCoarseTip();
                 case this.cTYPE_ENCODER_ERROR_RETICLE_COARSE_TILT
+                    l = this.comm.getEncoderErrorReticleCoarseTilt();
                 case this.cTYPE_ENCODER_ERROR_RETICLE_FINE_X
+                    l = this.comm.getEncoderErrorReticleFineX();
                 case this.cTYPE_ENCODER_ERROR_RETICLE_FINE_Y
+                    l = this.comm.getEncoderErrorReticleFineY();
             end
         end
         
@@ -619,13 +647,21 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
             switch this.cType
                 
                 case this.cTYPE_GLOB_ERROR_HW_CHANGE_ERROR
+                    l = this.comm.getGlobErrorHwChangeError();
                 case this.cTYPE_GLOB_ERROR_NO_CLOCKS
+                    l = this.comm.getGlobErrorNoClocks();
                 case this.cTYPE_GLOB_ERROR_SYS_PHASE_ERROR_CTR
+                    l = this.comm.getGlobErrorSysPhaseErrorCtr();
                 case this.cTYPE_GLOB_ERROR_SYS_RT_INT_BUSY_CTR
+                    l = this.comm.getGlobErrorSysRtIntBusyCtr();
                 case this.cTYPE_GLOB_ERROR_SYS_RT_INT_ERROR_CTR
+                    l = this.comm.getGlobErrorSysRtIntErrorCtr();
                 case this.cTYPE_GLOB_ERROR_SYS_SERVO_BUSY_CTR
+                    l = this.comm.getGlobErrorSysServoBusyCtr();
                 case this.cTYPE_GLOB_ERROR_SYS_SERVO_ERROR_CTR
+                    l = this.comm.getGlobErrorSysServoErrorCtr();
                 case this.cTYPE_GLOB_ERROR_WDT_FAULT
+                    l = this.comm.getGlobErrorWdtFault();
             end
         end
         
@@ -634,13 +670,21 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
             l = true;
             switch this.cType
                 case this.cTYPE_IO_INFO_AT_RETICLE_TRANSFER_POSITION
+                    l = this.comm.getIoInfoAtReticleTransferPosition();
                 case this.cTYPE_IO_INFO_AT_WAFER_TRANSFER_POSITION
+                    l = this.comm.getIoInfoAtWaferTransferPosition();
                 case this.cTYPE_IO_INFO_ENABLE_SYSTEM_IS_ZERO
+                    l = this.comm.getIoInfoEnableSystemIsZero();
                 case this.cTYPE_IO_INFO_LOCK_RETICLE_POSITION
+                    l = this.comm.getIoInfoLockReticlePosition();
                 case this.cTYPE_IO_INFO_LOCK_WAFER_POSITION
+                    l = this.comm.getIoInfoLockWaferPosition();
                 case this.cTYPE_IO_INFO_RETICLE_POSITION_LOCKED
+                    l = this.comm.getIoInfoReticlePositionLocked();
                 case this.cTYPE_IO_INFO_SYSTEM_ENABLED_IS_ZERO
+                    l = this.comm.getIoInfoSystemEnabledIsZero();
                 case this.cTYPE_IO_INFO_WAFER_POSITION_LOCKED
+                    l = this.comm.getIoInfoWaferPositionLocked();
             end
             
         end
@@ -651,25 +695,45 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
             
             switch this.cType
                 case this.cTYPE_MET50_ERROR_712_1_NOT_CONNECTED
+                    l = this.getMet50Error7121NotConnected();
                 case this.cTYPE_MET50_ERROR_712_1_READ_ERROR
+                    l = this.getMet50Error7121ReadError();
                 case this.cTYPE_MET50_ERROR_712_1_WRITE_ERROR
+                    l = this.getMet50Error7121WriteError();
                 case this.cTYPE_MET50_ERROR_712_2_NOT_CONNECTED
+                    l = this.getMet50Error7122NotConnected();
                 case this.cTYPE_MET50_ERROR_712_2_READ_ERROR
+                    l = this.getMet50Error7122ReadError();
                 case this.cTYPE_MET50_ERROR_712_2_WRITE_ERROR
+                    l = this.getMet50Error7122WriteError();
                 case this.cTYPE_MET50_ERROR_C_APP_NOT_RUNNING
+                    l = this.getMet50ErrorCAppNotRunning();
                 case this.cTYPE_MET50_ERROR_DMI_STATUS
+                    l = this.getMet50ErrorDmiStatus();
                 case this.cTYPE_MET50_ERROR_HS_STATUS
+                    l = this.getMet50ErrorHsStatus();
                 case this.cTYPE_MET50_ERROR_HYDRA_1_NOT_CONNECTED
+                    l = this.getMet50ErrorHydra1NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_1_MACHINE_ERROR
+                    l = this.getMet50ErrorHydra1MachineError();
                 case this.cTYPE_MET50_ERROR_HYDRA_2_NOT_CONNECTED
+                    l = this.getMet50ErrorHydra2NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_2_MACHINE_ERROR
+                    l = this.getMet50ErrorHydra2MachineError();
                 case this.cTYPE_MET50_ERROR_HYDRA_3_NOT_CONNECTED
+                    l = this.getMet50ErrorHydra2NotConnected();
                 case this.cTYPE_MET50_ERROR_HYDRA_3_MACHINE_ERROR
+                    l = this.getMet50ErrorHydra3MachineError();
                 case this.cTYPE_MET50_ERROR_MOD_BUS_NOT_CONNECTED
+                    l = this.getMet50ErrorModBusNotConnected();
                 case this.cTYPE_MET50_ERROR_MOXA_NOT_CONNECTED
+                    l = this.getMet50ErrorMoxaNotConnected();
                 case this.cTYPE_MET50_ERROR_PROXIMITY_SWITCH_WAFER_X_LSI
+                    l = this.getMet50ErrorProximitySwitchWaferXLsi();
                 case this.cTYPE_MET50_ERROR_TEMPERATURE_ERROR
+                    l = this.getMet50ErrorTemperatureError();
                 case this.cTYPE_MET50_ERROR_TEMPERATURE_WARNING
+                    l = this.getMet50ErrorTemperatureWarning();
 
             end
             

@@ -3,12 +3,22 @@ classdef PowerPmacStatus < mic.Base
     properties (Access = private)
         
         dWidth = 1600
-        dHeight = 800
+        dHeight = 840
+        
+        dTopLabels = 50
+        dTopUi = 80;
                
     end
     
     properties
-               
+              
+        % These are the UI for activating the hardware that gives the 
+        % software real data
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCommDeltaTauPowerPmac
+        
+        
         % {cell of mic.ui.device.GetLogical m x n}
         uiGetLogicals = {}
         
@@ -261,9 +271,39 @@ classdef PowerPmacStatus < mic.Base
             
         end
         
+        function buildUiComm(this)
+            
+            dTop = 10;
+            dLeft = 10;
+            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            
+        end
+        
+        function initUiCommDeltaTauPowerPmac(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'delta-tau-power-pmac-power-pmac-status-panel', ...
+                'cLabel', 'DeltaTau Power PMAC' ...
+            );
+        
+        end
+        
+        
         function buildUiGetLogicals(this)
             
-            dTopStart = 30;
+            dTopStart = this.dTopUi;
             dTop = dTopStart;
             dLeft = 10;
             dSep = 30;
@@ -284,7 +324,7 @@ classdef PowerPmacStatus < mic.Base
         
         function buildUiTexts(this)
             
-            dTopStart = 10;
+            dTopStart = this.dTopLabels;
             dTop = dTopStart;
             dLeft = 10;
             
@@ -303,6 +343,7 @@ classdef PowerPmacStatus < mic.Base
         function build(this)
             
             this.buildFigure()
+            this.buildUiComm();
             this.buildUiTexts();
             this.buildUiGetLogicals();
                         
@@ -374,6 +415,7 @@ classdef PowerPmacStatus < mic.Base
         function init(this)
             
             this.msg('init()');
+            this.initUiCommDeltaTauPowerPmac();
             this.initUiGetLogicals(); 
             this.initUiTexts();
             

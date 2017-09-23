@@ -731,9 +731,103 @@ classdef App < mic.Base
             this.commDataTranslationMeasurPoint = [];
         end
         
+        
+        function connectCommDeltaTauPowerPmacToUiReticle(this, comm, ui)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            
+            % Devices
+            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
+            
+             % Set Devices 
+            ui.uiWorkingMode.ui.setDevice(deviceWorkingMode);
+            ui.uiCoarseStage.uiX.setDevice(deviceCoarseX);
+            ui.uiCoarseStage.uiY.setDevice(deviceCoarseY);
+            ui.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
+            ui.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
+            ui.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
+            ui.uiFineStage.uiX.setDevice(deviceFineX);
+            ui.uiFineStage.uiY.setDevice(deviceFineY);
+            
+            % Turn on
+            ui.uiWorkingMode.ui.turnOn();
+            ui.uiCoarseStage.uiX.turnOn();
+            ui.uiCoarseStage.uiY.turnOn();
+            ui.uiCoarseStage.uiZ.turnOn();
+            ui.uiCoarseStage.uiTiltX.turnOn();
+            ui.uiCoarseStage.uiTiltY.turnOn();
+            ui.uiFineStage.uiX.turnOn();
+            ui.uiFineStage.uiY.turnOn();
+            
+            
+        end
+        
+        
+        function connectCommDeltaTauPowerPmacToUiWafer(this, comm, ui)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            deviceFineZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            
+            % Set Devices
+            ui.uiWorkingMode.ui.setDevice(deviceWorkingMode);
+            ui.uiCoarseStage.uiX.setDevice(deviceCoarseX);
+            ui.uiCoarseStage.uiY.setDevice(deviceCoarseY);
+            ui.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
+            ui.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
+            ui.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
+            ui.uiFineStage.uiZ.setDevice(deviceFineZ);
+            
+            % Turn on
+            ui.uiWorkingMode.ui.turnOn();
+            ui.uiCoarseStage.uiX.turnOn();
+            ui.uiCoarseStage.uiY.turnOn();
+            ui.uiCoarseStage.uiZ.turnOn();
+            ui.uiCoarseStage.uiTiltX.turnOn();
+            ui.uiCoarseStage.uiTiltY.turnOn();
+            ui.uiFineStage.uiZ.turnOn();
+            
+        end
+        
+        function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
+           
+            % Ryan fill in
+        end
+        
+        function connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this, comm, ui)
+
+            for m = 1 : length(ui.ceceTypes)
+                for n = 1 : length(ui.ceceTypes{m}) 
+                    device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
+                        comm, ...
+                        ui.ceceTypes{m}{n}...
+                    );
+                    ui.uiGetLogicals{m}{n}.setDevice(device);
+                    ui.uiGetLogicals{m}{n}.turnOn();
+                end
+            end
+        end
+        
+        
         function initAndConnectDeltaTauPowerPmac(this)
            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
             
             if this.getDeltaTauPowerPmac()
                 return
@@ -751,75 +845,64 @@ classdef App < mic.Base
                 return
             end
             
-            % Reticle
+            this.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
+            this.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
+            % this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLsi);
+            this.connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this.commDeltaTauPowerPmac, this.uiApp.uiPowerPmacStatus);
             
-            deviceReticleCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
-            deviceReticleCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
-            deviceReticleCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
-            deviceReticleCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
-            deviceReticleCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
-            deviceReticleFineX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
-            deviceReticleFineY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
+        end
+        
+        function disconnectCommDeltaTauPowerPmacFromUiReticle(this, ui)
             
-            % Wafer
+            ui.uiWorkingMode.ui.turnOff();
+            ui.uiCoarseStage.uiX.turnOff();
+            ui.uiCoarseStage.uiY.turnOff();
+            ui.uiCoarseStage.uiZ.turnOff();
+            ui.uiCoarseStage.uiTiltX.turnOff();
+            ui.uiCoarseStage.uiTiltY.turnOff();
+            ui.uiFineStage.uiX.turnOff();
+            ui.uiFineStage.uiY.turnOff();
             
-            deviceWaferCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
-            deviceWaferCoarseY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
-            deviceWaferCoarseZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            deviceWaferCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
-            deviceWaferCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
-            deviceWaferFineZ = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            ui.uiWorkingMode.ui.setDevice([]);
+            ui.uiCoarseStage.uiX.setDevice([]);
+            ui.uiCoarseStage.uiY.setDevice([]);
+            ui.uiCoarseStage.uiZ.setDevice([]);
+            ui.uiCoarseStage.uiTiltX.setDevice([]);
+            ui.uiCoarseStage.uiTiltY.setDevice([]);
+            ui.uiFineStage.uiX.setDevice([]);
+            ui.uiFineStage.uiY.setDevice([]);
             
-            % LSI (need to figure out what UI to wire it to)
-            % deviceLsiCoarseX = GetSetNumberFromDeltaTauPowerPmac(this.commDeltaTauPowerPmac, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
+        end
+        
+        function disconnectCommDeltaTauPowerPmacFromUiWafer(this, ui)
             
-            % Set Devices 
-            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice(deviceReticleCoarseX);
-            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice(deviceReticleCoarseY);
-            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice(deviceReticleCoarseZ);
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice(deviceReticleCoarseTiltX);
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice(deviceReticleCoarseTiltY);
-            this.uiApp.uiReticle.uiFineStage.uiX.setDevice(deviceReticleFineX);
-            this.uiApp.uiReticle.uiFineStage.uiY.setDevice(deviceReticleFineY);
+            ui.uiWorkingMode.ui.turnOff();
+            ui.uiCoarseStage.uiX.turnOff();
+            ui.uiCoarseStage.uiY.turnOff();
+            ui.uiCoarseStage.uiZ.turnOff();
+            ui.uiCoarseStage.uiTiltX.turnOff();
+            ui.uiCoarseStage.uiTiltY.turnOff();
+            ui.uiFineStage.uiZ.turnOff();
+                        
+            ui.uiWorkingMode.ui.setDevice([]);
+            ui.uiCoarseStage.uiX.setDevice([]);
+            ui.uiCoarseStage.uiY.setDevice([]);
+            ui.uiCoarseStage.uiZ.setDevice([]);
+            ui.uiCoarseStage.uiTiltX.setDevice([]);
+            ui.uiCoarseStage.uiTiltY.setDevice([]);
+            ui.uiFineStage.uiZ.setDevice([]);
             
-            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice(deviceWaferCoarseX);
-            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice(deviceWaferCoarseY);
-            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice(deviceWaferCoarseZ);
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice(deviceWaferCoarseTiltX);
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice(deviceWaferCoarseTiltY);
-            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice(deviceWaferFineZ);
+        end
+        
+        function disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this, ui)
             
-            
-            % Turn on
-            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOn();
-            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOn();
-            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOn();
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOn();
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOn();
-            this.uiApp.uiReticle.uiFineStage.uiX.turnOn();
-            this.uiApp.uiReticle.uiFineStage.uiY.turnOn();
-            
-            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOn();
-            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOn();
-            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOn();
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOn();
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOn();
-            this.uiApp.uiWafer.uiFineStage.uiZ.turnOn();
-            
-            % uiApp.uiPowerPmacStatus
-            %{
-            for m = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes)
-                for n = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes{m}) 
-                    device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
-                        this.commDeltaTauPowerPmac, ...
-                        this.uiApp.uiPowerPmacStatus.ceceTypes{m}{n}...
-                    );
-                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.setDevice(device);
-                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.turnOn();
+            % Disconnect uiApp.uiPowerPmacStatus
+            for m = 1 : length(ui.ceceTypes)
+                for n = 1 : length(ui.ceceTypes{m}) 
+                    ui.uiGetLogicals{m}{n}.turnOff();
+                    ui.uiGetLogicals{m}{n}.setDevice([]);
                 end
             end
-            %}
-            
         end
         
         function destroyAndDisconnectDeltaTauPowerPmac(this)
@@ -827,47 +910,11 @@ classdef App < mic.Base
             if ~this.getDeltaTauPowerPmac()
                 return
             end
-                        
-            this.uiApp.uiReticle.uiCoarseStage.uiX.turnOff();
-            this.uiApp.uiReticle.uiCoarseStage.uiY.turnOff();
-            this.uiApp.uiReticle.uiCoarseStage.uiZ.turnOff();
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.turnOff();
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.turnOff();
-            this.uiApp.uiReticle.uiFineStage.uiX.turnOff();
-            this.uiApp.uiReticle.uiFineStage.uiY.turnOff();
-            
-            this.uiApp.uiWafer.uiCoarseStage.uiX.turnOff();
-            this.uiApp.uiWafer.uiCoarseStage.uiY.turnOff();
-            this.uiApp.uiWafer.uiCoarseStage.uiZ.turnOff();
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.turnOff();
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.turnOff();
-            this.uiApp.uiWafer.uiFineStage.uiZ.turnOff();
-            
-            this.uiApp.uiReticle.uiCoarseStage.uiX.setDevice([]);
-            this.uiApp.uiReticle.uiCoarseStage.uiY.setDevice([]);
-            this.uiApp.uiReticle.uiCoarseStage.uiZ.setDevice([]);
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltX.setDevice([]);
-            this.uiApp.uiReticle.uiCoarseStage.uiTiltY.setDevice([]);
-            this.uiApp.uiReticle.uiFineStage.uiX.setDevice([]);
-            this.uiApp.uiReticle.uiFineStage.uiY.setDevice([]);
-            
-            this.uiApp.uiWafer.uiCoarseStage.uiX.setDevice([]);
-            this.uiApp.uiWafer.uiCoarseStage.uiY.setDevice([]);
-            this.uiApp.uiWafer.uiCoarseStage.uiZ.setDevice([]);
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice([]);
-            this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice([]);
-            this.uiApp.uiWafer.uiFineStage.uiZ.setDevice([]);
-            
-            
-            % Connect uiApp.uiPowerPmacStatus
-            for m = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes)
-                for n = 1 : length(this.uiApp.uiPowerPmacStatus.ceceTypes{m}) 
-                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.turnOff();
-                    this.uiApp.uiPowerPmacStatus.uiGetLogicals{m}{n}.setDevice([]);
-                end
-            end
-            
-                        
+                      
+            this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
+            this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
+            this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
+                                    
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
             
@@ -1777,6 +1824,10 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
             this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
+            
+            % Power PMAC Status
+            this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.turnOn();
             
             %this.uiApp.uiScannerControlMA.ui
             %this.uiApp.uiScannerControlM142.ui

@@ -2,8 +2,8 @@ classdef Reticle < mic.Base
         
     properties (Constant)
       
-        dWidth      = 1285
-        dHeight     = 675
+        dWidth      = 1385
+        dHeight     = 775
         
     end
     
@@ -29,6 +29,7 @@ classdef Reticle < mic.Base
         uiAxes
         uiDiode
         uiMod3CapSensors
+        uiWorkingMode
     end
     
     properties (SetAccess = private)
@@ -122,6 +123,9 @@ classdef Reticle < mic.Base
             
             % this.mod3cap.build(this.hFigure, dPad, dTop);
             
+            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiWorkingMode.dHeight + dPad;
+            
             this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
@@ -192,6 +196,11 @@ classdef Reticle < mic.Base
         function init(this)
             
             this.msg('init()');
+            
+            this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
+                'cName', 'reticle-pmac-working-mode', ...
+                'clock', this.clock ...
+            );
             this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
                 'clock', this.clock ...
             );
@@ -203,9 +212,7 @@ classdef Reticle < mic.Base
             this.uiDiode = bl12014.ui.ReticleDiode(...
                 'clock', this.clock ...
             );
-        
-        
-        
+                
             dHeight = this.dHeight - 20;
             this.uiAxes = bl12014.ui.ReticleAxes(...
                 'dWidth', dHeight, ...
