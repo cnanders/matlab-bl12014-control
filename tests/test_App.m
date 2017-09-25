@@ -21,6 +21,10 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-scanner-contr
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-keithley-6482', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
 
+addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-control')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-analyze')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'ryan_toolbox')));
+
 addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits')));
 javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCorbaProxy.jar'));
 

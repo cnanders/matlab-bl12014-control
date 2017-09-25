@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 250
-        dHeight = 550
+        dHeight = 650
         
         dWidthButton = 210
         
@@ -419,7 +419,9 @@ classdef App < mic.Base
                 return
             end
             
-            % Interferometry
+             % Initializes and enables goni, setting devices via the
+            % coupled axis API.
+            this.uiApp.uiLSIControl.initAndTurnOnGoni(this.commSmarActMcsGoni);
         end
         
         function destroyAndDisconnectSmarActMcsGoni(this)
@@ -452,7 +454,10 @@ classdef App < mic.Base
                 return
             end
             
-            % Interferometry
+            % Initializes and enables hexapod, setting devices via the
+            % coupled axis API.
+            this.uiApp.uiLSIControl.initAndTurnOnHexapod(this.commSmarActSmarPod);
+            
         end
         
         function destroyAndDisconnectSmarActSmarPod(this)
@@ -788,6 +793,15 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCoarseStage.uiTiltX.setDevice(deviceWaferCoarseTiltX);
             this.uiApp.uiWafer.uiCoarseStage.uiTiltY.setDevice(deviceWaferCoarseTiltY);
             this.uiApp.uiWafer.uiFineStage.uiZ.setDevice(deviceWaferFineZ);
+            
+            % Set LSI reticle axis control
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleCoarseX, 1);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleCoarseY, 2);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleCoarseZ, 3);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleCoarseTiltX, 4);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleCoarseTiltY, 5);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleFineX, 6);
+            this.uiApp.uiLSIControl.setReticleAxisDevice(deviceReticleFineY, 7);
             
             
             % Turn on
@@ -1619,6 +1633,12 @@ classdef App < mic.Base
                 'fhGet', @this.getSmarActMcsGoni, ...
                 'fhSetTrue', @this.initAndConnectSmarActMcsGoni, ...
                 'fhSetFalse', @this.destroyAndDisconnectSmarActMcsGoni ...
+            );
+        
+            gslcCommSmarActSmarPod = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getSmarActSmarPod, ...
+                'fhSetTrue', @this.initAndConnectSmarActSmarPod, ...
+                'fhSetFalse', @this.destroyAndDisconnectSmarActSmarPod ...
             );
         
             gslcCommDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
