@@ -342,6 +342,12 @@ classdef PowerPmacStatus < mic.Base
         
         function build(this)
             
+            if ishghandle(this.hFigure)
+                % Bring to front and return
+                figure(this.hFigure);
+                return
+            end
+            
             this.buildFigure()
             this.buildUiComm();
             this.buildUiTexts();

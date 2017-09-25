@@ -6,6 +6,14 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+
+### ui.PowerPmacStatus
+
+- Updated `build()` method.  If figure exists, it now brings figure to front and returns.  If figure does not exist, it builds normally.
+### device.GetSetNumberFromDeltaTauPowerPmac
+
+- Completed the `stop()` method by calling `stopAll()` method of underlying comm class.
+
 ### bl12014.device.GetLogicalFromDeltaTauPowerPmac
 
 - Completed
