@@ -7,6 +7,8 @@ TO DO
 
 -->
 ### bl12014
+- Wrapped LSI init in a try, since this is in a separate repo for now
+
 - Updated `connectCommDeltaTauPowerPmacToUiLsi` to integrate reticle control in the LSI UI.  
 
 - Updated `initAndConnectSmarActMcsGoni` and `initAndConnectSmarActSmarPod` to plug into the coupled-axis control framework required for LSI

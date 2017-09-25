@@ -172,9 +172,14 @@ classdef App < mic.Base
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
             
-            % LSI UIs exist separately:
-           this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
+            % LSI UIs exist separately.  Check if exists first though
+            % because not guaranteed to have this repo:
+            try
+            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
 %            this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
+            catch me
+                % Don't have LSIControl installed
+            end
             
             this.uiScannerControlMA = ScannerControl(...
                 'clock', this.clock, ...
