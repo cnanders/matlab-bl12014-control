@@ -144,6 +144,8 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
         function stop(this)
             
             % unknown - email to PI 2017.08.02
+            this.comm.stopAll();
+            
         end
         
         function initialize(this)

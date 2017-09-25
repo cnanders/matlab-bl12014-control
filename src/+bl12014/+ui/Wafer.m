@@ -3,8 +3,8 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1515 %1295
-        dHeight     = 905
+        dWidth      = 1615 %1295
+        dHeight     = 1005
         
     end
     
@@ -33,6 +33,7 @@ classdef Wafer < mic.Base
         uiDiode
         uiPobCapSensors
         uiHeightSensor
+        uiWorkingMode
        
     end
     
@@ -131,6 +132,10 @@ classdef Wafer < mic.Base
             dTop = dTop + 15 + dSep;
             
             % this.hs.build(this.hFigure, dPad, dTop);
+            
+            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiWorkingMode.dHeight + dPad;
+            
             this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
@@ -193,6 +198,12 @@ classdef Wafer < mic.Base
         function init(this)
             
             this.msg('init()');
+            
+            this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
+                'cName', 'wafer-pmac-working-mode', ...
+                'clock', this.clock ...
+            );
+        
             this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'clock', this.clock ...
             );
