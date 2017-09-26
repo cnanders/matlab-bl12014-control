@@ -421,7 +421,7 @@ classdef App < mic.Base
             
              % Initializes and enables goni, setting devices via the
             % coupled axis API.
-            this.uiApp.uiLSIControl.initAndTurnOnGoni(this.commSmarActMcsGoni);
+            this.uiApp.uiLSIControl.setGoniDeviceAndEnable(this.commSmarActMcsGoni);
         end
         
         function destroyAndDisconnectSmarActMcsGoni(this)
@@ -456,7 +456,7 @@ classdef App < mic.Base
             
             % Initializes and enables hexapod, setting devices via the
             % coupled axis API.
-            this.uiApp.uiLSIControl.initAndTurnOnHexapod(this.commSmarActSmarPod);
+            this.uiApp.uiLSIControl.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
             
         end
         
@@ -1866,6 +1866,16 @@ classdef App < mic.Base
             %this.uiApp.uiScannerControlM142.ui
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui
+            
+            % LSI
+            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
+            this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
+            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
+            this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+            
+            
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
