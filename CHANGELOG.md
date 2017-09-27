@@ -7,6 +7,9 @@ TO DO
 
 -->
 ### bl12014
+
+- Adding LSI stage disconnect routines for hexapod, reticle and goni
+
 - Wrapped LSI init in a try, since this is in a separate repo for now
 
 - Updated `connectCommDeltaTauPowerPmacToUiLsi` to integrate reticle control in the LSI UI.  

@@ -425,21 +425,14 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectSmarActMcsGoni(this)
-            
             if ~this.getSmarActMcsGoni()
                 return
             end
-            
-            % Interferometry
-            
+            this.uiApp.uiLSIControl.disconnectGoni();
             this.commSmarActMcsGoni = [];
         end
         
-        
-        
         function initAndConnectSmarActSmarPod(this)
-            
-
             if this.getSmarActSmarPod()
                 return
             end
@@ -457,17 +450,13 @@ classdef App < mic.Base
             % Initializes and enables hexapod, setting devices via the
             % coupled axis API.
             this.uiApp.uiLSIControl.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
-            
         end
         
         function destroyAndDisconnectSmarActSmarPod(this)
-            
             if ~this.getSmarActSmarPod()
                 return
             end
-            
-            % Interferometry
-            
+            this.uiApp.uiLSIControl.disconnectHexapod();
             this.commSmarActSmarPod = [];
         end
         
@@ -877,6 +866,13 @@ classdef App < mic.Base
             
         end
         
+        function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
+            for k = 1:7
+                ui.disconnectReticleAxisDevice(k);
+            end
+        end
+        
+        
         function disconnectCommDeltaTauPowerPmacFromUiReticle(this, ui)
             
             ui.uiWorkingMode.ui.turnOff();
@@ -941,6 +937,7 @@ classdef App < mic.Base
             this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
             this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
             this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
+            this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
                                     
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
