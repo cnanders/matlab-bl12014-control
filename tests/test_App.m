@@ -25,19 +25,26 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-control')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-analyze')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'ryan_toolbox')));
 
+% 12.0.1 Exit Slit
 addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2')));
 javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOCorbaProxy.jar'));
 
+% Handful of MET5 controllers
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
+
+% 12.0.1 Shutter
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
+
+% DCT stages, DCT eps,
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
 
-
+% Java SSH2 Communication With DeltaTau Power PMAC Motion Controller (uses JSch)
+% needed by github/cnanders/matlab-deltatau-ppmac-met5
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'));
 
+% Java utility to check if a network device (host + port) is reachable
 % Used by GetLogicalPing
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
-
 
 % Required by cwcork cxro.met5.Instruments
 cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
