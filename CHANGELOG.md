@@ -6,6 +6,41 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+
+# 1.0.0-alpha.22
+
+### App
+
+- Linked Keithley6482 comm to `ui.Reticle` and `ui.Wafer`
+- Commendted out code that was setting up ui.LSIConnect GetSetLogicalConnects since it was crashing
+
+### README.md
+
+- Updated README.md with imporved documentation for depencies
+
+# 1.0.0-alpha.21
+
+### device.GetLogicalFromDeltaTauPowerPmac
+
+- Added support for additional motor status statuses
+- Exposed lists of the supported types
+
+### ui.M141
+
+- Commented UI for tiltX and tiltY since no low-level controls
+
+### ui.PowerPmacStatus
+
+- Added new UI for all statuses that were added to device.GetLogicalFromDeltaTauPowerPmac
+
+### ui.Reticle\*, ui.Wafer\*
+
+- Updated config files to include limits
+- Updated UI to show limit ranges
+- Added fix for when NaN values are passed to the callbacks that update the ZoomPanAxis
+
+# 1.0.0-alpha.20-ryan
+
 ### bl12014
 
 - Adding `destroyAndDisconnectMet5Instruments` to `destroyAndDisconnectAll`.  Not disconnecting MET5Instruments jar was causing problems when the app is reloaded.
@@ -22,10 +57,12 @@ TO DO
 
 - LSIControl can be cloned from https://github.com/ryanmiyakawa/LSI-control.git and is expected to be found in vendor/github/rhmiyakawa/
 
+# 1.0.0-alpha.20
 
 ### ui.PowerPmacStatus
 
 - Updated `build()` method.  If figure exists, it now brings figure to front and returns.  If figure does not exist, it builds normally.
+
 ### device.GetSetNumberFromDeltaTauPowerPmac
 
 - Completed the `stop()` method by calling `stopAll()` method of underlying comm class.

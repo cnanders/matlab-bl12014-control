@@ -108,11 +108,25 @@ classdef ReticleAxes < mic.Base
         function setStagePosition(this, dX, dY)
             
             % Make sure the hggroup of the carriage is at the correct
-            % location.  
+            % location. 
+
+            if isnan(dX)
+                this.msg('setStagePosition() dX === NaN', this.u8_MSG_TYPE_ERROR);
+                return;
+            end
             
-            hHgtf = makehgtform('translate', [dX dY 0]);
-            if ishandle(this.hCarriage);
-                set(this.hCarriage, 'Matrix', hHgtf);
+            if isnan(dY)
+                this.msg('setStagePosition() dY === NaN', this.u8_MSG_TYPE_ERROR);
+                return;
+            end
+            
+            try
+                hHgtf = makehgtform('translate', [dX dY 0]);
+                if ishandle(this.hCarriage);
+                    set(this.hCarriage, 'Matrix', hHgtf);
+                end
+            catch mE
+                this.msg(getReport(mE));
             end
             
         end
