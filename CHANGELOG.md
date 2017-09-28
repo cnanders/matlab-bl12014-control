@@ -6,19 +6,6 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
-### bl12014
-
-- Adding LSI stage disconnect routines for hexapod, reticle and goni
-
-- Wrapped LSI init in a try, since this is in a separate repo for now
-
-- Updated `connectCommDeltaTauPowerPmacToUiLsi` to integrate reticle control in the LSI UI.  
-
-- Updated `initAndConnectSmarActMcsGoni` and `initAndConnectSmarActSmarPod` to plug into the coupled-axis control framework required for LSI
-
-- Added buttons in main uiApp to launch LSI control and plugged in LSI UI.  LSI analyze ui is built but not properly integrated yet.
-
-- LSIControl can be cloned from https://github.com/ryanmiyakawa/LSI-control.git and is expected to be found in vendor/github/rhmiyakawa/
 
 
 # 1.0.0-alpha.21
@@ -41,6 +28,22 @@ TO DO
 - Updated config files to include limits
 - Updated UI to show limit ranges
 - Added fix for when NaN values are passed to the callbacks that update the ZoomPanAxis
+
+# 1.0.0-alpha.20-ryan
+
+### bl12014
+
+- Adding LSI stage disconnect routines for hexapod, reticle and goni
+
+- Wrapped LSI init in a try, since this is in a separate repo for now
+
+- Updated `connectCommDeltaTauPowerPmacToUiLsi` to integrate reticle control in the LSI UI.  
+
+- Updated `initAndConnectSmarActMcsGoni` and `initAndConnectSmarActSmarPod` to plug into the coupled-axis control framework required for LSI
+
+- Added buttons in main uiApp to launch LSI control and plugged in LSI UI.  LSI analyze ui is built but not properly integrated yet.
+
+- LSIControl can be cloned from https://github.com/ryanmiyakawa/LSI-control.git and is expected to be found in vendor/github/rhmiyakawa/
 
 # 1.0.0-alpha.20
 
