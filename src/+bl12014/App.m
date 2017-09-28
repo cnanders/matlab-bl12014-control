@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 250
-        dHeight = 550
+        dHeight = 650
         
         dWidthButton = 210
         
@@ -419,25 +419,20 @@ classdef App < mic.Base
                 return
             end
             
-            % Interferometry
+             % Initializes and enables goni, setting devices via the
+            % coupled axis API.
+            this.uiApp.uiLSIControl.setGoniDeviceAndEnable(this.commSmarActMcsGoni);
         end
         
         function destroyAndDisconnectSmarActMcsGoni(this)
-            
             if ~this.getSmarActMcsGoni()
                 return
             end
-            
-            % Interferometry
-            
+            this.uiApp.uiLSIControl.disconnectGoni();
             this.commSmarActMcsGoni = [];
         end
         
-        
-        
         function initAndConnectSmarActSmarPod(this)
-            
-
             if this.getSmarActSmarPod()
                 return
             end
@@ -452,17 +447,16 @@ classdef App < mic.Base
                 return
             end
             
-            % Interferometry
+            % Initializes and enables hexapod, setting devices via the
+            % coupled axis API.
+            this.uiApp.uiLSIControl.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
         end
         
         function destroyAndDisconnectSmarActSmarPod(this)
-            
             if ~this.getSmarActSmarPod()
                 return
             end
-            
-            % Interferometry
-            
+            this.uiApp.uiLSIControl.disconnectHexapod();
             this.commSmarActSmarPod = [];
         end
         
@@ -807,8 +801,27 @@ classdef App < mic.Base
         end
         
         function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
            
-            % Ryan fill in
+            % Set LSI reticle axis control
+            ui.setReticleAxisDevice(deviceCoarseX, 1);
+            ui.setReticleAxisDevice(deviceCoarseY, 2);
+            ui.setReticleAxisDevice(deviceCoarseZ, 3);
+            ui.setReticleAxisDevice(deviceCoarseTiltX, 4);
+            ui.setReticleAxisDevice(deviceCoarseTiltY, 5);
+            ui.setReticleAxisDevice(deviceFineX, 6);
+            ui.setReticleAxisDevice(deviceFineY, 7);
         end
         
         function connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this, comm, ui)
@@ -848,10 +861,17 @@ classdef App < mic.Base
             
             this.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
             this.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
-            % this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLsi);
+            this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
             this.connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this.commDeltaTauPowerPmac, this.uiApp.uiPowerPmacStatus);
             
         end
+        
+        function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
+            for k = 1:7
+                ui.disconnectReticleAxisDevice(k);
+            end
+        end
+        
         
         function disconnectCommDeltaTauPowerPmacFromUiReticle(this, ui)
             
@@ -872,6 +892,8 @@ classdef App < mic.Base
             ui.uiCoarseStage.uiTiltY.setDevice([]);
             ui.uiFineStage.uiX.setDevice([]);
             ui.uiFineStage.uiY.setDevice([]);
+            
+           
             
         end
         
@@ -915,6 +937,7 @@ classdef App < mic.Base
             this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
             this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
             this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
+            this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
                                     
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
@@ -1669,6 +1692,12 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectSmarActMcsGoni ...
             );
         
+            gslcCommSmarActSmarPod = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getSmarActSmarPod, ...
+                'fhSetTrue', @this.initAndConnectSmarActSmarPod, ...
+                'fhSetFalse', @this.destroyAndDisconnectSmarActSmarPod ...
+            );
+        
             gslcCommDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getDeltaTauPowerPmac, ...
                 'fhSetTrue', @this.initAndConnectDeltaTauPowerPmac, ...
@@ -1834,6 +1863,16 @@ classdef App < mic.Base
             %this.uiApp.uiScannerControlM142.ui
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui
+            
+            % LSI
+            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
+            this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
+            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
+            this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+            
+            
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
