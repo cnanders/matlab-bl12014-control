@@ -9,9 +9,9 @@ classdef App < mic.Base
         
         % Branchline Subnet
         cTcpipSmarActM141 = '192.168.10.20'
-        cTcpipHostMicronix = '192.168.10.21'
+        cTcpipMicronix = '192.168.10.21'
         cTcpipLc400M142 = '192.168.10.22'
-        cTcpipHostNewFocus = '192.168.10.23'
+        cTcpipNewFocus = '192.168.10.23'
         cTcpipGalilD142 = '192.168.10.24'
         cTcpipGalilM143 = '192.168.10.25'
         
@@ -995,8 +995,8 @@ classdef App < mic.Base
             
             try
                 this.commKeithley6482Wafer = keithley.Keithley6482(...
-                    'cTcpipHost', this.cTcpipHostKeithley6482Wafer, ...
-                    'u16TcpipHost', '4001', ...
+                    'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
+                    'u16TcpipPort', 4001, ...
                     'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                 );
             
@@ -1051,8 +1051,8 @@ classdef App < mic.Base
                
             try
                 this.commKeithley6482Reticle = keithley.Keithley6482(...
-                    'cTcpipHost', this.cTcpipHostKeithley6482Reticle, ...
-                    'u16TcpipHost', '4002', ...
+                    'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
+                    'u16TcpipPort', 4002, ...
                     'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                 );
                 
@@ -1219,7 +1219,7 @@ classdef App < mic.Base
             
             try
                 this.commNewFocusModel8742 = newfocus.Model8742( ...
-                    'cTcpipHost', this.cTcpipHostNewFocus ...
+                    'cTcpipHost', this.cTcpipNewFocus ...
                 );
                 this.commNewFocusModel8742.init();
                 this.commNewFocusModel8742.connect();
@@ -1408,7 +1408,7 @@ classdef App < mic.Base
             try
                 this.commMicronixMmc103 = micronix.MMC103(...
                     'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
-                    'cTcpipHost', this.cTcpipHostMicronix ...
+                    'cTcpipHost', this.cTcpipMicronix ...
                 );
                 % Create tcpip object
                 this.commMicronixMmc103.init();
@@ -1876,6 +1876,7 @@ classdef App < mic.Base
             %this.uiApp.uiScan.ui
             
             % LSI
+            %{
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
@@ -1883,7 +1884,7 @@ classdef App < mic.Base
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
             
-            
+            %}
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)

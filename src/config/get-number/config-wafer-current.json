@@ -18,13 +18,19 @@
 			"slope": "1e6",
 			"offset": 0,
 			"precision": 3
-    },
-    {
+        },
+        {
 			"name": "nA",
 			"slope": "1e9",
 			"offset": 0,
 			"precision": 3
-		}
+        },
+        {
+			"name": "pA",
+			"slope": "1e12",
+			"offset": 0,
+			"precision": 3
+        }
 	]
 }	
 	

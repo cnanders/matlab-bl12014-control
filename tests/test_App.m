@@ -25,8 +25,8 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-control')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'LSI-analyze')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'rhmiyakawa', 'ryan_toolbox')));
 
-addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits')));
-javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slits', 'BL12PICOCorbaProxy.jar'));
+addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2')));
+javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOCorbaProxy.jar'));
 
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));

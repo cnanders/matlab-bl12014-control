@@ -47,6 +47,20 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 ### [LSI Control](https://github.com/ryanmiyakawa/LSI-control)
 - vendor/github/ryanmiyakawa/LSI-control
 
+### Met5Instruments.jar (get from Carl Cork)
+- vendor/cwcork/
+
+### BL1201 Exit Slit (get from Patrick Naulleau)
+- vendor/pnaulleau/bl1201-exit-slit-v2
+
+### deltatau-power-pmac-comm-jre1.7 (get from Chris Anderson)
+- vendor/cnanderson/
+- Java SSH2 Communication With DeltaTau Power PMAC Motion Controller (uses JSch)
+- src code https://github.com/cnanders/java-deltatau-power-pmac-comm
+
+### network-device-jre1.7 (get from Chris Anderson)
+- vendor/cnanderson/
+- Java utility to check if a network device (host + port) is reachable
 
 <a name="project-structure"></a>
 # Project Structure

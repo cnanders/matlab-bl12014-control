@@ -7,6 +7,16 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.22
+
+### App
+
+- Linked Keithley6482 comm to `ui.Reticle` and `ui.Wafer`
+- Commendted out code that was setting up ui.LSIConnect GetSetLogicalConnects since it was crashing
+
+### README.md
+
+- Updated README.md with imporved documentation for depencies
 
 # 1.0.0-alpha.21
 
