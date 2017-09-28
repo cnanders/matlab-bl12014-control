@@ -204,6 +204,7 @@ classdef App < mic.Base
         
         function destroyAndDisconnectAll(this)
             
+            this.destroyAndDisconnectMet5Instruments();
             this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
@@ -456,8 +457,11 @@ classdef App < mic.Base
             if ~this.getSmarActSmarPod()
                 return
             end
+            % Disconnect the UIs for Hexapod, and disconnect the stage
+            % itself too
             this.uiApp.uiLSIControl.disconnectHexapod();
             this.commSmarActSmarPod = [];
+            
         end
         
         
