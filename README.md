@@ -4,7 +4,7 @@ MATLAB UI for controlling beamline 12.0.1.4 of the [Advanced Light Source]() at 
 
 # Installation
 
-1. Clone this repo and the repos of all [dependencies](#dependencies) into the MATLAB “vendor” directory as shown in [Project Structure](#project-structure)
+1. Clone this repo and the repos of all [dependencies](#dependencies) into the required locations
 
 2. Add this library and all dependencies to the MATLAB path, e.g., 
 
@@ -18,16 +18,35 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 ```
 
 <a name="dependencies"></a>
-## Dependencies
+## Dependencies and Required Location
 
-- [https://github.com/awojdyla/matlab-datatranslation-measurpoint](https://github.com/awojdyla/matlab-datatranslation-measurpoint)
-- [https://github.com/cnanders/matlab-keithley-6482](https://github.com/cnanders/matlab-keithley-6482)
-- [https://github.com/cnanders/matlab-scanner-control-npoint](https://github.com/cnanders/matlab-scanner-control-npoint)
-- [https://github.com/cnanders/matlab-micronix-mmc-103](https://github.com/cnanders/matlab-micronix-mmc-103)
-- [https://github.com/cnanders/matlab-newfocus-model-8742](https://github.com/cnanders/matlab-newfocus-model-8742)
-- [https://github.com/cnanders/matlab-instrument-control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
-- [https://github.com/cnanders/matlab-npoint-lc400](https://github.com/cnanders/matlab-npoint-lc400) (for MATLAB USB serial communication with nPoint LC.400 controller)
-- [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
+### [MATLAB DataTranslation MeasurPoint](https://github.com/awojdyla/matlab-datatranslation-measurpoint)
+- vendor/github/awojdyla/matlab-datatranslation-measurpoint
+
+### [MATLAB Keithley 6482](https://github.com/cnanders/matlab-keithley-6482)
+- vendor/github/cnanders/matlab-keithley-6482
+
+### [MATLAB Scanner Control nPoint](https://github.com/cnanders/matlab-scanner-control-npoint)
+- vendor/github/cnanders/matlab-scanner-control-npoint
+
+### [MATLAB Micronix MMC-103](https://github.com/cnanders/matlab-micronix-mmc-103)
+- vendor/github/cnanders/matlab-micronix-mmc-103
+
+### [MATLAB NewFocus Model 8742](https://github.com/cnanders/matlab-newfocus-model-8742)
+- vendor/github/cnanders/matlab-new-focus-model-8742
+
+### [MATLAB Instrument Control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
+- vendor/github/cnanders/matlab/instrument-control
+
+### [MATLAB nPoint LC400](https://github.com/cnanders/matlab-npoint-lc400)
+- vendor/github/cnanders/matlab-npoint-lc400
+
+### [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
+- vendor/fileexchange/jsonlab-1.2
+
+### [LSI Control](https://github.com/ryanmiyakawa/LSI-control)
+- vendor/github/ryanmiyakawa/LSI-control
+
 
 <a name="project-structure"></a>
 # Project Structure

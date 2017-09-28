@@ -25,7 +25,7 @@ classdef App < mic.Base
         cTcpipSmarActFocusMonitor = '192.168.20.26'
         cTcpipDataTranslation = '192.168.20.27'
         cTcpipKeithley6482Wafer = '192.168.20.28'
-        cTcpipKeithley6482Reticle = '192.168.20.29'
+        cTcpipKeithley6482Reticle = '192.168.20.28'
         
         % Video Subnet
         
@@ -996,10 +996,10 @@ classdef App < mic.Base
             try
                 this.commKeithley6482Wafer = keithley.Keithley6482(...
                     'cTcpipHost', this.cTcpipHostKeithley6482Wafer, ...
+                    'u16TcpipHost', '4001', ...
                     'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                 );
             
-                this.commKeithley6482Wafer.init()
                 this.commKeithley6482Wafer.connect()
                 % this.commKeithley6482Wafer.identity()
             catch mE
@@ -1010,15 +1010,15 @@ classdef App < mic.Base
             end
             
             % Wafer
-            device = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 1);
-            this.uiApp.uiWafer.uiDiode.uiCurrent.setDevice(device);
+            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 1);
+            this.uiApp.uiWafer.uiDiode.uiCurrent.setDevice(deviceCh1);
             this.uiApp.uiWafer.uiDiode.uiCurrent.turnOn();
                         
             % Wafer Focus Sensor
             %{
-            device = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 2);
-            this.uiApp.uiWaferFocusSensor.uiDiode.setDevice(device);
-            this.uiApp.uiWaferFocusSensor.uiDiode.turnOn();
+            deviceCh2 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 2);
+            this.uiApp.uiWaferFocusSensor.uiCurrent.setDevice(deviceCh2);
+            this.uiApp.uiWaferFocusSensor.uiCurrent.turnOn();
             %}
             
         end
@@ -1050,7 +1050,13 @@ classdef App < mic.Base
             end
                
             try
-                this.commKeithley6482Reticle = keithley.Keithley6482();
+                this.commKeithley6482Reticle = keithley.Keithley6482(...
+                    'cTcpipHost', this.cTcpipHostKeithley6482Reticle, ...
+                    'u16TcpipHost', '4002', ...
+                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+                );
+                
+                
             catch mE
                 this.commKeithley6482Reticle = [];
                 cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
@@ -1059,9 +1065,14 @@ classdef App < mic.Base
             end
                         
             % {< mic.interface.device.GetNumber}
-            device = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Reticle, 1);
-            this.uiApp.uiReticle.uiDiode.uiCurrent.setDevice(device);
+            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Reticle, 1);
+            this.uiApp.uiReticle.uiDiode.uiCurrent.setDevice(deviceCh1);
             this.uiApp.uiReticle.uiDiode.uiCurrent.turnOn();
+            
+            % RYAN FILL IN FOR FOCUS MONITOR DIODE
+            % deviceCh2 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Reticle, 2);
+            % this.uiApp.uiFocusMonitor.uiCurrent.setDevice(deviceCh2);
+            % this.uiApp.uiFocusMonitor.uiCurrent.turnOn();
             
         end
         
