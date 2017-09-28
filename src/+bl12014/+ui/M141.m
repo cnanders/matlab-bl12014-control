@@ -101,12 +101,13 @@ classdef M141 < mic.Base
             this.uiStageX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
+            %{
             this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
-            
+            %}
             this.uiCurrent.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
 
@@ -328,8 +329,8 @@ classdef M141 < mic.Base
             
             this.msg('init');
             this.initUiStageX();
-            this.initUiStageTiltX();
-            this.initUiStageTiltY();
+            % this.initUiStageTiltX();
+            % this.initUiStageTiltY();
             this.initUiCurrent();
             this.initUiCommSmarActMcsM141();
             this.initUiCommDataTranslationMeasurPoint();

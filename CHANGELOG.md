@@ -7,9 +7,33 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.21
+
+### device.GetLogicalFromDeltaTauPowerPmac
+
+- Added support for additional motor status statuses
+- Exposed lists of the supported types
+
+### ui.M141
+
+- Commented UI for tiltX and tiltY since no low-level controls
+
+### ui.PowerPmacStatus
+
+- Added new UI for all statuses that were added to device.GetLogicalFromDeltaTauPowerPmac
+
+### ui.Reticle\*, ui.Wafer\*
+
+- Updated config files to include limits
+- Updated UI to show limit ranges
+- Added fix for when NaN values are passed to the callbacks that update the ZoomPanAxis
+
+# 1.0.0-alpha.20
+
 ### ui.PowerPmacStatus
 
 - Updated `build()` method.  If figure exists, it now brings figure to front and returns.  If figure does not exist, it builds normally.
+
 ### device.GetSetNumberFromDeltaTauPowerPmac
 
 - Completed the `stop()` method by calling `stopAll()` method of underlying comm class.

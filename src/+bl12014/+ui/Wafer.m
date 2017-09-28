@@ -3,7 +3,7 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1615 %1295
+        dWidth      = 1745 %1295
         dHeight     = 1005
         
     end
@@ -118,13 +118,12 @@ classdef Wafer < mic.Base
             dLeft = 10;
             dSep = 30;
 
-            
-            this.uiCommCxroHeightSensor.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
             this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
+            this.uiCommCxroHeightSensor.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+                        
             this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
@@ -151,7 +150,7 @@ classdef Wafer < mic.Base
             this.uiHeightSensor.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiHeightSensor.dHeight + dPad;
             
-            dLeft = 620;
+            dLeft = 750;
             dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;

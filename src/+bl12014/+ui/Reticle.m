@@ -2,7 +2,7 @@ classdef Reticle < mic.Base
         
     properties (Constant)
       
-        dWidth      = 1385
+        dWidth      = 1515
         dHeight     = 775
         
     end
@@ -138,7 +138,7 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
-            dLeft = 620;
+            dLeft = 750;
             dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;

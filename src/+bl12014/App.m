@@ -326,19 +326,19 @@ classdef App < mic.Base
             deviceX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 0);
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
+            % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
 
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
+            % deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
             
             this.uiApp.uiM141.uiStageX.setDevice(deviceX);
-            this.uiApp.uiM141.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiApp.uiM141.uiStageTiltY.setDevice(deviceTiltY);
+            % this.uiApp.uiM141.uiStageTiltX.setDevice(deviceTiltX);
+            % this.uiApp.uiM141.uiStageTiltY.setDevice(deviceTiltY);
             
             
             this.uiApp.uiM141.uiStageX.turnOn();
-            this.uiApp.uiM141.uiStageTiltX.turnOn();
-            this.uiApp.uiM141.uiStageTiltY.turnOn();
+            % this.uiApp.uiM141.uiStageTiltX.turnOn();
+            % this.uiApp.uiM141.uiStageTiltY.turnOn();
             
         end
         
@@ -350,12 +350,12 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiM141.uiStageX.turnOff();
-            this.uiApp.uiM141.uiStageTiltX.turnOff();
-            this.uiApp.uiM141.uiStageTiltY.turnOff();
+            % this.uiApp.uiM141.uiStageTiltX.turnOff();
+            % this.uiApp.uiM141.uiStageTiltY.turnOff();
             
             this.uiApp.uiM141.uiStageX.setDevice([]);
-            this.uiApp.uiM141.uiStageTiltX.setDevice([]);
-            this.uiApp.uiM141.uiStageTiltY.setDevice([]);
+            % this.uiApp.uiM141.uiStageTiltX.setDevice([]);
+            % this.uiApp.uiM141.uiStageTiltY.setDevice([]);
             
             
             this.commSmarActMcsM141.disconnect();

@@ -32,6 +32,11 @@ classdef App < mic.Base
         uiTempSensors
         uiFocusSensor
         
+        % Eventually make private.
+        % Exposing for troubleshooting
+        clock
+
+        
     end
     
     properties (SetAccess = private)
@@ -43,7 +48,6 @@ classdef App < mic.Base
         dHeightEdit = 24
         dWidthButtonButtonList = 200
         cTitleButtonList = 'UI'
-        clock
         hFigure
         cDirThis
         cDirSave

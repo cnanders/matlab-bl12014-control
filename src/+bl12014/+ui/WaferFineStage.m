@@ -14,7 +14,7 @@ classdef WaferFineStage < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 600
+        dWidth = 730
         dHeight = 70
         cName = 'wafer-fine-stage'
         
@@ -26,7 +26,7 @@ classdef WaferFineStage < mic.Base
         hPanel
         dWidthName = 70
        
-        
+        lShowRange = true
     end
     
     methods
@@ -119,6 +119,7 @@ classdef WaferFineStage < mic.Base
                 'dWidthName', this.dWidthName, ...
                 'cName', sprintf('%s-z', this.cName), ...
                 'config', uiConfig, ...
+                'lShowRange', this.lShowRange, ...
                 'cLabel', 'Z' ...
             );
         end
