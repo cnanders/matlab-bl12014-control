@@ -43,6 +43,8 @@ TO DO
 
 ### bl12014
 
+- Adding `destroyAndDisconnectMet5Instruments` to `destroyAndDisconnectAll`.  Not disconnecting MET5Instruments jar was causing problems when the app is reloaded.
+
 - Adding LSI stage disconnect routines for hexapod, reticle and goni
 
 - Wrapped LSI init in a try, since this is in a separate repo for now
