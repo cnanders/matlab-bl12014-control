@@ -879,8 +879,8 @@ classdef App < mic.Base
             
             this.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
             this.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
-            this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
             this.connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this.commDeltaTauPowerPmac, this.uiApp.uiPowerPmacStatus);
+%             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
             
         end
         
@@ -959,7 +959,7 @@ classdef App < mic.Base
             this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
             this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
             this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
-            this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
+%             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
                                     
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
