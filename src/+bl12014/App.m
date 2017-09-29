@@ -475,7 +475,14 @@ classdef App < mic.Base
             end
                         
             try
-                this.commDataTranslationMeasurPoint = dataTranslation.MeasurPoint();
+                this.commDataTranslationMeasurPoint = datatranslation.MeasurPoint(this.cTcpipDataTranslation);
+                
+                % Connect the instrument through TCP/IP
+                this.commDataTranslationMeasurPoint.connect();
+
+                % Enable readout on protected channels
+                this.commDataTranslationMeasurPoint.enable();
+                
             catch mE
                 this.commDataTranslationMeasurPoint = [];
                 cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', getReport(mE));
