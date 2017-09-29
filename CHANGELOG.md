@@ -7,6 +7,13 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.23
+
+### App
+
+- in `delete()` method, reversed order.  Call disconnectAll() then delete the parent UI 
+- Returning in most UI to device linking functions Ryan built as they caused crashes.
+
 # 1.0.0-alpha.22
 
 ### App
