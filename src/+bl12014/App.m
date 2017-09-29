@@ -161,9 +161,9 @@ classdef App < mic.Base
         %% Destructor
         
         function delete(this)
-            delete(this.uiApp)
-            % this.comm.delete()
+           
             this.destroyAndDisconnectAll();
+            delete(this.uiApp)
             
         end
         
@@ -204,7 +204,6 @@ classdef App < mic.Base
         
         function destroyAndDisconnectAll(this)
             
-            this.destroyAndDisconnectMet5Instruments();
             this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
@@ -219,6 +218,9 @@ classdef App < mic.Base
             this.destroyAndDisconnectSmarActMcsM141();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
+            
+            this.destroyAndDisconnectMet5Instruments();
+
         end
         
         % Getters return logical if the COMM class exists.  Used by
@@ -805,6 +807,11 @@ classdef App < mic.Base
         end
         
         function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
+            
+            % CA returning because this is crashing my reticle and wafer UI
+            return;
+            
+            
             import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
             import bl12014.device.GetSetTextFromDeltaTauPowerPmac
             
@@ -871,6 +878,10 @@ classdef App < mic.Base
         end
         
         function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
+            
+            % CA returning because this is crashing.
+            return;
+            
             for k = 1:7
                 ui.disconnectReticleAxisDevice(k);
             end
