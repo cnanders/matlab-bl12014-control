@@ -403,7 +403,7 @@ classdef App < mic.Base
                         
         end
         
-        
+        % Called as GSLC callback in lsiControl UI connect
         function initAndConnectSmarActMcsGoni(this)
             
             
@@ -1890,15 +1890,17 @@ classdef App < mic.Base
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui
             
+            
+            
             % LSI
-            %{
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
             
+            %{
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
+            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
             %}
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)

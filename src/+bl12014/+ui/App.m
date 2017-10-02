@@ -31,8 +31,8 @@ classdef App < mic.Base
         uiScan
         uiTempSensors
         uiFocusSensor
-        uiLSIControl
-        uiLSIAnalyze
+        uiLSIControl = {};
+        uiLSIAnalyze = {};
         
         % Eventually make private.
         % Exposing for troubleshooting
