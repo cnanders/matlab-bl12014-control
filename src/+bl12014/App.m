@@ -469,6 +469,7 @@ classdef App < mic.Base
         
         function initAndConnectDataTranslationMeasurPoint(this)
             
+            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
             
             if this.getDataTranslationMeasurPoint()
                 return
@@ -491,26 +492,25 @@ classdef App < mic.Base
             end
             
             
-            
             % M141
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 1);
             this.uiApp.uiM141.uiCurrent.setDevice(device);
             this.uiApp.uiM141.uiCurrent.turnOn()
             
             % D141
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 2);
             this.uiApp.uiD141.uiCurrent.setDevice(device);
             this.uiApp.uiD141.uiCurrent.turnOn()
             
             % D142 & Beamline (share a device)
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 3);
             this.uiApp.uiD142.uiCurrent.setDevice(device);
             this.uiApp.uiD142.uiCurrent.turnOn()
             this.uiApp.uiBeamline.uiD142Current.setDevice(device);
             this.uiApp.uiBeamline.uiD142Current.turnOn();
             
             % M143
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 4);
             this.uiApp.uiM143.uiCurrent.setDevice(device);
             this.uiApp.uiM143.uiCurrent.turnOn()
             
@@ -518,10 +518,10 @@ classdef App < mic.Base
             
             % Reticle
             
-            deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 21);
-            deviceCap2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 22);
-            deviceCap3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 23);
-            deviceCap4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 24);
+            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
+            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
+            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
+            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 8);
             
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
@@ -535,11 +535,11 @@ classdef App < mic.Base
             
             % Wafer
             
-            deviceCap1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 21);
-            deviceCap2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 22);
-            deviceCap3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 23);
-            deviceCap4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 24);
-            
+            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
+            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
+            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
+            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 12);
+        
             this.uiApp.uiWafer.uiPobCapSensors.uiCap1.setDevice(deviceCap1);
             this.uiApp.uiWafer.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
             this.uiApp.uiWafer.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
@@ -552,16 +552,16 @@ classdef App < mic.Base
             
             % TempSensors
             
-            deviceReticleCam1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 1);
-            deviceReticleCam2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 2);
-            deviceFiducialCam1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 3);
-            deviceFiducialCam2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 4);
-            deviceMod3Frame1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 5);
-            deviceMod3Frame2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 6);
-            deviceMod3Frame3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 7);
-            deviceMod3Frame4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 8);
-            deviceMod3Frame5 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 9);
-            deviceMod3Frame6 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 10);
+            deviceReticleCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 1);
+            deviceReticleCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 2);
+            deviceFiducialCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 3);
+            deviceFiducialCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 4);
+            deviceMod3Frame1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 5);
+            deviceMod3Frame2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 6);
+            deviceMod3Frame3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 7);
+            deviceMod3Frame4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 8);
+            deviceMod3Frame5 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 9);
+            deviceMod3Frame6 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 10);
             
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.setDevice(deviceReticleCam1);
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.setDevice(deviceReticleCam2);
@@ -585,18 +585,18 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.turnOn();
             this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.turnOn();
             
-            devicePobFrame1 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 11);
-            devicePobFrame2 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 12);
-            devicePobFrame3 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 13);
-            devicePobFrame4 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 14);
-            devicePobFrame5 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 15);
-            devicePobFrame6 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 16);
-            devicePobFrame7 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 17);
-            devicePobFrame8 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 18);
-            devicePobFrame9 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 19);
-            devicePobFrame10 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 20);
-            devicePobFrame11 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 21);
-            devicePobFrame12 = bl12014.device.GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, 22);
+            devicePobFrame1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 11);
+            devicePobFrame2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 12);
+            devicePobFrame3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 13);
+            devicePobFrame4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 14);
+            devicePobFrame5 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 15);
+            devicePobFrame6 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 16);
+            devicePobFrame7 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 17);
+            devicePobFrame8 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 18);
+            devicePobFrame9 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 19);
+            devicePobFrame10 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 20);
+            devicePobFrame11 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 21);
+            devicePobFrame12 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 22);
             
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.setDevice(devicePobFrame1);
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.setDevice(devicePobFrame2);
