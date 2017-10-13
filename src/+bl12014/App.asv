@@ -51,7 +51,6 @@ classdef App < mic.Base
         
         % Temporarily:{lsicontrol.virtualDevice.virtualPVCam}
         commPIMTECamera
-        lUseVirtualPVCam = false % <--- helpful for debugging PI-MTE cam
         
         commSmarActRotary
         
@@ -482,15 +481,8 @@ classdef App < mic.Base
             end
             
             try
-                if this.lUseVirtualPVCam
-                    this.commPIMTECamera = lsicontrol.virtualDevice.virtualPVCam(); % <----- switch to CWCork camera when ready
-                else
-                    this.initAndConnectMet5Instruments();
-                    % Test this camera directly by SSH into met5-pixis:
-                    % cxrodev@met5-pixis:~/Development/met5/device/LsiCamera/corba/java-idl/test/LsiCameraTest
-                    % run: java -jar store/PixisTest-0.1b.jar
-                    this.commPIMTECamera = this.jMet5Instruments.getLsiCamera(); % Proper PVCam handle
-                end
+                %this.commPIMTECamera = lsicontrol.virtualDevice.virtualPVCam(); % <----- switch to CWCork camera when ready
+                this.commPIMTECamera = lsicontrol.virtualDevice.virtualPVCam();
             catch mE
                 this.commPIMTECamera = [];
                 cMsg = sprintf('initAndConnectPIMTECamera() %s', getReport(mE));
