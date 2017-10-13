@@ -46,8 +46,11 @@ classdef App < mic.Base
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsGoni
         
-        % {FIX ME}
+        % {cxro.common.device.motion.Stage 1x1}
         commSmarActSmarPod
+        
+        % Temporarily:{lsicontrol.virtualDevice.virtualPVCam}
+        commPIMTECamera
         
         commSmarActRotary
         
@@ -248,6 +251,10 @@ classdef App < mic.Base
         
         function l = getSmarActSmarPod(this)
             l = ~isempty(this.commSmarActSmarPod);
+        end
+        
+        function l = getPIMTECamera(this)
+            l = ~isempty(this.commPIMTECamera);
         end
         
         function l = getMicronixMmc103(this)
@@ -455,6 +462,8 @@ classdef App < mic.Base
             this.uiApp.uiLSIControl.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
         end
         
+       
+        
         function destroyAndDisconnectSmarActSmarPod(this)
             if ~this.getSmarActSmarPod()
                 return
@@ -464,6 +473,29 @@ classdef App < mic.Base
             this.uiApp.uiLSIControl.disconnectHexapod();
             this.commSmarActSmarPod = [];
             
+        end
+        
+        function initAndConnectPIMTECamera(this)
+            if this.getPIMTECamera()
+                return;
+            end
+            
+            try
+                this.commPIMTECamera = lsicontrol.virtualDevice.virtualPVCam(); % <----- switch to CWCork camera when ready
+            catch mE
+                this.commPIMTECamera = [];
+                cMsg = sprintf('initAndConnectPIMTECamera() %s', getReport(mE));
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                return
+            end
+            
+            % Initializes and enables camera
+            this.uiApp.uiLSIControl.setCameraDeviceAndEnable(this.commPIMTECamera);
+        end
+        
+        function destroyAndDisconnectPIMTECamera(this)
+            this.uiApp.uiLSIControl.disconnectCamera();
+            this.commPIMTECamera = [];
         end
         
         
@@ -1731,6 +1763,12 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectSmarActSmarPod ...
             );
         
+            gslcCommPIMTECamera = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getPIMTECamera, ...
+                'fhSetTrue', @this.initAndConnectPIMTECamera, ...
+                'fhSetFalse', @this.destroyAndDisconnectPIMTECamera ...
+            );
+        
             gslcCommDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getDeltaTauPowerPmac, ...
                 'fhSetTrue', @this.initAndConnectDeltaTauPowerPmac, ...
@@ -1905,6 +1943,9 @@ classdef App < mic.Base
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
             
+            this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
+            this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
+            
             %{
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
@@ -1932,6 +1973,7 @@ classdef App < mic.Base
                 'dWidthButtonButtonList', this.dWidthButton ...
             ); 
             this.initGetSetLogicalConnects();
+            
             % this.initUiComm();
             % this.initAndConnect()
             % this.loadStateFromDisk();
