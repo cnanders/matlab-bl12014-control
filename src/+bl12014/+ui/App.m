@@ -31,8 +31,8 @@ classdef App < mic.Base
         uiScan
         uiTempSensors
         uiFocusSensor
-        uiLSIControl
-        uiLSIAnalyze
+        uiLSIControl = {};
+        uiLSIAnalyze = {};
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -178,10 +178,11 @@ classdef App < mic.Base
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
-            try
+            try 
             this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
 %            this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             catch me
+                
                 % Don't have LSIControl installed
             end
             
