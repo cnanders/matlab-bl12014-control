@@ -16,7 +16,7 @@ classdef App < mic.Base
         cTcpipGalilM143 = '192.168.10.25'
         
         % Endstation 1 Subnet
-        cTcpipLc400MA = '192.168.20.20'
+        cTcpipLc400MA = '192.168.20.30' % Should be .20 but that was not working.
         cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
@@ -469,7 +469,10 @@ classdef App < mic.Base
         
         function initAndConnectDataTranslationMeasurPoint(this)
             
+            
             import bl12014.device.GetNumberFromDataTranslationMeasurPoint
+            
+            return;
             
             if this.getDataTranslationMeasurPoint()
                 return
@@ -492,25 +495,31 @@ classdef App < mic.Base
             end
             
             
+            %{
+            TC   sensor channels = 00 01 02 03 04 05 06 07
+            RTD  sensor channels = 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+            Volt sensor channels = 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
+            %}
+            
             % M141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 1);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 32);
             this.uiApp.uiM141.uiCurrent.setDevice(device);
             this.uiApp.uiM141.uiCurrent.turnOn()
             
             % D141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 2);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 33);
             this.uiApp.uiD141.uiCurrent.setDevice(device);
             this.uiApp.uiD141.uiCurrent.turnOn()
             
             % D142 & Beamline (share a device)
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 3);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 34);
             this.uiApp.uiD142.uiCurrent.setDevice(device);
             this.uiApp.uiD142.uiCurrent.turnOn()
             this.uiApp.uiBeamline.uiD142Current.setDevice(device);
             this.uiApp.uiBeamline.uiD142Current.turnOn();
             
             % M143
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 4);
+            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 35);
             this.uiApp.uiM143.uiCurrent.setDevice(device);
             this.uiApp.uiM143.uiCurrent.turnOn()
             
@@ -628,6 +637,8 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
+            
+            return;
             
             if ~this.getDataTranslationMeasurPoint()
                 return
@@ -1078,7 +1089,6 @@ classdef App < mic.Base
                     'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                 );
                 
-                
             catch mE
                 this.commKeithley6482Reticle = [];
                 cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
@@ -1341,13 +1351,14 @@ classdef App < mic.Base
             
             try
                 this.initAndConnectMet5Instruments();
-                this.commGalilM143 = this.jMet5Instruments.getDiagM143Stage();
+                this.commGalilM143 = this.jMet5Instruments.getM143Stage();
+                this.commGalilM143.connect();
             catch mE
                 this.commGalilM143 = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
             end
             
-            device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 1);
+            device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 0);
             this.uiApp.uiM143.uiStageY.setDevice(device);
             this.uiApp.uiM143.uiStageY.turnOn();
             

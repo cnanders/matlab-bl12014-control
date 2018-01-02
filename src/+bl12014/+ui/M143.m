@@ -23,7 +23,7 @@ classdef M143 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 580
+        dWidth = 610
         dHeight = 170
         hFigure
         
@@ -156,6 +156,7 @@ classdef M143 < mic.Base
                 'clock', this.clock, ...
                 'cName', sprintf('%s-y', this.cName), ...
                 'config', uiConfig, ...
+                'lShowInitButton', true, ...
                 'cLabel', 'Y' ...
             );
         end

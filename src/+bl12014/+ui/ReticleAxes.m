@@ -346,8 +346,8 @@ classdef ReticleAxes < mic.Base
             this.msg(sprintf('ReticleControl.onFieldClick() col: %1d, row: %1d', col, row));
            
             stData = struct();
-            stData.dX = this.dFieldX(col);
-            stData.dY = this.dFieldY(row);
+            stData.dX = this.dFieldX(col) * 1000;
+            stData.dY = this.dFieldY(row) * 1000;
             
             e = mic.EventWithData(stData);
             notify(this, 'eClickField', e);                     
