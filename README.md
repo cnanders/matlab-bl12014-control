@@ -41,6 +41,15 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 ### [MATLAB nPoint LC400](https://github.com/cnanders/matlab-npoint-lc400)
 - vendor/github/cnanders/matlab-npoint-lc400
 
+### [MATLAB nPoint LC400 UI](https://github.com/cnanders/matlab-npoint-lc400-ui)
+- vendor/github/cnanders/matlab-npoint-lc400-ui
+
+### [MATLAB Pupil Fill Generator](https://github.com/cnanders/matlab-pupil-fill-generator)
+- vendor/github/cnanders/matlab-pupil-fill-generator
+
+### [MATLAB Quasar](https://github.com/cnanders/matlab-quasar)
+- vendor/github/cnanders/matlab-quasar
+
 ### [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 - vendor/fileexchange/jsonlab-1.2
 

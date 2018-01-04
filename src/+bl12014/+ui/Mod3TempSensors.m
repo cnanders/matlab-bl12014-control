@@ -64,9 +64,9 @@ classdef Mod3TempSensors < mic.Base
         
         function this = Mod3TempSensors(varargin)
             for k = 1 : 2: length(varargin)
-                % this.msg(sprintf('passed in %s', varargin{k}));
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
-                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end

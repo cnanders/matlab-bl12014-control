@@ -1,49 +1,42 @@
-classdef M141 < mic.Base
+classdef Scanner < mic.Base
     
     properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommSmarActMcsM141
+        
+        % These are the UI for activating the hardware that gives the 
+        % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDataTranslationMeasurPoint
-
+        uiCommNPointLC400
         
-        % {mic.ui.device.GetSetNumber 1x1}}
-        uiStageX
+        % {npoint.ui.LC400 1x1}
+        uiNPointLC400
         
-        % {mic.ui.device.GetSetNumber 1x1}}
-        uiStageTiltX
-        
-        % {mic.ui.device.GetSetNumber 1x1}}
-        uiStageTiltY
-        
-        % {mic.ui.device.GetNumber 1x1}
-        uiCurrent
+        % {https://github.com/cnanders/matlab-pupil-fill-generator}
+        uiPupilFillGenerator
         
     end
     
     properties (Access = private)
         
         clock
-        dWidth = 610
-        dHeight = 230
+        dWidth = 630
+        dHeight = 260
         hFigure
         
-        configStageY
-        configMeasPointVolts
-        
+        dWidthName = 70
+        dWidthPadName = 29
         
     end
     
     properties (SetAccess = private)
         
-        cName = 'm141'
+        cName = 'M142'
     end
     
     methods
         
-        function this = M141(varargin)
+        function this = Scanner(varargin)
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -72,7 +65,7 @@ classdef M141 < mic.Base
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...
                 'MenuBar', 'none', ...
-                'Name', 'M141 Control', ...
+                'Name', sprintf('%s Scanner Control', this.cName), ...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
                     (dScreenSize(4) - this.dHeight)/2 ...
@@ -91,45 +84,22 @@ classdef M141 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiCommSmarActMcsM141.build(this.hFigure, dLeft, dTop);
+           
+            this.uiCommNPointLC400.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
-            
-            
-            this.uiStageX.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
-            
-            %{
-            this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            %}
-            this.uiCurrent.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-
+            this.uiPupilFillGenerator.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 600;
+                         
+            this.uiNPointLC400.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 300;
             
         end
-        
-        
-       
-        
         
         function delete(this)
             
             this.msg('delete');
-            
-            % Clean up clock tasks
-            
-            %{
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
+                        
             % Delete the figure
             
             if ishandle(this.hFigure)
@@ -137,51 +107,71 @@ classdef M141 < mic.Base
             end
             
             
-        end   
+        end    
+        
         
         %{
-        function connectSmarActMcsM141(this, comm)
+        
+        function connectMicronixMmc103(this, comm)
             
             % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromStage(comm, 1);
-
+            deviceX = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 1);
+            
             % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromStage(comm, 2);
-
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltY = bl12014.device.GetSetNumberFromStage(comm, 3);
+            deviceTiltZMfr = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 2);
             
             this.uiStageX.setDevice(deviceX);
-            this.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiStageTiltY.setDevice(deviceTiltY);
+            this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
+            
+            this.uiStageX.turnOn();
+            this.uiStageTiltZMfr.turnOn();
             
         end
         
-        function disconnectSmarActMcsM141(this)
+        function disconnectMicronixMmc103(this)
+            
+            this.uiStageX.turnOff();
+            this.uiStageTiltZMfr.turnOff();
             
             this.uiStageX.setDevice([]);
+            this.uiStageTiltZMfr.setDevice([]);
+            
+        end
+        
+        function connectNewFocusModel8742(this, comm)
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
+
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
+            
+            % {< mic.interface.device.GetSetNumber}
+            deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
+            
+            this.uiStageTiltX.setDevice(deviceTiltX);
+            this.uiStageTiltYMf.setDevice(deviceTiltYMf);
+            this.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
+            
+            this.uiStageTiltX.turnOn()
+            this.uiStageTiltYMf.turnOn()
+            this.uiStageTiltYMfr.turnOn()
+            
+        end
+        
+        function disconnectNewFocusModel8742(this)
+            
+            this.uiStageTiltX.turnOff()
+            this.uiStageTiltYMf.turnOff()
+            this.uiStageTiltYMfr.turnOff()
+            
+            
             this.uiStageTiltX.setDevice([]);
-            this.uiStageTiltY.setDevice([]);
-            
-        end
-        
-        
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            u8Channel = 1;
-            % {< mic.interface.device.GetNumber}
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, u8Channel);
-            this.uiCurrent.setDevice(device);
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this)
-            
-            this.uiCurrent.setDevice([]);
+            this.uiStageTiltYMf.setDevice([]);
+            this.uiStageTiltYMfr.setDevice([]);
         end
         
         %}
-        
-        
     end
     
     methods (Access = private)
@@ -198,7 +188,7 @@ classdef M141 < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-m141-stage-x.json' ...
+                'config-m142-stage-x.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -207,6 +197,7 @@ classdef M141 < mic.Base
             
             this.uiStageX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ...
                 'cName', sprintf('%s-x', this.cName), ...
                 'config', uiConfig, ...
                 'lShowInitButton', true, ...
@@ -219,7 +210,7 @@ classdef M141 < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-m141-stage-tilt-x.json' ...
+                'config-m142-stage-tilt-x.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -228,61 +219,85 @@ classdef M141 < mic.Base
             
             this.uiStageTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ...
+                'dWidthPadName', this.dWidthPadName, ...
                 'lShowLabels', false, ...
                 'cName', sprintf('%s-tilt-x', this.cName), ...
                 'config', uiConfig, ...
-                'lShowInitButton', true, ...
-                'cLabel', 'Tilt X' ...
+                'cLabel', 'Tilt X (neg=down)' ...
             );
         end
         
-        function initUiStageTiltY(this)
+        function initUiStageTiltYMf(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-m141-stage-tilt-y.json' ...
+                'config-m142-stage-tilt-y-mf.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiStageTiltY = mic.ui.device.GetSetNumber(...
+            this.uiStageTiltYMf = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ...
+                'dWidthPadName', this.dWidthPadName, ...
                 'lShowLabels', false, ...
-                'cName', sprintf('%s-tilt-y', this.cName), ...
+                'cName', sprintf('%s-tilt-y-mf', this.cName), ...
                 'config', uiConfig, ...
-                'lShowInitButton', true, ...
-                'cLabel', 'Tilt Y' ...
+                'cLabel', 'Tilt Y (MF) (neg=out)' ...
             );
         end
         
-        
-        function initUiCurrent(this)
+        function initUiStageTiltYMfr(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
-                'get-number', ...
-                'config-m141-current.json' ...
+                'get-set-number', ...
+                'config-m142-stage-tilt-y-mfr.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
-        
-            this.uiCurrent = mic.ui.device.GetNumber(...
+            
+            this.uiStageTiltYMfr = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'cName', sprintf('%s-current', this.cName), ...
+                'dWidthName', this.dWidthName, ...
+                'dWidthPadName', this.dWidthPadName, ...
+                'lShowLabels', false, ...
+                'cName', sprintf('%s-tilt-y-mfr', this.cName), ...
                 'config', uiConfig, ...
-                'cLabel', 'Current', ...
-                'dWidthPadUnit', 277, ...
-                'lShowInitButton', true, ...
-                'lShowLabels', false ...
+                'cLabel', 'Tilt Y (MFR) (neg=out)' ...
             );
         end
         
-        function initUiCommDataTranslationMeasurPoint(this)
+        function initUiStageTiltZMfr(this)
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-set-number', ...
+                'config-m142-stage-tilt-z-mfr.json' ...
+            );
+        
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+            
+            this.uiStageTiltZMfr = mic.ui.device.GetSetNumber(...
+                'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ...
+                'dWidthPadName', this.dWidthPadName, ...
+                'lShowLabels', false, ...
+                'cName', sprintf('%s-tilt-z-mfr', this.cName), ...
+                'config', uiConfig, ...
+                'cLabel', 'Tilt Z (MFR)' ...
+            );
+        end
+        
+        function initUiCommNewFocusModel8742(this)
             
             
             % Configure the mic.ui.common.Toggle instance
@@ -291,20 +306,20 @@ classdef M141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
+            this.uiCommNewFocusModel8742 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-m141', ...
-                'cLabel', 'Data Trans MeasurPoint' ...
+                'cName', sprintf('%s-newfocus-model-8742', this.cName), ...
+                'cLabel', 'NewFocus 8742' ...
             );
         
         end
         
-        function initUiCommSmarActMcsM141(this)
+        function initUiCommMicronixMmc103(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -312,28 +327,30 @@ classdef M141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiCommSmarActMcsM141 = mic.ui.device.GetSetLogical(...
+            this.uiCommMicronixMmc103 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'smaract-mcs-m141', ...
-                'cLabel', 'SmarAct MCS M141' ...
+                'cName', sprintf('%s-micronix-mmc-103', this.cName), ...
+                'cLabel', 'Micronix MMC 103' ...
             );
         
         end
         
+
         function init(this)
-            
             this.msg('init');
+            
+            this.initUiCommNewFocusModel8742();
+            this.initUiCommMicronixMmc103()
             this.initUiStageX();
-            % this.initUiStageTiltX();
-            % this.initUiStageTiltY();
-            this.initUiCurrent();
-            this.initUiCommSmarActMcsM141();
-            this.initUiCommDataTranslationMeasurPoint();
+            this.initUiStageTiltX();
+            this.initUiStageTiltYMf();
+            this.initUiStageTiltYMfr();
+            this.initUiStageTiltZMfr();
         end
         
         
