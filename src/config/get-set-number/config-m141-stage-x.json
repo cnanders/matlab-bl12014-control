@@ -2,20 +2,14 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "m",
+			"name": "mm",
 			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mm",
-			"slope": 1000,
-			"offset": 0,
-			"precision": 1
-		},
-		{
 			"name": "um",
-			"slope": 1000000,
+			"slope": 1000,
 			"offset": 0,
 			"precision": 1
 		}
@@ -27,16 +21,24 @@
             "raw": 1.5
         },
         {
-            "name": "mirror",
-            "raw": 3
+            "name": "m141",
+            "raw": 30
+		},
+		{
+            "name": "m141r",
+            "raw": 50
+		},
+		{
+            "name": "yag",
+            "raw": 55
         },
         {
             "name": "diode",
-            "raw": 5
+            "raw": 60
         }
     ],
-    "min": -10,
-    "max": 10
+    "min": -100,
+    "max": 100
 }	
 	
 	

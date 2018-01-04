@@ -6,7 +6,7 @@ classdef App < mic.Base
         dWidth          = 250
         
         cTcpipHostLC400M142 = '192.168.10.22'
-        cTcpipHostLC400MA = '192.168.20.30' % supposed to be .20 but that was not working
+        cTcpipHostLC400MA = '192.168.20.42' % supposed to be .20 but that was not working
 
         
     end
@@ -31,8 +31,8 @@ classdef App < mic.Base
         uiScan
         uiTempSensors
         uiFocusSensor
-        uiLSIControl
-        uiLSIAnalyze
+        uiLSIControl = {};
+        uiLSIAnalyze = {};
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -178,10 +178,11 @@ classdef App < mic.Base
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
-            try
+            try 
             this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
 %            this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             catch me
+                
                 % Don't have LSIControl installed
             end
             
@@ -336,8 +337,8 @@ classdef App < mic.Base
               stM141, ...
               stD141, ...
               stM142, ...
-              stD142, ...
               stScannerControlM142, ...
+              stD142, ...
               stM143, ...
               stVibrationIsolationSystem, ...
               stScannerControlMA, ...
