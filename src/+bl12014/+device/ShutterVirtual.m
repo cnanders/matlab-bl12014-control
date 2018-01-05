@@ -19,7 +19,9 @@ classdef ShutterVirtual < mic.interface.device.GetSetNumber
     methods
         
         function this = ShutterVirtual()
-            this.t = timer;
+            this.t = timer(...
+                'Name', 'Shutter Virtual' ...
+            );
             this.t.TimerFcn = @this.onTimer;
         end
 
@@ -50,14 +52,18 @@ classdef ShutterVirtual < mic.interface.device.GetSetNumber
         end 
 
         function stop(this)
-            stop(this.t);
+            
+            if strcmp(this.t.Running, 'on')
+            	stop(this.t);
+            end
             this.lOpen = false;
         end
 
        
         function delete(this)
 
-            stop(this.t)
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);
+            this.stop();
             delete(this.t)
 
         end

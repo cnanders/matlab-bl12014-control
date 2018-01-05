@@ -232,13 +232,55 @@ classdef Beamline < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
+            this.msg('delete', this.u8_MSG_TYPE_CLASS_INIT_DELETE);
                         
+            
+            %{
+            % Get properties:
+            ceProperties = properties(this);
+            
+            % Delete all props that are objects and handles
+            
+            for k = 1:length(ceProperties)
+                
+                this.msg(sprintf('delete checking prop %s ', ceProperties{k}), this.u8_MSG_TYPE_PROP_DELETE_CHECK);
+                
+                if  isobject(this.(ceProperties{k}))  | ... 
+                    ishandle(this.(ceProperties{k}))
+                    
+                    this.msg(sprintf('delete deleting %s ', ceProperties{k}), this.u8_MSG_TYPE_PROP_DELETED);
+                    delete(this.(ceProperties{k}));
+                else
+                    cMsg = [ ...
+                        sprintf('delete skipping %s', ceProperties{k}), ...
+                        sprintf('isobject = %d, ',  isobject(this.(ceProperties{k}))), ...
+                        sprintf('ishandle = %d', ishandle(this.(ceProperties{k}))) ...
+                    ];
+                    this.msg(cMsg, this.u8_MSG_TYPE_PROP_DELETE_SKIPPED);
+                end
+            end
+            %}
+            
+            
+            delete(this.deviceShutterVirtual)
+            delete(this.uiCommExitSlit)
+            delete(this.uiCommBL1201CorbaProxy)
+            delete(this.uiCommDctCorbaProxy)
+            delete(this.uiCommDataTranslationMeasurPoint)
+            delete(this.uiCommGalilD142)
+            delete(this.uiExitSlit)
+            delete(this.uiUndulatorGap)
+            delete(this.uiShutter)
+            delete(this.uiGratingTiltX)
+            delete(this.uiD142StageY)
+            delete(this.uiD142Current)
+        
             % Delete the figure
             
             if ishandle(this.hFigure)
                 delete(this.hFigure);
             end
+            
 
         end
         
@@ -822,6 +864,7 @@ classdef Beamline < mic.Base
          
         function onFigureCloseRequest(this, src, evt)
             
+            
             this.msg('onFigureCloseRequest()');
             if ~isvalid(this.hFigure)
                 return
@@ -829,6 +872,7 @@ classdef Beamline < mic.Base
             
             delete(this.hFigure);
             this.hFigure = [];
+            
         end
         
         function onFigureWindowMouseMotion(this, src, evt)
