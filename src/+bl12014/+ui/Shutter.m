@@ -6,9 +6,6 @@ classdef Shutter < mic.Base
         wagoSolenoid
         measPoint
         
-        % {< mic.interface.device.GetSetNumber}
-        device
-        
         % {bl12014.device.ShutterVirtual}
         deviceVirtual
         
@@ -27,6 +24,9 @@ classdef Shutter < mic.Base
         
         configStageY
         configMeasPointVolts
+        
+        % {< mic.interface.device.GetSetNumber}
+        device
         
     end
     
@@ -97,9 +97,10 @@ classdef Shutter < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-            
-            % Delete the figure
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);
+
+            delete(this.uiShutter) % uses deviceVirtrual so need to delete this first
+            delete(this.deviceVirtual)
             
             if ishandle(this.hFigure)
                 delete(this.hFigure);

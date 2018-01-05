@@ -62,10 +62,10 @@ classdef App < mic.Base
         commDataTranslationMeasurPoint
         
         % {npoint.LC400 1x1}
-        commNPointLC400Field
+        commNPointLC400M142
         
         % {npoint.LC400 1x1}
-        commNPointLC400Pupil
+        commNPointLC400MA
         
         % {cxro.met5.HeightSensor 1x1}
         commCxroHeightSensor
@@ -216,8 +216,8 @@ classdef App < mic.Base
             this.destroyAndDisconnectKeithley6482Wafer();
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
-            this.destroyAndDisconnectNPointLC400Field();
-            this.destroyAndDisconnectNPointLC400Pupil();
+            this.destroyAndDisconnectNPointLC400M142();
+            this.destroyAndDisconnectNPointLC400MA();
             this.destroyAndDisconnectSmarActMcsGoni();
             this.destroyAndDisconnectSmarActMcsM141();
             this.destroyAndDisconnectSmarActSmarPod();
@@ -306,13 +306,13 @@ classdef App < mic.Base
             l = ~isempty(this.commDctCorbaProxy);
         end
         
-        function l = getNPointLC400Field(this)
-            l = ~isempty(this.commNPointLC400Field);
+        function l = getNPointLC400M142(this)
+            l = ~isempty(this.commNPointLC400M142);
             
         end
         
-        function l = getNPointLC400Pupil(this)
-            l = ~isempty(this.commNPointLC400Pupil);
+        function l = getNPointLC400MA(this)
+            l = ~isempty(this.commNPointLC400MA);
         end
         
         function initAndConnectSmarActMcsM141(this)
@@ -1537,64 +1537,88 @@ classdef App < mic.Base
         end
         
         
-        function initAndConnectNPointLC400Pupil(this)
+        function initAndConnectNPointLC400MA(this)
             
-            if this.getNPointLC400Pupil()
+            if this.getNPointLC400MA()
                 return
             end
             
             try
-                this.commNPointLC400Pupil = npoint.LC400();
+                
+                this.commNPointLC400M142 = npoint.LC400(...
+                    'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
+                    'cTcpipHost', this.cTcpipLc400MA, ...
+                    'u16TcpipPort', 23 ...
+                );
+                
             catch mE
-                this.commNPointLC400Pupil = [];
+                this.commNPointLC400MA = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
-            % this.uiApp.uiPupilScanner
+            this.uiApp.uiScannerMA.uiNPointLC400.setDevice(this.commNPointLC400MA);
+            this.uiApp.uiScannerMA.uiNPointLC400.turnOn();
             
         end
         
-        function destroyAndDisconnectNPointLC400Pupil(this)
+        function destroyAndDisconnectNPointLC400MA(this)
             
-            if ~this.getNPointLC400Pupil()
+            if ~this.getNPointLC400MA()
                 return
             end
 
-            % this.uiApp.uiPupilScanner
-            
-            this.commNPointLC400Pupil.delete();
-            this.commNPointLC400Pupil = [];
+            this.uiApp.uiScannerMA.uiNPointLC400.turnOff();
+            this.uiApp.uiScannerMA.uiNPointLC400.setDevice([]);
+            this.commNPointLC400MA.delete();
+            this.commNPointLC400MA = [];
         end
         
-        function initAndConnectNPointLC400Field(this)
+        function initAndConnectNPointLC400M142(this)
             
 
-            if this.getNPointLC400Field()
+            if this.getNPointLC400M142()
                 return
             end
             
             try
-                this.commNPointLC400Field = npoint.LC400();
+                this.commNPointLC400M142 = npoint.LC400(...
+                    'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
+                    'cTcpipHost', this.cTcpipLc400M142, ...
+                    'u16TcpipPort', 23 ...
+                );
+                this.commNPointLC400M142.init();
+                this.commNPointLC400M142.connect();
+                
             catch mE
-                this.commNPointLC400Field = [];
+                this.commNPointLC400M142 = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                                
+                msgbox( ...
+                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400M142), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                );    
                 return;
             end
             
-            % this.uiApp.uiFieldScanner
+            this.uiApp.uiScannerM142.uiNPointLC400.setDevice(this.commNPointLC400M142);
+            this.uiApp.uiScannerM142.uiNPointLC400.turnOn();
+            
             
         end
         
-        function destroyAndDisconnectNPointLC400Field(this)
+        function destroyAndDisconnectNPointLC400M142(this)
             
-            if ~this.getNPointLC400Field()
+            if ~this.getNPointLC400M142()
                 return
             end
             
-            % this.uiApp.uiFieldScanner
-            this.commNPointLC400Field.delete();
-            this.commNPointLC400Field = [];
+            this.uiApp.uiScannerM142.uiNPointLC400.turnOff();
+            this.uiApp.uiScannerM142.uiNPointLC400.setDevice([]);
+            this.commNPointLC400M142.delete();
+            this.commNPointLC400M142 = [];
         end
         
         
@@ -1670,15 +1694,15 @@ classdef App < mic.Base
                 'cTooltip',  'M142 + M142R common tiltX, M142 tiltY, M142R tiltY' ...
             );
             
-            stNPointLC400Field = struct( ...
+            stNPointLC400M142 = struct( ...
                 'cLabel',   'nPoint LC.403 (Field)', ...
-                'fhOnClick',  @this.connectCommNPointLC400Field, ...
+                'fhOnClick',  @this.connectCommNPointLC400M142, ...
                 'cTooltip',  'M142 Field Scan' ...
             );
             
-            stNPointLC400Pupil = struct( ...
+            stNPointLC400MA = struct( ...
                 'cLabel',  'nPoint LC.403 (Pupil)', ...
-                'fhOnClick',  @this.connectCommNPointLC400Pupil, ...
+                'fhOnClick',  @this.connectCommNPointLC400MA, ...
                 'cTooltip',  'MA Pupil Scan' ...
             );
             
@@ -1719,8 +1743,8 @@ classdef App < mic.Base
                 stKeithley6482Reticle, ...
                 stKeithley6482Wafer, ...
                 stDeltaTauPowerPmac, ...
-                stNPointLC400Field, ...
-                stNPointLC400Pupil, ...
+                stNPointLC400M142, ...
+                stNPointLC400MA, ...
                 stNewFocusModel8742, ...
                 stMicronixMmc103, ...
                 stSmarActMcsM141, ...
@@ -1801,19 +1825,19 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectDataTranslationMeasurPoint ...
             );
         
-            %{
-            gslcCommNPointLC400Field = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNPointLC400Field, ...
-                'fhSetTrue', @this.initAndConnectNPointLC400Field, ...
-                'fhSetFalse', @this.destroyAndDisconnectNPointLC400Field ...
+            
+            gslcCommNPointLC400M142 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getNPointLC400M142, ...
+                'fhSetTrue', @this.initAndConnectNPointLC400M142, ...
+                'fhSetFalse', @this.destroyAndDisconnectNPointLC400M142 ...
             );
         
-            gslcCommNPointLC400Pupil = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNPointLC400Pupil, ...
-                'fhSetTrue', @this.initAndConnectNPointLC400Pupil, ...
-                'fhSetFalse', @this.destroyAndDisconnectNPointLC400Pupil ...
+            gslcCommNPointLC400MA = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getNPointLC400MA, ...
+                'fhSetTrue', @this.initAndConnectNPointLC400MA, ...
+                'fhSetFalse', @this.destroyAndDisconnectNPointLC400MA ...
             );
-            %}
+            
             
             gslcCommCxroHeightSensor = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getCxroHeightSensor, ...
@@ -1904,6 +1928,10 @@ classdef App < mic.Base
             this.uiApp.uiM142.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742);
             this.uiApp.uiM142.uiCommNewFocusModel8742.turnOn();
             
+            % ScannerM142
+            this.uiApp.uiScannerM142.uiCommNPointLC400.setDevice(gslcCommNPointLC400M142);
+            this.uiApp.uiScannerM142.uiCommNPointLC400.turnOn();
+            
             % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn()
             
@@ -1923,6 +1951,10 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiCommGalil.turnOn();
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
+            
+            % ScannerMA
+            this.uiApp.uiScannerMA.uiCommNPointLC400.setDevice(gslcCommNPointLC400MA);
+            this.uiApp.uiScannerMA.uiCommNPointLC400.turnOn();
             
             % Vibration Isolation System
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)
@@ -1950,8 +1982,7 @@ classdef App < mic.Base
             this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.turnOn();
             
-            %this.uiApp.uiScannerControlMA.ui
-            %this.uiApp.uiScannerControlM142.ui
+            
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui
             
@@ -1960,6 +1991,7 @@ classdef App < mic.Base
             % LSI
             %{
             CNA commenting 1/2/2018
+
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();

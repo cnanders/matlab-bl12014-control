@@ -13,6 +13,11 @@ TO DO
 - Added dependency on [MATLAB Pupil Fill Generator](https://github.com/cnanders/matlab-pupil-fill-generator)
 - Added dependency on [MATLAB Quasar](https://github.com/cnanders/matlab-quasar)
 - Refactored MA Scanner and M142 Scanner UI to use MATLAB nPoint LC400 UI and MATLAB Pupil Fill Generator UI to incorporate quasar illumination and make the separation of hardware instances and UI consistent with the rest of the application
+- Named all `timers` throughout codebase
+
+### `ui.Beamline`, `ui.Shutter`
+
+- Updated `delete()` methods so they properly delete all children that should be deleted
 
 # 1.0.0-alpha.24
 
