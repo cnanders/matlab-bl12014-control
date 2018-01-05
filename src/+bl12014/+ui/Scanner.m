@@ -1,4 +1,4 @@
-classdef M142 < mic.Base
+classdef Scanner < mic.Base
     
     properties
         
@@ -7,28 +7,13 @@ classdef M142 < mic.Base
         % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommNewFocusModel8742
+        uiCommNPointLC400
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommMicronixMmc103
+        % {npoint.ui.LC400 1x1}
+        uiNPointLC400
         
-        
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiStageX
-        
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiStageTiltX
-        
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiStageTiltYMf
-        
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiStageTiltYMfr
-        
-        % {mic.ui.device.GetSetNumber 1x1}
-        uiStageTiltZMfr
-        
-       
+        % {https://github.com/cnanders/matlab-pupil-fill-generator}
+        uiPupilFillGenerator
         
     end
     
@@ -42,19 +27,16 @@ classdef M142 < mic.Base
         dWidthName = 70
         dWidthPadName = 29
         
-        configStageY
-        configMeasPointVolts
-        
     end
     
     properties (SetAccess = private)
         
-        cName = 'm142'
+        cName = 'M142'
     end
     
     methods
         
-        function this = M142(varargin)
+        function this = Scanner(varargin)
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -83,7 +65,7 @@ classdef M142 < mic.Base
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...
                 'MenuBar', 'none', ...
-                'Name', 'M142 Control', ...
+                'Name', sprintf('%s Scanner Control', this.cName), ...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
                     (dScreenSize(4) - this.dHeight)/2 ...
@@ -103,30 +85,14 @@ classdef M142 < mic.Base
             dSep = 30;
             
            
-            this.uiCommMicronixMmc103.build(this.hFigure, dLeft, dTop);
+            this.uiCommNPointLC400.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommNewFocusModel8742.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
-            
+            this.uiPupilFillGenerator.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 600;
                          
-            this.uiStageX.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
-            
-            this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiStageTiltYMf.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiStageTiltYMfr.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiStageTiltZMfr.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            
-
+            this.uiNPointLC400.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + 300;
             
         end
         
@@ -343,7 +309,7 @@ classdef M142 < mic.Base
             this.uiCommNewFocusModel8742 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 180, ...
+                'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
@@ -364,12 +330,12 @@ classdef M142 < mic.Base
             this.uiCommMicronixMmc103 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 180, ...
+                'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-micronix-mmc-103', this.cName), ...
-                'cLabel', 'NPort 5150A -> Micronix MMC 103' ...
+                'cLabel', 'Micronix MMC 103' ...
             );
         
         end

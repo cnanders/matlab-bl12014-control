@@ -7,6 +7,17 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.25
+
+- Added dependency on [MATLAB nPoint LC400 UI](https://github.com/cnanders/matlab-npoint-lc400-ui)
+- Added dependency on [MATLAB Pupil Fill Generator](https://github.com/cnanders/matlab-pupil-fill-generator)
+- Added dependency on [MATLAB Quasar](https://github.com/cnanders/matlab-quasar)
+- Refactored MA Scanner and M142 Scanner UI to use MATLAB nPoint LC400 UI and MATLAB Pupil Fill Generator UI to incorporate quasar illumination and make the separation of hardware instances and UI consistent with the rest of the application
+
+# 1.0.0-alpha.24
+
+- Updated all of the `ui.*` classes to use `u8_MSG_TYPE_*` msg types in the constructor varargin assignment
+
 # 1.0.0-alpha.23
 
 ### App
