@@ -1958,6 +1958,8 @@ classdef App < mic.Base
             
             
             % LSI
+            %{
+            CNA commenting 1/2/2018
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
@@ -1965,6 +1967,7 @@ classdef App < mic.Base
             
             this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
             this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
+            %}
             
             %{
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
