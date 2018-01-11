@@ -1039,7 +1039,7 @@ classdef App < mic.Base
                 return;
             end
             
-            device = bl12014.device.GetSetNumberFromExitSlit(commExitSlit);
+            device = bl12014.device.GetSetNumberFromExitSlit(this.commExitSlit);
             this.uiApp.uiBeamline.uiExitSlit.setDevice(device);
             this.uiApp.uiBeamline.uiExitSlit.turnOn();
         
@@ -1984,24 +1984,20 @@ classdef App < mic.Base
             
             
             %this.uiApp.uiPrescriptionTool.ui          
-            %this.uiApp.uiScan.ui
-            
-            
+            %this.uiApp.uiScan.ui            
             
             % LSI
             %{
-            CNA commenting 1/2/2018
-
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
-            
             this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
             this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
             %}
             
             %{
+            CNA 2018.01.05 Should this be commented??
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
             %}

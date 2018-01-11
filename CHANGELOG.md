@@ -7,6 +7,12 @@ TO DO
 
 -->
 
+# 1.0.0-alpah.26
+
+- `device.GetSetNumberFromExitSlit` now uses `bl12pico_setSlitGapNoblock` instead of `bl12pico_setSlitGap`
+- Fixed bug in `App` in `initAndConnectExitSlit`
+- Updated `ui.Scanner` to use updated version of `github/cnanders/matlab-npoint-lc400-ui`
+
 # 1.0.0-alpha.25
 
 - Added dependency on [MATLAB nPoint LC400 UI](https://github.com/cnanders/matlab-npoint-lc400-ui)

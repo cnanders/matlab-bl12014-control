@@ -18,11 +18,11 @@
     "stores": [
         {
             "name": "out",
-            "raw": 1.5
+            "raw": 0
         },
         {
             "name": "m141",
-            "raw": 30
+            "raw": 14
 		},
 		{
             "name": "m141r",
@@ -30,14 +30,14 @@
 		},
 		{
             "name": "yag",
-            "raw": 55
+            "raw": 63
         },
         {
             "name": "diode",
-            "raw": 60
+            "raw": 82
         }
     ],
-    "min": -100,
+    "min": -10,
     "max": 100
 }	
 	
