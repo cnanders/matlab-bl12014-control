@@ -7,6 +7,13 @@ TO DO
 
 -->
 
+# 1.0.0-alpha.27
+
+- `device.GetSetNumberFromBL1201CorbaProxy` removed references to `this.stage` that were not deleted when class was originally created by saving other GetSetNumber* class as this one.
+- Adding config information to Beamline -> Grating Tilt X so it can display in nm and eV.
+- `ui.NetworkStatus` added `bl12control.als.lbl.gov`
+- `ui.NetworkStatus` figured out the correct ports to use for `bl12pico.als.lbl.gov` and `bl12control.als.lbl.gov` by using WireShark and watching the traffic that the Java comm classes create.
+
 # 1.0.0-alpah.26
 
 - `device.GetSetNumberFromExitSlit` now uses `bl12pico_setSlitGapNoblock` instead of `bl12pico_setSlitGap`

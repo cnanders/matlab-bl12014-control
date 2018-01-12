@@ -2,23 +2,24 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "sin(theta)",
-			"slope": 1,
-			"offset": 0,
-			"precision": 3
-		},
-		{
-			"name": "wav",
-			"slope": 1000,
-			"offset": 0,
+			"name": "wav (nm)",
+			"slope": "-6.4838747e-5",
+			"offset": 61862,
 			"precision": 3
 		},
 		{
 			"name": "eV",
-			"slope": 17.453292519943297,
+			"slope": "1239.84/-6.4838747e-5",
+			"offset": 61862,
+			"precision": 3,
+			"invert": "true"
+		},
+		{
+			"name": "counts sin(theta)",
+			"slope": 1,
 			"offset": 0,
 			"precision": 3
-		}
+		}		
 	],
     "step": 0.1
 }	

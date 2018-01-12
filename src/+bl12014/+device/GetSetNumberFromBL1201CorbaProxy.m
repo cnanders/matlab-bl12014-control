@@ -55,7 +55,6 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
             end
             
             
-            this.stage.setAxisPosition(this.u8Axis, dVal);
         end
         
         function l = isReady(this)
@@ -109,7 +108,6 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
                 
             end
             
-            this.stage.initializeAxis(this.u8Axis)
         end
         
         function l = isInitialized(this)

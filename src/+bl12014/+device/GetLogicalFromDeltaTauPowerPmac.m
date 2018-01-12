@@ -80,12 +80,12 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         
         %% MET50 error
         
-        cTYPE_MET50_ERROR_712_1_NOT_CONNECTED = 'met50-error-712-1-not-connected'
-        cTYPE_MET50_ERROR_712_1_READ_ERROR = 'met50-error-712-1-read-error'
-        cTYPE_MET50_ERROR_712_1_WRITE_ERROR = 'met50-error-712-1-write-error'
-        cTYPE_MET50_ERROR_712_2_NOT_CONNECTED = 'met50-error-712-2-not-connected'
-        cTYPE_MET50_ERROR_712_2_READ_ERROR = 'met50-error-712-2-read-error'
-        cTYPE_MET50_ERROR_712_2_WRITE_ERROR = 'met50-error-712-2-write-error'
+        cTYPE_MET50_ERROR_712_1_NOT_CONNECTED = 'met50-error-712-1-wsa-not-connected'
+        cTYPE_MET50_ERROR_712_1_READ_ERROR = 'met50-error-712-1-wsa-read-error'
+        cTYPE_MET50_ERROR_712_1_WRITE_ERROR = 'met50-error-712-1-wsa-write-error'
+        cTYPE_MET50_ERROR_712_2_NOT_CONNECTED = 'met50-error-712-2-rsa-not-connected'
+        cTYPE_MET50_ERROR_712_2_READ_ERROR = 'met50-error-712-2-rsa-read-error'
+        cTYPE_MET50_ERROR_712_2_WRITE_ERROR = 'met50-error-712-2-rsa-write-error'
         cTYPE_MET50_ERROR_C_APP_NOT_RUNNING = 'met50-error-c-app-not-running'
         cTYPE_MET50_ERROR_DMI_STATUS = 'met50-error-dmi-status'
         cTYPE_MET50_ERROR_HS_STATUS = 'met50-error-hs-status'
@@ -218,8 +218,8 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
         cTYPE_MOTOR_STATUS_MINUS_LIMIT_RETICLE_FINE_X = 'motor-status-minus-limit-reticle-fine-x'
         cTYPE_MOTOR_STATUS_MINUS_LIMIT_RETICLE_FINE_Y = 'motor-status-minus-limit-reticle-fine-y'
         
-        cTYPE_MOTOR_STATUS_PLUS_LIMIT_WAFER_COARSE_X = 'motor-status-plus-limit-wafer-coarse-x-wafer-coarse-x'
-        cTYPE_MOTOR_STATUS_PLUS_LIMIT_WAFER_COARSE_Y = 'motor-status-plus-limit-wafer-coarse-y-wafer-coarse-y'
+        cTYPE_MOTOR_STATUS_PLUS_LIMIT_WAFER_COARSE_X = 'motor-status-plus-limit-wafer-coarse-x'
+        cTYPE_MOTOR_STATUS_PLUS_LIMIT_WAFER_COARSE_Y = 'motor-status-plus-limit-wafer-coarse-y'
         cTYPE_MOTOR_STATUS_PLUS_LIMIT_RETICLE_COARSE_X = 'motor-status-plus-limit-reticle-coarse-x'
         cTYPE_MOTOR_STATUS_PLUS_LIMIT_RETICLE_COARSE_Y = 'motor-status-plus-limit-reticle-coarse-y'
         cTYPE_MOTOR_STATUS_PLUS_LIMIT_LSI_COARSE_X = 'motor-status-plus-limit-lsi-coarse-x'

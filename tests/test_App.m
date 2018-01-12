@@ -37,7 +37,7 @@ javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOC
 % MET5 devices built by Carl Cork
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 
-% 12.0.1 Shutter
+% Undulator, mono grating angle,  Shutter?
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
 
 % DCT stages, DCT eps,
