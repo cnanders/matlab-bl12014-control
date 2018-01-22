@@ -543,31 +543,48 @@ classdef App < mic.Base
             %}
             
             % M141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 32);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                32 ...
+            );
             this.uiApp.uiM141.uiCurrent.setDevice(device);
             this.uiApp.uiM141.uiCurrent.turnOn()
             
             % D141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 33);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                33 ...
+            );
             this.uiApp.uiD141.uiCurrent.setDevice(device);
             this.uiApp.uiD141.uiCurrent.turnOn()
             
             % D142 & Beamline (share a device)
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 34);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                34 ...
+            );
             this.uiApp.uiD142.uiCurrent.setDevice(device);
             this.uiApp.uiD142.uiCurrent.turnOn()
             this.uiApp.uiBeamline.uiD142Current.setDevice(device);
             this.uiApp.uiBeamline.uiD142Current.turnOn();
             
             % M143
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 35);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                35 ...
+            );
             this.uiApp.uiM143.uiCurrent.setDevice(device);
             this.uiApp.uiM143.uiCurrent.turnOn()
             
             % Vibration Isolation System
+                        
+            % Reticle Mod3 Cap Sensors
             
-            % Reticle
-            
+            %{
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
             deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
             deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
@@ -582,9 +599,11 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.turnOn();
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.turnOn();
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.turnOn();
+            %}
             
-            % Wafer
+            % Wafer PO Cap Sensors
             
+            %{
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
             deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
             deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
@@ -599,9 +618,12 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiPobCapSensors.uiCap2.turnOn();
             this.uiApp.uiWafer.uiPobCapSensors.uiCap3.turnOn();
             this.uiApp.uiWafer.uiPobCapSensors.uiCap4.turnOn();
+            %}
+            
             
             % TempSensors
             
+            %{
             deviceReticleCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 1);
             deviceReticleCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 2);
             deviceFiducialCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 3);
@@ -674,6 +696,7 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.turnOn();
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.turnOn();
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
+            %}
             
         end
         
@@ -1080,6 +1103,14 @@ classdef App < mic.Base
                 this.commKeithley6482Wafer = [];
                 cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', getReport(mE));
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+                msgbox( ...
+                    sprintf('Could not connect to Keithley 6482 (Wafer) at %s', this.cTcpipKeithley6482Wafer), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                ); 
+            
                 return
             end
             
@@ -1134,6 +1165,15 @@ classdef App < mic.Base
                 this.commKeithley6482Reticle = [];
                 cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+                
+                msgbox( ...
+                    sprintf('Could not connect to Keithley 6482 (Reticle) at %s', this.cTcpipKeithley6482Reticle), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                );    
+                
                 return
             end
                         
