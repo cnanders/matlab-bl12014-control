@@ -16,7 +16,7 @@ classdef App < mic.Base
         cTcpipGalilM143 = '192.168.10.25'
         
         % Endstation 1 Subnet
-        cTcpipLc400MA = '192.168.20.30' % Should be .20 but that was not working.
+        cTcpipLc400MA = '192.168.20.20'
         cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
@@ -1480,21 +1480,27 @@ classdef App < mic.Base
             end
             
             try
+ 
+
                 this.commMicronixMmc103 = micronix.MMC103(...
-                    'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
-                    'cTcpipHost', this.cTcpipMicronix ...
+                    'cConnection', micronix.MMC103.cCONNECTION_TCPCLIENT, ...
+                    'cTcpipHost', this.cTcpipMicronix, ...
+                    'u16TcpipPort', 4001 ...
                 );
-                % Create tcpip object
+                
+                
                 this.commMicronixMmc103.init();
-
-                % Open connection to tcpip/tcpclient/serial)
                 this.commMicronixMmc103.connect();
-
-                % Clear any bytes sitting in the output buffer
                 this.commMicronixMmc103.clearBytesAvailable()
 
                 % Get Firmware Version
-                % this.commMicronixMmc103.getFirmwareVersion(uint8(1))
+                cFirmware = this.commMicronixMmc103.getFirmwareVersion(uint8(1));
+                cMsg = sprintf(...
+                    'initAndConnectMicronixMmc103() firmware version: %s', ...
+                    cFirmware ...
+                );
+                fprintf([cMsg, '\n'])
+                this.msg(cMsg, this.u8_MSG_TYPE_INFO);
             
             catch mE
             
@@ -1545,15 +1551,25 @@ classdef App < mic.Base
             
             try
                 
-                this.commNPointLC400M142 = npoint.LC400(...
+                this.commNPointLC400MA = npoint.LC400(...
                     'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
                     'cTcpipHost', this.cTcpipLc400MA, ...
                     'u16TcpipPort', 23 ...
                 );
-                
+            
+                this.commNPointLC400MA.init();
+                this.commNPointLC400MA.connect();
+         
             catch mE
                 this.commNPointLC400MA = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                
+                msgbox( ...
+                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400MA), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                );    
                 return;
             end
             

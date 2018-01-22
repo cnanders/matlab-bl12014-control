@@ -17,16 +17,24 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "loadlock",
+            "name": "LSI",
+            "raw": -8
+        },
+        {
+            "name": "PFM",
+            "raw": -224
+        },
+        {
+            "name": "Dose Monitor",
+            "raw": -100
+        },
+        {
+            "name": "ESC",
+            "raw": 2
+        },
+        {
+            "name": "loadlock (FIXME)",
             "raw": 1.5
-        },
-        {
-            "name": "pfm",
-            "raw": 3
-        },
-        {
-            "name": "yag",
-            "raw": 5
         }
     ],
     "min": -450,
