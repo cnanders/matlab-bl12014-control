@@ -17,7 +17,7 @@ classdef App < mic.Base
         
         % Endstation 1 Subnet
         cTcpipLc400MA = '192.168.20.20'
-        cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
+        % cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
         cTcpipSmarActLSIGoni = '192.168.20.24'
@@ -698,7 +698,39 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
             %}
             
+            
+            device1 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                11 ...
+            );
+            device2 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                12 ...
+            );
+            device3 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                13 ...
+            );
+            device4 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                14 ...
+            );
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice(device1);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice(device2);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice(device3);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice(device4);
+            
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOn();
+            
         end
+        
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
             
@@ -808,7 +840,17 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.setDevice([]);
             
             
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOff();
             
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice([]);
+            
+                        
             this.commDataTranslationMeasurPoint.delete();
             this.commDataTranslationMeasurPoint = [];
         end
@@ -1481,6 +1523,9 @@ classdef App < mic.Base
             device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
             device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
             
+            
+            
+            
             this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice(device1);
             this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice(device2);
             this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice(device3);
@@ -1490,6 +1535,31 @@ classdef App < mic.Base
             this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOn();
             this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOn();
             this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOn();
+            
+            % FIXME
+            % Need to wire in the encoders
+            
+            %{
+            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 0);
+            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
+            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
+            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.setDevice(device1);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.setDevice(device2);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.setDevice(device3);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.setDevice(device4);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.turnOn();
+            %}
+            
+            
+            
+            
+            
             
         end
         
