@@ -2048,16 +2048,19 @@ classdef App < mic.Base
             
             % LSI
             
-            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
-%             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
-            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
-%             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
-            this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
-            this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
-            
-
+            try
+                this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
+    %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
+                this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
+    %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
+                this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
+                this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
+                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
+                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+            catch mE
+                disp('App.m could not connect uiLSIControl');
+            end
+        
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
