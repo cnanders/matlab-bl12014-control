@@ -15,28 +15,12 @@ purge
 
 clock = mic.Clock('Master');
 
-ui = bl12014.ui.WaferAxes();
-
-
-dWidth = 800;
-dHeight = 700;
-
-dScreenSize = get(0, 'ScreenSize');
-            
-h = figure( ...
-    'Position', [ ...
-        (dScreenSize(3) - dWidth)/2 ...
-        (dScreenSize(4) - dHeight)/2 ...
-        dWidth ...
-        dHeight ...
-     ] ...
+ui = bl12014.ui.LsiCoarseStage(...
+    'clock', clock ...
 );
+
+h = figure()
 ui.build(h, 10, 10);
-
-ui.addFakeExposures();
-ui.addFakeFemPreview();
-
-ui.setXLsi(100)
 
 
  

@@ -56,6 +56,7 @@ classdef WaferAxes < mic.Base
         uiZoomPanAxes
         hTrack
         hCarriage
+        hCarriageLsi
         hIllum
         hChiefRayCrosshair
         hWafer
@@ -160,6 +161,9 @@ classdef WaferAxes < mic.Base
             this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawCarriage(); 
             
+            this.hCarriageLsi = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCarriageLsi();
+            
             this.hWafer         = hggroup('Parent', this.hCarriage);
             this.drawWafer();
             
@@ -262,7 +266,25 @@ classdef WaferAxes < mic.Base
             this.deleteChildren(this.hOverlay);                
             
         end
-                
+        
+        function setXLsi(this, dX)
+            
+            if isnan(dX)
+                this.msg('setXLsi() dX === NaN', this.u8_MSG_TYPE_ERROR);
+                return;
+            end
+            
+            
+            try
+                hHgtf = makehgtform('translate', [dX 0 0]);
+                if ishandle(this.hCarriageLsi)
+                    set(this.hCarriageLsi, 'Matrix', hHgtf);
+                end
+            catch mE
+                this.msg(getReport(mE));
+            end
+        end
+        
         % @param {double 1x1} x position of the stage in meters
         % @param {double 1x1} y position of the stage in meters
         function setStagePosition(this, dX, dY)
@@ -452,6 +474,26 @@ classdef WaferAxes < mic.Base
             );
         
             uistack(hPatch, 'top');
+        end
+        
+        function drawCarriageLsi(this)
+            
+            dOffset = 500e-3;
+            dL = -200e-3 + dOffset;
+            dR = 200e-3 + dOffset;
+            dT = 200e-3;
+            dB = -200e-3;
+
+            
+            % Base square
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                [0.4, 0.4, 0.4], ...
+                'Parent', this.hCarriageLsi, ...
+                'EdgeColor', 'none');
+            
         end
         
         function drawCarriage(this)

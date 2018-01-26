@@ -28,7 +28,7 @@ classdef HeightSensor < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 600
+        dWidth = 350
         dHeight = 220
         
         cName = 'Height Sensors'
@@ -44,7 +44,7 @@ classdef HeightSensor < mic.Base
         dWidthName = 70
         dWidthUnit = 80
         dWidthVal = 75
-        dWidthPadUnit = 277
+        dWidthPadUnit = 10 % 277
         
         configStageY
         configMeasPointVolts
