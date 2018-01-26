@@ -891,7 +891,6 @@ classdef App < mic.Base
         function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
             
             % CA returning because this is crashing my reticle and wafer UI
-            return;
             
             
             import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
@@ -955,7 +954,7 @@ classdef App < mic.Base
             this.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
             this.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
             this.connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this.commDeltaTauPowerPmac, this.uiApp.uiPowerPmacStatus);
-%             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
+             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
             
         end
         
@@ -1034,7 +1033,7 @@ classdef App < mic.Base
             this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
             this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
             this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
-%             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
+            this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
                                     
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
@@ -2050,13 +2049,10 @@ classdef App < mic.Base
 %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
             this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
             this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
-            
-            
-            %{
-            CNA 2018.01.05 Should this be commented??
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
-            %}
+            
+
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
