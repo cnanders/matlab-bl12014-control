@@ -867,6 +867,7 @@ classdef App < mic.Base
             deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
             deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
             deviceFineZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            deviceCoarseXLsi = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
             
             % Set Devices
             ui.uiWorkingMode.ui.setDevice(deviceWorkingMode);
@@ -876,6 +877,7 @@ classdef App < mic.Base
             ui.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
             ui.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
             ui.uiFineStage.uiZ.setDevice(deviceFineZ);
+            ui.uiLsiCoarseStage.uiX.setDevice(deviceCoarseXLsi);
             
             % Turn on
             ui.uiWorkingMode.ui.turnOn();
@@ -884,6 +886,7 @@ classdef App < mic.Base
             ui.uiCoarseStage.uiZ.turnOn();
             ui.uiCoarseStage.uiTiltX.turnOn();
             ui.uiCoarseStage.uiTiltY.turnOn();
+            ui.uiLsiCoarseStage.uiX.turnOn();
             ui.uiFineStage.uiZ.turnOn();
             
         end
@@ -998,6 +1001,7 @@ classdef App < mic.Base
             ui.uiCoarseStage.uiZ.turnOff();
             ui.uiCoarseStage.uiTiltX.turnOff();
             ui.uiCoarseStage.uiTiltY.turnOff();
+            ui.uiLsiCoarseStage.uiX.turnOff();
             ui.uiFineStage.uiZ.turnOff();
                         
             ui.uiWorkingMode.ui.setDevice([]);
@@ -1006,6 +1010,7 @@ classdef App < mic.Base
             ui.uiCoarseStage.uiZ.setDevice([]);
             ui.uiCoarseStage.uiTiltX.setDevice([]);
             ui.uiCoarseStage.uiTiltY.setDevice([]);
+            ui.uiLsiCoarseStage.uiX.setDevice([]);
             ui.uiFineStage.uiZ.setDevice([]);
             
         end

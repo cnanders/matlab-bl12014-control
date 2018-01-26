@@ -3,8 +3,8 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1745 %1295
-        dHeight     = 1005
+        dWidth      = 1600 %1295
+        dHeight     = 845
         
     end
     
@@ -28,6 +28,7 @@ classdef Wafer < mic.Base
         
                 
         uiCoarseStage
+        uiLsiCoarseStage
         uiFineStage
         uiAxes
         uiDiode
@@ -138,16 +139,23 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
+            
+            
             this.uiFineStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
+            this.uiLsiCoarseStage.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
+            
+            dTopDiode = dTop
             this.uiDiode.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.uiPobCapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiPobCapSensors.dHeight + dPad;
             
-            this.uiHeightSensor.build(this.hFigure, dLeft, dTop);
+            
+            this.uiHeightSensor.build(this.hFigure, 375, dTopDiode);
             dTop = dTop + this.uiHeightSensor.dHeight + dPad;
             
             dLeft = 750;
@@ -187,6 +195,10 @@ classdef Wafer < mic.Base
             dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
             dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
             this.uiAxes.setStagePosition(dX, dY);
+            
+            
+            dXLsi = this.uiLsiCoarseStage.uiX.getValCal('mm') / 1000;
+            this.uiAxes.setXLsi(dXLsi);
                         
         end
         
@@ -204,6 +216,10 @@ classdef Wafer < mic.Base
             );
         
             this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
+                'clock', this.clock ...
+            );
+        
+            this.uiLsiCoarseStage = bl12014.ui.LsiCoarseStage(...
                 'clock', this.clock ...
             );
             this.uiFineStage = bl12014.ui.WaferFineStage(...

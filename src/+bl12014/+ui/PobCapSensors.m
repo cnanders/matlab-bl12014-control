@@ -20,7 +20,7 @@ classdef PobCapSensors < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 600
+        dWidth = 350
         dHeight = 160
         
         cName = 'POB Cap Sensors'
@@ -36,7 +36,7 @@ classdef PobCapSensors < mic.Base
         dWidthName = 70
         dWidthUnit = 80
         dWidthVal = 75
-        dWidthPadUnit = 280
+        dWidthPadUnit = 25 % 280
         
         configStageY
         configMeasPointVolts
