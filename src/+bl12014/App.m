@@ -188,7 +188,7 @@ classdef App < mic.Base
                 this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
            catch mE
                 this.jMet5Instruments = []; 
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
            end
             
         end
@@ -327,7 +327,7 @@ classdef App < mic.Base
                 this.commSmarActMcsM141.connect()
             catch mE
                 
-                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 this.commSmarActMcsM141 = [];
                 return
@@ -386,7 +386,7 @@ classdef App < mic.Base
                 
             catch mE
                 this.commSmarActRotary = [];
-                cMsg = sprintf('initAndConnectSmarActRotary %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActRotary %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -424,7 +424,7 @@ classdef App < mic.Base
                 this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer();
             catch mE
                 this.commSmarActMcsGoni = [];
-                cMsg = sprintf('initAndConnectSmarActMcsGoni() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActMcsGoni() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
                 return
@@ -453,7 +453,7 @@ classdef App < mic.Base
                 this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod();
             catch mE
                 this.commSmarActSmarPod = [];
-                cMsg = sprintf('initAndConnectSmarSmarPod() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarSmarPod() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -493,7 +493,7 @@ classdef App < mic.Base
                 end
             catch mE
                 this.commPIMTECamera = [];
-                cMsg = sprintf('initAndConnectPIMTECamera() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectPIMTECamera() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -530,8 +530,10 @@ classdef App < mic.Base
                 
             catch mE
                 this.commDataTranslationMeasurPoint = [];
-                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
                 return
             end
             
@@ -991,8 +993,12 @@ classdef App < mic.Base
                 this.commDeltaTauPowerPmac.init();
             catch mE
                 this.commDeltaTauPowerPmac = [];
-                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', getReport(mE));
+                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
+                
+                
                 return
             end
             
@@ -1095,8 +1101,10 @@ classdef App < mic.Base
                 [this.commExitSlit, e] = bl12pico_attach();
             catch mE
                 this.commExitSlit = [];
-                cMsg = sprintf('initAndConnectExitSlit() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectExitSlit() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
                 return;
             end
             
@@ -1144,15 +1152,10 @@ classdef App < mic.Base
                 % this.commKeithley6482Wafer.identity()
             catch mE
                 this.commKeithley6482Wafer = [];
-                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
-                msgbox( ...
-                    sprintf('Could not connect to Keithley 6482 (Wafer) at %s', this.cTcpipKeithley6482Wafer), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                ); 
+               
             
                 return
             end
@@ -1206,16 +1209,11 @@ classdef App < mic.Base
                 
             catch mE
                 this.commKeithley6482Reticle = [];
-                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
                 
-                msgbox( ...
-                    sprintf('Could not connect to Keithley 6482 (Reticle) at %s', this.cTcpipKeithley6482Reticle), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                   
                 
                 return
             end
@@ -1255,7 +1253,9 @@ classdef App < mic.Base
                 this.commCxroHeightSensor = cxro.met5.HeightSensor();
             catch mE
                 this.commCxroHeightSensor = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
+                
                 return
             end
             
@@ -1285,7 +1285,8 @@ classdef App < mic.Base
                 this.commDctCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
             catch mE
                 this.commDctCorbaProxy = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
                 return;
             end
             
@@ -1324,9 +1325,10 @@ classdef App < mic.Base
             
             try
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
+                this.commBL1201CorbaProxy.serverStatus();
             catch mE
                 this.commBL1201CorbaProxy = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1381,7 +1383,7 @@ classdef App < mic.Base
                 this.commNewFocusModel8742.connect();
             catch mE
                 this.commNewFocusModel8742 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1439,7 +1441,8 @@ classdef App < mic.Base
                 this.commGalilD142.connect();
             catch mE
                 this.commGalilD142 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
             end
             
             device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 0);
@@ -1479,7 +1482,7 @@ classdef App < mic.Base
                 this.commGalilM143.connect();
             catch mE
                 this.commGalilM143 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
             device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 0);
@@ -1514,7 +1517,7 @@ classdef App < mic.Base
                 this.commGalilVIS.connect();
             catch mE
                 this.commGalilVIS = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
             
@@ -1616,7 +1619,7 @@ classdef App < mic.Base
             catch mE
             
                 this.commMicronixMmc103 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
                         
@@ -1673,14 +1676,8 @@ classdef App < mic.Base
          
             catch mE
                 this.commNPointLC400MA = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
-                
-                msgbox( ...
-                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400MA), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+               
                 return;
             end
             
@@ -1719,14 +1716,9 @@ classdef App < mic.Base
                 
             catch mE
                 this.commNPointLC400M142 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                                 
-                msgbox( ...
-                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400M142), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                 
                 return;
             end
             
