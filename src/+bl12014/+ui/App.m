@@ -6,7 +6,7 @@ classdef App < mic.Base
         dWidth          = 250
         
         cTcpipHostLC400M142 = '192.168.10.22'
-        cTcpipHostLC400MA = '192.168.20.30' % supposed to be .20 but that was not working
+        cTcpipHostLC400MA = '192.168.20.42' % supposed to be .20 but that was not working
 
         
     end
@@ -25,14 +25,14 @@ classdef App < mic.Base
         uiReticle
         uiWafer
         uiPowerPmacStatus
-        uiScannerControlMA
-        uiScannerControlM142
         uiPrescriptionTool           
         uiScan
         uiTempSensors
         uiFocusSensor
         uiLSIControl = {};
         uiLSIAnalyze = {};
+        uiScannerM142
+        uiScannerMA
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -80,9 +80,9 @@ classdef App < mic.Base
             );
         
             for k = 1 : 2: length(varargin)
-                % this.msg(sprintf('passed in %s', varargin{k}));
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
-                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
@@ -127,8 +127,8 @@ classdef App < mic.Base
             delete(this.uiVibrationIsolationSystem)
             delete(this.uiReticle)
             delete(this.uiWafer)
-            delete(this.uiScannerControlMA)
-            delete(this.uiScannerControlM142)
+            delete(this.uiScannerMA)
+            delete(this.uiScannerM142)
             delete(this.uiPrescriptionTool)           
             delete(this.uiScan) 
             delete(this.uiTempSensors)
@@ -175,6 +175,14 @@ classdef App < mic.Base
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
+            this.uiScannerM142 = bl12014.ui.Scanner(...
+                'clock', this.clock, ...
+                'cName', 'M142 Scanner' ...
+            );
+            this.uiScannerMA = bl12014.ui.Scanner(...
+                'clock', this.clock, ...
+                'cName', 'MA Scanner' ...
+            );
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
@@ -186,17 +194,19 @@ classdef App < mic.Base
                 % Don't have LSIControl installed
             end
             
-            this.uiScannerControlMA = ScannerControl(...
+            %{
+            this.uiScannerMA = ScannerControl(...
                 'clock', this.clock, ...
                 'cDevice', 'MA', ...
                 'cLC400TcpipHost', this.cTcpipHostLC400MA ...
             );
-            this.uiScannerControlM142 = ScannerControl(...
+            this.uiScannerM142 = ScannerControl(...
                 'clock', this.clock, ...
                 'cDevice', 'M142', ...
                 'dThetaX', 43.862, ... % Tilt about x-axis
                 'cLC400TcpipHost', this.cTcpipHostLC400M142 ...
             );
+            %}
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ...
@@ -295,14 +305,14 @@ classdef App < mic.Base
                 'cTooltip',  'Temp Sensors (Mod3, POB)' ...
             );
                         
-            stScannerControlMA = struct(...
+            stScannerMA = struct(...
             'cLabel',  'MA Scanner', ...
-            'fhOnClick',  @() this.uiScannerControlMA.build(), ...
+            'fhOnClick',  @() this.uiScannerMA.build(), ...
             'cTooltip',  'Beamline');
             
-            stScannerControlM142 = struct(...
+            stScannerM142 = struct(...
             'cLabel',  'M142 Scanner', ...
-            'fhOnClick',  @() this.uiScannerControlM142.build(), ...
+            'fhOnClick',  @() this.uiScannerM142.build(), ...
             'cTooltip',  'Beamline');
             
             
@@ -337,11 +347,11 @@ classdef App < mic.Base
               stM141, ...
               stD141, ...
               stM142, ...
+              stScannerM142, ...
               stD142, ...
-              stScannerControlM142, ...
               stM143, ...
               stVibrationIsolationSystem, ...
-              stScannerControlMA, ...
+              stScannerMA, ...
               stReticle, ...
               stWafer, ...
               stPowerPmacStatus, ...
@@ -393,10 +403,9 @@ classdef App < mic.Base
         function st = save(this)
              st = struct();
              st.uiPrescriptionTool = this.uiPrescriptionTool.save();
-             st.uiScannerControlMA = this.uiScannerControlMA.save();
-             st.uiScannerControlM142 = this.uiScannerControlM142.save();
+             st.uiScannerMA = this.uiScannerMA.save();
+             st.uiScannerM142 = this.uiScannerM142.save();
              st.uiScan = this.uiScan.save();
-             
         end
         
         function load(this, st)
@@ -404,12 +413,14 @@ classdef App < mic.Base
             if isfield(st, 'uiPrescriptionTool') 
                 this.uiPrescriptionTool.load(st.uiPrescriptionTool);
             end
-            if isfield(st, 'uiScannerControlMA')
-                this.uiScannerControlMA.load(st.uiScannerControlMA);
+            
+            if isfield(st, 'uiScannerMA')
+                this.uiScannerMA.load(st.uiScannerMA);
             end
-            if isfield(st, 'uiScannerControlM142')
-                this.uiScannerControlM142.load(st.uiScannerControlM142);
+            if isfield(st, 'uiScannerM142')
+                this.uiScannerM142.load(st.uiScannerM142);
             end
+            
             if isfield(st, 'uiScan')
                 this.uiScan.load(st.uiScan)
             end

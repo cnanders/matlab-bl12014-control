@@ -48,9 +48,9 @@ classdef ReticleAxes < mic.Base
         function this = ReticleAxes(varargin)
             
             for k = 1 : 2: length(varargin)
-                % this.msg(sprintf('passed in %s', varargin{k}));
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
-                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
@@ -346,8 +346,8 @@ classdef ReticleAxes < mic.Base
             this.msg(sprintf('ReticleControl.onFieldClick() col: %1d, row: %1d', col, row));
            
             stData = struct();
-            stData.dX = this.dFieldX(col);
-            stData.dY = this.dFieldY(row);
+            stData.dX = this.dFieldX(col) * 1000;
+            stData.dY = this.dFieldY(row) * 1000;
             
             e = mic.EventWithData(stData);
             notify(this, 'eClickField', e);                     

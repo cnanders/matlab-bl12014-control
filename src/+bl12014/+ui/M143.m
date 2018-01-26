@@ -23,7 +23,7 @@ classdef M143 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 580
+        dWidth = 610
         dHeight = 170
         hFigure
         
@@ -42,9 +42,9 @@ classdef M143 < mic.Base
         
         function this = M143(varargin)
             for k = 1 : 2: length(varargin)
-                % this.msg(sprintf('passed in %s', varargin{k}));
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
-                    this.msg(sprintf(' settting %s', varargin{k}), 3);
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
@@ -156,6 +156,7 @@ classdef M143 < mic.Base
                 'clock', this.clock, ...
                 'cName', sprintf('%s-y', this.cName), ...
                 'config', uiConfig, ...
+                'lShowInitButton', true, ...
                 'cLabel', 'Y' ...
             );
         end

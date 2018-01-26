@@ -26,8 +26,8 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 ### [MATLAB Keithley 6482](https://github.com/cnanders/matlab-keithley-6482)
 - vendor/github/cnanders/matlab-keithley-6482
 
-### [MATLAB Scanner Control nPoint](https://github.com/cnanders/matlab-scanner-control-npoint)
-- vendor/github/cnanders/matlab-scanner-control-npoint
+### ~~[MATLAB Scanner Control nPoint](https://github.com/cnanders/matlab-scanner-control-npoint)~~
+- ~~vendor/github/cnanders/matlab-scanner-control-npoint~~ [Removed 2018.01.04]
 
 ### [MATLAB Micronix MMC-103](https://github.com/cnanders/matlab-micronix-mmc-103)
 - vendor/github/cnanders/matlab-micronix-mmc-103
@@ -40,6 +40,8 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 ### [MATLAB nPoint LC400](https://github.com/cnanders/matlab-npoint-lc400)
 - vendor/github/cnanders/matlab-npoint-lc400
+
+
 
 ### [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 - vendor/fileexchange/jsonlab-1.2
@@ -62,29 +64,19 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 - vendor/cnanderson/
 - Java utility to check if a network device (host + port) is reachable
 
+### [MATLAB nPoint LC400 UI](https://github.com/cnanders/matlab-npoint-lc400-ui) 2018.01.04 
+- vendor/github/cnanders/matlab-npoint-lc400-ui
+
+### [MATLAB Pupil Fill Generator](https://github.com/cnanders/matlab-pupil-fill-generator) 2018.01.04
+- vendor/github/cnanders/matlab-pupil-fill-generator
+
+### [MATLAB Quasar](https://github.com/cnanders/matlab-quasar) 2018.01.04
+- vendor/github/cnanders/matlab-quasar
+
 <a name="project-structure"></a>
 # Project Structure
 
-- project/
-	- vendor/
-		- github/
-			- cnanders/
-                - matlab-scanner-control-npoint/ **(dependency)**
-                - matlab-instrument-control/ **(dependency)**
-                - matlab-npoint-lc400/ **(dependency)**	
-				- matlab-ieee/ **(dependency of matlab-npoint-lc400)**
-				- matlab-hex/ **(dependency of matlab-ieee)**
-	- src/
-        - +bl12014/
-            - +ui/
-            - +interface/
-            - +mic-device/
-    - tests/
-    - docs/
-    - README.md
-    - CHANGELOG.md
-
-
+See [MATLAB App Structure](https://github.com/cnanders/matlab-app-structure)
 
 # STOP READING HERE.  RANDOM BRAINSTORMING BELOW
 

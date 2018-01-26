@@ -2,45 +2,33 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "m",
+			"name": "mm",
 			"slope": 1,
 			"offset": 0,
 			"precision": 3
-		},
-		{
-			"name": "mm",
-			"slope": 1000,
-			"offset": 0,
-			"precision": 1
-		},
-		{
-			"name": "um",
-			"slope": 1000000,
-			"offset": 0,
-			"precision": 1
 		}
 	],
-    "step": 0.1,
+    "step": 0.5,
     "stores": [
-        {
-            "name": "out",
-            "raw": 1.5
+         {
+            "name": "out (0)",
+            "raw": 0
         },
         {
-            "name": "mirror",
-            "raw": 3
+            "name": "DCT mirror (27)",
+            "raw": 27
         },
         {
-            "name": "diode",
-            "raw": 5
+            "name": "yag (70)",
+            "raw": 70
         },
         {
-            "name": "yag",
-            "raw": 7
+            "name": "diode (85)",
+            "raw": 85
         }
     ],
-    "min": -10,
-    "max": 10
+    "min": 0,
+    "max": 95
 }	
 	
 	
