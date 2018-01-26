@@ -6,6 +6,9 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+# 1.0.0-alpha.24
+- Adding methods for LSICamera
+
 
 # 1.0.0-alpha.29
 
