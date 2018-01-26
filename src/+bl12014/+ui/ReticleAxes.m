@@ -30,6 +30,9 @@ classdef ReticleAxes < mic.Base
         dFieldX
         dFieldY
         
+        dXReticleCenter = 20e-3
+        dYReticleCenter = 20e-3
+        
     end
     
         
@@ -185,10 +188,10 @@ classdef ReticleAxes < mic.Base
         
         function drawIllum(this)
                         
-            dL = -1000e-6/2;
-            dR = 1000e-6/2;
-            dT = 150e-6/2;
-            dB = -150e-6/2;
+            dL = -1000e-6/2 + this.dXReticleCenter;
+            dR = 1000e-6/2 + this.dXReticleCenter;
+            dT = 150e-6/2 + this.dYReticleCenter;
+            dB = -150e-6/2 + this.dYReticleCenter;
 
             hPatch = patch( ...
                 [dL dL dR dR], ...
@@ -267,10 +270,10 @@ classdef ReticleAxes < mic.Base
         
         function drawReticle(this)
                         
-            dL = -3*25.4e-3;
-            dR = 3*25.4e-3;
-            dT = 3*25.4e-3;
-            dB = -3*25.4e-3;
+            dL = -3*25.4e-3 + this.dXReticleCenter;
+            dR = 3*25.4e-3 + this.dXReticleCenter;
+            dT = 3*25.4e-3 + this.dYReticleCenter;
+            dB = -3*25.4e-3 + this.dYReticleCenter;
 
             patch( ...
                 [dL dL dR dR], ...
@@ -287,8 +290,8 @@ classdef ReticleAxes < mic.Base
             dX = 2.5e-3;           
             dY = 2.5e-3;
             
-            this.dFieldX = -9*dX:dX:9*dX;        % center
-            this.dFieldY = 9*dY:-dY:-9*dY;        % center
+            this.dFieldX = (-9*dX : dX : 9*dX) + this.dXReticleCenter;        % center
+            this.dFieldY = (9*dY : -dY : -9*dY) + this.dYReticleCenter;        % center
             
             % Field is 1 mm x 150 um
             

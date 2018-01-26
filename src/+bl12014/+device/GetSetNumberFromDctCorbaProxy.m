@@ -17,7 +17,8 @@ classdef GetSetNumberFromDctCorbaProxy < mic.interface.device.GetSetNumber
         % {char 1xm} the device to control
         cDevice
         
-        
+        % {double 1xm} storage for most recent val passed to set()
+        dValSet
     end
     
     methods
@@ -30,7 +31,11 @@ classdef GetSetNumberFromDctCorbaProxy < mic.interface.device.GetSetNumber
         function d = get(this)
             switch (this.cDevice)
                 case this.cDEVICE_SHUTTER
-                    d = this.comm.IsOpen();
+                   if this.comm.IsOpen()
+                       d = this.dValSet;
+                   else
+                       d = 0;
+                   end
                 
             end
             
@@ -40,12 +45,11 @@ classdef GetSetNumberFromDctCorbaProxy < mic.interface.device.GetSetNumber
             
             switch (this.cDevice)
                 case this.cDEVICE_SHUTTER
-                    this.comm.TriggerN(dVal)
+                    this.dValSet = dVal;
+                    this.comm.TriggerN(dVal);
                 
             end
             
-            
-            this.stage.setAxisPosition(this.u8Axis, dVal);
         end
         
         function l = isReady(this)
@@ -62,7 +66,7 @@ classdef GetSetNumberFromDctCorbaProxy < mic.interface.device.GetSetNumber
             
             switch (this.cDevice)
                 case this.cDEVICE_SHUTTER
-                    this.comm.Abort()
+                    this.comm.Abort();
             end
             
         end
@@ -73,8 +77,6 @@ classdef GetSetNumberFromDctCorbaProxy < mic.interface.device.GetSetNumber
                 case this.cDEVICE_SHUTTER
                     % do nothing                
             end
-            
-            this.stage.initializeAxis(this.u8Axis)
         end
         
         function l = isInitialized(this)

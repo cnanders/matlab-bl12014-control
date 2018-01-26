@@ -17,16 +17,20 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "loadlock",
-            "raw": 1.5
+            "name": "center",
+            "raw": -3.39
         },
         {
-            "name": "pfm",
-            "raw": 3
+            "name": "loadlock",
+            "raw": 15.2
         },
         {
             "name": "yag",
-            "raw": 5
+            "raw": 0.9
+        },
+        {
+            "name": "diode",
+            "raw": -6.1
         }
     ],
     "min": -25,

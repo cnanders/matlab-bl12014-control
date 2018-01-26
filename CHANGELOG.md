@@ -6,6 +6,19 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+# 1.0.0-alpha.24
+- Adding methods for LSICamera
+
+
+# 1.0.0-alpha.29
+
+- `device.GetSetNumberFromMicronixMMC103` now only starts the time in `initialize()` if the timer is not already running.  For repeat calls
+
+# 1.0.0-alpha.28
+
+- Added bl12dev.als.lbl.gov:8451 to `ui.NetworkCommunication`
+- In `device.GetSetNumberFromDCTCorbaProxy`, removed references to `this.stage` that were not deleted when class was originally created by saving other GetSetNumber* class as this one.
+- `device.GetSetNumberFromDCTCorbaProxy.get()` now shows the last value passed to `set()` if the shutter is open.
 
 # 1.0.0-alpha.27
 
