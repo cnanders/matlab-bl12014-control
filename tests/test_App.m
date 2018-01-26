@@ -37,10 +37,10 @@ javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOC
 % MET5 devices built by Carl Cork
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
 
-% Undulator, mono grating angle,  Shutter?
+% BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
 
-% DCT stages, DCT eps,
+% BL 12.0.1 Shutter
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'));
 
 % Java SSH2 Communication With DeltaTau Power PMAC Motion Controller (uses JSch)

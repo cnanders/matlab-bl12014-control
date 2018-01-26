@@ -17,17 +17,22 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "Center",
-            "raw": 40
+            "name": "center",
+            "raw": 42.17
         },
         {
-            "name": "loadlock (FIXME)",
-            "raw": 1.5
+            "name": "loadlock",
+            "raw": 335
         },
         {
-            "name": "yag (FIXME)",
-            "raw": 5
+            "name": "yag",
+            "raw": 142
+        },
+        {
+            "name": "diode",
+            "raw": 139
         }
+
     ],
     "min": -20,
     "max": 350

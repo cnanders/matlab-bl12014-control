@@ -188,7 +188,7 @@ classdef App < mic.Base
             % because not guaranteed to have this repo:
             try 
             this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
-%            this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
+            this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             catch me
                 error(lasterr);
                 % Don't have LSIControl installed
@@ -335,7 +335,7 @@ classdef App < mic.Base
         
             stLSIAnalyze =  struct(...
                 'cLabel',  'LSI Analysis GUI', ...
-                'fhOnClick',  @() this.uiLSIAnalyze.build(), ...
+                'fhOnClick',  @() this.uiLSIAnalyze.build(0, -200), ...
                 'cTooltip',  'LSI Analysis GUI'...
             );
         
