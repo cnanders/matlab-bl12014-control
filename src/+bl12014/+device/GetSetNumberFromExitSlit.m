@@ -23,7 +23,9 @@ classdef GetSetNumberFromExitSlit < mic.interface.device.GetSetNumber
         end
         
         function set(this, dVal)
-            [e,estr] = bl12pico_setSlitGap(this.bl12pico, dVal);
+            fprintf('bl12014.device.GetSetNumberFromExitSlit.set(%1.3f)\n', dVal);
+            [e,estr] = bl12pico_setSlitGapNoblock(this.bl12pico, dVal);
+            
         end
         
         function l = isReady(this)
@@ -39,7 +41,7 @@ classdef GetSetNumberFromExitSlit < mic.interface.device.GetSetNumber
         end
         
         function l = isInitialized(this)
-            l = true
+            l = true;
         end
         
     end

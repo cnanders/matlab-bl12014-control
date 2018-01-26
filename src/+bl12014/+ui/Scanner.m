@@ -22,7 +22,7 @@ classdef Scanner < mic.Base
         % {mic.Clock 1x1} must be provided
         clock
         dWidth = 1250
-        dHeight = 985
+        dHeight = 790
         hFigure
         
         dWidthName = 70
@@ -83,11 +83,11 @@ classdef Scanner < mic.Base
 
             dTop = 10;
             dLeft = 10;
-            dSep = 30;
+            dSep = 10;
             
            
             this.uiCommNPointLC400.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
+            dTop = dTop + 24 + dSep;
             
             this.uiPupilFillGenerator.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiPupilFillGenerator.dHeight + 10;

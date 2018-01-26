@@ -17,15 +17,15 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "loadlock",
+            "name": "Center",
+            "raw": 40
+        },
+        {
+            "name": "loadlock (FIXME)",
             "raw": 1.5
         },
         {
-            "name": "pfm",
-            "raw": 3
-        },
-        {
-            "name": "yag",
+            "name": "yag (FIXME)",
             "raw": 5
         }
     ],

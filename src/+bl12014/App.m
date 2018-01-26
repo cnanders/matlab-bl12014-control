@@ -16,7 +16,7 @@ classdef App < mic.Base
         cTcpipGalilM143 = '192.168.10.25'
         
         % Endstation 1 Subnet
-        cTcpipLc400MA = '192.168.20.30' % Should be .20 but that was not working.
+        cTcpipLc400MA = '192.168.20.20'
         cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
@@ -543,31 +543,48 @@ classdef App < mic.Base
             %}
             
             % M141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 32);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                32 ...
+            );
             this.uiApp.uiM141.uiCurrent.setDevice(device);
             this.uiApp.uiM141.uiCurrent.turnOn()
             
             % D141
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 33);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                33 ...
+            );
             this.uiApp.uiD141.uiCurrent.setDevice(device);
             this.uiApp.uiD141.uiCurrent.turnOn()
             
             % D142 & Beamline (share a device)
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 34);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                34 ...
+            );
             this.uiApp.uiD142.uiCurrent.setDevice(device);
             this.uiApp.uiD142.uiCurrent.turnOn()
             this.uiApp.uiBeamline.uiD142Current.setDevice(device);
             this.uiApp.uiBeamline.uiD142Current.turnOn();
             
             % M143
-            device = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 35);
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                35 ...
+            );
             this.uiApp.uiM143.uiCurrent.setDevice(device);
             this.uiApp.uiM143.uiCurrent.turnOn()
             
             % Vibration Isolation System
+                        
+            % Reticle Mod3 Cap Sensors
             
-            % Reticle
-            
+            %{
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
             deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
             deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
@@ -582,9 +599,11 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.turnOn();
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.turnOn();
             this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.turnOn();
+            %}
             
-            % Wafer
+            % Wafer PO Cap Sensors
             
+            %{
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
             deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
             deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
@@ -599,9 +618,12 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiPobCapSensors.uiCap2.turnOn();
             this.uiApp.uiWafer.uiPobCapSensors.uiCap3.turnOn();
             this.uiApp.uiWafer.uiPobCapSensors.uiCap4.turnOn();
+            %}
+            
             
             % TempSensors
             
+            %{
             deviceReticleCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 1);
             deviceReticleCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 2);
             deviceFiducialCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 3);
@@ -674,6 +696,7 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.turnOn();
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.turnOn();
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
+            %}
             
         end
         
@@ -1039,7 +1062,7 @@ classdef App < mic.Base
                 return;
             end
             
-            device = bl12014.device.GetSetNumberFromExitSlit(commExitSlit);
+            device = bl12014.device.GetSetNumberFromExitSlit(this.commExitSlit);
             this.uiApp.uiBeamline.uiExitSlit.setDevice(device);
             this.uiApp.uiBeamline.uiExitSlit.turnOn();
         
@@ -1080,6 +1103,14 @@ classdef App < mic.Base
                 this.commKeithley6482Wafer = [];
                 cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', getReport(mE));
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+                msgbox( ...
+                    sprintf('Could not connect to Keithley 6482 (Wafer) at %s', this.cTcpipKeithley6482Wafer), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                ); 
+            
                 return
             end
             
@@ -1134,6 +1165,15 @@ classdef App < mic.Base
                 this.commKeithley6482Reticle = [];
                 cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+                
+                msgbox( ...
+                    sprintf('Could not connect to Keithley 6482 (Reticle) at %s', this.cTcpipKeithley6482Reticle), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                );    
+                
                 return
             end
                         
@@ -1480,21 +1520,27 @@ classdef App < mic.Base
             end
             
             try
+ 
+
                 this.commMicronixMmc103 = micronix.MMC103(...
-                    'cConnection', micronix.MMC103.cCONNECTION_TCPIP, ...
-                    'cTcpipHost', this.cTcpipMicronix ...
+                    'cConnection', micronix.MMC103.cCONNECTION_TCPCLIENT, ...
+                    'cTcpipHost', this.cTcpipMicronix, ...
+                    'u16TcpipPort', 4001 ...
                 );
-                % Create tcpip object
+                
+                
                 this.commMicronixMmc103.init();
-
-                % Open connection to tcpip/tcpclient/serial)
                 this.commMicronixMmc103.connect();
-
-                % Clear any bytes sitting in the output buffer
                 this.commMicronixMmc103.clearBytesAvailable()
 
                 % Get Firmware Version
-                % this.commMicronixMmc103.getFirmwareVersion(uint8(1))
+                cFirmware = this.commMicronixMmc103.getFirmwareVersion(uint8(1));
+                cMsg = sprintf(...
+                    'initAndConnectMicronixMmc103() firmware version: %s', ...
+                    cFirmware ...
+                );
+                fprintf([cMsg, '\n'])
+                this.msg(cMsg, this.u8_MSG_TYPE_INFO);
             
             catch mE
             
@@ -1545,15 +1591,25 @@ classdef App < mic.Base
             
             try
                 
-                this.commNPointLC400M142 = npoint.LC400(...
+                this.commNPointLC400MA = npoint.LC400(...
                     'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
                     'cTcpipHost', this.cTcpipLc400MA, ...
                     'u16TcpipPort', 23 ...
                 );
-                
+            
+                this.commNPointLC400MA.init();
+                this.commNPointLC400MA.connect();
+         
             catch mE
                 this.commNPointLC400MA = [];
                 this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                
+                msgbox( ...
+                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400MA), ...
+                    'Hardware Connection Failed', ...
+                    'error', ...
+                    'modal' ...
+                );    
                 return;
             end
             
@@ -1984,24 +2040,20 @@ classdef App < mic.Base
             
             
             %this.uiApp.uiPrescriptionTool.ui          
-            %this.uiApp.uiScan.ui
-            
-            
+            %this.uiApp.uiScan.ui            
             
             % LSI
             %{
-            CNA commenting 1/2/2018
-
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
             this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
-            
             this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
             this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
             %}
             
             %{
+            CNA 2018.01.05 Should this be commented??
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
             %}

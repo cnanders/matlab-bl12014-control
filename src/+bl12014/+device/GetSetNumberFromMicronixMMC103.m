@@ -87,7 +87,12 @@ classdef GetSetNumberFromMicronixMMC103 < mic.interface.device.GetSetNumber
                         % wait for home command to finish executing, then
                         % need to set the current position (which will be the index mark)
                         % to zero
-                        start(this.timer);
+                        
+                        if strcmp(this.timer.Running, 'off')
+                            start(this.timer);
+                        else
+                            % fprintf('bl12014.device.GetSetNumberFromMicronixMMC103.initialize() not starting timer. Already running.\n');
+                        end
                     end
                     
                 case 2
@@ -114,7 +119,7 @@ classdef GetSetNumberFromMicronixMMC103 < mic.interface.device.GetSetNumber
         
         function onTimer(this, obj, evt)
             
-            lDebug = true;
+            lDebug = false;
             lDebug && fprintf('bl12014.device.GetSetNumberFromMicronixMMC103.onTimer()\n');
             
             if (this.isInitialized())

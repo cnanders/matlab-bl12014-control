@@ -2,7 +2,7 @@ classdef PowerPmacStatus < mic.Base
     
     properties (Access = private)
         
-        dWidth = 1900
+        dWidth = 2350
         dHeight = 840
         
         dTopLabels = 50
@@ -32,14 +32,14 @@ classdef PowerPmacStatus < mic.Base
         hFigure
         
         clock
-        dWidthName = 120
+        dWidthName = 150
         lShowDevice = false
         lShowInitButton = false
         
         %{ cell of char 1xm } list of titles of each status category
         cecTitles 
         
-        dWidthColSep = 40
+        dWidthColSep = 55
         
         
     end
