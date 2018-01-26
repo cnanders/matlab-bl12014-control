@@ -962,10 +962,7 @@ classdef App < mic.Base
         end
         
         function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
-            
-            % CA returning because this is crashing.
-            return;
-            
+
             for k = 1:7
                 ui.disconnectReticleAxisDevice(k);
             end
