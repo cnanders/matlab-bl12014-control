@@ -188,7 +188,7 @@ classdef Reticle < mic.Base
             
             dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
             dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
-            this.uiAxes.setStagePosition(dX, dY);
+            this.uiAxes.setStagePosition(dX, -dY); % Flip y so screen corresponds to plan view
                         
         end
         

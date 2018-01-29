@@ -1183,10 +1183,7 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiDiode.uiCurrent.setDevice(deviceCh1);
             this.uiApp.uiReticle.uiDiode.uiCurrent.turnOn();
             
-            % RYAN FILL IN FOR FOCUS MONITOR DIODE
-            % deviceCh2 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Reticle, 2);
-            % this.uiApp.uiFocusMonitor.uiCurrent.setDevice(deviceCh2);
-            % this.uiApp.uiFocusMonitor.uiCurrent.turnOn();
+        
             
         end
         
