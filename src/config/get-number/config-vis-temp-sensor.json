@@ -1,0 +1,19 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "Deg (C)",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "Deg (F)",
+			"slope": 1.8,
+			"offset": "32/1.8",
+			"precision": 3
+		}
+	]
+}	
+	
+	

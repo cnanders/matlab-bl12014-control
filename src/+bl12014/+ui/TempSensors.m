@@ -2,7 +2,7 @@ classdef TempSensors < mic.Base
         
     properties (Constant)
       
-        dWidth      = 645
+        dWidth      = 970
         dHeight     = 505
         
     end
@@ -17,6 +17,7 @@ classdef TempSensors < mic.Base
         
         uiPobTempSensors
         uiMod3TempSensors
+        uiVisTempSensors
         
     end
     
@@ -110,6 +111,8 @@ classdef TempSensors < mic.Base
             this.uiMod3TempSensors.build(this.hFigure, dLeft, dTop);
             % dTop = dTop + this.uiMod3TempSensors.dHeight + dPad;
             dLeft = dLeft + this.uiMod3TempSensors.dWidth + dPad;
+            
+            this.uiVisTempSensors.build(this.hFigure, dLeft, dTop);
                      
             
         end
@@ -150,6 +153,10 @@ classdef TempSensors < mic.Base
             );
                        
             this.uiMod3TempSensors = bl12014.ui.Mod3TempSensors(...
+                'clock', this.clock ...
+            );
+        
+            this.uiVisTempSensors = bl12014.ui.VibrationIsolationSystemTempSensors(...
                 'clock', this.clock ...
             );
         

@@ -17,7 +17,7 @@ classdef App < mic.Base
         
         % Endstation 1 Subnet
         cTcpipLc400MA = '192.168.20.20'
-        cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
+        % cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
         cTcpipSmarActLSIGoni = '192.168.20.24'
@@ -188,7 +188,7 @@ classdef App < mic.Base
                 this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
            catch mE
                 this.jMet5Instruments = []; 
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
            end
             
         end
@@ -327,7 +327,7 @@ classdef App < mic.Base
                 this.commSmarActMcsM141.connect()
             catch mE
                 
-                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 this.commSmarActMcsM141 = [];
                 return
@@ -386,7 +386,7 @@ classdef App < mic.Base
                 
             catch mE
                 this.commSmarActRotary = [];
-                cMsg = sprintf('initAndConnectSmarActRotary %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActRotary %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -424,7 +424,7 @@ classdef App < mic.Base
                 this.commSmarActMcsGoni = this.jMet5Instruments.getLsiGoniometer();
             catch mE
                 this.commSmarActMcsGoni = [];
-                cMsg = sprintf('initAndConnectSmarActMcsGoni() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarActMcsGoni() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
                 return
@@ -453,7 +453,7 @@ classdef App < mic.Base
                 this.commSmarActSmarPod = this.jMet5Instruments.getLsiHexapod();
             catch mE
                 this.commSmarActSmarPod = [];
-                cMsg = sprintf('initAndConnectSmarSmarPod() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectSmarSmarPod() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -493,7 +493,7 @@ classdef App < mic.Base
                 end
             catch mE
                 this.commPIMTECamera = [];
-                cMsg = sprintf('initAndConnectPIMTECamera() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectPIMTECamera() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
@@ -530,8 +530,10 @@ classdef App < mic.Base
                 
             catch mE
                 this.commDataTranslationMeasurPoint = [];
-                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
                 return
             end
             
@@ -698,7 +700,39 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
             %}
             
+            
+            device1 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                11 ...
+            );
+            device2 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                12 ...
+            );
+            device3 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                13 ...
+            );
+            device4 = GetNumberFromDataTranslationMeasurPoint(...
+                this.commDataTranslationMeasurPoint, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                14 ...
+            );
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice(device1);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice(device2);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice(device3);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice(device4);
+            
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOn();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOn();
+            
         end
+        
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
             
@@ -808,7 +842,17 @@ classdef App < mic.Base
             this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.setDevice([]);
             
             
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOff();
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOff();
             
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice([]);
+            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice([]);
+            
+                        
             this.commDataTranslationMeasurPoint.delete();
             this.commDataTranslationMeasurPoint = [];
         end
@@ -949,8 +993,12 @@ classdef App < mic.Base
                 this.commDeltaTauPowerPmac.init();
             catch mE
                 this.commDeltaTauPowerPmac = [];
-                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', getReport(mE));
+                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
+                
+                
                 return
             end
             
@@ -1053,8 +1101,10 @@ classdef App < mic.Base
                 [this.commExitSlit, e] = bl12pico_attach();
             catch mE
                 this.commExitSlit = [];
-                cMsg = sprintf('initAndConnectExitSlit() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectExitSlit() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+               
                 return;
             end
             
@@ -1102,15 +1152,10 @@ classdef App < mic.Base
                 % this.commKeithley6482Wafer.identity()
             catch mE
                 this.commKeithley6482Wafer = [];
-                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
-                msgbox( ...
-                    sprintf('Could not connect to Keithley 6482 (Wafer) at %s', this.cTcpipKeithley6482Wafer), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                ); 
+               
             
                 return
             end
@@ -1164,16 +1209,11 @@ classdef App < mic.Base
                 
             catch mE
                 this.commKeithley6482Reticle = [];
-                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', getReport(mE));
+                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 
                 
-                msgbox( ...
-                    sprintf('Could not connect to Keithley 6482 (Reticle) at %s', this.cTcpipKeithley6482Reticle), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                   
                 
                 return
             end
@@ -1210,7 +1250,9 @@ classdef App < mic.Base
                 this.commCxroHeightSensor = cxro.met5.HeightSensor();
             catch mE
                 this.commCxroHeightSensor = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
+                
                 return
             end
             
@@ -1240,7 +1282,8 @@ classdef App < mic.Base
                 this.commDctCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
             catch mE
                 this.commDctCorbaProxy = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
                 return;
             end
             
@@ -1279,9 +1322,10 @@ classdef App < mic.Base
             
             try
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
+                this.commBL1201CorbaProxy.serverStatus();
             catch mE
                 this.commBL1201CorbaProxy = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1336,7 +1380,7 @@ classdef App < mic.Base
                 this.commNewFocusModel8742.connect();
             catch mE
                 this.commNewFocusModel8742 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -1394,7 +1438,8 @@ classdef App < mic.Base
                 this.commGalilD142.connect();
             catch mE
                 this.commGalilD142 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
             end
             
             device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 0);
@@ -1434,7 +1479,7 @@ classdef App < mic.Base
                 this.commGalilM143.connect();
             catch mE
                 this.commGalilM143 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
             device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 0);
@@ -1469,7 +1514,7 @@ classdef App < mic.Base
                 this.commGalilVIS.connect();
             catch mE
                 this.commGalilVIS = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
             
@@ -1477,6 +1522,9 @@ classdef App < mic.Base
             device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
             device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
             device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
+            
+            
+            
             
             this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice(device1);
             this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice(device2);
@@ -1487,6 +1535,31 @@ classdef App < mic.Base
             this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOn();
             this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOn();
             this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOn();
+            
+            % FIXME
+            % Need to wire in the encoders
+            
+            %{
+            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 0);
+            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
+            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
+            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.setDevice(device1);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.setDevice(device2);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.setDevice(device3);
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.setDevice(device4);
+            
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.turnOn();
+            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.turnOn();
+            %}
+            
+            
+            
+            
+            
             
         end
         
@@ -1543,7 +1616,7 @@ classdef App < mic.Base
             catch mE
             
                 this.commMicronixMmc103 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
                         
@@ -1600,14 +1673,8 @@ classdef App < mic.Base
          
             catch mE
                 this.commNPointLC400MA = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
-                
-                msgbox( ...
-                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400MA), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+               
                 return;
             end
             
@@ -1646,14 +1713,9 @@ classdef App < mic.Base
                 
             catch mE
                 this.commNPointLC400M142 = [];
-                this.msg(getReport(mE), this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                                 
-                msgbox( ...
-                    sprintf('Could not connect to nPoint LC400 at %s', this.cTcpipLc400M142), ...
-                    'Hardware Connection Failed', ...
-                    'error', ...
-                    'modal' ...
-                );    
+                 
                 return;
             end
             
@@ -2042,16 +2104,19 @@ classdef App < mic.Base
             
             % LSI
             
-            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
-%             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
-            this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
-%             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
-            this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
-            this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
-            this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
-            
-
+            try
+                this.uiApp.uiLSIControl.uiCommSmarActSmarPod.setDevice(gslcCommSmarActSmarPod);
+    %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.setDevice(gslcCommSmarActMcsGoni);
+                this.uiApp.uiLSIControl.uiCommSmarActSmarPod.turnOn();
+    %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
+                this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
+                this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
+                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
+                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+            catch mE
+                disp('App.m could not connect uiLSIControl');
+            end
+        
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
