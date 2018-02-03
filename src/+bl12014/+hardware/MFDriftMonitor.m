@@ -25,6 +25,10 @@ classdef MFDriftMonitor < mic.Base
     end
     
     properties (Access = private)
+        cInterpolantConfigDir     = ...
+            fullfile(fileparts(mfilename('fullpath')),...
+            '..', '..', 'config', 'interpolants');
+
         clock
         
         % Handle to the MFDriftMonitor java interface
@@ -46,9 +50,14 @@ classdef MFDriftMonitor < mic.Base
         % Interpolants:
         stGeometricInterpolant
         stCalibrationInterpolant
+        stCalbrationInterpolant
         
-        % Calibration data
-        stCalibrationData = [] % need to load this
+
+        
+        % Default interpolant anme
+        cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
+            '..', '..', 'config', 'interpolants', 'default-geometric-data.mat')
+
         
         u8FitModel
         u8HSModel 
@@ -56,15 +65,25 @@ classdef MFDriftMonitor < mic.Base
     
     methods
         
-        function this = MFDriftMonitor(apiDevice, clock)
-            this.javaAPI                = apiDevice;
-            this.clock = clock;
+        function this = MFDriftMonitor(varargin)
             
+             for k = 1 : 2: length(varargin)
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+             end
+            
+
             % Inital models
             this.u8FitModel = this.u8FITMODEL_CUBIC_INTERPOLATION;
             this.u8HSModel  = this.u8HSMODEL_GEOMETRIC;
             
-            this.initInterpolants();
+            % Loads calibration data.  Set this on init
+            stData = load(this.cDefaultData); 
+            this.initCalibrationInterpolant(stData);
+            this.initGeometricInterpolant();
         end
         
         function connect(this)
@@ -130,6 +149,11 @@ classdef MFDriftMonitor < mic.Base
                     fprintf('shouldnt get here, channel = %d\n', u8Channel);
                     dVal = 0;
             end
+        end
+        
+        function loadInterpolant(this, cName)
+            load(fullfile(this.cInterpolantConfigDir, [cName, '.mat']));
+            this.stActiveInterpolant = stInterpolant;
         end
         
         
@@ -204,11 +228,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         
-        function initInterpolants(this)
-            % load stCalibrationData
-           % this.initCalibrationInterpolant(stCalibrationData);
-            this.initGeometricInterpolant();
-        end
+
         
 
         function initCalibrationInterpolant(this, stCalibrationData)
@@ -261,11 +281,11 @@ classdef MFDriftMonitor < mic.Base
             fhQuadFit   = @(rx, ry, z) [1, rx, rx^2, ry, ry^2,z, z^2]*k2;
             fhCubicFit  = @(rx, ry, z) [1, rx, rx^2, rx^3, ry, ry^2, ry^3, z, z^2, z^3]*k3;
             
-            this.stCalbrationInterpolant = struct;
+            this.stCalibrationInterpolant = struct;
             
-            this.stCalbrationInterpolant.fhLinEst            = fhLinEst;
-            this.stCalbrationInterpolant.fhCubicFit          = fhCubicFit;
-            this.stCalbrationInterpolant.fhCubicInterpolant  = fhCubicInterpolant;
+            this.stCalibrationInterpolant.fhLinEst            = fhLinEst;
+            this.stCalibrationInterpolant.fhCubicFit          = fhCubicFit;
+            this.stCalibrationInterpolant.fhCubicInterpolant  = fhCubicInterpolant;
             
             
         end
@@ -340,6 +360,11 @@ classdef MFDriftMonitor < mic.Base
             this.stGeometricInterpolant.fhLinEst            = fhLinEst;
             this.stGeometricInterpolant.fhCubicFit          = fhCubicFit;
             this.stGeometricInterpolant.fhCubicInterpolant  = fhCubicInterpolant;
+            
+            this.stGeometricInterpolant.RxIdx   = RxIdx;
+            this.stGeometricInterpolant.RyIdx   = RyIdx;
+            this.stGeometricInterpolant.zIdx    = zIdx;
+            this.stGeometricInterpolant.dChannelReadings = dChannelReadings;
             
             
         end

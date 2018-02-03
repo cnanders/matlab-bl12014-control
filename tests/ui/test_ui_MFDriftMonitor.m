@@ -37,12 +37,14 @@ cMode = 'real';
 
 switch cMode
     case 'virtual'
-        APIDriftMonitor     = bl12014.hardware.VirtualMFDriftMonitor(clock);
+        APIDriftMonitor     = bl12014.hardware.VirtualMFDriftMonitor('clock', clock);
     case 'real'
         jMet5Instruments    = cxro.met5.Instruments(cDirMet5InstrumentsConfig);
         CWCDriftMonitorAPI  = jMet5Instruments.getMfDriftMonitor();
         
-        APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(CWCDriftMonitorAPI, clock);
+        APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(...
+                            'javaAPI', CWCDriftMonitorAPI, ...
+                            'clock', clock);
         
 end
 

@@ -195,7 +195,7 @@ classdef MFDriftMonitor < mic.Base
                 )...
                 );
             % Don't know where this code is but i think we need to do this:
-            this.uicConnectHexapod.turnOn();
+%             this.uicConnectHexapod.turnOn();
             
             this.uicConnectWafer = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
@@ -217,7 +217,7 @@ classdef MFDriftMonitor < mic.Base
                 )...
                 );
             % Don't know where this code is but i think we need to do this:
-            this.uicConnectWafer.turnOn();
+%             this.uicConnectWafer.turnOn();
         
         
             

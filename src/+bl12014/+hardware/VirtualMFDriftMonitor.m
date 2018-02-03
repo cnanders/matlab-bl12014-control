@@ -12,8 +12,8 @@ classdef VirtualMFDriftMonitor < bl12014.hardware.MFDriftMonitor
     
     methods
         
-        function this = VirtualMFDriftMonitor(clock)
-            this@bl12014.hardware.MFDriftMonitor({}, clock);
+        function this = VirtualMFDriftMonitor(varargin)
+            this@bl12014.hardware.MFDriftMonitor(varargin{:});
         end
         
         function connect(this)
