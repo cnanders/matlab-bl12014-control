@@ -58,6 +58,9 @@ classdef App < mic.Base
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
         
+        % {MFDriftMonitor}
+        commMFDriftMonitor
+        
         % {dataTranslation.MeasurPoint 1x1}
         commDataTranslationMeasurPoint
         
@@ -304,6 +307,10 @@ classdef App < mic.Base
         
         function l = getDctCorbaProxy(this)
             l = ~isempty(this.commDctCorbaProxy);
+        end
+        
+        function l = getMFDriftMonitor(this)
+            l = ~isempty(this.commMFDriftMonitor);
         end
         
         function l = getNPointLC400M142(this)
@@ -1653,6 +1660,35 @@ classdef App < mic.Base
             
         end
         
+        function initAndConnectMFDriftMonitor(this)
+            if this.getMFDriftMonitor()
+                return
+            end
+            
+            try
+                this.initAndConnectMet5Instruments();
+                this.commMFDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
+                this.commMFDriftMonitor.connect();
+         
+            catch mE
+                this.commMFDriftMonitor = [];
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+               
+                return;
+            end
+            
+            % Here connect any UIs that use this
+            
+%             this.uiApp.uiMFDriftMonitor.setDevice(this.commMFDriftMonitor);
+%             this.uiApp.uiMFDriftMonitor.turnOn();
+            
+        end
+        
+        function destroyAndDisconnectMFDriftMonitor(this)
+            this.commMFDriftMonitor.disconnect();
+            this.commMFDriftMonitor = [];
+        end
+        
         
         function initAndConnectNPointLC400MA(this)
             
@@ -2011,6 +2047,13 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectGalilD142 ...
             );
         
+        
+            gslcCommMFDriftMonitor = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getMFDriftMonitor, ...
+                'fhSetTrue', @this.initAndConnectMFDriftMonitor, ...
+                'fhSetFalse', @this.destroyAndDisconnectMFDriftMonitor ...
+            );
+        
 
             %this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
             %this.uiApp.uiShutter.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
@@ -2116,6 +2159,9 @@ classdef App < mic.Base
             catch mE
                 disp('App.m could not connect uiLSIControl');
             end
+            
+            % MF drift monitor
+            this.uiApp.uiMFDriftMonitor.uiCommMFDriftMonitor.setDevice(gslcCommMFDriftMonitor);
         
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
