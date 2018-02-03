@@ -1,43 +1,55 @@
+% This is a bridge between getNumber and actual device api
+
 classdef GetNumberFromMFDriftMonitor < mic.interface.device.GetNumber
     
     
     properties (Constant)
-        cTYPE_TEMP_THERMOCOUPLE = 'temp-thermocouple'
-        cTYPE_TEMP_RTD = 'temp-rtd'
-        cTYPE_VOLTAGE = 'voltage'
+        u8DEVICE_DMI = 1
+        u8DEVICE_HEIGHT_SENSOR_CHANNEL = 2
+        u8DEVICE_HEIGHT_SENSOR_POSITION = 3
+        
     end
     
     properties (Access = private)
         
+        % Handle to the MFDriftMonitor middleware.  Only one of these for
+        % all GenNumbers
         api
         
         % {uint8 1xm} the channel to read
         u8Channel
         
-        % {char 1xm} see Constants cTYPE_*
-        cType
+        % {uint8 1xm} the channel to read
+        u8DeviceType
             
+
     end
     
     methods
         
-        function this = GetNumberFromMFDriftMonitor(api, cType, varargin)
-            this@mic.ui.common.ScanSetup(varargin{:});
+        function this = GetNumberFromMFDriftMonitor(...
+                apiDevice, u8DeviceType, u8Channel, dNumSampleAverage)
             
-            this.comm = comm;
-            this.cType = cType;
-            
+            this.api            = bl12014.deviceMiddleware.MFDriftMonitorAPI(...
+                                    apiDevice, dNumSampleAverage);
+                                
+            this.u8DeviceType   = u8DeviceType;
+            this.u8Channel      = u8Channel;
             
         end
         
         function d = get(this)
-            switch this.cType
-                case this.cTYPE_TEMP_RTD
-                    d = this.comm.measure_temperature_rtd(this.u8Channel);
-                case this.cTYPE_TEMP_THERMOCOUPLE
-                    d = this.comm.measure_temperature_tc(this.u8Channel);
-                case this.cTYPE_VOLTAGE
-                    d = this.comm.measure_voltage(this.u8Channel);
+            % Get a sample:
+            this.api.getSampleDataAvg(this.dNumSampleAverage);
+            
+            % This data 
+            
+            
+            switch this.u8DeviceType
+                case this.u8DEVICE_DMI
+                    
+                case this.u8DEVICE_HEIGHT_SENSOR
+                   
             end
             
         end

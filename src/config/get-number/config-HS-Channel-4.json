@@ -2,23 +2,24 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "Volts",
+			"name": "A",
 			"slope": "1",
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "um",
-			"slope": 1,
+			"name": "nm",
+			"slope": 0.1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "nm",
-			"slope": 1000,
+			"name": "um",
+			"slope": 0.0001,
 			"offset": 0,
 			"precision": 3
 		}
+
 	]
 }	
 	
