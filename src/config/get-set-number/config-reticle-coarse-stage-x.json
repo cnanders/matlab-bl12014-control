@@ -11,23 +11,33 @@
 			"name": "um",
 			"slope": 1000,
 			"offset": 0,
-			"precision": 6
+			"precision": 3
 		}
 	],
     "step": 0.1,
     "stores": [
         {
             "name": "center",
-            "raw": 42.17
+            "raw": 42.04
         },
+       
         {
             "name": "loadlock",
             "raw": 335
         },
+         {
+            "name": "YAG at inboard fid camera",
+            "raw": 73.04
+        },
         {
-            "name": "yag",
+            "name": "YAG at uniformity camera",
             "raw": 142
         },
+         {
+            "name": "Inboard Fid at uniformity camera",
+            "raw": 109.04
+        },
+       
         {
             "name": "diode",
             "raw": 139
