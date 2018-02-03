@@ -1,3 +1,5 @@
+purge
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
@@ -6,12 +8,12 @@ addpath(genpath(cDirBl12014));
 
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
+cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
 
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
 
-purge
 
 
 clock = mic.Clock('Master');
@@ -31,24 +33,22 @@ clock = mic.Clock('Master');
 
 
 % Normally will import this API from hardware class
-cMode = 'virtual';
+cMode = 'real';
 
 switch cMode
     case 'virtual'
         APIDriftMonitor     = bl12014.hardware.VirtualMFDriftMonitor(clock);
     case 'real'
-        jMet5Instruments    = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
-        CWCDriftMonitorAPI  = this.jMet5Instruments.getMfDriftMonitor();
+        jMet5Instruments    = cxro.met5.Instruments(cDirMet5InstrumentsConfig);
+        CWCDriftMonitorAPI  = jMet5Instruments.getMfDriftMonitor();
         
-        APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(CWDriftMonitorAPI, clock);
-        API
+        APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(CWCDriftMonitorAPI, clock);
         
 end
 
 
 % Set the UI device to the drift monitor:
 ui = bl12014.ui.MFDriftMonitor('apiDriftMonitor', APIDriftMonitor, 'clock', clock);
-
 
 
 ui.build( 10, 10);

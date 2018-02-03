@@ -146,15 +146,15 @@ classdef MFDriftMonitor < mic.Base
             
                 % CWC has calibrated slopes and offsets so that return value is
                 % angstroms away from design focal point
-                dHSRawData = dSampleAve.getHsData();
-                this.dHSChannelData = this.javaAPI.hsGetPositions(dHSRawData);
+%                 dHSRawData = dSampleAve.getHsData();
+                this.dHSChannelData = this.javaAPI.hsGetPositions(dSampleAve);
                 
             
             % Set DMI data:
             
                 % Here we need to extract from sample itself since CWC
                 % function takes difference between Ret and Wafer
-                dDMIRawData = dSampleAve.getDmiData();
+                dDMIRawData = double(dSampleAve.getDmiData());
                 
                 dErrU_ret = dDMIRawData(this.u8RETICLE_U);
                 dErrV_ret = dDMIRawData(this.u8RETICLE_U);
@@ -190,10 +190,10 @@ classdef MFDriftMonitor < mic.Base
                     
             end
             
-            E = @(R) sqrt(sum(abs((g(R) - this.dHSChannelData)).^2));
+            E = @(R) sqrt(sum(abs((g(R)' - this.dHSChannelData)).^2));
             
             % Find initial guess using linear estimator
-            x0 = stFitModel.fhLinEst(dChannelValues);
+            x0 = stFitModel.fhLinEst(this.dHSChannelData);
 
             options = optimset('TolX', 1e-5, 'TolFun', 1e-6);
             [X,FVAL,EXITFLAG,OUTPUT] = fminsearch(E, x0(2:end), options);
@@ -206,7 +206,7 @@ classdef MFDriftMonitor < mic.Base
         
         function initInterpolants(this)
             % load stCalibrationData
-            this.initCalibrationInterpolant(stCalibrationData);
+           % this.initCalibrationInterpolant(stCalibrationData);
             this.initGeometricInterpolant();
         end
         
