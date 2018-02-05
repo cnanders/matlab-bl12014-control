@@ -6,16 +6,12 @@ purge
 cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
 addpath(genpath(cDirBl12014));
 
-% dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
+
 
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
-% Add lsipath:
-cDirLSI = fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-control');
-addpath(genpath(cDirLSI));
+
 
 
 clock = mic.Clock('Master');
@@ -34,33 +30,49 @@ clock = mic.Clock('Master');
 
 
 
+
+
+
+
+
+% switch cMode
+%     case 'virtual'
+%         APIDriftMonitor     = bl12014.hardware.VirtualMFDriftMonitor('clock', clock);
+%     case 'real'
+%         
+%         % Grab api for drift monitor
+%         jMet5Instruments    = cxro.met5.Instruments(cDirMet5InstrumentsConfig);
+%         CWCDriftMonitorAPI  = jMet5Instruments.getMfDriftMonitor();
+%         
+%         APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(...
+%                             'javaAPI', CWCDriftMonitorAPI, ...
+%                             'clock', clock);
+%         
+%         % Grab api for hexapod
+%         CWCHexapodAPI = jMet5Instruments.getLsiHexapod();
+%         APIHexapod =  lsicontrol.javaAPI.CXROJavaStageAPI(...
+%                                   'jStage', CWCHexapodAPI);
+% end
+
 % Normally will import this API from hardware class
+hardware = bl12014.hardware();
+hardware.init();
+
 cMode = 'real';
 
 switch cMode
     case 'virtual'
-        APIDriftMonitor     = bl12014.hardware.VirtualMFDriftMonitor('clock', clock);
+        APIDriftMonitor     = hardware.getMFDriftMonitorVirtual();
     case 'real'
-        
-        % Grab api for drift monitor
-        jMet5Instruments    = cxro.met5.Instruments(cDirMet5InstrumentsConfig);
-        CWCDriftMonitorAPI  = jMet5Instruments.getMfDriftMonitor();
-        
-        APIDriftMonitor     = bl12014.hardware.MFDriftMonitor(...
-                            'javaAPI', CWCDriftMonitorAPI, ...
-                            'clock', clock);
-        
-        % Grab api for hexapod
-        CWCHexapodAPI = jMet5Instruments.getLsiHexapod();
-        APIHexapod =  lsicontrol.javaAPI.CXROJavaStageAPI(...
-                                  'jStage', CWCHexapodAPI);
+        APIDriftMonitor     = hardware.getMFDriftMonitor();
+        APIHexapod          = hardware.getLSIHexapod();
 end
 
 
 % Set the UI device to the drift monitor:
 ui = bl12014.ui.MFDriftMonitor('apiDriftMonitor', APIDriftMonitor,...
-                                'apiHexapod', APIHexapod, ...
-                                'clock', clock);
+                               'apiHexapod', APIHexapod, ...
+                               'clock', clock);
 
 
 ui.build( 10, 10);

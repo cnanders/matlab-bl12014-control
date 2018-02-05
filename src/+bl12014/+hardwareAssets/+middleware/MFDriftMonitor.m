@@ -30,6 +30,7 @@ classdef MFDriftMonitor < mic.Base
             '..', '..', 'config', 'interpolants');
 
         clock
+        lHasOwnClock = false
         
         % Update and interpolate intervals
         dUpdateInterval = 2
@@ -90,6 +91,12 @@ classdef MFDriftMonitor < mic.Base
             this.initCalibrationInterpolant(stData);
             this.initGeometricInterpolant();
             
+            % If there is no clock then make one:
+            if isempty(this.clock)
+                this.lHasOwnClock = true;
+                this.clock = mic.Clock('MFDriftMonitorTimer', 2);
+            end
+            
             % Init clock update tasks:
             this.clock.add(@this.onClock, this.id(), this.dUpdateInterval);
             
@@ -100,9 +107,15 @@ classdef MFDriftMonitor < mic.Base
            % Clean up clock tasks
             if isvalid(this.clock) && ...
                this.clock.has(this.id())
-                % this.msg('Axis.delete() removing clock task'); 
                 this.clock.remove(this.id());
             end
+            
+            if(this.lHasOwnClock )
+                this.clock.stop();
+                delete(this.clock);
+                fprintf('Deleting MFDriftMonitorClock');
+            end
+            
 
             
         end
