@@ -1,4 +1,4 @@
-classdef App < mic.Base
+classdef Hardware < mic.Base
         
     properties (Constant)
         

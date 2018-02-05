@@ -31,6 +31,11 @@ classdef MFDriftMonitor < mic.Base
 
         clock
         
+        % Update and interpolate intervals
+        dUpdateInterval = 2
+        
+        
+        
         % Handle to the MFDriftMonitor java interface
         javaAPI
 
@@ -84,22 +89,39 @@ classdef MFDriftMonitor < mic.Base
             stData = load(this.cDefaultData); 
             this.initCalibrationInterpolant(stData);
             this.initGeometricInterpolant();
+            
+            % Init clock update tasks:
+            this.clock.add(@this.onClock, this.id(), this.dUpdateInterval);
+            
         end
+        
+         function delete(this)
+
+           % Clean up clock tasks
+            if isvalid(this.clock) && ...
+               this.clock.has(this.id())
+                % this.msg('Axis.delete() removing clock task'); 
+                this.clock.remove(this.id());
+            end
+
+            
+        end
+        
         
         function connect(this)
             if ~this.isConnected()
-                this.api.connect();
+                this.javaAPI.connect();
             end
         end
         
         function disconnect(this)
-            if this.isConnect()
-                this.api.disconnect();
+            if this.isConnected()
+                this.javaAPI.disconnect();
             end
         end
         
         function lVal = isConnected(this)
-            lVal = this.api.isConnected();
+            lVal = this.javaAPI.isConnected();
         end
         
         function setSampleAverage(this, dNumSampleAverage)
@@ -161,6 +183,15 @@ classdef MFDriftMonitor < mic.Base
     
     
     methods (Access = protected)
+        
+        function onClock(this)
+            % First update Channel data:
+            this.updateChannelData();
+            
+            % Next update HS positions:
+%             this.updateHSPositions();
+            
+        end
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
@@ -370,6 +401,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         
+       
     end
     
     
