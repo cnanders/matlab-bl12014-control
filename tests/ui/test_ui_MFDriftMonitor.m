@@ -7,7 +7,7 @@ cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
 addpath(genpath(cDirBl12014));
 
 
-
+cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
@@ -55,8 +55,7 @@ clock = mic.Clock('Master');
 % end
 
 % Normally will import this API from hardware class
-hardware = bl12014.hardware();
-hardware.init();
+hardware = bl12014.Hardware();
 
 cMode = 'real';
 

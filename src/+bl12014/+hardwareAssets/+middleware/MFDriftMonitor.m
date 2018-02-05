@@ -27,7 +27,7 @@ classdef MFDriftMonitor < mic.Base
     properties (Access = private)
         cInterpolantConfigDir     = ...
             fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', 'config', 'interpolants');
+            '..', '..', '..', 'config', 'interpolants');
 
         clock
         lHasOwnClock = false
@@ -62,7 +62,7 @@ classdef MFDriftMonitor < mic.Base
         
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', 'config', 'interpolants', 'default-geometric-data.mat')
+            '..', '..', '..', 'config', 'interpolants', 'default-geometric-data.mat')
 
         
         u8FitModel

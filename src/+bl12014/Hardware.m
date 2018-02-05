@@ -83,21 +83,11 @@ classdef Hardware < mic.Base
         % Constructor
         function this = Hardware()
             this.init();
-
-
         end
     
         % Destructor
         function delete(this)
-
-
         end
-    end
-    
-    methods (Access = private)
-        
-        
-        
         
         
         %% Getters
@@ -137,6 +127,15 @@ classdef Hardware < mic.Base
             this.commLSIHexapod.disconnect();
             this.commLSIHexapod = [];
         end
+    end
+    
+    methods (Access = private)
+        
+        
+        
+        
+        
+        
         
         %% Init  functions
         % Initializes directories and any helper classes 
