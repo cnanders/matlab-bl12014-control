@@ -73,8 +73,32 @@ classdef PowerPmacStatus < mic.Base
             
         end
         
+        function connectDeltaTauPowerPmac(this, comm)
+
+            for m = 1 : length(this.ceceTypes)
+                for n = 1 : length(this.ceceTypes{m}) 
+                    device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
+                        comm, ...
+                        this.ceceTypes{m}{n}...
+                    );
+                    this.uiGetLogicals{m}{n}.setDevice(device);
+                    this.uiGetLogicals{m}{n}.turnOn();
+                    % fprintf('connectCommDeltaTauPowerPmacToUiPowerPmacStatus %s\n', this.ceceTypes{m}{n});
+                end
+            end
+        end
         
         
+        function disconnectDeltaTauPowerPmac(this)
+            
+            % Disconnect uiApp.uiPowerPmacStatus
+            for m = 1 : length(this.ceceTypes)
+                for n = 1 : length(this.ceceTypes{m}) 
+                    this.uiGetLogicals{m}{n}.turnOff();
+                    this.uiGetLogicals{m}{n}.setDevice([]);
+                end
+            end
+        end
         
         function buildUiComm(this)
             

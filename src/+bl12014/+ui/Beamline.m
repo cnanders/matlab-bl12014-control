@@ -185,6 +185,89 @@ classdef Beamline < mic.Base
         
         end
         
+        function connectGalil(this, comm)
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiD142StageY.setDevice(device);
+            this.uiD142StageY.turnOn()
+            
+        end
+        
+        function disconnectGalil(this, comm)
+            this.uiD142StageY.turnOff()
+            this.uiD142StageY.setDevice([]);
+        end
+        
+        function connectExitSlit(this, comm)
+            device = bl12014.device.GetSetNumberFromExitSlit(comm);
+            this.uiExitSlit.setDevice(device);
+            this.uiExitSlit.turnOn();
+        end
+        
+        function disconnectExitSlit(this)
+            this.uiExitSlit.turnOff();
+            this.uiExitSlit.setDevice([]);
+        end
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+           device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                34 ...
+            );
+            this.uiD142Current.setDevice(device);
+            this.uiD142Current.turnOn();     
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+            this.uiD142Current.turnOff();
+            this.uiD142Current.setDevice([]);
+        end
+        
+        
+        function connectDctCorbaProxy(this, comm)
+            device = bl12014.device.GetSetNumberFromDctCorbaProxy(...
+                comm, ...
+                bl12014.device.GetSetNumberFromDctCorbaProxy.cDEVICE_SHUTTER ...
+            );
+        
+            this.uiShutter.setDevice(device)
+            this.uiShutter.turnOn()
+        end
+        
+        function disconnectDctCorbaProxy(this)
+            this.uiShutter.turnOff()
+            this.uiShutter.setDevice([])
+        end
+        
+        
+        function connectBl1201CorbaProxy(this, comm)
+            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+                comm, ...
+                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
+            );
+            deviceGratingTiltX = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+                comm, ...
+                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_GRATING_TILT_X ...
+            );
+            
+            this.uiUndulatorGap.setDevice(deviceUndulatorGap)
+            this.uiUndulatorGap.turnOn()
+
+            this.uiGratingTiltX.setDevice(deviceGratingTiltX)
+            this.uiGratingTiltX.turnOn()
+            
+        end
+        
+        function disconnectBL1201CorbaProxy(this, comm)
+            this.uiUndulatorGap.turnOff()
+            this.uiUndulatorGap.setDevice([])
+            
+            this.uiGratingTiltX.turnOff()
+            this.uiGratingTiltX.setDevice([])
+            
+        end
+        
+        
         
         function turnOn(this)
             

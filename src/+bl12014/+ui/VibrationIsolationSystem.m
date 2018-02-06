@@ -64,7 +64,93 @@ classdef VibrationIsolationSystem < mic.Base
         
         end
         
+        function connectDataTranslationMeasurPoint(this, comm)
+            device1 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                11 ...
+            );
+            device2 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                12 ...
+            );
+            device3 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                13 ...
+            );
+            device4 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                14 ...
+            );
+            this.uiVisTempSensors.uiFrame1.setDevice(device1);
+            this.uiVisTempSensors.uiFrame2.setDevice(device2);
+            this.uiVisTempSensors.uiFrame3.setDevice(device3);
+            this.uiVisTempSensors.uiFrame4.setDevice(device4);
+            
+            this.uiVisTempSensors.uiFrame1.turnOn();
+            this.uiVisTempSensors.uiFrame2.turnOn();
+            this.uiVisTempSensors.uiFrame3.turnOn();
+            this.uiVisTempSensors.uiFrame4.turnOn();
+        end
         
+        function disconnectDataTranslationMeasurPoint(this)
+            
+        end
+        
+        function connectGalil(this, comm)
+            
+            device1 = bl12014.device.GetSetNumberFromStage(comm, 0);
+            device2 = bl12014.device.GetSetNumberFromStage(comm, 1);
+            device3 = bl12014.device.GetSetNumberFromStage(comm, 2);
+            device4 = bl12014.device.GetSetNumberFromStage(comm, 3);
+            
+            this.uiStage1.setDevice(device1);
+            this.uiStage2.setDevice(device2);
+            this.uiStage3.setDevice(device3);
+            this.uiStage4.setDevice(device4);
+            
+            this.uiStage1.turnOn();
+            this.uiStage2.turnOn();
+            this.uiStage3.turnOn();
+            this.uiStage4.turnOn();
+            
+            % FIXME
+            % Need to wire in the encoders
+            
+            %{
+            device1 = bl12014.device.GetSetNumberFromStage(comm, 0);
+            device2 = bl12014.device.GetSetNumberFromStage(comm, 1);
+            device3 = bl12014.device.GetSetNumberFromStage(comm, 2);
+            device4 = bl12014.device.GetSetNumberFromStage(comm, 3);
+            
+            this.uiEncoder1.setDevice(device1);
+            this.uiEncoder2.setDevice(device2);
+            this.uiEncoder3.setDevice(device3);
+            this.uiEncoder4.setDevice(device4);
+            
+            this.uiEncoder1.turnOn();
+            this.uiEncoder2.turnOn();
+            this.uiEncoder3.turnOn();
+            this.uiEncoder4.turnOn();
+            %}
+            
+            
+        end
+        
+        function disconnectGalil(this)
+            this.uiStage1.turnOff();
+            this.uiStage2.turnOff();
+            this.uiStage3.turnOff();
+            this.uiStage4.turnOff();
+            
+            this.uiStage1.setDevice([]);
+            this.uiStage2.setDevice([]);
+            this.uiStage3.setDevice([]);
+            this.uiStage4.setDevice([]);
+        end
         
         
         function build(this)

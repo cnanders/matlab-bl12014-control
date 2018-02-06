@@ -76,6 +76,12 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
         end
         
         function set(this, dVal)
+            
+            if isnan(dVal)
+                fprintf('GetSetNumberFromDeltaTauPowerPmac.set() passed NaN. Skipping\n');
+                return
+            end
+            
             switch this.cAxis
                 case this.cAXIS_WAFER_COARSE_X
                     this.comm.setWaferCoarseX(dVal);
@@ -138,6 +144,11 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
                     l = ~this.comm.getMotorStatusReticleFineXIsMoving();
                 case this.cAXIS_RETICLE_FINE_Y
                     l = ~this.comm.getMotorStatusReticleFineXIsMoving();
+            end
+            
+            if ~islogical(l)
+                fprintf('GetSetNumberFromDeltaTauPowerPmac.isReady() received non logical from comm, returning false\n');
+                l = false;
             end
         end
         

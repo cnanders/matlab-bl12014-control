@@ -478,7 +478,7 @@ classdef WaferAxes < mic.Base
         
         function drawCarriageLsi(this)
             
-            dOffset = 500e-3;
+            dOffset = 0;
             dL = -200e-3 + dOffset;
             dR = 200e-3 + dOffset;
             dT = 200e-3;

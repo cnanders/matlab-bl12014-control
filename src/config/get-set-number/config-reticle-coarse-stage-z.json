@@ -16,18 +16,19 @@
 	],
     "step": 0.1,
     "stores": [
-        {
+		{
+			"name": "z conjugate",
+			"raw": -0.063,
+		},
+		{
             "name": "loadlock",
-            "raw": 1.5
+            "raw": 0
         },
-        {
-            "name": "pfm",
-            "raw": 3
-        },
-        {
-            "name": "yag",
-            "raw": 5
-        }
+		{
+			"name": "YAG at z conjugate",
+			"raw": -0.173,
+		}
+        
     ],
     "min": -0.5,
     "max": 0.5
