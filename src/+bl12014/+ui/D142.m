@@ -43,7 +43,33 @@ classdef D142 < mic.Base
         
         end
         
+        function connectGalil(this, comm)
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiStageY.setDevice(device);
+            this.uiStageY.turnOn();
+            
+            
+        end
+        
+        function disconnectGalil(this)
+            this.uiStageY.turnOff();
+            this.uiStageY.setDevice([]);
+        end
        
+        function connectDataTranslationMeasurPoint(this, comm)
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                34 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this, comm)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+        end
         
         
         function build(this)

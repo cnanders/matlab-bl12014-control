@@ -68,6 +68,119 @@ classdef Reticle < mic.Base
             
         end
         
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+            return
+            
+            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
+            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
+            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
+            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 8);
+            
+            this.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
+            this.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
+            this.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
+            this.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
+            
+            this.uiMod3CapSensors.uiCap1.turnOn();
+            this.uiMod3CapSensors.uiCap2.turnOn();
+            this.uiMod3CapSensors.uiCap3.turnOn();
+            this.uiMod3CapSensors.uiCap4.turnOn();
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+            
+            return
+            this.uiMod3CapSensors.uiCap1.turnOff();
+            this.uiMod3CapSensors.uiCap2.turnOff();
+            this.uiMod3CapSensors.uiCap3.turnOff();
+            this.uiMod3CapSensors.uiCap4.turnOff();
+            
+            this.uiMod3CapSensors.uiCap1.setDevice([]);
+            this.uiMod3CapSensors.uiCap2.setDevice([]);
+            this.uiMod3CapSensors.uiCap3.setDevice([]);
+            this.uiMod3CapSensors.uiCap4.setDevice([]);
+        end
+        
+        
+        
+        function connectKeithley6482(this, comm)
+            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            this.uiDiode.uiCurrent.setDevice(deviceCh1);
+            this.uiDiode.uiCurrent.turnOn();
+            
+            
+        end
+        
+        function disconnectKeithley6482(this)
+            
+            this.uiDiode.uiCurrent.turnOff()
+            this.uiDiode.uiCurrent.setDevice([]);
+        end
+        
+        
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
+            
+             % Set Devices 
+            this.uiWorkingMode.ui.setDevice(deviceWorkingMode);
+            this.uiCoarseStage.uiX.setDevice(deviceCoarseX);
+            this.uiCoarseStage.uiY.setDevice(deviceCoarseY);
+            this.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
+            this.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
+            this.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
+            this.uiFineStage.uiX.setDevice(deviceFineX);
+            this.uiFineStage.uiY.setDevice(deviceFineY);
+            
+            % Turn on
+            this.uiWorkingMode.ui.turnOn();
+            this.uiCoarseStage.uiX.turnOn();
+            this.uiCoarseStage.uiY.turnOn();
+            this.uiCoarseStage.uiZ.turnOn();
+            this.uiCoarseStage.uiTiltX.turnOn();
+            this.uiCoarseStage.uiTiltY.turnOn();
+            this.uiFineStage.uiX.turnOn();
+            this.uiFineStage.uiY.turnOn();
+            
+        end
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiWorkingMode.ui.turnOff();
+            this.uiCoarseStage.uiX.turnOff();
+            this.uiCoarseStage.uiY.turnOff();
+            this.uiCoarseStage.uiZ.turnOff();
+            this.uiCoarseStage.uiTiltX.turnOff();
+            this.uiCoarseStage.uiTiltY.turnOff();
+            this.uiFineStage.uiX.turnOff();
+            this.uiFineStage.uiY.turnOff();
+            
+            this.uiWorkingMode.ui.setDevice([]);
+            this.uiCoarseStage.uiX.setDevice([]);
+            this.uiCoarseStage.uiY.setDevice([]);
+            this.uiCoarseStage.uiZ.setDevice([]);
+            this.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiFineStage.uiX.setDevice([]);
+            this.uiFineStage.uiY.setDevice([]);
+            
+           
+            
+        end
+        
+        
                 
         function build(this)
                         

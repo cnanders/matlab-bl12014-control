@@ -225,7 +225,6 @@ classdef App < mic.Base
             this.destroyAndDisconnectSmarActMcsM141();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
-            
             this.destroyAndDisconnectMet5Instruments();
 
         end
@@ -340,23 +339,7 @@ classdef App < mic.Base
                 return
             end
             
-            % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 0);
-
-            % {< mic.interface.device.GetSetNumber}
-            % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
-
-            % {< mic.interface.device.GetSetNumber}
-            % deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
-            
-            this.uiApp.uiM141.uiStageX.setDevice(deviceX);
-            % this.uiApp.uiM141.uiStageTiltX.setDevice(deviceTiltX);
-            % this.uiApp.uiM141.uiStageTiltY.setDevice(deviceTiltY);
-            
-            
-            this.uiApp.uiM141.uiStageX.turnOn();
-            % this.uiApp.uiM141.uiStageTiltX.turnOn();
-            % this.uiApp.uiM141.uiStageTiltY.turnOn();
+            this.uiApp.uiM141.connectSmarActMcsM141(this.commSmarActMcsM141);
             
         end
         
@@ -367,14 +350,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiM141.uiStageX.turnOff();
-            % this.uiApp.uiM141.uiStageTiltX.turnOff();
-            % this.uiApp.uiM141.uiStageTiltY.turnOff();
-            
-            this.uiApp.uiM141.uiStageX.setDevice([]);
-            % this.uiApp.uiM141.uiStageTiltX.setDevice([]);
-            % this.uiApp.uiM141.uiStageTiltY.setDevice([]);
-            
+            this.uiApp.uiM141.disconnectSmarActMcsM141();
             
             this.commSmarActMcsM141.disconnect();
             this.commSmarActMcsM141 = [];
@@ -398,11 +374,7 @@ classdef App < mic.Base
                 return
             end
             
-            
-            % Wafer Focus Sensor
-            device = bl12014.device.GetSetNumberFromStage(this.commSmarActRotary, 1);
-            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.setDevice(device);
-            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.turnOn();
+            this.uiApp.uiFocusSensor.connectSmarActRotary(this.commSmarActRotary);
 
             
         end
@@ -412,9 +384,7 @@ classdef App < mic.Base
                 return
             end
             
-            % Wafer Focus Sensor
-            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.turnOff();
-            this.uiApp.uiFocusSensor.uiFocusSensor.uiTiltZ.setDevice([]);
+            this.uiApp.uiFocusSensor.disconnectSmarActRotary()
                         
         end
         
@@ -551,192 +521,15 @@ classdef App < mic.Base
             Volt sensor channels = 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
             %}
             
-            % M141
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                32 ...
-            );
-            this.uiApp.uiM141.uiCurrent.setDevice(device);
-            this.uiApp.uiM141.uiCurrent.turnOn()
-            
-            % D141
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                33 ...
-            );
-            this.uiApp.uiD141.uiCurrent.setDevice(device);
-            this.uiApp.uiD141.uiCurrent.turnOn()
-            
-            % D142 & Beamline (share a device)
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                34 ...
-            );
-            this.uiApp.uiD142.uiCurrent.setDevice(device);
-            this.uiApp.uiD142.uiCurrent.turnOn()
-            this.uiApp.uiBeamline.uiD142Current.setDevice(device);
-            this.uiApp.uiBeamline.uiD142Current.turnOn();
-            
-            % M143
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                35 ...
-            );
-            this.uiApp.uiM143.uiCurrent.setDevice(device);
-            this.uiApp.uiM143.uiCurrent.turnOn()
-            
-            % Vibration Isolation System
-                        
-            % Reticle Mod3 Cap Sensors
-            
-            %{
-            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
-            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
-            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
-            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 8);
-            
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
-            
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.turnOn();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.turnOn();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.turnOn();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.turnOn();
-            %}
-            
-            % Wafer PO Cap Sensors
-            
-            %{
-            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
-            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
-            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
-            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 12);
-        
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap1.setDevice(deviceCap1);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap4.setDevice(deviceCap4);
-            
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap1.turnOn();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap2.turnOn();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap3.turnOn();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap4.turnOn();
-            %}
-            
-            
-            % TempSensors
-            
-            %{
-            deviceReticleCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 1);
-            deviceReticleCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 2);
-            deviceFiducialCam1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 3);
-            deviceFiducialCam2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 4);
-            deviceMod3Frame1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 5);
-            deviceMod3Frame2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 6);
-            deviceMod3Frame3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 7);
-            deviceMod3Frame4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 8);
-            deviceMod3Frame5 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 9);
-            deviceMod3Frame6 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 10);
-            
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.setDevice(deviceReticleCam1);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.setDevice(deviceReticleCam2);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam1.setDevice(deviceFiducialCam1);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam2.setDevice(deviceFiducialCam2);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame1.setDevice(deviceMod3Frame1);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame2.setDevice(deviceMod3Frame2);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame3.setDevice(deviceMod3Frame3);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.setDevice(deviceMod3Frame4);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.setDevice(deviceMod3Frame5);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.setDevice(deviceMod3Frame6);
-            
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam1.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam2.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame1.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame2.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame3.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.turnOn();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.turnOn();
-            
-            devicePobFrame1 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 11);
-            devicePobFrame2 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 12);
-            devicePobFrame3 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 13);
-            devicePobFrame4 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 14);
-            devicePobFrame5 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 15);
-            devicePobFrame6 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 16);
-            devicePobFrame7 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 17);
-            devicePobFrame8 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 18);
-            devicePobFrame9 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 19);
-            devicePobFrame10 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 20);
-            devicePobFrame11 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 21);
-            devicePobFrame12 = GetNumberFromDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 22);
-            
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.setDevice(devicePobFrame1);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.setDevice(devicePobFrame2);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame3.setDevice(devicePobFrame3);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame4.setDevice(devicePobFrame4);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame5.setDevice(devicePobFrame5);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame6.setDevice(devicePobFrame6);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame7.setDevice(devicePobFrame7);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame8.setDevice(devicePobFrame8);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame9.setDevice(devicePobFrame9);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.setDevice(devicePobFrame10);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.setDevice(devicePobFrame11);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.setDevice(devicePobFrame12);
-            
-            
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame3.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame4.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame5.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame6.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame7.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame8.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame9.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.turnOn();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOn();
-            %}
-            
-            
-            device1 = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
-                11 ...
-            );
-            device2 = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
-                12 ...
-            );
-            device3 = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
-                13 ...
-            );
-            device4 = GetNumberFromDataTranslationMeasurPoint(...
-                this.commDataTranslationMeasurPoint, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
-                14 ...
-            );
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice(device1);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice(device2);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice(device3);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice(device4);
-            
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOn();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOn();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOn();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOn();
+            this.uiApp.uiM141.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiD141.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiD142.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiBeamline.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiM143.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             
         end
         
@@ -749,198 +542,20 @@ classdef App < mic.Base
                 return
             end
             
-            % Beamline
-            this.uiApp.uiBeamline.uiD142Current.turnOff();
-            this.uiApp.uiBeamline.uiD142Current.setDevice([]);
-            
-            
-            % M141
-            this.uiApp.uiM141.uiCurrent.turnOff();
-            this.uiApp.uiM141.uiCurrent.setDevice([]);
-            
-            % D141
-            this.uiApp.uiD141.uiCurrent.turnOff();
-            this.uiApp.uiD141.uiCurrent.setDevice([]);
-            
-            % D142
-            this.uiApp.uiD142.uiCurrent.turnOff();
-            this.uiApp.uiD142.uiCurrent.setDevice([]);
-            
-            % M143
-            this.uiApp.uiM143.uiCurrent.turnOff();
-            this.uiApp.uiM143.uiCurrent.setDevice([]);
-            
-            % Vibration Isolation System
-            
-            % Reticle
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.turnOff();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.turnOff();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.turnOff();
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.turnOff();
-            
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap1.setDevice([]);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap2.setDevice([]);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap3.setDevice([]);
-            this.uiApp.uiReticle.uiMod3CapSensors.uiCap4.setDevice([]);
-            
-            % Wafer
-            
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap1.turnOff();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap2.turnOff();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap3.turnOff();
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap4.turnOff();
-            
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap1.setDevice([]);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap2.setDevice([]);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap3.setDevice([]);
-            this.uiApp.uiWafer.uiPobCapSensors.uiCap4.setDevice([]);
-            
-            % Temp Sensors
-            
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam1.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam2.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame1.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame2.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame3.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.turnOff();
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.turnOff();
-            
-            
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam1.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiReticleCam2.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam1.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFiducialCam2.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame1.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame2.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame3.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame4.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame5.setDevice([]);
-            this.uiApp.uiTempSensors.uiMod3TempSensors.uiFrame6.setDevice([]);
-            
-            
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame3.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame4.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame5.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame6.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame7.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame8.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame9.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.turnOff();
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.turnOff();
-            
-            
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame1.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame2.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame3.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame4.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame5.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame6.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame7.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame8.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame9.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame10.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame11.setDevice([]);
-            this.uiApp.uiTempSensors.uiPobTempSensors.uiFrame12.setDevice([]);
-            
-            
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.turnOff();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.turnOff();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.turnOff();
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.turnOff();
-            
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame1.setDevice([]);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame2.setDevice([]);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame3.setDevice([]);
-            this.uiApp.uiTempSensors.uiVisTempSensors.uiFrame4.setDevice([]);
-            
+            this.uiApp.uiBeamline.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiM141.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiD141.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiD142.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiM143.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
+            this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
                         
             this.commDataTranslationMeasurPoint.delete();
             this.commDataTranslationMeasurPoint = [];
         end
         
-        
-        function connectCommDeltaTauPowerPmacToUiReticle(this, comm, ui)
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            
-            
-            % Devices
-            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
-            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
-            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
-            
-             % Set Devices 
-            ui.uiWorkingMode.ui.setDevice(deviceWorkingMode);
-            ui.uiCoarseStage.uiX.setDevice(deviceCoarseX);
-            ui.uiCoarseStage.uiY.setDevice(deviceCoarseY);
-            ui.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
-            ui.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
-            ui.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
-            ui.uiFineStage.uiX.setDevice(deviceFineX);
-            ui.uiFineStage.uiY.setDevice(deviceFineY);
-            
-            % Turn on
-            ui.uiWorkingMode.ui.turnOn();
-            ui.uiCoarseStage.uiX.turnOn();
-            ui.uiCoarseStage.uiY.turnOn();
-            ui.uiCoarseStage.uiZ.turnOn();
-            ui.uiCoarseStage.uiTiltX.turnOn();
-            ui.uiCoarseStage.uiTiltY.turnOn();
-            ui.uiFineStage.uiX.turnOn();
-            ui.uiFineStage.uiY.turnOn();
-            
-            
-        end
-        
-        
-        function connectCommDeltaTauPowerPmacToUiWafer(this, comm, ui)
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
-            deviceFineZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
-            deviceCoarseXLsi = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
-            
-            % Set Devices
-            ui.uiWorkingMode.ui.setDevice(deviceWorkingMode);
-            ui.uiCoarseStage.uiX.setDevice(deviceCoarseX);
-            ui.uiCoarseStage.uiY.setDevice(deviceCoarseY);
-            ui.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
-            ui.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
-            ui.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
-            ui.uiFineStage.uiZ.setDevice(deviceFineZ);
-            ui.uiLsiCoarseStage.uiX.setDevice(deviceCoarseXLsi);
-            
-            % Turn on
-            ui.uiWorkingMode.ui.turnOn();
-            ui.uiCoarseStage.uiX.turnOn();
-            ui.uiCoarseStage.uiY.turnOn();
-            ui.uiCoarseStage.uiZ.turnOn();
-            ui.uiCoarseStage.uiTiltX.turnOn();
-            ui.uiCoarseStage.uiTiltY.turnOn();
-            ui.uiLsiCoarseStage.uiX.turnOn();
-            ui.uiFineStage.uiZ.turnOn();
-            
-        end
+
         
         function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
             
@@ -1002,17 +617,16 @@ classdef App < mic.Base
                 this.commDeltaTauPowerPmac = [];
                 cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
                
-                
-                
                 return
             end
             
-            this.connectCommDeltaTauPowerPmacToUiReticle(this.commDeltaTauPowerPmac, this.uiApp.uiReticle);
-            this.connectCommDeltaTauPowerPmacToUiWafer(this.commDeltaTauPowerPmac, this.uiApp.uiWafer);
-            this.connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this.commDeltaTauPowerPmac, this.uiApp.uiPowerPmacStatus);
-             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
+            this.uiApp.uiReticle.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiWafer.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiPowerPmacStatus.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            
+            % RYAN WILL REPLACE
+            this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
             
         end
         
@@ -1022,64 +636,7 @@ classdef App < mic.Base
                 ui.disconnectReticleAxisDevice(k);
             end
         end
-        
-        
-        function disconnectCommDeltaTauPowerPmacFromUiReticle(this, ui)
-            
-            ui.uiWorkingMode.ui.turnOff();
-            ui.uiCoarseStage.uiX.turnOff();
-            ui.uiCoarseStage.uiY.turnOff();
-            ui.uiCoarseStage.uiZ.turnOff();
-            ui.uiCoarseStage.uiTiltX.turnOff();
-            ui.uiCoarseStage.uiTiltY.turnOff();
-            ui.uiFineStage.uiX.turnOff();
-            ui.uiFineStage.uiY.turnOff();
-            
-            ui.uiWorkingMode.ui.setDevice([]);
-            ui.uiCoarseStage.uiX.setDevice([]);
-            ui.uiCoarseStage.uiY.setDevice([]);
-            ui.uiCoarseStage.uiZ.setDevice([]);
-            ui.uiCoarseStage.uiTiltX.setDevice([]);
-            ui.uiCoarseStage.uiTiltY.setDevice([]);
-            ui.uiFineStage.uiX.setDevice([]);
-            ui.uiFineStage.uiY.setDevice([]);
-            
-           
-            
-        end
-        
-        function disconnectCommDeltaTauPowerPmacFromUiWafer(this, ui)
-            
-            ui.uiWorkingMode.ui.turnOff();
-            ui.uiCoarseStage.uiX.turnOff();
-            ui.uiCoarseStage.uiY.turnOff();
-            ui.uiCoarseStage.uiZ.turnOff();
-            ui.uiCoarseStage.uiTiltX.turnOff();
-            ui.uiCoarseStage.uiTiltY.turnOff();
-            ui.uiLsiCoarseStage.uiX.turnOff();
-            ui.uiFineStage.uiZ.turnOff();
-                        
-            ui.uiWorkingMode.ui.setDevice([]);
-            ui.uiCoarseStage.uiX.setDevice([]);
-            ui.uiCoarseStage.uiY.setDevice([]);
-            ui.uiCoarseStage.uiZ.setDevice([]);
-            ui.uiCoarseStage.uiTiltX.setDevice([]);
-            ui.uiCoarseStage.uiTiltY.setDevice([]);
-            ui.uiLsiCoarseStage.uiX.setDevice([]);
-            ui.uiFineStage.uiZ.setDevice([]);
-            
-        end
-        
-        function disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this, ui)
-            
-            % Disconnect uiApp.uiPowerPmacStatus
-            for m = 1 : length(ui.ceceTypes)
-                for n = 1 : length(ui.ceceTypes{m}) 
-                    ui.uiGetLogicals{m}{n}.turnOff();
-                    ui.uiGetLogicals{m}{n}.setDevice([]);
-                end
-            end
-        end
+
         
         function destroyAndDisconnectDeltaTauPowerPmac(this)
 
@@ -1087,9 +644,11 @@ classdef App < mic.Base
                 return
             end
                       
-            this.disconnectCommDeltaTauPowerPmacFromUiReticle(this.uiApp.uiReticle)
-            this.disconnectCommDeltaTauPowerPmacFromUiWafer(this.uiApp.uiWafer);
-            this.disconnectCommDeltaTauPowerPmacFromUiPowerPmacStatus(this.uiApp.uiPowerPmacStatus)
+            this.uiApp.uiReticle.disconnectDeltaTauPowerPmac()
+            this.uiApp.uiWafer.disconnectDeltaTauPowerPmac();
+            this.uiApp.uiPowerPmacStatus.disconnectDeltaTauPowerPmac()
+            
+            % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
                                     
             this.commDeltaTauPowerPmac.delete();
@@ -1120,10 +679,9 @@ classdef App < mic.Base
                 return;
             end
             
-            device = bl12014.device.GetSetNumberFromExitSlit(this.commExitSlit);
-            this.uiApp.uiBeamline.uiExitSlit.setDevice(device);
-            this.uiApp.uiBeamline.uiExitSlit.turnOn();
-        
+            this.uiApp.uiBeamline.connectExitSlit(this.commExitSlit);
+            
+            
             
         end
         
@@ -1133,8 +691,8 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiBeamline.uiExitSlit.turnOff();
-            this.uiApp.uiBeamline.uiExitSlit.setDevice([]);
+            
+            this.uiApp.uiBeamline.disconnectExitSlit();
             
             % this.commExitSlit.delete();
             this.commExitSlit = [];
@@ -1167,17 +725,7 @@ classdef App < mic.Base
                 return
             end
             
-            % Wafer
-            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 1);
-            this.uiApp.uiWafer.uiDiode.uiCurrent.setDevice(deviceCh1);
-            this.uiApp.uiWafer.uiDiode.uiCurrent.turnOn();
-                        
-            % Wafer Focus Sensor
-            %{
-            deviceCh2 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Wafer, 2);
-            this.uiApp.uiWaferFocusSensor.uiCurrent.setDevice(deviceCh2);
-            this.uiApp.uiWaferFocusSensor.uiCurrent.turnOn();
-            %}
+            this.uiApp.uiWafer.connectToKeithley6482(this.commKeithley6482Wafer);
             
         end
         
@@ -1187,13 +735,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiWafer.uiDiode.uiCurrent.turnOff()
-            this.uiApp.uiWafer.uiDiode.uiCurrent.setDevice([]);
-            
-            %{
-            this.uiApp.uiWaferFocusSensor.uiDiode.turnOff()
-            this.uiApp.uiWaferFocusSensor.ui.uiDiode.setDevice([]);
-            %}
+            this.uiApp.uiWafer.disconnectKeithley6482()
             
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
@@ -1218,20 +760,11 @@ classdef App < mic.Base
                 this.commKeithley6482Reticle = [];
                 cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
-                
-                   
-                
                 return
             end
                         
-            % {< mic.interface.device.GetNumber}
-            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(this.commKeithley6482Reticle, 1);
-            this.uiApp.uiReticle.uiDiode.uiCurrent.setDevice(deviceCh1);
-            this.uiApp.uiReticle.uiDiode.uiCurrent.turnOn();
-            
-        
-            
+            this.uiApp.uiReticle.disconnectKeithley6482(this.commKeithley6482Reticle);
+                        
         end
         
         function destroyAndDisconnectKeithley6482Reticle(this)
@@ -1240,8 +773,7 @@ classdef App < mic.Base
                 return
             end
                             
-            this.uiApp.uiReticle.uiDiode.uiCurrent.turnOff()
-            this.uiApp.uiReticle.uiDiode.uiCurrent.setDevice([]);
+            this.uiApp.uiReticle.disconnectKeithley6482();
             
             this.commKeithley6482Reticle.delete();
             this.commKeithley6482Reticle = [];
@@ -1258,8 +790,6 @@ classdef App < mic.Base
             catch mE
                 this.commCxroHeightSensor = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                
-                
                 return
             end
             
@@ -1290,19 +820,10 @@ classdef App < mic.Base
             catch mE
                 this.commDctCorbaProxy = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                
                 return;
             end
-            
-            device = bl12014.device.GetSetNumberFromDctCorbaProxy(...
-                this.commDctCorbaProxy, ...
-                bl12014.device.GetSetNumberFromDctCorbaProxy.cDEVICE_SHUTTER ...
-            );
-        
-            this.uiApp.uiBeamline.uiShutter.setDevice(device)
-            this.uiApp.uiBeamline.uiShutter.turnOn()
-        
-            
+           
+            this.uiApp.uiBeamline.connectDctCorbaProxy(this.commDctCorbaProxy)
             
         end
         
@@ -1311,11 +832,8 @@ classdef App < mic.Base
             if ~this.getDctCorbaProxy()
                 return
             end
-            
-            % Beamline
-            
-            this.uiApp.uiBeamline.uiShutter.turnOff()
-            this.uiApp.uiBeamline.uiShutter.setDevice([])
+                        
+            this.uiApp.uiBeamline.disconnectDctCorbaProxy()
                         
             this.commDctCorbaProxy = [];
         end
@@ -1336,22 +854,7 @@ classdef App < mic.Base
                 return;
             end
             
-            % Beamline
-            
-            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
-                this.commBL1201CorbaProxy, ...
-                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
-            );
-            deviceGratingTiltX = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
-                this.commBL1201CorbaProxy, ...
-                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_GRATING_TILT_X ...
-            );
-            
-            this.uiApp.uiBeamline.uiUndulatorGap.setDevice(deviceUndulatorGap)
-            this.uiApp.uiBeamline.uiUndulatorGap.turnOn()
-
-            this.uiApp.uiBeamline.uiGratingTiltX.setDevice(deviceGratingTiltX)
-            this.uiApp.uiBeamline.uiGratingTiltX.turnOn()
+            this.uiApp.uiBeamline.connectBL1201CorbaProxy(this.commBL1201CorbaProxy);
                         
         end
         
@@ -1361,12 +864,7 @@ classdef App < mic.Base
                 return
             end
             
-            % Beamline
-            this.uiApp.uiBeamline.uiUndulatorGap.turnOff()
-            this.uiApp.uiBeamline.uiUndulatorGap.setDevice([])
-            
-            this.uiApp.uiBeamline.uiGratingTiltX.turnOff()
-            this.uiApp.uiBeamline.uiGratingTiltX.setDevice([])
+            this.uiApp.uiBeamline.disconnectBL1201CorbaProxy();
             
             % this.commBL1201CorbaProxy.delete();
             this.commBL1201CorbaProxy = [];
@@ -1390,25 +888,8 @@ classdef App < mic.Base
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
-            
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(this.commNewFocusModel8742, 2); % 2
 
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(this.commNewFocusModel8742, 1); % 1
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(this.commNewFocusModel8742, 3);
-            
-            this.uiApp.uiM142.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiApp.uiM142.uiStageTiltYMf.setDevice(deviceTiltYMf);
-            this.uiApp.uiM142.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
-            
-            this.uiApp.uiM142.uiStageTiltX.turnOn()
-            this.uiApp.uiM142.uiStageTiltYMf.turnOn()
-            this.uiApp.uiM142.uiStageTiltYMfr.turnOn()
-            
+            this.uiApp.uiM142.connectNewFocusModel8742(this, this.commNewFocusModel8742)
             
         end
         
@@ -1419,13 +900,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiM142.uiStageTiltX.turnOff()
-            this.uiApp.uiM142.uiStageTiltYMf.turnOff()
-            this.uiApp.uiM142.uiStageTiltYMfr.turnOff()
-            
-            this.uiApp.uiM142.uiStageTiltX.setDevice([]);
-            this.uiApp.uiM142.uiStageTiltYMf.setDevice([]);
-            this.uiApp.uiM142.uiStageTiltYMfr.setDevice([]);
+            this.uiApp.uiM142.disconnectNewFocusModel8742();
             
             this.commNewFocusModel8742.delete();
             this.commNewFocusModel8742 = [];
@@ -1449,13 +924,9 @@ classdef App < mic.Base
                
             end
             
-            device = bl12014.device.GetSetNumberFromStage(this.commGalilD142, 0);
             
-            this.uiApp.uiD142.uiStageY.setDevice(device);
-            this.uiApp.uiD142.uiStageY.turnOn();
-            
-            this.uiApp.uiBeamline.uiD142StageY.setDevice(device);
-            this.uiApp.uiBeamline.uiD142StageY.turnOn()
+            this.uiApp.uiD142.connectGalil(this.commGalilD142);
+            this.uiApp.uiBeamline.connectGalil(this.commGalilD142);
             
         end
         
@@ -1464,11 +935,8 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiD142.uiStageY.turnOff();
-            this.uiApp.uiD142.uiStageY.setDevice([]);
-            
-            this.uiApp.uiBeamline.uiD142StageY.turnOff()
-            this.uiApp.uiBeamline.uiD142StageY.setDevice([]);
+            this.uiApp.uiD142.disconnectGalil()
+            this.uiApp.uiBeamline.disconnectGalil();
             
             this.commGalilD142.disconnect();
             this.commGalilD142 = [];
@@ -1489,9 +957,7 @@ classdef App < mic.Base
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
-            device = bl12014.device.GetSetNumberFromStage(this.commGalilM143, 0);
-            this.uiApp.uiM143.uiStageY.setDevice(device);
-            this.uiApp.uiM143.uiStageY.turnOn();
+            this.uiApp.uiM143.connectGalil(this.commGalilM143);
             
             
         end
@@ -1501,8 +967,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiM143.uiStageY.turnOff();
-            this.uiApp.uiM143.uiStageY.setDevice([]);
+            this.uiApp.uiM143.disconnectGalil()
             
             this.commGalilM143.disconnect();
             this.commGalilM143 = [];
@@ -1523,50 +988,8 @@ classdef App < mic.Base
                 this.commGalilVIS = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
-            
-            
-            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 0);
-            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
-            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
-            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
-            
-            
-            
-            
-            this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice(device1);
-            this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice(device2);
-            this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice(device3);
-            this.uiApp.uiVibrationIsolationSystem.uiStage4.setDevice(device4);
-            
-            this.uiApp.uiVibrationIsolationSystem.uiStage1.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOn();
-            
-            % FIXME
-            % Need to wire in the encoders
-            
-            %{
-            device1 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 0);
-            device2 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 1);
-            device3 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 2);
-            device4 = bl12014.device.GetSetNumberFromStage(this.commGalilVIS, 3);
-            
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.setDevice(device1);
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.setDevice(device2);
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.setDevice(device3);
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.setDevice(device4);
-            
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder1.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder2.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder3.turnOn();
-            this.uiApp.uiVibrationIsolationSystem.uiEncoder4.turnOn();
-            %}
-            
-            
-            
-            
-            
+
+            this.uiApp.uiVibrationIsolationSystem.connectGalil(this.commGalilVIS)
             
         end
         
@@ -1575,15 +998,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiVibrationIsolationSystem.uiStage1.turnOff();
-            this.uiApp.uiVibrationIsolationSystem.uiStage2.turnOff();
-            this.uiApp.uiVibrationIsolationSystem.uiStage3.turnOff();
-            this.uiApp.uiVibrationIsolationSystem.uiStage4.turnOff();
-            
-            this.uiApp.uiVibrationIsolationSystem.uiStage1.setDevice([]);
-            this.uiApp.uiVibrationIsolationSystem.uiStage2.setDevice([]);
-            this.uiApp.uiVibrationIsolationSystem.uiStage3.setDevice([]);
-            this.uiApp.uiVibrationIsolationSystem.uiStage4.setDevice([]);
+            this.uiApp.uiVibrationIsolationSystem.disconnectGalil();
             
             this.commGalilVIS.disconnect(); 
             this.commGalilVIS = [];
@@ -1626,18 +1041,8 @@ classdef App < mic.Base
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 return;
             end
-                        
-            % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromMicronixMMC103(this.commMicronixMmc103, 1);
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltZMfr = bl12014.device.GetSetNumberFromMicronixMMC103(this.commMicronixMmc103, 2);
-            
-            this.uiApp.uiM142.uiStageX.setDevice(deviceX);
-            this.uiApp.uiM142.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
-            
-            this.uiApp.uiM142.uiStageX.turnOn()
-            this.uiApp.uiM142.uiStageTiltZMfr.turnOn()
+
+            this.uiApp.uiM142.connectMicronixMmc103(this.commMicronixMmc103);
             
         end
         
@@ -1648,11 +1053,7 @@ classdef App < mic.Base
                 return
             end
                                         
-            this.uiApp.uiM142.uiStageX.turnOff()
-            this.uiApp.uiM142.uiStageTiltZMfr.turnOff()
-            
-            this.uiApp.uiM142.uiStageX.setDevice([]);
-            this.uiApp.uiM142.uiStageTiltZMfr.setDevice([]);
+            this.uiApp.uiM142.disconnectMicronixMmc103();
             
             
             this.commMicronixMmc103.delete();

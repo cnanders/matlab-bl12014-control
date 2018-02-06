@@ -57,8 +57,63 @@ classdef M141 < mic.Base
         end
         
         
+        function connectSmarActMcsM141(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiStageX.setDevice(device);
+            this.uiStageX.turnOn();
+            
+            % {< mic.interface.device.GetSetNumber}
+            % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
+
+            % {< mic.interface.device.GetSetNumber}
+            % deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
+            
+            % this.uiStageTiltX.setDevice(deviceTiltX);
+            % this.uiStageTiltY.setDevice(deviceTiltY);
+            
+            % this.uiStageTiltX.turnOn();
+            % this.uiStageTiltY.turnOn();
+            
+            
+            
+        end
+        
+        function disconnectSmarActMcsM141(this, comm)
+            this.uiStageX.turnOff();
+            this.uiStageX.setDevice([]);
+            
+            % this.uiStageX.turnOff();
+            % this.uiStageTiltX.turnOff();
+            % this.uiStageTiltY.turnOff();
+            
+            % this.uiStageX.setDevice([]);
+            % this.uiStageTiltX.setDevice([]);
+            % this.uiStageTiltY.setDevice([]);
+            
+        end
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+            
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                32 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()
+            
+        end
         
         
+        
+        function disconnectDataTranslationMeasurPoint(this, comm)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+            
+        end
+        
+                
         function build(this)
             
             if ishghandle(this.hFigure)

@@ -53,6 +53,34 @@ classdef M143 < mic.Base
         
         end
         
+        function connectDataTranslationMeasurPoint(this, comm)
+           device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                35 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()     
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+        end
+        
+        
+        function connectGalil(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiStageY.setDevice(device);
+            this.uiStageY.turnOn();
+            
+        end
+        
+        function disconnectGalil(this)
+            this.uiStageY.turnOff();
+            this.uiStageY.setDevice([]);
+        end
         
         
         
