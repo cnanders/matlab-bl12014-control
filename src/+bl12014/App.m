@@ -339,7 +339,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiM141.connectSmarActMcsM141(this.commSmarActMcsM141);
+            this.uiApp.uiM141.connectSmarActMcs(this.commSmarActMcsM141);
             
         end
         
@@ -350,7 +350,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiM141.disconnectSmarActMcsM141();
+            this.uiApp.uiM141.disconnectSmarActMcs();
             
             this.commSmarActMcsM141.disconnect();
             this.commSmarActMcsM141 = [];
