@@ -713,19 +713,16 @@ classdef App < mic.Base
                     'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                 );
             
-                this.commKeithley6482Wafer.connect()
+                % this.commKeithley6482Wafer.connect()
                 % this.commKeithley6482Wafer.identity()
             catch mE
                 this.commKeithley6482Wafer = [];
                 cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', mE.message);
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
-               
-            
                 return
             end
             
-            this.uiApp.uiWafer.connectToKeithley6482(this.commKeithley6482Wafer);
+            this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
             
         end
         
@@ -763,7 +760,7 @@ classdef App < mic.Base
                 return
             end
                         
-            this.uiApp.uiReticle.disconnectKeithley6482(this.commKeithley6482Reticle);
+            this.uiApp.uiReticle.connectKeithley6482(this.commKeithley6482Reticle);
                         
         end
         

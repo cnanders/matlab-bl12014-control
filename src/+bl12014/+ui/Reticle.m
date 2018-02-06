@@ -108,12 +108,9 @@ classdef Reticle < mic.Base
             deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
             this.uiDiode.uiCurrent.setDevice(deviceCh1);
             this.uiDiode.uiCurrent.turnOn();
-            
-            
         end
         
         function disconnectKeithley6482(this)
-            
             this.uiDiode.uiCurrent.turnOff()
             this.uiDiode.uiCurrent.setDevice([]);
         end
