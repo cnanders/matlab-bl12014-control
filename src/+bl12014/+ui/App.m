@@ -498,6 +498,7 @@ classdef App < mic.Base
                 this.cDirSave, ...
                 ['saved-state', '.mat']...
             );
+            c = mic.Utils.path2canonical(c);
         end
         
     end % private

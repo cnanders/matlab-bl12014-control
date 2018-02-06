@@ -72,7 +72,6 @@ classdef Beamline < mic.Base
         uiCommGalilD142
         
         
-        
         % {mic.ui.device.GetSetNumber 1x1}
         uiExitSlit
         
@@ -346,7 +345,9 @@ classdef Beamline < mic.Base
             %}
             
             
-            delete(this.deviceShutterVirtual)
+            % delete(this.deviceShutterVirtual)
+            
+            
             delete(this.uiCommExitSlit)
             delete(this.uiCommBL1201CorbaProxy)
             delete(this.uiCommDctCorbaProxy)
