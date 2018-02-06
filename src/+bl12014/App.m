@@ -1112,8 +1112,7 @@ classdef App < mic.Base
                 return;
             end
             
-            this.uiApp.uiScannerMA.uiNPointLC400.setDevice(this.commNPointLC400MA);
-            this.uiApp.uiScannerMA.uiNPointLC400.turnOn();
+            this.uiApp.uiScannerMA.connectNPointLC400(this.commNPointLC400MA);
             
         end
         
@@ -1123,8 +1122,8 @@ classdef App < mic.Base
                 return
             end
 
-            this.uiApp.uiScannerMA.uiNPointLC400.turnOff();
-            this.uiApp.uiScannerMA.uiNPointLC400.setDevice([]);
+            this.uiApp.uiScannerMA.disconnectNPointLC400();
+            
             this.commNPointLC400MA.delete();
             this.commNPointLC400MA = [];
         end
@@ -1153,8 +1152,9 @@ classdef App < mic.Base
                 return;
             end
             
-            this.uiApp.uiScannerM142.uiNPointLC400.setDevice(this.commNPointLC400M142);
-            this.uiApp.uiScannerM142.uiNPointLC400.turnOn();
+            
+            this.uiApp.uiScannerM142.connectNPointLC400(this.commNPointLC400M142);
+            
             
             
         end
@@ -1165,8 +1165,8 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiScannerM142.uiNPointLC400.turnOff();
-            this.uiApp.uiScannerM142.uiNPointLC400.setDevice([]);
+            this.uiApp.uiScannerM142.disconnectNPointLC400();
+            
             this.commNPointLC400M142.delete();
             this.commNPointLC400M142 = [];
         end

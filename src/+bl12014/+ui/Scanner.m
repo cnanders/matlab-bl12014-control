@@ -50,6 +50,16 @@ classdef Scanner < mic.Base
         
         end
         
+        function connectNPointLC400(this, comm)
+            this.uiNPointLC400.setDevice(comm);
+            this.uiNPointLC400.turnOn();
+        end
+        
+        function disconnectNPointLC400(this)
+            this.uiNPointLC400.turnOff();
+            this.uiNPointLC400.setDevice([]);
+            
+        end
         
         
         
