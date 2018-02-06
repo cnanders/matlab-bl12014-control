@@ -6,6 +6,16 @@ TO DO
 - When moving stage, need to use correct units.  The ui.WaferAxes always passes SI units
 
 -->
+
+# 1.0.0-alpha.26
+
+- Implemented `save()` and `load()` functionlity across the main `ui.*` classes.  Some of the LSI
+stuff still needs to be done.
+
+# 1.0.0-alpha.25
+
+- All code that connects comm instances to UI through `device` instances is now inside of individual UI modules.  This cleaned up the high-level App substantially
+
 # 1.0.0-alpha.24
 - Adding methods for LSICamera
 

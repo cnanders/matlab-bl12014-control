@@ -376,7 +376,9 @@ classdef Beamline < mic.Base
         end
         
         function  load(this, st)
-            this.stUiRecipeStore = st.stUiRecipeStore;
+            if isfield(st, 'stUiRecipeStore') 
+                this.stUiRecipeStore = st.stUiRecipeStore;
+            end
         end
         
     end

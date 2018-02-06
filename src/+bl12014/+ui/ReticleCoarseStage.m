@@ -136,7 +136,39 @@ classdef ReticleCoarseStage < mic.Base
             end
             
             
-        end    
+        end  
+        
+        
+        function st = save(this)
+            st = struct();
+            st.uiX = this.uiX.save();
+            st.uiY = this.uiY.save();
+            st.uiZ = this.uiZ.save();
+            st.uiTiltX = this.uiTiltX.save();
+            st.uiTiltY = this.uiTiltY.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiX')
+                this.uiX.load(st.uiX)
+            end
+            
+            if isfield(st, 'uiY')
+                this.uiY.load(st.uiY)
+            end
+            
+            if isfield(st, 'uiZ')
+                this.uiZ.load(st.uiZ)
+            end
+            
+            if isfield(st, 'uiTiltX')
+                this.uiTiltX.load(st.uiTiltX)
+            end
+            
+            if isfield(st, 'uiTiltY')
+                this.uiTiltY.load(st.uiTiltY)
+            end
+        end
         
         
     end

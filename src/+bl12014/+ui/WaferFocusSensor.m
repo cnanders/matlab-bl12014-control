@@ -109,7 +109,20 @@ classdef WaferFocusSensor < mic.Base
             end
             
             
-        end    
+        end  
+        
+        function st = save(this)
+            st = struct();
+            st.uiTiltZ = this.uiTiltZ.save();
+            
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiZ')
+                this.uiTiltZ.load(st.uiTiltZ)
+            end
+            
+        end
         
         
     end

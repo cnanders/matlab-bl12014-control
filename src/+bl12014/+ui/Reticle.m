@@ -279,10 +279,23 @@ classdef Reticle < mic.Base
             
         end
         
-       
-        
-        
+        function st = save(this)
+            st = struct();
+            st.uiCoarseStage = this.uiCoarseStage.save();
+            st.uiFineStage = this.uiFineStage.save();
             
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiCoarseStage')
+                this.uiCoarseStage.load(st.uiCoarseStage)
+            end
+            
+            if isfield(st, 'uiFineStage')
+                this.uiFineStage.load(st.uiFineStage)
+            end
+        end
+        
 
     end
     

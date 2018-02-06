@@ -137,7 +137,97 @@ classdef App < mic.Base
             % Delete the clock
             delete(this.clock);
                        
-        end         
+        end 
+        
+        function st = save(this)
+             st = struct();
+             st.uiPrescriptionTool = this.uiPrescriptionTool.save();
+             st.uiScannerMA = this.uiScannerMA.save();
+             st.uiScannerM142 = this.uiScannerM142.save();
+             st.uiScan = this.uiScan.save();
+             
+             
+            %uiNetworkCommunication
+            %uiBeamline
+            %uiShutter
+            st.uiM141 = this.uiM141.save();
+            st.uiM142 = this.uiM142.save();
+            st.uiM143 = this.uiM143.save();
+            st.uiD141 = this.uiD141.save();
+            st.uiD142 = this.uiD142.save();
+            % uiVibrationIsolationSystem
+            st.uiReticle = this.uiReticle.save();
+            st.uiWafer = this.uiWafer.save();
+            % uiPowerPmacStatus
+            % uiPrescriptionTool           
+            % uiScan
+            % uiTempSensors
+            
+            % uiLSIControl = {};
+            % uiLSIAnalyze = {};
+
+             
+        end
+        
+        function load(this, st)
+                        
+            if isfield(st, 'uiPrescriptionTool') 
+                this.uiPrescriptionTool.load(st.uiPrescriptionTool);
+            end
+            
+            if isfield(st, 'uiScannerMA')
+                this.uiScannerMA.load(st.uiScannerMA);
+            end
+            if isfield(st, 'uiScannerM142')
+                this.uiScannerM142.load(st.uiScannerM142);
+            end
+            
+            if isfield(st, 'uiScan')
+                this.uiScan.load(st.uiScan)
+            end
+            
+            if isfield(st, 'uiM141')
+                this.uiM141.load(st.uiM141)
+            end
+            
+            if isfield(st, 'uiM142')
+                this.uiM142.load(st.uiM142)
+            end
+            
+            if isfield(st, 'uiM143')
+                this.uiM143.load(st.uiM143)
+            end
+            
+            if isfield(st, 'uiD141')
+                this.uiD141.load(st.uiD141)
+            end
+            
+            if isfield(st, 'uiD142')
+                this.uiD142.load(st.uiD142)
+            end
+            
+            if isfield(st, 'uiReticle')
+                this.uiReticle.load(st.uiReticle)
+            end
+            
+            if isfield(st, 'uiWafer')
+                this.uiWafer.load(st.uiWafer)
+            end
+        end
+        
+        function saveStateToDisk(this)
+            st = this.save();
+            fprintf('ui.App saveStateToDisk() file: %s\n', this.file());
+            save(this.file(), 'st');
+        end
+        
+        function loadStateFromDisk(this)
+            if exist(this.file(), 'file') == 2
+                fprintf('ui.App loadStateFromDisk() file: %s\n', this.file());
+                load(this.file()); % populates variable st in local workspace
+                this.load(st);
+            end
+        end
 
     end
     
@@ -400,44 +490,7 @@ classdef App < mic.Base
         end
         
         
-        function st = save(this)
-             st = struct();
-             st.uiPrescriptionTool = this.uiPrescriptionTool.save();
-             st.uiScannerMA = this.uiScannerMA.save();
-             st.uiScannerM142 = this.uiScannerM142.save();
-             st.uiScan = this.uiScan.save();
-        end
         
-        function load(this, st)
-                        
-            if isfield(st, 'uiPrescriptionTool') 
-                this.uiPrescriptionTool.load(st.uiPrescriptionTool);
-            end
-            
-            if isfield(st, 'uiScannerMA')
-                this.uiScannerMA.load(st.uiScannerMA);
-            end
-            if isfield(st, 'uiScannerM142')
-                this.uiScannerM142.load(st.uiScannerM142);
-            end
-            
-            if isfield(st, 'uiScan')
-                this.uiScan.load(st.uiScan)
-            end
-        end
-        
-        function saveStateToDisk(this)
-            st = this.save();
-            save(this.file(), 'st');
-        end
-        
-        function loadStateFromDisk(this)
-            if exist(this.file(), 'file') == 2
-                this.msg('loadStateFromDisk()');
-                load(this.file()); % populates variable st in local workspace
-                this.load(st);
-            end
-        end
         
         function c = file(this)
             mic.Utils.checkDir(this.cDirSave);

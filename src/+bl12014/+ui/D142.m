@@ -138,7 +138,19 @@ classdef D142 < mic.Base
             end
             
             
-        end    
+        end   
+        
+        
+        function st = save(this)
+            st = struct();
+            st.uiStageY = this.uiStageY.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageY.load(st.uiStageY)
+            end
+        end
         
         
     end

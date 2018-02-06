@@ -93,7 +93,22 @@ classdef WaferFineStage < mic.Base
             end
             
             
-        end    
+        end 
+        
+        function st = save(this)
+            st = struct();
+            st.uiZ = this.uiZ.save();
+            
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiZ')
+                this.uiZ.load(st.uiZ)
+            end
+            
+            
+            
+        end
         
         
     end

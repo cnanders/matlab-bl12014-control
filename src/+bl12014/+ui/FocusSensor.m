@@ -67,10 +67,8 @@ classdef FocusSensor < mic.Base
             end
             this.init();
             
-            
         end
         
-            
         
         function connectSmarActRotary(this, comm)
             device = bl12014.device.GetSetNumberFromStage(comm, 1);

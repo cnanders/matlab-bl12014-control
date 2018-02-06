@@ -197,68 +197,38 @@ classdef M142 < mic.Base
         end    
         
         
-        %{
+        function st = save(this)
+            st = struct();
+            st.uiStageX = this.uiStageX.save();
+            st.uiStageTiltX = this.uiStageTiltX.save();
+            st.uiStageTiltYMf = this.uiStageTiltYMf.save();
+            st.uiStageTiltYMfr = this.uiStageTiltYMfr.save();
+            st.uiStageTiltZMfr = this.uiStageTiltZMfr.save();
         
-        function connectMicronixMmc103(this, comm)
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 1);
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltZMfr = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 2);
-            
-            this.uiStageX.setDevice(deviceX);
-            this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
-            
-            this.uiStageX.turnOn();
-            this.uiStageTiltZMfr.turnOn();
-            
         end
         
-        function disconnectMicronixMmc103(this)
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageY.load(st.uiStageY)
+            end
             
-            this.uiStageX.turnOff();
-            this.uiStageTiltZMfr.turnOff();
+            if isfield(st, 'uiStageTiltX')
+                this.uiStageTiltX.load(st.uiStageTiltX)
+            end
             
-            this.uiStageX.setDevice([]);
-            this.uiStageTiltZMfr.setDevice([]);
+            if isfield(st, 'uiStageTiltYMf')
+                this.uiStageTiltYMf.load(st.uiStageTiltYMf)
+            end
             
-        end
-        
-        function connectNewFocusModel8742(this, comm)
+            if isfield(st, 'uiStageTiltYMfr')
+                this.uiStageTiltYMfr.load(st.uiStageTiltYMfr)
+            end
             
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
-
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
-            
-            this.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiStageTiltYMf.setDevice(deviceTiltYMf);
-            this.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
-            
-            this.uiStageTiltX.turnOn()
-            this.uiStageTiltYMf.turnOn()
-            this.uiStageTiltYMfr.turnOn()
+            if isfield(st, 'uiStageTiltZMfr')
+                this.uiStageTiltZMfr.load(st.uiStageTiltZMfr)
+            end
             
         end
-        
-        function disconnectNewFocusModel8742(this)
-            
-            this.uiStageTiltX.turnOff()
-            this.uiStageTiltYMf.turnOff()
-            this.uiStageTiltYMfr.turnOff()
-            
-            
-            this.uiStageTiltX.setDevice([]);
-            this.uiStageTiltYMf.setDevice([]);
-            this.uiStageTiltYMfr.setDevice([]);
-        end
-        
-        %}
     end
     
     methods (Access = private)

@@ -9,9 +9,7 @@ classdef M143 < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDataTranslationMeasurPoint
-                
-        
-        
+                        
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
                 
@@ -154,7 +152,18 @@ classdef M143 < mic.Base
             end
             
             
-        end    
+        end   
+        
+        function st = save(this)
+            st = struct();
+            st.uiStageY = this.uiStageY.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageY.load(st.uiStageY)
+            end
+        end
         
         
     end

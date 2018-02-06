@@ -307,6 +307,27 @@ classdef Wafer < mic.Base
             end
             
         end
+        
+        function st = save(this)
+            st = struct();
+            st.uiCoarseStage = this.uiCoarseStage.save();
+            st.uiFineStage = this.uiFineStage.save();
+            st.uiLsiCoarseStage = this.uiLsiCoarseStage.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiCoarseStage')
+                this.uiCoarseStage.load(st.uiCoarseStage)
+            end
+            
+            if isfield(st, 'uiLsiCoarseStage')
+                this.uiLsiCoarseStage.load(st.uiLsiCoarseStage)
+            end
+            
+            if isfield(st, 'uiFineStage')
+                this.uiFineStage.load(st.uiFineStage)
+            end
+        end
                
         
         function onClock(this)
