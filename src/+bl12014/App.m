@@ -174,9 +174,6 @@ classdef App < mic.Base
             
         end
         
-        
-        
-
     end
     
     methods (Access = private)
@@ -203,7 +200,7 @@ classdef App < mic.Base
            end
            
            this.jMet5Instruments.disconnect();
-           this.jMet5Instruments = []
+           this.jMet5Instruments = [];
            
             
         end
