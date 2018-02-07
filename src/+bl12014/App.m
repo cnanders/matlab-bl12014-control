@@ -883,7 +883,7 @@ classdef App < mic.Base
                 return;
             end
 
-            this.uiApp.uiM142.connectNewFocusModel8742(this, this.commNewFocusModel8742)
+            this.uiApp.uiM142.connectNewFocusModel8742(this.commNewFocusModel8742)
             
         end
         
@@ -1071,6 +1071,8 @@ classdef App < mic.Base
                
                 return;
             end
+            
+            
             
             % Here connect any UIs that use this
             
