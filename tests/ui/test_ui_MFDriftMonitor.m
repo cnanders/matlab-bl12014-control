@@ -29,8 +29,7 @@ end
 
 
 % Set the UI device to the drift monitor:
-ui = bl12014.ui.MFDriftMonitor('apiDriftMonitor', APIDriftMonitor,...
-                               'apiHexapod', APIHexapod, ...
+ui = bl12014.ui.MFDriftMonitor('hardware', hardware, ...
                                'clock', clock);
 
 
