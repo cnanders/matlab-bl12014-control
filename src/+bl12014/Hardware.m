@@ -1,6 +1,6 @@
 % MET5 hardware class.  Contains getters for all hardware handles.
 %
-% Every hardware communication requires the addition of three things:
+% Every hardware communication requires the addition of four things:
 %
 % 1) Corresponding "comm" property (e.g., commMFDriftMonitor) represeting
 % the stored handle to the hardware component
@@ -9,6 +9,9 @@
 % otherwise should initialize it and then return it
 %
 % 3) Delete function: disconnects device and unsets the comm property.
+%
+% 4) Modify the path variable structure to ensure your getter is properly
+% scoped.
 %
 
 
@@ -44,6 +47,9 @@ classdef Hardware < mic.Base
 	properties
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
+        cDirMet5InstrumentsConfig = ...
+            fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor', 'cwcork');
+
         
         % {cxro.common.device.motion.Stage 1x1}
         commLSIHexapod
@@ -51,7 +57,8 @@ classdef Hardware < mic.Base
         % Temporarily:{lsicontrol.virtualDevice.virtualPVCam}
         commPIMTECamera
         
-        commSmarActRotary
+        % {keithley.Keithley6482 1x1}
+        commKeithley6482Wafer
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
@@ -66,12 +73,20 @@ classdef Hardware < mic.Base
         
         % {char 1xm} - base directory for configuration and library files
         % for cwcork's cxro.met5.Instruments class
-        cDirMet5InstrumentsConfig = fullfile(fileparts(mfilename('fullpath')),...
-                '..', '..', 'vendor', 'cwcork');
         
-        cDirLSI = fullfile(fileparts(mfilename('fullpath')),...
-                '..', '..', 'vendor', 'ryanmiyakawa');
+        % Hardware will load the following paths and genpaths on init:
+        ceGenpathLoad = { ...
+            fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor',    ...
+                        'github', 'cnanders', 'matlab-keithley-6482', 'src')    ...
+            }
         
+        cePathLoad = { ...
+            }
+        
+        ceJavaPathLoad = { ...
+            fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor',    ...
+                        'cwcork', 'Met5Instruments.jar')                        ...
+            }
     end
     
         
@@ -91,7 +106,31 @@ classdef Hardware < mic.Base
         
         
         %% Getters
+        function comm = getjMet5Instruments(this)
+            if isempty(this.jMet5Instruments)
+                this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
+            end
+            comm = this.jMet5Instruments;
+        end
+        
+        % WAFER DOSE MONITOR (KEITHLEY 6482)
+        function comm = getKeithleyWafer(this)
+            if isempty(this.commKeithley6482Wafer)
+               this.commKeithley6482Wafer = keithley.Keithley6482(...
+                    'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
+                    'u16TcpipPort', 4001, ...
+                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+                );
+                this.commKeithley6482Wafer.connect()
+            end
+            comm = this.commKeithley6482Wafer;
+        end
+        
+        % DRIFT MONITOR
         function comm = getMFDriftMonitor(this)
+            if isempty(this.jMet5Instruments)
+                this.getjMet5Instruments();
+            end
             if isempty(this.commMFDriftMonitor)
                 CWCDriftMonitorAPI  = this.jMet5Instruments.getMfDriftMonitor();
                 % Drift monitor bridge, not usually necessary
@@ -100,13 +139,15 @@ classdef Hardware < mic.Base
             end
             comm = this.commMFDriftMonitor;
         end
-        
         function comm = getMFDriftMonitorVirtual(~)
             comm = bl12014.hardwareAssets.virtual.VirtualMFDriftMonitor();
         end
         
-        
+        % LSI HEXAPOD
         function comm = getLSIHexapod(this)
+            if isempty(this.jMet5Instruments)
+                this.getjMet5Instruments();
+            end
             if isempty(this.commMFDriftMonitor)
                 CWCHexapod  = this.jMet5Instruments.getLsiHexapod();
                 % Hexapod bridge, not usually necessary
@@ -117,7 +158,14 @@ classdef Hardware < mic.Base
         end
         
         
+        
+        
         %% Delete fcns
+        function deleteKeithleyWafer(this)
+            this.commKeithley6482Wafer.delete();
+            this.commKeithley6482Wafer = [];
+        end
+            
         function deleteMFDriftMonitor(this)
             this.commMFDriftMonitor.disconnect();
             this.commMFDriftMonitor = [];
@@ -140,26 +188,18 @@ classdef Hardware < mic.Base
         %% Init  functions
         % Initializes directories and any helper classes 
         function init(this)
-            this.initPath();
-            this.initMet5Instruments();
+            % Init path
+            mic.Utils.map(this.ceGenpathLoad, ...
+                @(cVPath) addpath(genpath(cVPath)));
+            mic.Utils.map(this.cePathLoad, ...
+                @(cVPath) addpath(cVPath));
+            mic.Utils.map(this.ceJavaPathLoad, ...
+                @(cVPath) javaaddpath(cVPath), 0);
         end
         
-        function initPath(this)
-            addpath(genpath(this.cDirMet5InstrumentsConfig));
-            addpath(genpath(this.cDirLSI));
-        end
+  
         
-        function initMet5Instruments(this)
-           if ~isempty(this.jMet5Instruments)
-               return
-           end
-           try
-                this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
-           catch mE
-                this.jMet5Instruments = []; 
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-           end
-        end
+  
         
         
                 
