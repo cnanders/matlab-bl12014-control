@@ -56,17 +56,60 @@ classdef VibrationIsolationSystemTempSensors < mic.Base
         
         end
         
+        function connectDataTranslationMeasurPoint(this, comm)
+            
+            device1 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                11 ...
+            );
+            device2 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                12 ...
+            );
+            device3 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                13 ...
+            );
+            device4 = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, ...
+                14 ...
+            );
+            this.ui1.setDevice(device1);
+            this.ui2.setDevice(device2);
+            this.ui3.setDevice(device3);
+            this.ui4.setDevice(device4);
+            
+            this.ui1.turnOn();
+            this.ui2.turnOn();
+            this.ui3.turnOn();
+            this.ui4.turnOn();
+        end
         
+        function disconnectDataTranslationMeasurPoint(this)
+                        
+            this.ui1.turnOff();
+            this.ui2.turnOff();
+            this.ui3.turnOff();
+            this.ui4.turnOff();
+            
+            this.ui1.setDevice([]);
+            this.ui2.setDevice([]);
+            this.ui3.setDevice([]);
+            this.ui4.setDevice([]);
+            
+        end
+        
+        %{
         function turnOn(this)
             
             this.ui1.turnOn();
             this.ui2.turnOn();
             this.ui3.turnOn();
             this.ui4.turnOn();
-            
-            
-            
-            
         end
         
         function turnOff(this)
@@ -75,9 +118,8 @@ classdef VibrationIsolationSystemTempSensors < mic.Base
             this.ui3.turnOff();
             this.ui4.turnOff();
             
-            
-            
         end
+        %}
         
         function build(this, hParent, dLeft, dTop)
             

@@ -119,7 +119,26 @@ classdef ReticleFineStage < mic.Base
             end
             
             
-        end    
+        end  
+        
+        function st = save(this)
+            st = struct();
+            st.uiX = this.uiX.save();
+            st.uiY = this.uiY.save();
+            
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiX')
+                this.uiX.load(st.uiX)
+            end
+            
+            if isfield(st, 'uiY')
+                this.uiY.load(st.uiY)
+            end
+            
+            
+        end
         
         
     end

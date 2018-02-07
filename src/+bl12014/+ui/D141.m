@@ -44,8 +44,20 @@ classdef D141 < mic.Base
         
         end
         
+        function connectDataTranslationMeasurPoint(this, comm)
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                33 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()
+        end
        
-        
+        function disconnectDataTranslationMeasurPoint(this)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+        end
         
         function build(this)
             
@@ -114,7 +126,18 @@ classdef D141 < mic.Base
             end
             
             
-        end    
+        end  
+        
+        function st = save(this)
+            st = struct();
+            st.uiStageY = this.uiStageY.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageY.load(st.uiStageY)
+            end
+        end
         
         
     end

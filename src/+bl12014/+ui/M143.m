@@ -9,9 +9,7 @@ classdef M143 < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDataTranslationMeasurPoint
-                
-        
-        
+                        
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
                 
@@ -53,6 +51,34 @@ classdef M143 < mic.Base
         
         end
         
+        function connectDataTranslationMeasurPoint(this, comm)
+           device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                35 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()     
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+        end
+        
+        
+        function connectGalil(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiStageY.setDevice(device);
+            this.uiStageY.turnOn();
+            
+        end
+        
+        function disconnectGalil(this)
+            this.uiStageY.turnOff();
+            this.uiStageY.setDevice([]);
+        end
         
         
         
@@ -126,7 +152,18 @@ classdef M143 < mic.Base
             end
             
             
-        end    
+        end   
+        
+        function st = save(this)
+            st = struct();
+            st.uiStageY = this.uiStageY.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageY.load(st.uiStageY)
+            end
+        end
         
         
     end

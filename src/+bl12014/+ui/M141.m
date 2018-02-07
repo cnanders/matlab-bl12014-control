@@ -57,8 +57,63 @@ classdef M141 < mic.Base
         end
         
         
+        function connectSmarActMcs(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromStage(comm, 0);
+            this.uiStageX.setDevice(device);
+            this.uiStageX.turnOn();
+            
+            % {< mic.interface.device.GetSetNumber}
+            % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
+
+            % {< mic.interface.device.GetSetNumber}
+            % deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
+            
+            % this.uiStageTiltX.setDevice(deviceTiltX);
+            % this.uiStageTiltY.setDevice(deviceTiltY);
+            
+            % this.uiStageTiltX.turnOn();
+            % this.uiStageTiltY.turnOn();
+            
+            
+            
+        end
+        
+        function disconnectSmarActMcs(this, comm)
+            this.uiStageX.turnOff();
+            this.uiStageX.setDevice([]);
+            
+            % this.uiStageX.turnOff();
+            % this.uiStageTiltX.turnOff();
+            % this.uiStageTiltY.turnOff();
+            
+            % this.uiStageX.setDevice([]);
+            % this.uiStageTiltX.setDevice([]);
+            % this.uiStageTiltY.setDevice([]);
+            
+        end
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+            
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                32 ...
+            );
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()
+            
+        end
         
         
+        
+        function disconnectDataTranslationMeasurPoint(this, comm)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+            
+        end
+        
+                
         function build(this)
             
             if ishghandle(this.hFigure)
@@ -139,47 +194,16 @@ classdef M141 < mic.Base
             
         end   
         
-        %{
-        function connectSmarActMcsM141(this, comm)
-            
-            % {< mic.interface.device.GetSetNumber}
-            deviceX = bl12014.device.GetSetNumberFromStage(comm, 1);
-
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromStage(comm, 2);
-
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltY = bl12014.device.GetSetNumberFromStage(comm, 3);
-            
-            this.uiStageX.setDevice(deviceX);
-            this.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiStageTiltY.setDevice(deviceTiltY);
-            
+        function st = save(this)
+            st = struct();
+            st.uiStageX = this.uiStageX.save();
         end
         
-        function disconnectSmarActMcsM141(this)
-            
-            this.uiStageX.setDevice([]);
-            this.uiStageTiltX.setDevice([]);
-            this.uiStageTiltY.setDevice([]);
-            
+        function load(this, st)
+            if isfield(st, 'uiStageY')
+                this.uiStageX.load(st.uiStageX)
+            end
         end
-        
-        
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            u8Channel = 1;
-            % {< mic.interface.device.GetNumber}
-            device = bl12014.device.GetNumberFromDataTranslationMeasurPoint(comm, u8Channel);
-            this.uiCurrent.setDevice(device);
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this)
-            
-            this.uiCurrent.setDevice([]);
-        end
-        
-        %}
         
         
     end

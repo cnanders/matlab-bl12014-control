@@ -67,10 +67,21 @@ classdef FocusSensor < mic.Base
             end
             this.init();
             
+        end
+        
+        
+        function connectSmarActRotary(this, comm)
+            device = bl12014.device.GetSetNumberFromStage(comm, 1);
+            this.uiFocusSensor.uiTiltZ.setDevice(device);
+            this.uiFocusSensor.uiTiltZ.turnOn();
+        end
+        
+        function disconnectSmarActRotary(this)
+            this.uiFocusSensor.uiTiltZ.turnOff();
+            this.uiFocusSensor.uiTiltZ.setDevice([]);
             
         end
         
-                
         function build(this)
                         
             % Figure

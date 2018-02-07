@@ -88,7 +88,20 @@ classdef LsiCoarseStage < mic.Base
             end
             
             
-        end    
+        end 
+        
+        function st = save(this)
+            st = struct();
+            st.uiX = this.uiX.save();
+            
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiX')
+                this.uiX.load(st.uiX)
+            end
+            
+        end
         
         
     end

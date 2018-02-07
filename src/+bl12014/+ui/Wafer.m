@@ -77,7 +77,129 @@ classdef Wafer < mic.Base
             
         end
         
+        
+        function connectDataTranslationMeasurPoint(this, comm)
+            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
+            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
+            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
+            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 12);
+        
+            this.uiPobCapSensors.uiCap1.setDevice(deviceCap1);
+            this.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
+            this.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
+            this.uiPobCapSensors.uiCap4.setDevice(deviceCap4);
+            
+            this.uiPobCapSensors.uiCap1.turnOn();
+            this.uiPobCapSensors.uiCap2.turnOn();
+            this.uiPobCapSensors.uiCap3.turnOn();
+            this.uiPobCapSensors.uiCap4.turnOn();
+        end
+        
+        function disconnectDataTranslationMeasurPoint(this)
+
+            this.uiPobCapSensors.uiCap1.turnOff();
+            this.uiPobCapSensors.uiCap2.turnOff();
+            this.uiPobCapSensors.uiCap3.turnOff();
+            this.uiPobCapSensors.uiCap4.turnOff();
+            
+            this.uiPobCapSensors.uiCap1.setDevice([]);
+            this.uiPobCapSensors.uiCap2.setDevice([]);
+            this.uiPobCapSensors.uiCap3.setDevice([]);
+            this.uiPobCapSensors.uiCap4.setDevice([]);
                 
+        end
+        
+        
+        
+        function connectKeithley6482(this, comm)
+           % Wafer
+            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            this.uiDiode.uiCurrent.setDevice(deviceCh1);
+            this.uiDiode.uiCurrent.turnOn();
+                        
+            % Wafer Focus Sensor
+            %{
+            deviceCh2 = bl12014.device.GetNumberFromKeithley6482(comm, 2);
+            this.uiApp.uiWaferFocusSensor.uiCurrent.setDevice(deviceCh2);
+            this.uiApp.uiWaferFocusSensor.uiCurrent.turnOn();
+            %} 
+            
+        end
+        
+        function disconnectKeithely6482(this)
+            this.uiDiode.uiCurrent.turnOff()
+            this.uiDiode.uiCurrent.setDevice([]);
+            
+            %{
+            this.uiApp.uiWaferFocusSensor.uiDiode.turnOff()
+            this.uiApp.uiWaferFocusSensor.ui.uiDiode.setDevice([]);
+            %} 
+            
+        end
+        
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            deviceFineZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            deviceCoarseXLsi = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
+            
+            % Set Devices
+            this.uiWorkingMode.ui.setDevice(deviceWorkingMode);
+            this.uiCoarseStage.uiX.setDevice(deviceCoarseX);
+            this.uiCoarseStage.uiY.setDevice(deviceCoarseY);
+            this.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
+            this.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
+            this.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
+            this.uiFineStage.uiZ.setDevice(deviceFineZ);
+            this.uiLsiCoarseStage.uiX.setDevice(deviceCoarseXLsi);
+            
+            % Turn on
+            this.uiWorkingMode.ui.turnOn();
+            this.uiCoarseStage.uiX.turnOn();
+            this.uiCoarseStage.uiY.turnOn();
+            this.uiCoarseStage.uiZ.turnOn();
+            this.uiCoarseStage.uiTiltX.turnOn();
+            this.uiCoarseStage.uiTiltY.turnOn();
+            this.uiLsiCoarseStage.uiX.turnOn();
+            this.uiFineStage.uiZ.turnOn();
+            
+        end
+        
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiWorkingMode.ui.turnOff();
+            this.uiCoarseStage.uiX.turnOff();
+            this.uiCoarseStage.uiY.turnOff();
+            this.uiCoarseStage.uiZ.turnOff();
+            this.uiCoarseStage.uiTiltX.turnOff();
+            this.uiCoarseStage.uiTiltY.turnOff();
+            this.uiLsiCoarseStage.uiX.turnOff();
+            this.uiFineStage.uiZ.turnOff();
+                        
+            this.uiWorkingMode.ui.setDevice([]);
+            this.uiCoarseStage.uiX.setDevice([]);
+            this.uiCoarseStage.uiY.setDevice([]);
+            this.uiCoarseStage.uiZ.setDevice([]);
+            this.uiCoarseStage.uiTiltX.setDevice([]);
+            this.uiCoarseStage.uiTiltY.setDevice([]);
+            this.uiLsiCoarseStage.uiX.setDevice([]);
+            this.uiFineStage.uiZ.setDevice([]);
+            
+        end
+        
+        
+        
+        
         function build(this)
                         
             % Figure
@@ -184,6 +306,27 @@ classdef Wafer < mic.Base
                 delete(this.hFigure);
             end
             
+        end
+        
+        function st = save(this)
+            st = struct();
+            st.uiCoarseStage = this.uiCoarseStage.save();
+            st.uiFineStage = this.uiFineStage.save();
+            st.uiLsiCoarseStage = this.uiLsiCoarseStage.save();
+        end
+        
+        function load(this, st)
+            if isfield(st, 'uiCoarseStage')
+                this.uiCoarseStage.load(st.uiCoarseStage)
+            end
+            
+            if isfield(st, 'uiLsiCoarseStage')
+                this.uiLsiCoarseStage.load(st.uiLsiCoarseStage)
+            end
+            
+            if isfield(st, 'uiFineStage')
+                this.uiFineStage.load(st.uiFineStage)
+            end
         end
                
         
