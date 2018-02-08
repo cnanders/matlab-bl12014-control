@@ -1,5 +1,5 @@
 % UI element that controls DMI and HS
-% Wenhua will work on this
+
 
 classdef MFDriftMonitor < mic.Base
     
