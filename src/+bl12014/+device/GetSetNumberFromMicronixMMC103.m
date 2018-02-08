@@ -119,7 +119,7 @@ classdef GetSetNumberFromMicronixMMC103 < mic.interface.device.GetSetNumber
         
         function onTimer(this, obj, evt)
             
-            lDebug = false;
+            lDebug = true;
             lDebug && fprintf('bl12014.device.GetSetNumberFromMicronixMMC103.onTimer()\n');
             
             if (this.isInitialized())

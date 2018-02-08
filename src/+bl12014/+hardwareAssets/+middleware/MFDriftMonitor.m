@@ -16,7 +16,8 @@ classdef MFDriftMonitor < mic.Base
         u8HSMODEL_CALIBRATION = 1
         
         
-        dDMI_SCALE      = 1.5; % dmi axes come in units of 1.5 angstroms
+        dDMI_SCALE      = 1.5/10; % dmi axes come in units of 1.5 angstroms
+                                  % Convert to nm
         
         % HS Geometry.  Important only for geometric interpolant
         dLaserAngle         = pi/180; % 1 degree
@@ -223,13 +224,13 @@ classdef MFDriftMonitor < mic.Base
                 
             
             % Set DMI data:
-            
+             
                 % Here we need to extract from sample itself since CWC
                 % function takes difference between Ret and Wafer
                 dDMIRawData = double(dSampleAve.getDmiData());
-                
+                  
                 dErrU_ret = dDMIRawData(this.u8RETICLE_U);
-                dErrV_ret = dDMIRawData(this.u8RETICLE_U);
+                dErrV_ret = dDMIRawData(this.u8RETICLE_V);
                 
                 dErrU_waf = dDMIRawData(this.u8WAFER_U);
                 dErrV_waf = dDMIRawData(this.u8WAFER_V);
