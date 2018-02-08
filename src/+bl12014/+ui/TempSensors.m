@@ -188,15 +188,7 @@ classdef TempSensors < mic.Base
             this.uiPobTempSensors.uiFrame12.setDevice([]);
             
             
-            this.uiVisTempSensors.uiFrame1.turnOff();
-            this.uiVisTempSensors.uiFrame2.turnOff();
-            this.uiVisTempSensors.uiFrame3.turnOff();
-            this.uiVisTempSensors.uiFrame4.turnOff();
             
-            this.uiVisTempSensors.uiFrame1.setDevice([]);
-            this.uiVisTempSensors.uiFrame2.setDevice([]);
-            this.uiVisTempSensors.uiFrame3.setDevice([]);
-            this.uiVisTempSensors.uiFrame4.setDevice([]);
             
         end
                 
@@ -254,7 +246,7 @@ classdef TempSensors < mic.Base
             % dTop = dTop + this.uiMod3TempSensors.dHeight + dPad;
             dLeft = dLeft + this.uiMod3TempSensors.dWidth + dPad;
             
-            this.uiVisTempSensors.build(this.hFigure, dLeft, dTop);
+           %  this.uiVisTempSensors.build(this.hFigure, dLeft, dTop);
                      
             
         end
@@ -298,9 +290,11 @@ classdef TempSensors < mic.Base
                 'clock', this.clock ...
             );
         
+            %{
             this.uiVisTempSensors = bl12014.ui.VibrationIsolationSystemTempSensors(...
                 'clock', this.clock ...
             );
+            %}
         
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDeltaTauPowerPmac();
