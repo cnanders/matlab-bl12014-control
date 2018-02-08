@@ -141,10 +141,6 @@ classdef MFDriftMonitor < mic.Base
                 end
             end
             
-            if isempty(this.apiDriftMonitor)
-                msgbox('MFDriftMonitor must be initialized with a Hardware device');
-                error('Reinit MFDriftMonitor with a hardware device');
-            end
             
             this.init();
             

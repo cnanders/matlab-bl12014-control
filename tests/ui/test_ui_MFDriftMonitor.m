@@ -16,16 +16,16 @@ clock = mic.Clock('Master');
 
 % Normally will import this API from hardware class
 hardware = bl12014.Hardware();
-
-cMode = 'real';
-
-switch cMode
-    case 'virtual'
-        APIDriftMonitor     = hardware.getMFDriftMonitorVirtual();
-    case 'real'
-        APIDriftMonitor     = hardware.getMFDriftMonitor();
-        APIHexapod          = hardware.getLSIHexapod();
-end
+% 
+% cMode = 'real';
+% 
+% switch cMode
+%     case 'virtual'
+%         APIDriftMonitor     = hardware.getMFDriftMonitorVirtual();
+%     case 'real'
+%         APIDriftMonitor     = hardware.getMFDriftMonitor();
+%         APIHexapod          = hardware.getLSIHexapod();
+% end
 
 
 % Set the UI device to the drift monitor:

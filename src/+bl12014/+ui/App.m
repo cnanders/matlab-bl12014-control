@@ -29,6 +29,7 @@ classdef App < mic.Base
         uiScan
         uiTempSensors
         uiFocusSensor
+        uiDriftMonitor
         uiLSIControl = {};
         uiLSIAnalyze = {};
         uiScannerM142
@@ -54,7 +55,7 @@ classdef App < mic.Base
         cDirThis
         cDirSave
         uiButtonList
-        
+        hHardware
     end
     
         
@@ -277,8 +278,11 @@ classdef App < mic.Base
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
             try 
-            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock);
+            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock, ...
+                                                           'hardware', this.hHardware);
             this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
+            this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', hardware, ...
+                               'clock', this.clock);
             catch me
                 error(lasterr);
                 % Don't have LSIControl installed
@@ -417,6 +421,12 @@ classdef App < mic.Base
                 'cTooltip',  'Focus Sensor'...
             );
             
+            stDriftMonitor =  struct(...
+                'cLabel',  'Drift Monitor/Height Sensor', ...
+                'fhOnClick',  @() this.uiDriftMonitor.build(), ...
+                'cTooltip',  'Drift Monitor/Height Sensor'...
+            );
+        
             stLSIControl =  struct(...
                 'cLabel',  'LSI Control', ...
                 'fhOnClick',  @() this.uiLSIControl.build(), ...
@@ -449,6 +459,7 @@ classdef App < mic.Base
               stExptControl, ...
               stTempSensors, ...
               stFocusSensor, ...
+              stDriftMonitor, ...
               stLSIControl, ...
               stLSIAnalyze
            ];
