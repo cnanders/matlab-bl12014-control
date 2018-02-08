@@ -133,6 +133,10 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
+        function setDMIZero(this)
+            this.javaAPI.dmiResetPosition();
+        end
+        
         function lVal = isConnected(this)
             lVal = this.javaAPI.isConnected();
         end
