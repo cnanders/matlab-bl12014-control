@@ -36,6 +36,7 @@ classdef App < mic.Base
     
 	properties
         
+        hardware
         
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
@@ -1577,9 +1578,15 @@ classdef App < mic.Base
         
         function init(this)
             
+            this.hardware = bl12014.Hardware();
+            
             this.uiApp = bl12014.ui.App(...
-                'dWidthButtonButtonList', this.dWidthButton ...
+                'dWidthButtonButtonList', this.dWidthButton, ...
+                'hHardware', this.hardware ...
             ); 
+        
+            
+        
             this.initGetSetLogicalConnects();
             
             % this.initUiComm();
