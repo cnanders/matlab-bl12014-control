@@ -700,6 +700,10 @@ classdef App < mic.Base
         
         function initAndConnectKeithley6482Wafer(this)
             
+            
+            return
+
+         
             if this.getKeithley6482Wafer()
                 return
             end
@@ -842,7 +846,8 @@ classdef App < mic.Base
             
             try
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
-                this.commBL1201CorbaProxy.serverStatus();
+                % this.commBL1201CorbaProxy.serverStatus() 2018.02.10 not
+                % working
             catch mE
                 this.commBL1201CorbaProxy = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);

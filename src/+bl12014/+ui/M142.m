@@ -35,11 +35,11 @@ classdef M142 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 630
+        dWidth = 710
         dHeight = 260
         hFigure
         
-        dWidthName = 70
+        dWidthName = 140
         dWidthPadName = 29
         
         configStageY
@@ -304,7 +304,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'cName', sprintf('%s-tilt-y-mf', this.cName), ...
                 'config', uiConfig, ...
-                'cLabel', 'Tilt Y (MF) (neg=out)' ...
+                'cLabel', 'Tilt Y (MF) (neg=outboard)' ...
             );
         end
         

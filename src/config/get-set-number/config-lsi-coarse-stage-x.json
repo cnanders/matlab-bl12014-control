@@ -16,13 +16,13 @@
 	],
     "step": 0.1,
     "stores": [
+		{
+			"name": "lsi park",
+			"raw": 450
+		},
         {
-            "name": "exposure",
-            "raw": 1.5
-        },
-        {
-            "name": "lsi",
-            "raw": 3
+            "name": "interferometry",
+            "raw": 0
         }
     ],
     "min": -20,
