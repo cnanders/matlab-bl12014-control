@@ -725,7 +725,7 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
-            
+            this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer);
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
@@ -735,6 +735,7 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiWafer.disconnectKeithley6482()
+            this.uiApp.uiLSIControl.disconnectKeithley6482();
             
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
@@ -1559,6 +1560,10 @@ classdef App < mic.Base
                 this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+                
+                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.setDevice(gslcCommKeithley6482Wafer);
+                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.turnOn();
+
             catch mE
                 disp('App.m could not connect uiLSIControl');
             end
