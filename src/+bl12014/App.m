@@ -27,6 +27,7 @@ classdef App < mic.Base
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
         
+
         % Video Subnet
         
         % Endstation 2 Subnet
@@ -125,6 +126,9 @@ classdef App < mic.Base
     end
     
     properties (Access = private)
+        
+        cPathDllMightex
+        cPathHeaderMightex
         
         hFigure
         
@@ -1202,7 +1206,7 @@ classdef App < mic.Base
             try 
                 % Load libraries
                 % Load EUV_LV DLL
-                loadlibrary(this.cPathDllMightex, cPathHeaderMightex);
+                % loadlibrary(this.cPathDllMightex, this.cPathHeaderMightex);
                 this.commMightex = true;
                 
             catch mE
@@ -1223,10 +1227,10 @@ classdef App < mic.Base
             this.uiApp.uiHeightSensorLEDs.disconnectMightex();
             
             % Unload libraires
-            unloadlibrary(this.cPathDllMightex);
+            % unloadlibrary(this.cPathDllMightex);
             
             % Delete comm instance
-            this.commMightext = [];
+            this.commMightex = [];
             
         end
         

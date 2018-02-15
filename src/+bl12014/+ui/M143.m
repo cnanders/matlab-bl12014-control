@@ -72,6 +72,7 @@ classdef M143 < mic.Base
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
             this.uiStageY.setDevice(device);
             this.uiStageY.turnOn();
+            this.uiStageY.syncDestination();
             
         end
         

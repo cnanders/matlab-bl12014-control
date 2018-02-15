@@ -86,6 +86,8 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.uiCap2.turnOn();
             this.uiMod3CapSensors.uiCap3.turnOn();
             this.uiMod3CapSensors.uiCap4.turnOn();
+            
+            
         end
         
         function disconnectDataTranslationMeasurPoint(this)
@@ -150,6 +152,16 @@ classdef Reticle < mic.Base
             this.uiCoarseStage.uiTiltY.turnOn();
             this.uiFineStage.uiX.turnOn();
             this.uiFineStage.uiY.turnOn();
+            
+            
+            this.uiWorkingMode.ui.syncDestination();
+            this.uiCoarseStage.uiX.syncDestination();
+            this.uiCoarseStage.uiY.syncDestination();
+            this.uiCoarseStage.uiZ.syncDestination();
+            this.uiCoarseStage.uiTiltX.syncDestination();
+            this.uiCoarseStage.uiTiltY.syncDestination();
+            this.uiFineStage.uiX.syncDestination();
+            this.uiFineStage.uiY.syncDestination();
             
         end
         

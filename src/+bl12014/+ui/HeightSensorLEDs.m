@@ -61,37 +61,62 @@ classdef HeightSensorLEDs < mic.Base
         
         end
         
-        function connectMightex(this, comm)
+        function connectMightex(this)
             
+            device = bl12014.device.GetSetNumberFromMightex(1);
+            this.ui1.setDevice(device);
+            this.ui1.turnOn();
+            % this.ui1.syncDestination();
             
+            device = bl12014.device.GetSetNumberFromMightex(2);
+            this.ui2.setDevice(device);
+            this.ui2.turnOn();
+            % this.ui2.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromMightex(3);
+            this.ui3.setDevice(device);
+            this.ui3.turnOn();
+            % this.ui3.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromMightex(4);
+            this.ui4.setDevice(device);
+            this.ui4.turnOn();
+            % this.ui4.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromMightex(5);
+            this.ui5.setDevice(device);
+            this.ui5.turnOn();
+            % this.ui5.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromMightex(6);
+            this.ui6.setDevice(device);
+            this.ui6.turnOn();
+            % this.ui6.syncDestination();
             
         end
         
         function disconnectMightex(this)
             
-        end
-        
-        function turnOn(this)
-            
-            this.ui1.turnOn();
-            this.ui2.turnOn();
-            this.ui3.turnOn();
-            this.ui4.turnOn();
-            this.ui5.turnOn();
-            this.ui6.turnOn();
-           
-        end
-        
-        function turnOff(this)
             this.ui1.turnOff();
-            this.ui2.turnOff();
-            this.ui3.turnOff();
-            this.ui4.turnOff();
-            this.ui5.turnOff();
-            this.ui6.turnOff();
+            this.ui1.setDevice([]);
             
+            this.ui2.turnOff();
+            this.ui2.setDevice([]);
+            
+            this.ui3.turnOff();
+            this.ui3.setDevice([]);
+            
+            this.ui4.turnOff();
+            this.ui4.setDevice([]);
+            
+            this.ui5.turnOff();
+            this.ui5.setDevice([]);
+            
+            this.ui6.turnOff();
+            this.ui6.setDevice([]);
         end
         
+
         function build(this) % , hParent, dLeft, dTop
             
             %{

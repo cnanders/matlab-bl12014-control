@@ -215,6 +215,11 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiStage3.turnOn();
             this.uiStage4.turnOn();
             
+            this.uiStage1.syncDestination();
+            this.uiStage2.syncDestination();
+            this.uiStage3.syncDestination();
+            this.uiStage4.syncDestination();
+            
             % FIXME
             % Need to wire in the encoders
             

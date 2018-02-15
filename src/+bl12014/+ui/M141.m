@@ -62,6 +62,7 @@ classdef M141 < mic.Base
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
             this.uiStageX.setDevice(device);
             this.uiStageX.turnOn();
+            this.uiStageX.syncDestination();
             
             % {< mic.interface.device.GetSetNumber}
             % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);

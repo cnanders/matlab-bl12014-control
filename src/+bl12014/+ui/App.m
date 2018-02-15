@@ -286,7 +286,7 @@ classdef App < mic.Base
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', this.hHardware, ...
                                'clock', this.clock);
             catch me
-                error(lasterr);
+                error(me.message);
                 % Don't have LSIControl installed
             end
             
