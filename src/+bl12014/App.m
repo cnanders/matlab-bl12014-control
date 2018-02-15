@@ -36,6 +36,7 @@ classdef App < mic.Base
     
 	properties
         
+        hardware
         
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
@@ -715,6 +716,10 @@ classdef App < mic.Base
         
         function initAndConnectKeithley6482Wafer(this)
             
+            
+            return
+
+         
             if this.getKeithley6482Wafer()
                 return
             end
@@ -736,7 +741,7 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
-            
+            this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer);
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
@@ -746,6 +751,7 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiWafer.disconnectKeithley6482()
+            this.uiApp.uiLSIControl.disconnectKeithley6482();
             
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
@@ -857,7 +863,8 @@ classdef App < mic.Base
             
             try
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
-                this.commBL1201CorbaProxy.serverStatus();
+                % this.commBL1201CorbaProxy.serverStatus() 2018.02.10 not
+                % working
             catch mE
                 this.commBL1201CorbaProxy = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
@@ -899,7 +906,7 @@ classdef App < mic.Base
                 return;
             end
 
-            this.uiApp.uiM142.connectNewFocusModel8742(this, this.commNewFocusModel8742)
+            this.uiApp.uiM142.connectNewFocusModel8742(this.commNewFocusModel8742)
             
         end
         
@@ -1087,6 +1094,8 @@ classdef App < mic.Base
                
                 return;
             end
+            
+            
             
             % Here connect any UIs that use this
             
@@ -1610,6 +1619,10 @@ classdef App < mic.Base
                 this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
+                
+                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.setDevice(gslcCommKeithley6482Wafer);
+                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.turnOn();
+
             catch mE
                 disp('App.m could not connect uiLSIControl');
             end
@@ -1639,9 +1652,15 @@ classdef App < mic.Base
         
         function init(this)
             
+            this.hardware = bl12014.Hardware();
+            
             this.uiApp = bl12014.ui.App(...
-                'dWidthButtonButtonList', this.dWidthButton ...
+                'dWidthButtonButtonList', this.dWidthButton, ...
+                'hHardware', this.hardware ...
             ); 
+        
+            
+        
             this.initGetSetLogicalConnects();
             
             % this.initUiComm();

@@ -113,7 +113,7 @@ classdef Wafer < mic.Base
         
         function connectKeithley6482(this, comm)
            % Wafer
-            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 2);
             this.uiDiode.uiCurrent.setDevice(deviceCh1);
             this.uiDiode.uiCurrent.turnOn();
                         

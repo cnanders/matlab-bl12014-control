@@ -17,16 +17,12 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "loadlock",
-            "raw": 1.5
+            "name": "Dose Monitor",
+            "raw": 7
         },
         {
-            "name": "pfm",
-            "raw": 3
-        },
-        {
-            "name": "yag",
-            "raw": 5
+            "name": "loadlock FIX ME",
+            "raw": 7
         }
     ],
     "min": -90,
