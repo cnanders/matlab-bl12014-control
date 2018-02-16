@@ -173,7 +173,7 @@ classdef Wafer < mic.Base
             this.uiFineStage.uiZ.turnOn();
             
             
-            this.uiWorkingMode.ui.syncDestination();
+            %this.uiWorkingMode.ui.syncDestination();
             this.uiCoarseStage.uiX.syncDestination();
             this.uiCoarseStage.uiY.syncDestination();
             this.uiCoarseStage.uiZ.syncDestination();

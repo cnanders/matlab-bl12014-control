@@ -154,7 +154,7 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiY.turnOn();
             
             
-            this.uiWorkingMode.ui.syncDestination();
+            % this.uiWorkingMode.ui.syncDestination();
             this.uiCoarseStage.uiX.syncDestination();
             this.uiCoarseStage.uiY.syncDestination();
             this.uiCoarseStage.uiZ.syncDestination();

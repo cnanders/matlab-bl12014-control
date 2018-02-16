@@ -76,7 +76,7 @@ classdef M142 < mic.Base
             
             this.uiStageX.setDevice(deviceX);
             this.uiStageX.turnOn()
-            thid.uiStageX.syncDestination();
+            this.uiStageX.syncDestination();
             
             this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
             this.uiStageTiltZMfr.turnOn()
