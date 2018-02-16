@@ -200,6 +200,7 @@ classdef Beamline < mic.Base
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
             this.uiD142StageY.setDevice(device);
             this.uiD142StageY.turnOn()
+            this.uiD142StageY.syncDestination()
             
         end
         
@@ -212,6 +213,7 @@ classdef Beamline < mic.Base
             device = bl12014.device.GetSetNumberFromExitSlit(comm);
             this.uiExitSlit.setDevice(device);
             this.uiExitSlit.turnOn();
+            this.uiExitSlit.syncDestination();
         end
         
         function disconnectExitSlit(this)
@@ -227,6 +229,7 @@ classdef Beamline < mic.Base
             );
             this.uiD141Current.setDevice(device);
             this.uiD141Current.turnOn();     
+
         end
         
         function disconnectDataTranslationMeasurPoint(this)
@@ -263,9 +266,11 @@ classdef Beamline < mic.Base
             
             this.uiUndulatorGap.setDevice(deviceUndulatorGap)
             this.uiUndulatorGap.turnOn()
+            this.uiUndulatorGap.syncDestination()
 
             this.uiGratingTiltX.setDevice(deviceGratingTiltX)
             this.uiGratingTiltX.turnOn()
+            this.uiGratingTiltX.syncDestination()
             
         end
         

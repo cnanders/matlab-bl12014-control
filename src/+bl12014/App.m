@@ -27,6 +27,7 @@ classdef App < mic.Base
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
         
+
         % Video Subnet
         
         % Endstation 2 Subnet
@@ -110,7 +111,13 @@ classdef App < mic.Base
         % see vendor/pnaulleau/bl12-exit-slits/readme.txt
         commExitSlit
         
+        % Since uses dll, this will be true or false
+        commMightex
+        
+        
         uiApp
+        
+        
         
     end
     
@@ -119,6 +126,9 @@ classdef App < mic.Base
     end
     
     properties (Access = private)
+        
+        cPathDllMightex
+        cPathHeaderMightex
         
         hFigure
         
@@ -152,6 +162,12 @@ classdef App < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            [cDirThis] = fileparts(mfilename('fullpath'));
+
+            cDirMightex = fullfile(cDirThis, '..', '..', 'src', 'vendor', 'mightex');
+            this.cPathDllMightex =  fullfile(cDirMightex, 'Mightex_LEDDriver_SDK.dll');
+            this.cPathHeaderMightex = fullfile(cDirMightex, 'Mightex_LEDDriver_SDK.h');
             
             this.init();
             
@@ -296,6 +312,10 @@ classdef App < mic.Base
         function l = getCxroHeightSensor(this)
             l = ~isempty(this.commCxroHeightSensor);
             
+        end
+        
+        function l = getMightex(this)
+            l = ~isempty(this.commMightex);
         end
         
         function l = getBL1201CorbaProxy(this)
@@ -1179,6 +1199,43 @@ classdef App < mic.Base
             this.commNPointLC400M142 = [];
         end
         
+        function initAndConnectMightex(this)
+            
+            if this.getMightex()
+                return
+            end
+            
+            try 
+                % Load libraries
+                % Load EUV_LV DLL
+                % loadlibrary(this.cPathDllMightex, this.cPathHeaderMightex);
+                this.commMightex = true;
+                
+            catch mE
+                
+                this.commMightex = [];
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
+            end
+            
+            this.uiApp.uiHeightSensorLEDs.connectMightex();
+            
+        end
+        
+        
+        function destroyAndDisconnectMightex(this)
+            
+            % Disconnect UI
+            this.uiApp.uiHeightSensorLEDs.disconnectMightex();
+            
+            % Unload libraires
+            % unloadlibrary(this.cPathDllMightex);
+            
+            % Delete comm instance
+            this.commMightex = [];
+            
+        end
+        
         
         function buildFigure(this)
             
@@ -1333,6 +1390,12 @@ classdef App < mic.Base
                 'fhGet', @this.getExitSlit, ...
                 'fhSetTrue', @this.initAndConnectExitSlit, ...
                 'fhSetFalse', @this.destroyAndDisconnectExitSlit ...
+            );
+        
+            gslcCommMightex = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getMightex, ...
+                'fhSetTrue', @this.initAndConnectMightex, ...
+                'fhSetFalse', @this.destroyAndDisconnectMightex ...
             );
         
             gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
@@ -1587,6 +1650,9 @@ classdef App < mic.Base
             this.uiApp.uiFocusSensor.uiCommKeithley6482.turnOn();
             this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.turnOn();
+            
+            this.uiApp.uiHeightSensorLEDs.uiCommMightex.setDevice(gslcCommMightex);
+            this.uiApp.uiHeightSensorLEDs.uiCommMightex.turnOn();
         end
         
         

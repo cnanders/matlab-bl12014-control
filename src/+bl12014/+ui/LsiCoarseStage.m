@@ -40,15 +40,6 @@ classdef LsiCoarseStage < mic.Base
         end
         
         
-        function turnOn(this)
-            this.uiX.turnOn();
-        end
-        
-        function turnOff(this)
-            this.uiX.turnOff();
-           
-            
-        end
         
         function build(this, hParent, dLeft, dTop)
             

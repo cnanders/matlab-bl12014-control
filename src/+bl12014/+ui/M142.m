@@ -75,10 +75,13 @@ classdef M142 < mic.Base
             deviceTiltZMfr = bl12014.device.GetSetNumberFromMicronixMMC103(comm, 2);
             
             this.uiStageX.setDevice(deviceX);
-            this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
-            
             this.uiStageX.turnOn()
+            thid.uiStageX.syncDestination();
+            
+            this.uiStageTiltZMfr.setDevice(deviceTiltZMfr);
             this.uiStageTiltZMfr.turnOn()
+            this.uiStageTiltZMfr.syncDestination();
+            
             
         end
         
@@ -93,22 +96,21 @@ classdef M142 < mic.Base
         
         
         function connectNewFocusModel8742(this, comm)
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltX = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
-
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMf = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
             
-            % {< mic.interface.device.GetSetNumber}
-            deviceTiltYMfr = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
-            
-            this.uiStageTiltX.setDevice(deviceTiltX);
-            this.uiStageTiltYMf.setDevice(deviceTiltYMf);
-            this.uiStageTiltYMfr.setDevice(deviceTiltYMfr);
-            
+            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
+            this.uiStageTiltX.setDevice(device);
             this.uiStageTiltX.turnOn()
+            this.uiStageTiltX.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
+            this.uiStageTiltYMf.setDevice(device);
             this.uiStageTiltYMf.turnOn()
+            this.uiStageTiltYMf.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
+            this.uiStageTiltYMfr.setDevice(device);
             this.uiStageTiltYMfr.turnOn()
+            this.uiStageTiltYMfr.syncDestination();
         end
         
         
