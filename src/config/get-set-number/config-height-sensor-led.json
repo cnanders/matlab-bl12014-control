@@ -7,13 +7,12 @@
 			"offset": 0,
 			"precision": 3
 		},
-        {
+    {
 			"name": "mA",
 			"slope": 1000,
 			"offset": 0,
 			"precision": 3
 		}
-
 	],
     "step": 5,
     "stores": [],
