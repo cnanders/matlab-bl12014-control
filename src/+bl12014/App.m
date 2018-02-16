@@ -701,7 +701,7 @@ classdef App < mic.Base
         function initAndConnectKeithley6482Wafer(this)
             
             
-            return
+            
 
          
             if this.getKeithley6482Wafer()
@@ -723,8 +723,8 @@ classdef App < mic.Base
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
-            
-            this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
+            this.uiApp.uiBeamline.connectKeithley6482(this.commKeithley6482Wafer);
+            % this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
             this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer);
         end
         
@@ -734,7 +734,9 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiWafer.disconnectKeithley6482()
+            
+            this.uiApp.uiBeamline.disconnectKeithley6482();
+            % this.uiApp.uiWafer.disconnectKeithley6482()
             this.uiApp.uiLSIControl.disconnectKeithley6482();
             
             this.commKeithley6482Wafer.delete();

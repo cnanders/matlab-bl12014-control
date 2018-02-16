@@ -22,7 +22,7 @@
 		},
         {
             "name": "interferometry",
-            "raw": 0
+            "raw": -8
         }
     ],
     "min": -20,

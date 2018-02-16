@@ -40,9 +40,9 @@ classdef Beamline < mic.Base
         cNameDeviceShutter = 'shutter'
         cNameDeviceGratingTiltX = 'grating_tilt_x'
         cNameDeviceD142StageY = 'd142_stage_y'
-        cNameDeviceMeasurPointD142 = 'measur_point_d142'
+        cNameDeviceD141Current = 'measur_point_d142'
         
-        cScanAcquireTypeMeasurPointD142 = 'measur_point_d142'
+        ScanAcquireTypeD141Current = 'scan_acquire_type_d141_current'
         
         dColorFigure = [200 200 200]./255
         dColorPanelData = [1 1 1]
@@ -88,7 +88,7 @@ classdef Beamline < mic.Base
         uiD142StageY
         
         % {mic.ui.device.GetNumber 1x1}
-        uiD142Current
+        uiD141Current
         
         
     end
@@ -184,6 +184,18 @@ classdef Beamline < mic.Base
         
         end
         
+         function connectKeithley6482(this, comm)
+            % Temporary Hack using Keithley to get D141 photo current
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
+            this.uiD141Current.setDevice(device);
+            this.uiD141Current.turnOn();
+        end
+        
+        function disconnectKeithley6482(this)
+            this.uiD141Current.turnOff()
+            this.uiD141Current.setDevice([]);
+        end
+        
         function connectGalil(this, comm)
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
             this.uiD142StageY.setDevice(device);
@@ -213,13 +225,13 @@ classdef Beamline < mic.Base
                 GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
                 34 ...
             );
-            this.uiD142Current.setDevice(device);
-            this.uiD142Current.turnOn();     
+            this.uiD141Current.setDevice(device);
+            this.uiD141Current.turnOn();     
         end
         
         function disconnectDataTranslationMeasurPoint(this)
-            this.uiD142Current.turnOff();
-            this.uiD142Current.setDevice([]);
+            this.uiD141Current.turnOff();
+            this.uiD141Current.setDevice([]);
         end
         
         
@@ -276,7 +288,7 @@ classdef Beamline < mic.Base
             this.uiGratingTiltX.turnOn();
             this.uiTiltY.turnOn();
             this.uiD142StageY.turnOn();
-            this.uiD142Current.turnOn();
+            this.uiD141Current.turnOn();
             
         end
         
@@ -287,7 +299,7 @@ classdef Beamline < mic.Base
             this.uiGratingTiltX.turnOff();
             this.uiTiltY.turnOff();
             this.uiD142StageY.turnOff();
-            this.uiD142Current.turnOff();
+            this.uiD141Current.turnOff();
             
         end
         
@@ -358,7 +370,7 @@ classdef Beamline < mic.Base
             delete(this.uiShutter)
             delete(this.uiGratingTiltX)
             delete(this.uiD142StageY)
-            delete(this.uiD142Current)
+            delete(this.uiD141Current)
         
             % Delete the figure
             
@@ -571,7 +583,7 @@ classdef Beamline < mic.Base
             
             
             
-            this.uiD142Current.build(this.hPanelDevices, dLeft, dTop);
+            this.uiD141Current.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
             
@@ -698,30 +710,30 @@ classdef Beamline < mic.Base
         end
         
         
-        function initUiDeviceMeasurPointD142(this)
+        function initUiDeviceD141Current(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-number', ...
-                'config-d142-current.json' ...
+                'config-d141-current.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
         
-            this.uiD142Current = mic.ui.device.GetNumber(...
+            this.uiD141Current = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
                 'cName', 'beamline-measur-point-d142-diode', ...
                 'config', uiConfig, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
                 'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cLabel', 'D142 Current', ...
+                'cLabel', 'D141 Current', ...
                 'dWidthPadUnit', 277, ...
                 'lShowLabels', false ...
             );
         
-            addlistener(this.uiD142Current, 'eUnitChange', @this.onUnitChange);
+            addlistener(this.uiD141Current, 'eUnitChange', @this.onUnitChange);
         end 
          
         function initUiDeviceExitSlit(this)
@@ -939,7 +951,7 @@ classdef Beamline < mic.Base
             this.initUiDeviceShutter(); % DCT Corba Proxy
             this.initUiDeviceGratingTiltX(); % BL1201 Corba Proxy
             this.initUiDeviceD142StageY()
-            this.initUiDeviceMeasurPointD142();
+            this.initUiDeviceD141Current();
             
             this.initUiRecipe();
             this.initUiScan()
@@ -1174,8 +1186,8 @@ classdef Beamline < mic.Base
             xlabel(this.hAxes, cLabelX);
             
             cLabelY = sprintf(...
-                'MeasurPoint D142 (%s)', ...
-                this.uiD142Current.getUnit().name ...
+                'D141 Current (%s)', ...
+                this.uiD141Current.getUnit().name ...
             );
             ylabel(this.hAxes, cLabelY);
         end
@@ -1271,7 +1283,7 @@ classdef Beamline < mic.Base
                 stValue.(this.uiPopupRecipeDevice.get().cValue) = dParam;
                 
                 stTask = struct();
-                stTask.type = this.cScanAcquireTypeMeasurPointD142;
+                stTask.type = this.ScanAcquireTypeD141Current;
                 stTask.pause = 0.1;
                 
                 stValue.task = stTask;
@@ -1302,7 +1314,7 @@ classdef Beamline < mic.Base
             st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getUnit().name;
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getUnit().name;
             st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getUnit().name;
-            st.(this.cNameDeviceMeasurPointD142) = this.uiD142Current.getUnit().name;
+            st.(this.cNameDeviceD141Current) = this.uiD141Current.getUnit().name;
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1349,7 +1361,7 @@ classdef Beamline < mic.Base
         function initScanAcquireContract(this)
             
             ceFields = {...
-                this.cNameDeviceMeasurPointD142
+                this.cNameDeviceD141Current
             };
 
             for n = 1 : length(ceFields)
@@ -1606,9 +1618,9 @@ classdef Beamline < mic.Base
             
             % Update the contract
             switch stTask.type
-                case this.cScanAcquireTypeMeasurPointD142
-                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lRequired = true;
-                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lIssued = false;
+                case this.ScanAcquireTypeD141Current
+                    this.stScanAcquireContract.(this.cNameDeviceD141Current).lRequired = true;
+                    this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = false;
                 otherwise
                     % Do nothing
             end
@@ -1620,7 +1632,7 @@ classdef Beamline < mic.Base
             % programatically "click" UI buttons.
             
             switch stTask.type
-                case this.cScanAcquireTypeMeasurPointD142
+                case this.ScanAcquireTypeD141Current
                     % Open the shutter
                     this.uiShutter.setDestCal(10000, 'ms (1x)');
                     this.uiShutter.moveToDest();
@@ -1632,7 +1644,7 @@ classdef Beamline < mic.Base
                     this.ceValues{this.scan.u8Index} = stValue;
             
                     % Update the plot data with MeasurPoint value
-                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceMeasurPointD142);
+                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceD141Current);
                     
                     % TO DO
                     % Overwrite goal value of param with measured value
@@ -1641,7 +1653,7 @@ classdef Beamline < mic.Base
                     % Close the shutter
                     this.uiShutter.stop();
                     % Update the contract lIssued
-                    this.stScanAcquireContract.(this.cNameDeviceMeasurPointD142).lIssued = true;
+                    this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = true;
                 otherwise 
                     % do nothing
             end
@@ -1835,7 +1847,7 @@ classdef Beamline < mic.Base
         function st = getState(this, stUnit)
             
         	st = struct();
-            st.(this.cNameDeviceMeasurPointD142) = this.uiD142Current.getValCal(stUnit.(this.cNameDeviceMeasurPointD142));
+            st.(this.cNameDeviceD141Current) = this.uiD141Current.getValCal(stUnit.(this.cNameDeviceD141Current));
             st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
             st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
@@ -1927,7 +1939,7 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-data-translation-measur-point', this.cName), ...
-                'cLabel', 'DataTrans MeasurPoint (D142 Diode Current)' ...
+                'cLabel', 'DataTrans MeasurPoint (D141 Diode Current)' ...
             );
         
         end
