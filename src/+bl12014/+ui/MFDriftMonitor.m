@@ -55,7 +55,10 @@ classdef MFDriftMonitor < mic.Base
         % to show less channels
         dHeightSensorDisplayChannels = 1:9
         dDMIDisplayChannels = 1:4
-        
+        dDMI
+        dDMIScanningTime
+        dHS
+        dHSScanningTime
         % Number of samples that are averaged
         dNumAve = 10
         
@@ -76,13 +79,17 @@ classdef MFDriftMonitor < mic.Base
         % UI:Montor:DMI
         hpDMI
         uiDMIChannels
-        
-        
+        haDMI
+        uibClearDMI
+        uicbDMIChannels
+        uieUpdateInterval
         % UI:Montor:HS
         hpHS
         uiHeightSensorChannels
-        
-        
+        haHS
+        uibClearHS
+        uicbHeightSensorChannels
+
         
         
         % UI:Calibrate
@@ -114,7 +121,6 @@ classdef MFDriftMonitor < mic.Base
         clock
         
         hPanel
-        
         
         hardware
         apiWaferStage = []
@@ -256,6 +262,9 @@ classdef MFDriftMonitor < mic.Base
                     'fhIsReady', @()this.apiDriftMonitor.isReady(),...
                     'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
                     );
+                this.uicbHeightSensorChannels{k}= mic.ui.common.Checkbox(...
+                    'cLabel',this.ceHSChannelNames{u8Channel},...
+                    'fhDirectCallback', @(src, evt)this.cb(src));
             end
             
             % Init DMI sensor UI
@@ -289,7 +298,21 @@ classdef MFDriftMonitor < mic.Base
                     'fhIsReady', @()this.apiDriftMonitor.isReady(),...
                     'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
                     );
+                this.uicbDMIChannels{k}= mic.ui.common.Checkbox(...
+                    'cLabel',this.ceDMIChannelNames{u8Channel},...
+                    'fhDirectCallback', @(src, evt)this.cb(src));
             end
+           % bl12014.hardwareAssets.middleware.MFDriftMonitor.getDMIValue(1)
+           % this.uiDMIChannels{1}.get()
+            this.uieUpdateInterval    = mic.ui.common.Edit('cLabel', 'Interval(s)', 'cType', 'd');
+            this.uieUpdateInterval.set(0.5);
+            this.uibClearDMI     = mic.ui.common.Button('cText', 'Clear', 'fhDirectCallback', @(src, evt)this.cb(src));
+            this.uibClearHS     = mic.ui.common.Button('cText', 'Clear', 'fhDirectCallback', @(src, evt)this.cb(src));
+%            x=1;
+%             t = timer('TimerFcn','disp(x);x=x+1;', 'Period', 1, 'ExecutionMode', 'fixedSpacing', 'TasksToExecute', 10);
+%             start(t);
+%             
+            
             
             % UI:Calibrate:
             
@@ -314,15 +337,116 @@ classdef MFDriftMonitor < mic.Base
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)
-            this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
+            try
+                this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
+            catch
+            end
+            if ~isempty(this.clock)&&~this.clock.has(this.id())
+                this.clock.add(@this.onClock, this.id(), this.uieUpdateInterval.get());
+                this.uieUpdateInterval.disable();
+            end
         end
         
 
         function disconnectDriftMontior(this)
             this.hardware.deleteMFDriftMonitor();
             this.apiDriftMonitor = [];
+            if isvalid(this.clock) && ...
+                    this.clock.has(this.id())
+                this.clock.remove(this.id());
+            end
+            this.uieUpdateInterval.enable();
         end
         
+        function onClock(this)
+            try
+                %DMI Scanning
+                plotDMI=[];
+                lgdDMI=[];
+                DMIValue=zeros(length(this.dDMIDisplayChannels),1);
+                for k=1:length(this.dDMIDisplayChannels)
+                    if ~isempty(this.apiDriftMonitor)
+                        DMIValue(k,1)=this.uiDMIChannels{k}.getValRaw();
+                    else
+                        DMIValue(k,1)=randn(1);
+                    end
+                end
+                this.dDMI(1:length(this.dDMIDisplayChannels),end+1)=DMIValue;
+                this.dDMIScanningTime(end+1)=length(this.dDMIScanningTime)*this.uieUpdateInterval.get();
+                for k=1:length(this.dDMIDisplayChannels)
+                    if this.uicbDMIChannels{k}.get()
+                        plotDMI(end+1,:)=this.dDMI(k,:);
+                        lgdDMI{end+1}=this.ceDMIChannelNames{k};
+                    end
+                end
+                if ~isempty(plotDMI)
+                    plot(this.haDMI, this.dDMIScanningTime,plotDMI);legend(this.haDMI,lgdDMI);
+                end
+                this.haDMI.Title.String = 'DMI Scanning';
+                this.haDMI.XLabel.String = 'Scanning Time (s)';
+                this.haDMI.YLabel.String = 'Unit';
+                %HS Scanning
+                plotHS=[];
+                lgdHS=[];
+                HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
+                for k=1:length(this.dHeightSensorDisplayChannels)
+                    if ~isempty(this.apiDriftMonitor)
+                        HSValue(k,1)=this.uiHeightSensorChannels.getValRaw();
+                    else
+                        HSValue(k,1)=randn(1);
+                    end
+                end
+                this.dHS(1:length(this.dHeightSensorDisplayChannels),end+1)=HSValue; 
+                this.dHSScanningTime(end+1)=length(this.dHSScanningTime)*this.uieUpdateInterval.get();
+                for k=1:length(this.dHeightSensorDisplayChannels)
+                    if this.uicbHeightSensorChannels{k}.get()
+                        plotHS(end+1,:)=this.dHS(k,:);
+                        lgdHS{end+1}=this.ceHSChannelNames{k};
+                    end
+                end
+                if ~isempty(plotHS)
+                plot(this.haHS, this.dHSScanningTime,plotHS);legend(this.haHS,lgdHS);
+                end
+                this.haHS.Title.String = 'Height Sensor Scanning';
+                this.haHS.XLabel.String = 'Scanning Time (s)';
+                this.haHS.YLabel.String = 'Unit';
+                if isempty(this.apiDriftMonitor)
+                    this.haHS.Title.String = 'Virtual Height Sensor Scanning';
+                    this.haDMI.Title.String = 'Virtual DMI Scanning';
+                end
+            catch 
+                %this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                %         %AW(5/24/13) : Added a timer stop when the axis instance has been
+                %         %deleted
+                %         if (strcmp(mE.identifier,'MATLAB:class:InvalidHandle'))
+                %                 %msgbox({'Axis Timer has been stopped','','NON-CRITICAL ERROR','This textbox is here for debugging error'});
+                %                 stop(this.t);
+                %         else
+                %             this.msg(mE.message);
+                %         end
+
+                % CA 2016 remove the task from the timer
+                if isvalid(this.clock) && ...
+                        this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+
+               % error(mE);
+            end
+        end
+        
+        function cb(this, src)
+            switch src
+                
+                case this.uibClearDMI
+                    this.dDMI=[];
+                    this.dDMIScanningTime=[];
+                    
+                case this.uibClearHS
+                    this.dHS=[];
+                    this.dHSScanningTime=[];
+            end
+        end
       
         
         
@@ -591,7 +715,7 @@ classdef MFDriftMonitor < mic.Base
             this.hFigure = figure(...
                 'name', 'Drift Monitor (DMI and Height Sensor)',...
                 'Units', 'pixels',...
-                'Position', [5, 5,  this.dWidth, this.dHeight],...
+                'Position', [5+dLeft, 5+dTop,  this.dWidth, this.dHeight],...
                 'handlevisibility','off',... %out of reach gcf
                 'numberTitle','off',...
                 'Toolbar','none',...
@@ -601,6 +725,8 @@ classdef MFDriftMonitor < mic.Base
             this.uitgMode.build(this.hFigure, 10, 10, this.dWidth - 20, this.dHeight - 100)
             uitMonitor      = this.uitgMode.getTabByName('Monitor');
             uitCalibrate    = this.uitgMode.getTabByName('Calibrate');
+            
+            
             
             
             dTop = 20;
@@ -634,6 +760,19 @@ classdef MFDriftMonitor < mic.Base
                 700], uitMonitor) ...
                 );
             
+            
+            this.haDMI = axes('Parent', this.hpDMI, ...
+                                 'Units', 'pixels', ...
+                                 'Position', [50, 350, 430, 300], ...
+                                 'XTick', [], 'YTick', []);
+            this.uibClearDMI.build  (this.hpDMI, 500, 330, 80, 20);     
+            this.uieUpdateInterval.build  (this.hpDMI, 500, 50, 80, 20);
+                             
+            this.haHS = axes('Parent',  this.hpHS, ...
+             'Units', 'pixels', ...
+             'Position', [50, 350, 430, 300], ...
+             'XTick', [], 'YTick', []);
+            this.uibClearHS.build  (this.hpHS, 550, 330, 80, 20);  
             drawnow;
             
             dLeft = 10;
@@ -643,8 +782,9 @@ classdef MFDriftMonitor < mic.Base
             
             for k = 1:length(this.uiDMIChannels)
                 this.uiDMIChannels{k}.build(this.hpDMI, dLeft, dTop);
+                this.uicbDMIChannels{k}.build(this.hpDMI, 500, 90+k*40,100, 20);
+                this.uicbDMIChannels{k}.set(true);
                 dTop = dTop + mic.Utils.tern(mod(k,2) == 1, dSep, 2*dSep);
-                
             end
             
             dLeft = 10;
@@ -663,6 +803,10 @@ classdef MFDriftMonitor < mic.Base
             end
             dTop = dTop + 15;
             
+            for k=1:9
+                this.uicbHeightSensorChannels{k}.build(this.hpHS, 550, 20+k*30, 100, 20);
+                this.uicbHeightSensorChannels{k}.set(true);
+            end
             
             % Calibrate Tab:
             dLeft = 10;
