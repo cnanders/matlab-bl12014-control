@@ -31,8 +31,10 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-ge
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
 
 % 12.0.1 Exit Slit
-addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2')));
-javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOCorbaProxy.jar'));
+%addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2')));
+%javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2', 'BL12PICOCorbaProxy.jar'));
+addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3')));
+javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOCorbaProxy.jar'));
 
 % MET5 devices built by Carl Cork
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));

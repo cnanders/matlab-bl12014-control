@@ -682,7 +682,14 @@ classdef App < mic.Base
             end
             
             try
-                [this.commExitSlit, e] = bl12pico_attach();
+                % [this.commExitSlit, e] = bl12pico_attach();
+                this.commExitSlit = bl12pico_slits;
+                [e,estr] = this.commExitSlit.checkServer();
+                if e
+                    this.commExitSlit = [];
+                    error('Problem attaching to pico server');
+                    return;
+                end
             catch mE
                 this.commExitSlit = [];
                 cMsg = sprintf('initAndConnectExitSlit() %s', mE.message);
@@ -691,16 +698,9 @@ classdef App < mic.Base
                
                 return;
             end
-            
-            if e == 1
-                this.commExitSlit = [];
-                return;
-            end
-            
+                        
             this.uiApp.uiBeamline.connectExitSlit(this.commExitSlit);
-            
-            
-            
+                        
         end
         
         function destroyAndDisconnectExitSlit(this)

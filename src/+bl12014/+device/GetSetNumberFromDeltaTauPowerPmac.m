@@ -1,4 +1,4 @@
-classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
+ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
     
     % Translates deltatau.PowerPmac to mic.interface.device.GetSetNumber
     
@@ -115,6 +115,37 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
         end
         
         function l = isReady(this)
+            
+            switch this.cAxis
+                case {...
+                    this.cAXIS_WAFER_COARSE_X, ...
+                    this.cAXIS_WAFER_COARSE_Y, ...
+                    this.cAXIS_WAFER_COARSE_Z, ...
+                    this.cAXIS_WAFER_COARSE_TIP, ...
+                    this.cAXIS_WAFER_COARSE_TILT ...
+                    }
+                    l = ~this.comm.getWaferCoarseXYZTipTiltStarted();
+                case { ...
+                   this.cAXIS_RETICLE_COARSE_X, ...
+                   this.cAXIS_RETICLE_COARSE_Y, ...
+                   this.cAXIS_RETICLE_COARSE_Z, ...
+                   this.cAXIS_RETICLE_COARSE_TIP, ...
+                   this.cAXIS_RETICLE_COARSE_TILT, ...
+                    }
+                    l = ~this.comm.getReticleCoarseXYZTipTiltStarted(); 
+                case this.cAXIS_WAFER_FINE_Z
+                    l = ~this.comm.getWaferFineZStarted();  
+                case { ...
+                        this.cAXIS_RETICLE_FINE_X, ...
+                        this.cAXIS_RETICLE_FINE_Y ...
+                     }
+                    l = ~this.comm.getReticleFineXYStarted();
+                case this.cAXIS_LSI_COARSE_X
+                    l = ~this.comm.getLSICoarseXStarted();
+            end
+            
+            
+            %{
             switch this.cAxis
                 case this.cAXIS_WAFER_COARSE_X
                     l = ~this.comm.getMotorStatusWaferCoarseXIsMoving();
@@ -145,6 +176,7 @@ classdef GetSetNumberFromDeltaTauPowerPmac < mic.interface.device.GetSetNumber
                 case this.cAXIS_RETICLE_FINE_Y
                     l = ~this.comm.getMotorStatusReticleFineXIsMoving();
             end
+            %}
             
             if ~islogical(l)
                 fprintf('GetSetNumberFromDeltaTauPowerPmac.isReady() received non logical from comm, returning false\n');

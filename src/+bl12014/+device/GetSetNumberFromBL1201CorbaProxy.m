@@ -22,7 +22,7 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
         % method
         dGoalUndulator
         
-        lMonoIsInitialized = true;
+        lMonoIsInitialized = false;
     end
     
     methods
@@ -104,7 +104,7 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
                     % do nothing
                     
                 case this.cDEVICE_GRATING_TILT_X
-                    this.lMonoIsInitialized = this.comm.Mono_FindIndex();
+                    this.lMonoIsInitialized = this.comm.Mono_FindIndex()
                     
                 
             end

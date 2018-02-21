@@ -212,7 +212,7 @@ classdef Beamline < mic.Base
         end
         
         function connectExitSlit(this, comm)
-            device = bl12014.device.GetSetNumberFromExitSlit(comm);
+            device = bl12014.device.GetSetNumberFromExitSlitObject(comm);
             this.uiExitSlit.setDevice(device);
             this.uiExitSlit.turnOn();
             this.uiExitSlit.syncDestination();
