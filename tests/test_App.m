@@ -29,6 +29,7 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'ryan_toolbox')))
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-quasar', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-generator', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-mightex-led-controller', 'src')));
 
 % 12.0.1 Exit Slit
 %addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v2')));

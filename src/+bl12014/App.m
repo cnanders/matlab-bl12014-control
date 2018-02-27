@@ -106,13 +106,14 @@ classdef App < mic.Base
         commGalilM143
         
         % {cxro.common.device.motion.Stage}
-        commGalilVIS
+        commGalilVis
         
         % see vendor/pnaulleau/bl12-exit-slits/readme.txt
         commExitSlit
         
         % Since uses dll, this will be true or false
-        commMightex
+        commMightex1
+        commMightex2
         
         
         uiApp
@@ -284,7 +285,7 @@ classdef App < mic.Base
         end
         
         function l = getGalilVIS(this)
-            l = ~isempty(this.commGalilVIS);
+            l = ~isempty(this.commGalilVis);
         end
         
         function l = getGalilM143(this)
@@ -315,7 +316,7 @@ classdef App < mic.Base
         end
         
         function l = getMightex(this)
-            l = ~isempty(this.commMightex);
+            l = ~isempty(this.commMightex1) && ~isempty(this.commMightex2);
         end
         
         function l = getBL1201CorbaProxy(this)
@@ -1005,14 +1006,14 @@ classdef App < mic.Base
             
             try
                 this.initAndConnectMet5Instruments();
-                this.commGalilVIS = this.jMet5Instruments.getVISStage();
-                this.commGalilVIS.connect();
+                this.commGalilVis = this.jMet5Instruments.getVisStage();
+                this.commGalilVis.connect();
             catch mE
-                this.commGalilVIS = [];
+                this.commGalilVis = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
 
-            this.uiApp.uiVibrationIsolationSystem.connectGalil(this.commGalilVIS)
+            this.uiApp.uiVibrationIsolationSystem.connectGalil(this.commGalilVis)
             
         end
         
@@ -1023,8 +1024,8 @@ classdef App < mic.Base
             
             this.uiApp.uiVibrationIsolationSystem.disconnectGalil();
             
-            this.commGalilVIS.disconnect(); 
-            this.commGalilVIS = [];
+            this.commGalilVis.disconnect(); 
+            this.commGalilVis = [];
             
         end
         
@@ -1206,19 +1207,36 @@ classdef App < mic.Base
             end
             
             try 
-                % Load libraries
-                % Load EUV_LV DLL
-                % loadlibrary(this.cPathDllMightex, this.cPathHeaderMightex);
-                this.commMightex = true;
-                
+                this.commMightex1 = mightex.UniversalLedController(...
+                    'u8DeviceIndex', 0 ...
+                );
+                this.commMightex1.init();
+                this.uiApp.uiHeightSensorLEDs.connectMightex1(this.commMightex1);
+                                
             catch mE
                 
-                this.commMightex = [];
+                this.commMightex1 = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 
             end
             
-            this.uiApp.uiHeightSensorLEDs.connectMightex();
+            
+            try 
+                
+                this.commMightex2 = mightex.UniversalLedController(...
+                    'u8DeviceIndex', 1 ...
+                );
+                this.commMightex2.init();
+                this.uiApp.uiHeightSensorLEDs.connectMightex2(this.commMightex2);
+                
+            catch mE
+                
+                this.commMightex2 = [];
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
+            end
+            
+            
             
         end
         
@@ -1226,13 +1244,14 @@ classdef App < mic.Base
         function destroyAndDisconnectMightex(this)
             
             % Disconnect UI
-            this.uiApp.uiHeightSensorLEDs.disconnectMightex();
+            this.uiApp.uiHeightSensorLEDs.disconnectMightex1();
+            this.uiApp.uiHeightSensorLEDs.disconnectMightex2();
             
-            % Unload libraires
-            % unloadlibrary(this.cPathDllMightex);
+            this.commMightex1.disconnect();
+            this.commMightex2.disconnect();
             
-            % Delete comm instance
-            this.commMightex = [];
+            this.commMightex1 = [];
+            this.commMightex2 = [];
             
         end
         

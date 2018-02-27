@@ -61,39 +61,43 @@ classdef HeightSensorLEDs < mic.Base
         
         end
         
-        function connectMightex(this)
+        function connectMightex1(this)
             
-            device = bl12014.device.GetSetNumberFromMightex(1);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(1);
             this.ui1.setDevice(device);
             this.ui1.turnOn();
-            % this.ui1.syncDestination();
+            this.ui1.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightex(2);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(2);
             this.ui2.setDevice(device);
             this.ui2.turnOn();
-            % this.ui2.syncDestination();
+            this.ui2.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightex(3);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(3);
             this.ui3.setDevice(device);
             this.ui3.turnOn();
-            % this.ui3.syncDestination();
+            this.ui3.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightex(4);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(4);
             this.ui4.setDevice(device);
             this.ui4.turnOn();
-            % this.ui4.syncDestination();
-            
-            device = bl12014.device.GetSetNumberFromMightex(5);
-            this.ui5.setDevice(device);
-            this.ui5.turnOn();
-            % this.ui5.syncDestination();
-            
-            device = bl12014.device.GetSetNumberFromMightex(6);
-            this.ui6.setDevice(device);
-            this.ui6.turnOn();
-            % this.ui6.syncDestination();
+            this.ui4.syncDestination();
             
         end
+        
+        function connectMightex2(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(1);
+            this.ui5.setDevice(device);
+            this.ui5.turnOn();
+            this.ui5.syncDestination();
+            
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(2);
+            this.ui6.setDevice(device);
+            this.ui6.turnOn();
+            this.ui6.syncDestination();
+        end
+        
         
         function disconnectMightex(this)
             
@@ -109,12 +113,18 @@ classdef HeightSensorLEDs < mic.Base
             this.ui4.turnOff();
             this.ui4.setDevice([]);
             
+            
+        end
+        
+        function disconnectMightex2(this)
+            
             this.ui5.turnOff();
             this.ui5.setDevice([]);
             
             this.ui6.turnOff();
             this.ui6.setDevice([]);
         end
+        
         
 
         function build(this) % , hParent, dLeft, dTop
