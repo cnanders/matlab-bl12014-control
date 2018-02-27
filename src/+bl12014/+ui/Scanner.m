@@ -27,6 +27,7 @@ classdef Scanner < mic.Base
         
         dWidthName = 70
         dWidthPadName = 29
+        dScale = 1 % scale factor to hardware
         
     end
     
@@ -156,8 +157,8 @@ classdef Scanner < mic.Base
             % normalized amplitude in [-1 1] as double
             st = this.uiPupilFillGenerator.get(); 
             
-            dAmpX = st.x;
-            dAmpY = st.y;
+            dAmpX = st.x * this.dScale;
+            dAmpY = st.y * this.dScale;
             
             % {int32 1xm} in [-2^19 2^19] (20-bit)
             i32X = int32( 2^19 * dAmpX);
