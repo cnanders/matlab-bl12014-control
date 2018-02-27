@@ -2,16 +2,10 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "A",
+			"name": "mA",
 			"slope": 1,
 			"offset": 0,
-			"precision": 3
-		},
-    {
-			"name": "mA",
-			"slope": 1000,
-			"offset": 0,
-			"precision": 3
+			"precision": 0
 		}
 	],
     "step": 5,
