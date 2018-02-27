@@ -32,12 +32,14 @@ classdef VibrationIsolationSystem < mic.Base
         uiButtonGoDest
         uiButtonGoStep
         
+        uiPositionRecaller
+        
     end
     
     properties (Access = private)
         
         clock
-        dWidth = 700
+        dWidth = 1120
         dHeight = 270
         hFigure
         
@@ -366,6 +368,10 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiTemp4.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
+            dLeft = 720
+            dTop = 10
+            this.uiPositionRecaller.build(this.hFigure, dLeft, dTop, 380, 250);
+            
 
             
         end
@@ -687,6 +693,18 @@ classdef VibrationIsolationSystem < mic.Base
             );
         end
         
+        function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', [this.cName, '-position-recaller'], ...
+                'hGetCallback', @this.getStageValues, ...
+                'hSetCallback', @this.setStageValues ...
+            );
+        end
+        
         function onButtonClickGoStep(this, src, evt)
             
             this.uiStage1.stepPos();
@@ -728,6 +746,8 @@ classdef VibrationIsolationSystem < mic.Base
             this.initUiTemp2();
             this.initUiTemp3();
             this.initUiTemp4();
+            
+            this.initUiPositionRecaller();
         end
         
         function initUiTemp1(this)
@@ -845,6 +865,24 @@ classdef VibrationIsolationSystem < mic.Base
                 'config', uiConfig, ...
                 'cLabel', '1' ...
             );
+        end
+        
+        % Return list of values from your app
+        function dValues = getStageValues(this)
+            dValues = [...
+                this.uiStage1.getValRaw(), ...
+                this.uiStage2.getValRaw(), ...
+                this.uiStage3.getValRaw(), ...
+                this.uiStage4.getValRaw() ...
+            ];
+        end
+        
+        % Set recalled values into your app
+        function setStageValues(this, dValues)
+            this.uiStage1.setDestRaw(dValues(1));
+            this.uiStage2.setDestRaw(dValues(2));
+            this.uiStage3.setDestRaw(dValues(3));
+            this.uiStage4.setDestRaw(dValues(4));
         end
         
         
