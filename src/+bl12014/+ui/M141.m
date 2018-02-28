@@ -65,16 +65,16 @@ classdef M141 < mic.Base
             this.uiStageX.syncDestination();
             
             % {< mic.interface.device.GetSetNumber}
-            % deviceTiltX = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 1);
+            deviceTiltX = bl12014.device.GetSetNumberFromStage(comm, 1);
 
             % {< mic.interface.device.GetSetNumber}
-            % deviceTiltY = bl12014.device.GetSetNumberFromStage(this.commSmarActMcsM141, 2);
+            deviceTiltY = bl12014.device.GetSetNumberFromStage(comm, 2);
             
-            % this.uiStageTiltX.setDevice(deviceTiltX);
-            % this.uiStageTiltY.setDevice(deviceTiltY);
+            this.uiStageTiltX.setDevice(deviceTiltX);
+            this.uiStageTiltY.setDevice(deviceTiltY);
             
-            % this.uiStageTiltX.turnOn();
-            % this.uiStageTiltY.turnOn();
+            this.uiStageTiltX.turnOn();
+            this.uiStageTiltY.turnOn();
             
             
             
@@ -84,13 +84,13 @@ classdef M141 < mic.Base
             this.uiStageX.turnOff();
             this.uiStageX.setDevice([]);
             
-            % this.uiStageX.turnOff();
-            % this.uiStageTiltX.turnOff();
-            % this.uiStageTiltY.turnOff();
+            this.uiStageX.turnOff();
+           this.uiStageTiltX.turnOff();
+            this.uiStageTiltY.turnOff();
             
-            % this.uiStageX.setDevice([]);
-            % this.uiStageTiltX.setDevice([]);
-            % this.uiStageTiltY.setDevice([]);
+            this.uiStageX.setDevice([]);
+            this.uiStageTiltX.setDevice([]);
+            this.uiStageTiltY.setDevice([]);
             
         end
         
@@ -157,13 +157,13 @@ classdef M141 < mic.Base
             this.uiStageX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            %{
+            
             this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
-            %}
+            
             this.uiCurrent.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
 
@@ -354,8 +354,8 @@ classdef M141 < mic.Base
             
             this.msg('init');
             this.initUiStageX();
-            % this.initUiStageTiltX();
-            % this.initUiStageTiltY();
+            this.initUiStageTiltX();
+            this.initUiStageTiltY();
             this.initUiCurrent();
             this.initUiCommSmarActMcsM141();
             this.initUiCommDataTranslationMeasurPoint();

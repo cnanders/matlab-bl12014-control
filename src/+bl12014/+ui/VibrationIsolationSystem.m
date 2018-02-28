@@ -39,7 +39,7 @@ classdef VibrationIsolationSystem < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 1120
+        dWidth = 1150
         dHeight = 270
         hFigure
         
@@ -319,7 +319,7 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiStage4.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 265;
+            dLeft = 313;
             this.uiButtonGoDest.build(this.hFigure, dLeft, dTop, this.dWidthDest, 24);
             
             dLeft = dLeft + this.dWidthDest + this.dWidthPadStep;
@@ -331,7 +331,7 @@ classdef VibrationIsolationSystem < mic.Base
             % they were another column of those devices
             
             dTop = 10;
-            dLeft = 70;
+            dLeft = 90;
             dSep = 30;
             dTop = dTop + 15 + dSep + dSep;
             
@@ -352,7 +352,7 @@ classdef VibrationIsolationSystem < mic.Base
             % they were another column of those devices
             
             dTop = 10;
-            dLeft = 540;
+            dLeft = 570;
             dSep = 30;
             dTop = dTop + 15 + dSep + dSep;
             
@@ -368,7 +368,7 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiTemp4.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 720
+            dLeft = 750
             dTop = 10
             this.uiPositionRecaller.build(this.hFigure, dLeft, dTop, 380, 250);
             
@@ -520,7 +520,7 @@ classdef VibrationIsolationSystem < mic.Base
                 'dWidthPadName', this.dWidthPadName, ...
                 'dWidthVal', this.dWidthVal, ...
                 'dWidthDest', this.dWidthDest, ...
-                'lShowDevice', false, ...
+                'lShowDevice', true, ...
                 'lShowInitButton', true, ...
                 'lShowLabels', false, ...
                 'lShowRange', false, ...
