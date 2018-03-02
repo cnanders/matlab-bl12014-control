@@ -10,6 +10,8 @@ classdef HeightSensorLEDs < mic.Base
         ui5
         ui6
         
+        uiPositionRecaller
+        
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommMightex
         
@@ -19,7 +21,7 @@ classdef HeightSensorLEDs < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 475
+        dWidth = 900
         dHeight = 255
         
         cName = 'Height Sensor LEDs'
@@ -61,45 +63,45 @@ classdef HeightSensorLEDs < mic.Base
         
         end
         
-        function connectMightex1(this)
+        function connectMightex2(this, comm)
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(1);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm, 1);
             this.ui1.setDevice(device);
             this.ui1.turnOn();
             this.ui1.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(2);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,2);
             this.ui2.setDevice(device);
             this.ui2.turnOn();
             this.ui2.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(3);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,3);
             this.ui3.setDevice(device);
             this.ui3.turnOn();
             this.ui3.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(4);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,4);
             this.ui4.setDevice(device);
             this.ui4.turnOn();
             this.ui4.syncDestination();
             
         end
         
-        function connectMightex2(this, comm)
+        function connectMightex1(this, comm)
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(1);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,1);
             this.ui5.setDevice(device);
             this.ui5.turnOn();
             this.ui5.syncDestination();
             
-            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(2);
+            device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,2);
             this.ui6.setDevice(device);
             this.ui6.turnOn();
             this.ui6.syncDestination();
         end
         
         
-        function disconnectMightex(this)
+        function disconnectMightex2(this)
             
             this.ui1.turnOff();
             this.ui1.setDevice([]);
@@ -116,7 +118,7 @@ classdef HeightSensorLEDs < mic.Base
             
         end
         
-        function disconnectMightex2(this)
+        function disconnectMightex1(this)
             
             this.ui5.turnOff();
             this.ui5.setDevice([]);
@@ -196,6 +198,11 @@ classdef HeightSensorLEDs < mic.Base
             
             this.ui6.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
+            
+            dLeft = 500
+            dBot = 15
+            this.uiPositionRecaller.build(this.hFigure, dLeft, dBot, 380, 170);
+            
             
             
         end
@@ -415,6 +422,18 @@ classdef HeightSensorLEDs < mic.Base
         
         end
         
+        function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', [this.cName, '-position-recaller'], ...
+                'hGetCallback', @this.getValues, ...
+                'hSetCallback', @this.setValues ...
+            );
+        end
+        
        
         
         
@@ -428,7 +447,39 @@ classdef HeightSensorLEDs < mic.Base
             this.initUi5();
             this.initUi6();
             this.initUiCommMightex();
+            this.initUiPositionRecaller();
             
+            
+        end
+        
+         % Return list of values from your app
+        function dValues = getValues(this)
+            dValues = [...
+                this.ui1.getValRaw(), ...
+                this.ui2.getValRaw(), ...
+                this.ui3.getValRaw(), ...
+                this.ui4.getValRaw(), ...
+                this.ui5.getValRaw(), ...
+                this.ui6.getValRaw() ...
+            ];
+        end
+        
+        % Set recalled values into your app
+        function setValues(this, dValues)
+            
+            this.ui1.setDestRaw(dValues(1));
+            this.ui2.setDestRaw(dValues(2));
+            this.ui3.setDestRaw(dValues(3));
+            this.ui4.setDestRaw(dValues(4));
+            this.ui5.setDestRaw(dValues(5));
+            this.ui6.setDestRaw(dValues(6));
+            
+            this.ui1.moveToDest();
+            this.ui2.moveToDest();
+            this.ui3.moveToDest();
+            this.ui4.moveToDest();
+            this.ui5.moveToDest();
+            this.ui6.moveToDest();
             
         end
         
