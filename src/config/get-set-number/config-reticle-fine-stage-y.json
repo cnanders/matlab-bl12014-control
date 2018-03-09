@@ -1,5 +1,5 @@
 {
-	"delay": .5,
+	"delay": 0.5,
 	"units": [
 		{
 			"name": "mm",

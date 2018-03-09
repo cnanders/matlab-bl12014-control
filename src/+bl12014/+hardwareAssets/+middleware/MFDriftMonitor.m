@@ -191,6 +191,11 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
+        function forceUpdate(this)
+            this.updateChannelData();
+        end
+        
+        
         function loadInterpolant(this, cName)
             load(fullfile(this.cInterpolantConfigDir, [cName, '.mat']));
             this.stActiveInterpolant = stInterpolant;
@@ -240,7 +245,6 @@ classdef MFDriftMonitor < mic.Base
                 
                 dXDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
                 dYDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf);
-                
                 this.dDMIData = [dXDat_ret, dYDat_ret; dXDat_waf, dYDat_waf];
 
         end

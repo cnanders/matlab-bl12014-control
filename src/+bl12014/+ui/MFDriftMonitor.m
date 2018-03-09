@@ -334,6 +334,14 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+        %% Accessor:
+        
+        % Gets X and Y reticle values separately from normal update loop
+        function dVal = getReticleDMIValues(this)
+            this.apiDriftMonitor.forceUpdate();
+            dVal = [this.apiDriftMonitor.getDMIValue(1);this.apiDriftMonitor.getDMIValue(2)];
+        end
+        
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)

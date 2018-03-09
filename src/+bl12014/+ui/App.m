@@ -1,14 +1,7 @@
 classdef App < mic.Base
         
     properties (Constant)
-       
-        dHeight         = 550
-        dWidth          = 250
-        
-        cTcpipHostLC400M142 = '192.168.10.22'
-        cTcpipHostLC400MA = '192.168.20.42' % supposed to be .20 but that was not working
-
-        
+                       
     end
     
 	properties
@@ -291,19 +284,7 @@ classdef App < mic.Base
                 % Don't have LSIControl installed
             end
             
-            %{
-            this.uiScannerMA = ScannerControl(...
-                'clock', this.clock, ... 
-                'cDevice', 'MA', ...
-                'cLC400TcpipHost', this.cTcpipHostLC400MA ...
-            );
-            this.uiScannerM142 = ScannerControl(...
-                'clock', this.clock, ...
-                'cDevice', 'M142', ...
-                'dThetaX', 43.862, ... % Tilt about x-axis
-                'cLC400TcpipHost', this.cTcpipHostLC400M142 ...
-            );
-            %}
+
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ...
