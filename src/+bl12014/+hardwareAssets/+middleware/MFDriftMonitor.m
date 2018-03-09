@@ -216,6 +216,10 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+        function zeroDMI(this)
+            this.javaAPI.monitorStart();
+        end
+        
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
