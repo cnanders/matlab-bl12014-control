@@ -135,7 +135,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function setDMIZero(this)
-            this.javaAPI.dmiResetPosition();
+            this.javaAPI.monitorStart();
         end
         
         function lVal = isConnected(this)
@@ -216,9 +216,6 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
-        function zeroDMI(this)
-            this.javaAPI.monitorStart();
-        end
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
