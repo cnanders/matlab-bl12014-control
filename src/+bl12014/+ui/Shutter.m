@@ -2,15 +2,18 @@ classdef Shutter < mic.Base
     
     properties
         
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiCommRigol
         
-        wagoSolenoid
-        measPoint
         
         % {bl12014.device.ShutterVirtual}
         deviceVirtual
         
-        % {mic.ui.device.GetSetNumber 1x1}}
+        % {mic.ui.device.GetSetNumber 1x1}
         uiShutter
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiOverride
         
         
     end
@@ -18,8 +21,8 @@ classdef Shutter < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 580
-        dHeight = 66
+        dWidth = 540
+        dHeight = 100
         hFigure
         
         configStageY
@@ -45,8 +48,40 @@ classdef Shutter < mic.Base
         
         end
         
-       
+        function connectRigolDG1000ZVirtual(this)
+            
+            comm = rigol.DG1000ZVirtual();
+            
+            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
+            this.uiShutter.setDeviceVirtual(device);
+            
+            device = bl12014.device.GetSetLogicalFromRigolDG1000Z(comm, 1);
+            this.uiOverride.setDeviceVirtual(device);
+                
+        end
+                
+        function connectRigolDG1000Z(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
+            this.uiShutter.setDevice(device);
+            this.uiShutter.turnOn();
+            
+            
+            device = bl12014.device.GetSetLogicalFromRigolDG1000Z(comm, 1);
+            this.uiOverride.setDevice(device);
+            this.uiOverride.turnOn();
+            
+        end
         
+        function disconnectRigolDG1000Z(this)
+            
+            this.uiShutter.turnOff();
+            this.uiShutter.setDevice([]);
+            
+            this.uiOverride.turnOff();
+            this.uiOverride.setDevice([]);
+        end
+            
         
         function build(this)
             
@@ -87,8 +122,15 @@ classdef Shutter < mic.Base
             dLeft = 10;
             dSep = 30;
             
+            this.uiCommRigol.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
             this.uiShutter.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
+            % dTop = dTop + 15 + dSep;
+            
+            this.uiOverride.build(this.hFigure, 150, dTop);
+            % dTop = dTop + 15 + dSep;
                         
         end
         
@@ -115,12 +157,56 @@ classdef Shutter < mic.Base
     
     methods (Access = private)
         
-         function initShutter(this)
+        
+        function initUiOverride(this)
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Close', ...
+                'cTextFalse', 'Open' ...
+            };
+
+            this.uiOverride = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'cName', 'shutter-override', ...
+                'lShowName', false, ...
+                'lShowInitButton', false, ...
+                'lShowDevice', false, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'cLabel', 'Override' ...
+            );
+            
+        end
+        
+        
+        function initUiCommRigol(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiCommRigol = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'rigol-dg1000z', ...
+                'cLabel', 'Rigol DG1000Z' ...
+            );
+        
+        end
+        
+        
+         function initUiShutter(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-shutter.json' ...
+                'config-shutter-rigol.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -133,25 +219,36 @@ classdef Shutter < mic.Base
                 'config', uiConfig, ...
                 'cLabel', 'Shutter', ...
                 'dWidthUnit', 120, ...
+                'dWidthName', 230, ...
                 'lShowRel', false, ...
                 'lShowJog', false, ...
                 'lShowZero', false, ...
-                'lShowStores', false ...
+                'lShowStores', false, ...
+                'lShowStepNeg', false, ...
+                'lShowStep', false, ...
+                'lShowStepPos', false, ...
+                'lShowVal', false, ...
+                'lShowJog', false ...
             );
         
-            this.uiShutter.setDeviceVirtual(this.deviceVirtual);
+            % this.uiShutter.setDeviceVirtual(this.deviceVirtual);
         end
         
         function initDeviceShutterVirtual(this)
             this.deviceVirtual = bl12014.device.ShutterVirtual();
+            
         end
         
         
         function init(this)
             this.msg('init()');
             
-            this.initDeviceShutterVirtual();
-            this.initShutter();
+            % this.initDeviceShutterVirtual();
+            this.initUiCommRigol();
+            this.initUiShutter();
+            this.initUiOverride();
+            
+            this.connectRigolDG1000ZVirtual();
         end
         
         function onFigureCloseRequest(this, src, evt)

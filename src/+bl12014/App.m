@@ -27,6 +27,8 @@ classdef App < mic.Base
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
         
+        cTcpipRigolDG1000Z = '192.168.10.40'
+        
 
         % Video Subnet
         
@@ -41,6 +43,9 @@ classdef App < mic.Base
         
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
+        
+        % {rigol.DG1000Z 1x1}
+        commRigolDG1000Z
         
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsM141
@@ -277,6 +282,11 @@ classdef App < mic.Base
         
         function l = getMicronixMmc103(this)
             l = ~isempty(this.commMicronixMmc103);
+            
+        end
+        
+        function l = getRigolDG1000Z(this)
+            l = ~isempty(this.commRigolDG1000Z);
             
         end
         
@@ -1238,6 +1248,41 @@ classdef App < mic.Base
             this.commNPointLC400M142 = [];
         end
         
+        
+        function initAndConnectRigolDG1000Z(this)
+            
+            if this.getRigolDG1000Z()
+                return
+            end
+            
+            try 
+                
+                u16Port = 5555;
+                this.commRigolDG1000Z = rigol.DG1000Z(...
+                    'cHost', this.cTcpipRigolDG1000Z, ...
+                    'u16Port', u16Port ...
+                );
+                this.commRigolDG1000Z.idn()
+                this.uiApp.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                                
+            catch mE
+                
+                this.commRigolDG1000Z = [];
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+                
+            end
+            
+            
+        end
+        
+        
+        function destroyAndDisconnectRigolDG1000Z(this)
+            
+            this.uiApp.uiShutter.disconnectRigolDG1000Z();
+            this.commRigolDG1000Z = [];
+            
+        end
+        
         function initAndConnectMightex(this)
             
             if this.getMightex()
@@ -1453,6 +1498,12 @@ classdef App < mic.Base
                 'fhGet', @this.getMightex, ...
                 'fhSetTrue', @this.initAndConnectMightex, ...
                 'fhSetFalse', @this.destroyAndDisconnectMightex ...
+            );
+        
+            gslcCommRigolDG1000Z = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getRigolDG1000Z, ...
+                'fhSetTrue', @this.initAndConnectRigolDG1000Z, ...
+                'fhSetFalse', @this.destroyAndDisconnectRigolDG1000Z ...
             );
         
             gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
@@ -1713,6 +1764,10 @@ classdef App < mic.Base
             
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.setDevice(gslcCommMightex);
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.turnOn();
+            
+            this.uiApp.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiShutter.uiCommRigol.turnOn();
+            
         end
         
         

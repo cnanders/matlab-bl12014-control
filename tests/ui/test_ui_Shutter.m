@@ -1,21 +1,13 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
-
-% dependencies
+cDirSrc = fullfile(cDirThis, '..', '..', 'src');
 cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 
-cDirMic = fullfile(...
-    cDirVendor, ...
-    'github', ...
-    'cnanders', ...
-    'matlab-instrument-control', ...
-    'src' ...
-);
-addpath(genpath(cDirMic));
-
+% src
+addpath(genpath(fullfile(cDirSrc)));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
 
 purge
 
@@ -26,6 +18,8 @@ ui = bl12014.ui.Shutter(...
 );
 
 ui.build();
+
+
 
 
  
