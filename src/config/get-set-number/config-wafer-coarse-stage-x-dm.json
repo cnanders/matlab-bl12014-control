@@ -1,0 +1,44 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "mm",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "um",
+			"slope": 1000,
+			"offset": 0,
+			"precision": 3
+		}
+	],
+    "step": 0.1,
+    "stores": [
+        {
+            "name": "LSI",
+            "raw": -450
+        },
+        {
+            "name": "PFM",
+            "raw": -224
+        },
+        {
+            "name": "Dose Monitor",
+            "raw": -102.7
+        },
+        {
+            "name": "ESC",
+            "raw": 2
+        },
+        {
+            "name": "loadlock (FIXME)",
+            "raw": 1.5
+        }
+    ],
+    "min": -450,
+    "max": 50
+}	
+	
+	

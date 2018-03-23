@@ -2,8 +2,14 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "A",
-			"slope": "1",
+			"name": "raw",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "raw X 1e6",
+			"slope": 1000000,
 			"offset": 0,
 			"precision": 3
 		},

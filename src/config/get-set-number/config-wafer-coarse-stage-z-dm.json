@@ -2,28 +2,20 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "mm",
-			"slope": 1,
+			"name": "um",
+			"slope": 1000,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "um",
-			"slope": 1000,
+			"name": "mm",
+			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		}
 	],
     "step": 0.1,
     "stores": [
-        {
-            "name": "pfm",
-            "raw": 3
-        },
-        {
-            "name": "yag",
-            "raw": 5
-		},
 		{
             "name": "Conjugate",
             "raw": 0.222

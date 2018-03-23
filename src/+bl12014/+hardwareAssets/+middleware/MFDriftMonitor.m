@@ -1,5 +1,34 @@
 % This is a bridge between hardware device and MATLAB UI
 
+% Raw HS values at lower limit:
+% 
+%    -450   -164
+%    -430    241
+%    -360    -45
+%    -298     19
+%    -498   -381
+%    -334   -125
+%    -263   -234
+%    -254   -294
+%    -215   -685
+%      -1   -377
+%    -670    -50
+%    -611    354
+
+%    -468   -194
+%    -448    212
+%    -495   -201
+%    -276     20
+%    -269   -149
+%     -66    140
+%    -411   -395
+%    -180   -229
+%    -218   -738
+%     -10   -425
+%    -291    242
+%    -263    589
+
+    
 classdef MFDriftMonitor < mic.Base
     
     
@@ -11,12 +40,13 @@ classdef MFDriftMonitor < mic.Base
         
         u8FITMODEL_CUBIC_FIT           = 0
         u8FITMODEL_CUBIC_INTERPOLATION = 1
+        u8FITMODEL_LINEAR_FIT               = 2
         
         u8HSMODEL_GEOMETRIC   = 0
         u8HSMODEL_CALIBRATION = 1
         
         
-        dDMI_SCALE      = 1.5/10; % dmi axes come in units of 1.5 angstroms
+        dDMI_SCALE      = 632.9907/4096; % dmi axes come in units of 1.5 angstroms
                                   % Convert to nm
         
         % HS Geometry.  Important only for geometric interpolant
@@ -63,7 +93,7 @@ classdef MFDriftMonitor < mic.Base
         
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', '..', 'config', 'interpolants', 'default-geometric-data.mat')
+            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-03-21_15.52.mat')
 
         
         u8FitModel
@@ -85,11 +115,12 @@ classdef MFDriftMonitor < mic.Base
 
             % Inital models
             this.u8FitModel = this.u8FITMODEL_CUBIC_INTERPOLATION;
-            this.u8HSModel  = this.u8HSMODEL_GEOMETRIC;
+            %this.u8FitModel = this.u8FITMODEL_LINEAR_FIT;
+            this.u8HSModel  = this.u8HSMODEL_CALIBRATION;
             
             % Loads calibration data.  Set this on init
             stData = load(this.cDefaultData); 
-            this.initCalibrationInterpolant(stData);
+            this.initCalibrationInterpolant(stData.stCalibrationData);
             this.initGeometricInterpolant();
             
             % If there is no clock then make one:
@@ -201,6 +232,9 @@ classdef MFDriftMonitor < mic.Base
             this.stActiveInterpolant = stInterpolant;
         end
         
+        function setInterpolant(this, stInterpolant)
+            this.initCalibrationInterpolant(stInterpolant);
+        end
         
     end
     
@@ -212,7 +246,7 @@ classdef MFDriftMonitor < mic.Base
             this.updateChannelData();
             
             % Next update HS positions:
-%             this.updateHSPositions();
+             this.updateHSPositions();
             
         end
         
@@ -221,13 +255,35 @@ classdef MFDriftMonitor < mic.Base
         function updateChannelData(this)
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
             
-            % Set HS data:
+            
+            % Set HS data
+            dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
+            lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 6, 2); % 6x2 logical
+            
+            dUpperDiode = dHSDiodeRaw(1:2:end);
+            dLowerDiode = dHSDiodeRaw(2:2:end);
+            this.dHSChannelData = (dUpperDiode - dLowerDiode)./(dUpperDiode + dLowerDiode);
+            
+            dHSDiodeRaw = reshape(dHSDiodeRaw, 6, 2);
+            % Flag values that are OOR:
+            for k = 1:6
+                if any(lOutOfRangeValues(k,:))
+                    if  dHSDiodeRaw(k,1) < 3000 &&  dHSDiodeRaw(k,2) < 3000
+                        this.dHSChannelData(k) = 888;
+                    elseif (dHSDiodeRaw(k,1) > dHSDiodeRaw(k,2))
+                        this.dHSChannelData(k) = 999;
+                    else
+                        this.dHSChannelData(k) = -999;
+                    end
+                end
+            end
+            
             
                 % CWC has calibrated slopes and offsets so that return value is
                 % angstroms away from design focal point
 %                 dHSRawData = dSampleAve.getHsData();
-                this.dHSChannelData = this.javaAPI.hsGetPositions(dSampleAve);
-                
+               % this.dHSChannelData = this.javaAPI.hsGetPositions(dSampleAve);
+                 
             
             % Set DMI data:
              
@@ -240,7 +296,7 @@ classdef MFDriftMonitor < mic.Base
                 
                 dErrU_waf = dDMIRawData(this.u8WAFER_U);
                 dErrV_waf = dDMIRawData(this.u8WAFER_V);
-                
+                 
                 dXDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
                 dYDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
                 
@@ -251,6 +307,15 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function updateHSPositions(this)
+            
+            % return out of range if any channel is out of range:
+            if any(abs(this.dHSChannelData) > 500)
+                this.dHSPositions = 888*ones(3,1);
+                return
+            end
+                
+              
+            
             switch this.u8HSModel
                 case this.u8HSMODEL_GEOMETRIC
                     stFitModel = this.stGeometricInterpolant;
@@ -260,6 +325,10 @@ classdef MFDriftMonitor < mic.Base
             end
             
             switch this.u8FitModel
+                
+                case this.u8FITMODEL_LINEAR_FIT
+                    g = @(R) stFitModel.fhLinFit(R(1), R(2), R(3));
+                     
                 case this.u8FITMODEL_CUBIC_INTERPOLATION
                     g = @(R) stFitModel.fhCubicInterpolant(R(1), R(2), R(3));
                     
@@ -278,7 +347,9 @@ classdef MFDriftMonitor < mic.Base
 
             this.dHSPositions = X;
 
-            
+            % permute x and y, not sure why:
+            this.dHSPositions(1) = X(2);
+            this.dHSPositions(2) = X(1);
         end
         
         
@@ -290,11 +361,13 @@ classdef MFDriftMonitor < mic.Base
             % Calibration interpolant
             
             % Load height sensor data.
-            RxIdx   =  stCalibrationData.RxIdx; % Rx values of calibration in mrad
-            RyIdx   =  stCalibrationData.RyIdx; % Ry values of calibration in mrad
+            RxIdx   =  stCalibrationData.RyIdx; % Rx values of calibration in mrad
+            RyIdx   =  stCalibrationData.RxIdx; % Ry values of calibration in mrad
             zIdx    =  stCalibrationData.zIdx; % Z values of calibration in um
 
             [RX, RY, Z] = ndgrid(RxIdx, RyIdx, zIdx);
+            
+
 
             % Channel readings is a N x 6 array where N =
             %                   length(zIdx)*length(RxIdx)*length(RyIdx)
@@ -313,6 +386,7 @@ classdef MFDriftMonitor < mic.Base
 
             for k = 1:6
                 V{k} = reshape(dChannelReadings(:,k), sr, sc, s3);
+                
                 siCh{k} = griddedInterpolant(RX, RY, Z, V{k}, 'cubic'); %#ok<AGROW>
             end
 
@@ -338,6 +412,7 @@ classdef MFDriftMonitor < mic.Base
             this.stCalibrationInterpolant = struct;
             
             this.stCalibrationInterpolant.fhLinEst            = fhLinEst;
+            this.stCalibrationInterpolant.fhLinFit            = fhLinFit;
             this.stCalibrationInterpolant.fhCubicFit          = fhCubicFit;
             this.stCalibrationInterpolant.fhCubicInterpolant  = fhCubicInterpolant;
             

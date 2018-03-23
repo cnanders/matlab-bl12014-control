@@ -2,14 +2,14 @@
 	"delay": 0.5,
 	"units": [
     {
-			"name": "urad",
-			"slope": 1,
+			"name": "mrad",
+			"slope": 0.001,
 			"offset": 0,
 			"precision": 3
     },
     {
-			"name": "mrad",
-			"slope": 0.001,
+			"name": "urad",
+			"slope": 1,
 			"offset": 0,
 			"precision": 3
     },
@@ -24,7 +24,7 @@
 	"stores": [
 		{
             "name": "Conjugate",
-            "raw": 1589
+            "raw": -3200
 		}
     ],
     "min": -5000,

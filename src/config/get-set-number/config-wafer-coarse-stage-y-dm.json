@@ -17,20 +17,16 @@
     "step": 0.1,
     "stores": [
         {
-            "name": "pfm",
-            "raw": 3
+            "name": "Dose Monitor",
+            "raw": 6.95
         },
         {
-            "name": "yag",
-            "raw": 5
-		},
-		{
-            "name": "Conjugate",
-            "raw": 0.222
-		}
+            "name": "loadlock FIX ME",
+            "raw": 7
+        }
     ],
-    "min": -1,
-    "max": 1
+    "min": -90,
+    "max": 90
 }	
 	
 	

@@ -346,10 +346,22 @@ classdef App < mic.Base
                 return
             end
             
+            if strcmp(questdlg('This will re-initialize M141 and set to 0 (out). Proceed with reset?', ...
+                'M141 Reset Warning', ...
+                'Yes','No','No'), 'No')
+                return
+            end
+            
             try
                 this.initAndConnectMet5Instruments();
                 this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
-                this.commSmarActMcsM141.connect()
+                
+                % 3/13 (RHM): for now let's reset stage and reinitialize, but
+                % eventually let's pull this out to somewhere in the ui
+                this.commSmarActMcsM141.reset();
+                this.commSmarActMcsM141.initializeAxes().get();
+                
+                this.commSmarActMcsM141.moveAxisAbsolute(0, 0);
             catch mE
                 
                 cMsg = sprintf('initAndConnectSmarActMcsM141() %s', mE.message);
@@ -457,6 +469,7 @@ classdef App < mic.Base
             % Initializes and enables hexapod, setting devices via the
             % coupled axis API.
             this.uiApp.uiLSIControl.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
+            this.uiApp.uiDriftMonitor.setHexapodDeviceAndEnable(this.commSmarActSmarPod);
         end
         
        
@@ -603,6 +616,26 @@ classdef App < mic.Base
             ui.setReticleAxisDevice(deviceFineX, 6);
             ui.setReticleAxisDevice(deviceFineY, 7);
         end
+         function connectCommDeltaTauPowerPmacToDM(this, comm, ui)
+            
+            % CA returning because this is crashing my reticle and wafer UI
+            
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+
+            % Set LSI reticle axis control
+            ui.setWaferAxisDevice(deviceCoarseZ, 1);
+            ui.setWaferAxisDevice(deviceCoarseTiltX, 2);
+            ui.setWaferAxisDevice(deviceCoarseTiltY, 3);
+            
+         end
+        
         
         function connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this, comm, ui)
 
@@ -646,13 +679,17 @@ classdef App < mic.Base
             
             % RYAN WILL REPLACE
             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
-            
+            this.connectCommDeltaTauPowerPmacToDM(this.commDeltaTauPowerPmac, this.uiApp.uiDriftMonitor);
         end
         
         function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
-
             for k = 1:7
                 ui.disconnectReticleAxisDevice(k);
+            end
+        end
+        function disconnectCommDeltaTauPowerPmacFromUiDM(this, ui)
+            for k = 1:3
+                ui.disconnectWaferAxisDevice(k);
             end
         end
 
@@ -669,6 +706,7 @@ classdef App < mic.Base
             
             % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
+            this.disconnectCommDeltaTauPowerPmacFromUiDM(this.uiApp.uiDriftMonitor);
                                     
             this.commDeltaTauPowerPmac.delete();
             this.commDeltaTauPowerPmac = [];
@@ -1653,7 +1691,10 @@ classdef App < mic.Base
             end
             
             % MF drift monitor
-%             this.uiApp.uiMFDriftMonitor.uiCommMFDriftMonitor.setDevice(gslcCommMFDriftMonitor);
+            this.uiApp.uiDriftMonitor.uicConnectHexapod.setDevice(gslcCommSmarActSmarPod);
+            this.uiApp.uiDriftMonitor.uicConnectWafer.setDevice(gslcCommDeltaTauPowerPmac);
+            this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
+            this.uiApp.uiDriftMonitor.uicConnectWafer.turnOn();
         
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)

@@ -37,8 +37,12 @@ classdef MFDriftMonitor < mic.Base
             'HS-Channel-5', 'HS-Channel-6', 'HS-Rx', 'HS-Ry', 'HS-Z'}
         ceDMIChannelNames = {'DMI-Ret-X', 'DMI-Ret-Y', 'DMI-Wafer-X', 'DMI-Wafer-Y'}
         
-        ceScanAxisLabels = {'Hexapod-Rx', 'Hexapod-Ry', 'Hexapod-Z', 'Wafer-Rx', 'Wafer-Ry', 'Wafer-Z'}
+        ceScanAxisLabels = {'Hexapod-Z', 'Hexapod-Rx', 'Hexapod-Ry', 'Wafer-Z', 'Wafer-Rx', 'Wafer-Ry'}
         ceScanOutputLabels = {'Height sensor channels'};
+        
+        cHexapodAxisLabels = { 'Z', 'Rx', 'Ry'};
+        cWaferLabels = { 'Waf-Z', 'Waf-Rx', 'Waf-Ry'};
+                     
         
     end
     
@@ -97,21 +101,40 @@ classdef MFDriftMonitor < mic.Base
         uicConnectWafer
        
         
-        uiDeviceArrayHexapod
-        uiDeviceArrayWafer
+        
         
         
         % Scanner:
         scanHandler
         ssCalibration
         lIsScanning = false
+        dCalibrationData = []
+        dZIdx
+        dRxIdx
+        dRyIdx
+        haScanMonitors = {}
+        hpScanMonitor
         
         % Scan progress text elements
+        
+        
         uiTextStatus
         uiTextTimeElapsed
         uiTextTimeRemaining
         uiTextTimeComplete
         
+        % APIs and stages
+        apiDriftMonitor     = []
+        apiHexapod          = []
+        apiWafer            = []
+        oHexapodBridges
+        uiDeviceArrayHexapod
+        uiDeviceArrayWafer
+        
+        
+        % Configuration
+        uicHexapodConfigs
+        uicWaferConfigs
         
         
     end
@@ -123,9 +146,7 @@ classdef MFDriftMonitor < mic.Base
         hPanel
         
         hardware
-        apiWaferStage = []
-        apiHexapod = []
-        apiDriftMonitor = []
+        
         
         dWidthName = 70
         dWidthUnit = 80
@@ -175,53 +196,84 @@ classdef MFDriftMonitor < mic.Base
                 'fhIsInitialized', @()true,... 
                 'fhIsVirtual', @false ...
                 );
+           
             
-            
+             ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+        
+        
             this.uicConnectHexapod = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'Hexapod', ...
-                'cLabel', 'Hexapod', ...
-                'lUseFunctionCallbacks', true, ...
-                'fhGet', @() ~isempty(this.apiHexapod) && ...
-                                this.apiHexapod.isConnected() && ...
-                                this.apiHexapod.isReady(),...
-                'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
-                                    @()this.apiHexapod.connect(), ...
-                                    @()this.apiHexapod.disconnect()...
-                                ),...
-                'fhIsInitialized', @()true,... 
-                'fhIsVirtual', @false ...
+                'cName', 'smarpod-dm', ...
+                'cLabel', 'SmarPod' ...
                 );
             
   
             
             this.uicConnectWafer = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'Wafer', ...
-                'cLabel', 'Wafer', ...
-                'lUseFunctionCallbacks', true, ...
-                'fhGet', @() ~isempty(this.apiWaferStage) && ...
-                                this.apiWaferStage.isConnected() && ...
-                                this.apiWaferStage.isReady(),...
-                'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
-                                    @()this.apiWaferStage.connect(), ...
-                                    @()this.apiWaferStage.disconnect()...
-                                ),...
-                'fhIsInitialized', @()true,... 
-                'fhIsVirtual', @false ...
-                );            
+                'cName', 'delta-tau-wafer-dm', ...
+                'cLabel', 'Delta Tau Wafer' ...
+                );
 
         
+            % Stage init:
+
+            % Init stage device UIs
+            cLSIConfigPath = fullfile(this.cAppPath, '..', '..', '..', 'vendor', 'github', 'ryanmiyakawa', 'LSI-Control',...
+                    '+lsicontrol', '+ui', '+config');
+            for k = 1:length(this.cHexapodAxisLabels)
+                this.uicHexapodConfigs{k} = mic.config.GetSetNumber(...
+                    'cPath', fullfile(cLSIConfigPath, sprintf('hex%d-dm.json', k + 2))...
+                    );
+                this.uiDeviceArrayHexapod{k} = mic.ui.device.GetSetNumber( ...
+                    'cName', [this.cHexapodAxisLabels{k}, '-dm'], ...
+                    'clock', this.clock, ...
+                    'cLabel', this.cHexapodAxisLabels{k}, ...
+                    'lShowLabels', false, ...
+                    'lShowStores', false, ...
+                    'lValidateByConfigRange', true, ...
+                    'config', this.uicHexapodConfigs{k} ...
+                    );
+            end
             
+            cWaferConfigPath = fullfile(this.cAppPath, '..', '..', 'config', 'get-set-number');
+            ceWaferConfigNames = {
+                'config-wafer-coarse-stage-z-dm.json', ...
+                'config-wafer-coarse-stage-tilt-x-dm.json', ...
+                'config-wafer-coarse-stage-tilt-y-dm.json'};
+            for k = 1:length(this.cWaferLabels)
+                
+                this.uicWaferConfigs{k} = mic.config.GetSetNumber(...
+                    'cPath', fullfile(cWaferConfigPath, ceWaferConfigNames{k})...
+                    );
+                
+                this.uiDeviceArrayWafer{k} = mic.ui.device.GetSetNumber( ...
+                    'cName', [this.cWaferLabels{k} , '-dm'], ...
+                    'clock', this.clock, ...
+                    'cLabel', this.cWaferLabels{k}, ...
+                    'lShowLabels', false, ...
+                    'lShowStores', false, ...
+                    'lValidateByConfigRange', true, ...
+                    'config', this.uicWaferConfigs{k} ...
+                    );
+            end
             
+           
+                
             
             % MAIN TABGROUP:
             this.uitgMode = ...
@@ -329,8 +381,43 @@ classdef MFDriftMonitor < mic.Base
                 'fhOnStopScan', @()this.stopScan, ...
                 'fhOnScan', ...
                 @(ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames)...
-                this.onScan(this.ss3D, ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames) ...
+                this.onScan(this.ssCalibration, ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames) ...
                 );
+            
+            % Scan text elements:
+             % Scan progress text elements:
+            dStatusFontSize = 14;
+            this.uiTextStatus = mic.ui.common.Text(...
+                'cLabel', 'Status', ...
+                'lShowLabel', true, ...
+                'dFontSize', dStatusFontSize, ... 
+                'cFontWeight', 'bold', ...
+                'cVal', ' ' ...
+                );
+            this.uiTextTimeElapsed = mic.ui.common.Text(...
+                'cLabel', 'Elapsed', ...
+                'lShowLabel', true, ...
+                'dFontSize', dStatusFontSize, ... 
+                'cFontWeight', 'bold', ...
+                'cVal', ' ' ...
+                );
+            this.uiTextTimeRemaining = mic.ui.common.Text(...
+                'cLabel', 'Remaining', ...
+                'lShowLabel', true, ...
+                'dFontSize', dStatusFontSize, ... 
+                'cFontWeight', 'bold', ...
+                'cVal', ' ' ...
+                );
+            this.uiTextTimeComplete = mic.ui.common.Text(...
+                'cLabel', 'Complete', ...
+                'lShowLabel', true, ...
+                'cFontWeight', 'bold', ...
+                'cVal', ' ' ...
+                );
+            this.uiTextTimeComplete.setFontSize(dStatusFontSize);
+            this.uiTextTimeElapsed.setFontSize(dStatusFontSize);
+            this.uiTextTimeRemaining.setFontSize(dStatusFontSize);
+            this.uiTextStatus.setFontSize(dStatusFontSize);
             
         end
         
@@ -364,6 +451,73 @@ classdef MFDriftMonitor < mic.Base
                 this.clock.remove(this.id());
             end
             this.uieUpdateInterval.enable();
+        end
+        
+         % Builds hexapod java api, connecting getSetNumber UI elements
+        % to the appropriate API hooks.  Device is already connected
+        function setHexapodDeviceAndEnable(this, device)
+            
+            % Instantiate javaStageAPIs for communicating with devices
+            this.apiHexapod 	= lsicontrol.javaAPI.CXROJavaStageAPI(...
+                                  'jStage', device);
+           
+            % Check if we need to index stage:
+            if (~this.apiHexapod.isInitialized())
+                if strcmp(questdlg('Hexapod is not referenced. Index now?'), 'Yes')
+                    this.apiHexapod.home();
+                     % Wait till hexapod has finished move:
+                    dafHexapodHome = mic.DeferredActionScheduler(...
+                        'clock', this.clock, ...
+                        'fhAction', @()this.setHexapodDeviceAndEnable(device),...
+                        'fhTrigger', @()this.apiHexapod.isInitialized(),...
+                        'cName', 'DASHexapodIndexing', ...
+                        'dDelay', 0.5, ...
+                        'dExpiration', 10, ...
+                        'lShowExpirationMessage', true);
+                    dafHexapodHome.dispatch();
+                
+                end
+                return % Return in either case, only proceed if initialized
+            end
+            
+            % Use coupled-axis bridge to create single axis control
+            dSubR = [0 -1 0 ; -1 0 0; 0 0 1];
+            dHexapodR = [dSubR, zeros(3); zeros(3), dSubR];  
+            for k = 1:3
+                this.oHexapodBridges{k} = lsicontrol.device.CoupledAxisBridge(this.apiHexapod, k + 2, 6);
+                this.oHexapodBridges{k}.setR(dHexapodR);
+                this.uiDeviceArrayHexapod{k}.setDevice(this.oHexapodBridges{k});
+                this.uiDeviceArrayHexapod{k}.turnOn();
+                this.uiDeviceArrayHexapod{k}.syncDestination();
+            end
+        end
+        
+        % Resets api, bridges, and disconnects hardware device.
+        function disconnectHexapod(this)
+            for k = 1:3
+                this.oHexapodBridges{k} = [];
+                this.uiDeviceArrayHexapod{k}.turnOff();
+                this.uiDeviceArrayHexapod{k}.setDevice([]);
+            end
+            
+            % Disconnect the stage:
+            this.apiHexapod.disconnect();
+            
+            % Delete the Stage API
+            this.apiHexapod = [];
+        end
+        
+        % Set up wafer
+        function setWaferAxisDevice(this, device, index)
+            this.uiDeviceArrayWafer{index}.setDevice(device);
+            this.uiDeviceArrayWafer{index}.turnOn();
+            this.uiDeviceArrayWafer{index}.syncDestination();
+        end
+        
+        
+        function disconnectWaferAxisDevice(this, index)
+            this.uiDeviceArrayWafer{index}.turnOff();
+            this.uiDeviceArrayWafer{index}.setDevice([]);
         end
         
         function onClock(this)
@@ -479,7 +633,7 @@ classdef MFDriftMonitor < mic.Base
                         dInitialState.values(k) = this.uiDeviceArrayHexapod{dAxis}.getDestCal(dUnit);
                         
                     case {4, 5, 6} % wafer
-                        if isempty(this.apiWaferStage)
+                        if isempty(this.apiWafer)
                             %                             msgbox('Reticle is not connected\n')
                             dInitialState.values(k) = 0;
                             continue
@@ -517,6 +671,12 @@ classdef MFDriftMonitor < mic.Base
             % validate output conditions
             switch u8OutputIdx
                 case 1 % HS channels
+                    dNStates = length(stateList);
+                    this.dCalibrationData = zeros(dNStates, 6);
+                    this.dZIdx = zeros(dNStates, 1);
+                    this.dRxIdx = zeros(dNStates, 1);
+                    this.dRyIdx = zeros(dNStates, 1);
+        
                     if ~(this.apiDriftMonitor.isConnected())
                         msgbox('Drift monitor is not connected')
                         return
@@ -548,9 +708,7 @@ classdef MFDriftMonitor < mic.Base
                 );
             
             % Start scanning
-            this.setupScanOutput(stateList, u8ScanAxisIdx)
             this.lIsScanning = true;
-            this.ssCurrentScanSetup = ssScanSetup;
             this.scanHandler.start();
         end
         
@@ -570,6 +728,9 @@ classdef MFDriftMonitor < mic.Base
             this.uiTextTimeComplete.set(sprintf('%s', stScanProgress.cTimeComplete) );
             
         end
+        
+       
+        
         
         % Sets device to enumerated state
         function setScanAxisDevicesToState(this, stState)
@@ -591,8 +752,8 @@ classdef MFDriftMonitor < mic.Base
             
             if lDeferredHexapodMove
                 dPosHexRaw = zeros(6,1);
-                for k = 1:6
-                    dPosHexRaw(k) = this.uiDeviceArrayHexapod{k}.getValRaw();  %#ok<AGROW>
+                for k = 1:3
+                    dPosHexRaw(k + 2) = this.uiDeviceArrayHexapod{k}.getValRaw();  %#ok<AGROW>
                 end
             end
             
@@ -603,7 +764,7 @@ classdef MFDriftMonitor < mic.Base
                 switch dAxis
                     case {1, 2, 3} % Hexapod: generate deferred move
                         this.uiDeviceArrayHexapod{dAxis}.setDestCal(dVal);
-                        dPosHexRaw(dAxis) = this.uiDeviceArrayHexapod{dAxis}.getDestRaw();
+                        dPosHexRaw(dAxis + 2) = this.uiDeviceArrayHexapod{dAxis}.getDestRaw();
                    
                     case {4, 5, 6} % wafer: move now
                         this.uiDeviceArrayWafer{dAxis - 3}.setDestCal(dVal);
@@ -636,6 +797,22 @@ classdef MFDriftMonitor < mic.Base
                             isAtState = false;
                             return
                         end
+                        
+                        dUnit =  this.uiDeviceArrayWafer{dAxis - 3}.getUnit().name;
+                        dCommandedDest = this.uiDeviceArrayWafer{dAxis - 3}.getDestCal(dUnit);
+                        dAxisPosition = this.uiDeviceArrayWafer{dAxis - 3}.getValCal(dUnit);
+                        dEps = abs(dCommandedDest - dAxisPosition);
+                        fprintf('Commanded destination: %0.3f, Actual pos: %0.3f, eps: %0.4f\n', ...
+                            dCommandedDest, dAxisPosition, dEps);
+                        dTolerance = 0.01; % scan unit assumed to be mm here
+                        %                         if ~this.uiDeviceArrayReticle{retAxis}.getDevice().isReady() || ...
+                        if dEps > dTolerance
+                            
+                            fprintf('Wafer is within tolerance\n');
+                            isAtState = false;
+                            return
+                        end
+                        isAtState = true;
                 end
             end
             
@@ -643,7 +820,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function scanAcquire(this, outputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames)
-            
+             
             % Notify scan progress that we are at state idx: u8Idx:
             u8Idx = this.scanHandler.getCurrentStateIndex();
             this.updateScanMonitor(stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, u8Idx);
@@ -657,6 +834,18 @@ classdef MFDriftMonitor < mic.Base
             switch outputIdx
                 case 1
                     % Read off HS channel values and store
+                    % Update HS:
+                    this.apiDriftMonitor.forceUpdate();
+                    
+                    dHSValues = zeros(6,1);
+                    for k = 1:6
+                        dHSValues(k) = this.apiDriftMonitor.getHeightSensorValue(k);
+                    end
+                    this.dCalibrationData(u8Idx, 1:6) = dHSValues';
+                    this.dZIdx(u8Idx) = stateList{u8Idx}.values(1);
+                    this.dRxIdx(u8Idx) =  stateList{u8Idx}.values(2);
+                    this.dRyIdx(u8Idx) =  stateList{u8Idx}.values(3);
+                    
             end
             
             
@@ -683,8 +872,20 @@ classdef MFDriftMonitor < mic.Base
             % Reset to initial state on complete
             fhSetState([], dInitialState);
             
-            % Reset scan setup pointer:
-            this.ssCurrentScanSetup = {};
+            scanRanges = this.ssCalibration.getScanRanges();
+            
+
+            cInterpolantsPath = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config', 'interpolants');
+            cInterpolantName = sprintf('cal-interp_%s', datestr(now, 'yyyy-mm-dd_HH.MM'));
+            % Build interpolant structure:
+            stCalibrationData = struct;
+            stCalibrationData.dChannelReadings = this.dCalibrationData;
+            stCalibrationData.zIdx = scanRanges{1} + dInitialState.values(1);
+            stCalibrationData.RxIdx = scanRanges{2} + dInitialState.values(2);
+            stCalibrationData.RyIdx = scanRanges{3} + dInitialState.values(3);
+            
+            save([cInterpolantsPath, filesep, cInterpolantName, '.mat'], 'stCalibrationData')
+            
         end
         
         function onScanAbort(this, dInitialState, fhSetState, fhIsAtState)
@@ -710,9 +911,74 @@ classdef MFDriftMonitor < mic.Base
         function updateScanMonitor(this, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, u8Idx)
             
             
-        
+            shiftedStateList = stateList;
+            if (u8Idx == 0) % We haven't started scanning yet so make a proper prieview of relative scan WRT initial state
+                if (any(lUseDeltas))
+                    dInitialState = this.getInitialState(u8ScanAxisIdx);
+                else
+                    dInitialState = [];
+                end
+
+                % If using deltas, modify state to center around current
+                % values:
+                
+                for m = 1:length(u8ScanAxisIdx)
+                    if lUseDeltas(m)
+                        for k = 1:length(stateList)
+                            shiftedStateList{k}.values(m) = stateList{k}.values(m) + dInitialState.values(m);
+                        end
+                    end
+                end
+            end
+            
+            % Plot states on scan monitor tabgroup:
+            for k = 1:length(this.haScanMonitors)
+                delete(this.haScanMonitors{k});
+            end
+            
+            dNumAxes = length(u8ScanAxisIdx);
+            dYPos = 0.1;
+            dYHeight = (.85 - (dNumAxes - 1) * 0.05)/dNumAxes;
+            for k = 1:dNumAxes
+                kp = dNumAxes - k + 1;
+                
+                this.haScanMonitors{kp} = ...
+                    axes('Parent', this.hpScanMonitor,...
+                   'XTick', [0, 1], ...
+                   'YTick', [0, 1], ...
+                   'Position', [0.1, dYPos, .8, dYHeight], ... 
+                    'FontSize', 12);
+                dYPos = dYPos + 0.05 + dYHeight;
+                ylabel(this.haScanMonitors{kp}, cAxisNames{kp});
+            end
+            
+            % Don't need to update 
+            if isempty(stateList)
+                return
+            end
             
             
+            % unpack state into axes:
+            stateData = [];
+            for k = 1:length(shiftedStateList)
+                state = shiftedStateList{k};
+                for m = 1:dNumAxes
+                    stateData(m, k) = state.values(m);
+                end
+                
+            end
+            for m = 1:dNumAxes
+                plot(this.haScanMonitors{m}, 1:length(stateList), stateData(m, :), 'k');
+                this.haScanMonitors{m}.NextPlot = 'add';
+                if u8Idx > 0
+                     plot(this.haScanMonitors{m}, double(u8Idx), stateData(m, double(u8Idx)),...
+                         'ko', 'LineWidth', 1, 'MarkerFaceColor', [.3, 1, .3], 'MarkerSize', 5);
+                end
+                ylabel(this.haScanMonitors{m}, cAxisNames{m});
+                this.haScanMonitors{m}.NextPlot = 'replace';
+            end
+            
+           
         end
         
         
@@ -828,6 +1094,41 @@ classdef MFDriftMonitor < mic.Base
             this.ssCalibration.build(uitCalibrate, 10, 20, 850, 270);
             
             
+            % Stages:
+            dSep = 45;
+            dTop = dTop + 40;
+           
+            dTop0 = dTop;
+            for k = 1:length(this.cHexapodAxisLabels)
+                this.uiDeviceArrayHexapod{k}.build(uitCalibrate, ...
+                    dLeft, dTop);
+                dTop = dTop + dSep;
+            end
+             dTop = dTop + dSep;
+            dLeft = dLeft;
+            
+            for k = 1:length(this.cWaferLabels)
+                this.uiDeviceArrayWafer{k}.build(uitCalibrate, ...
+                    dLeft, dTop);
+                if (k == 5)
+                    dTop = dTop + dSep;
+                end
+                dTop = dTop + dSep;
+            end
+            
+            hScanProgress = uipanel(uitCalibrate, ...
+                     'units', 'pixels', ...
+                     'Position', [1200 30 150 250] ...
+                     );
+            this.uiTextStatus.build(hScanProgress, 10, 10, 100, 30);
+            this.uiTextTimeElapsed.build(hScanProgress, 10, 60, 100, 30);
+            this.uiTextTimeRemaining.build(hScanProgress, 10, 110, 100, 30);
+            this.uiTextTimeComplete.build(hScanProgress, 10, 160, 100, 30);
+            
+            this.hpScanMonitor = uipanel(uitCalibrate, ...
+                     'units', 'pixels', ...
+                     'Position', [496 290 855 465] ...
+                     );
             
             
         end
