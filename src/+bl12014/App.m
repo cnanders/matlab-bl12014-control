@@ -27,7 +27,7 @@ classdef App < mic.Base
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
         
-        cTcpipRigolDG1000Z = '192.168.10.40'
+        cTcpipRigolDG1000Z = '192.168.20.35' % Temporary
         
 
         % Video Subnet
