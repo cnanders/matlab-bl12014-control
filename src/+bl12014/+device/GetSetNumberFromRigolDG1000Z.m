@@ -57,7 +57,7 @@ classdef GetSetNumberFromRigolDG1000Z < mic.interface.device.GetSetNumber
         
         function stop(this)
             
-            this.turnOff5VTTL(this.u8Channel);
+            this.comm.turnOff5VTTL(this.u8Channel);
             
         end
         

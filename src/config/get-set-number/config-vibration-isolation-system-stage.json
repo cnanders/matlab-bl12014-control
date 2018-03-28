@@ -1,6 +1,13 @@
 {
 	"delay": .5,
 	"units": [
+		
+		{
+			"name": "turns",
+			"slope": "1/3200",
+			"offset": 0,
+			"precision": 0
+		},
 		{
 			"name": "counts",
 			"slope": 1,

@@ -122,6 +122,7 @@ classdef Reticle < mic.Base
             
             import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
             import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            import bl12014.device.GetNumberFromDeltaTauPowerPmac
             
             % Devices
             deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
@@ -163,6 +164,8 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiX.syncDestination();
             this.uiFineStage.uiY.syncDestination();
             
+
+            this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
         end
         
         function disconnectDeltaTauPowerPmac(this)
@@ -185,8 +188,8 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiX.setDevice([]);
             this.uiFineStage.uiY.setDevice([]);
             
-           
-            
+            this.uiMod3CapSensors.disconnectDeltaTauPowerPmac(comm)
+                        
         end
         
         

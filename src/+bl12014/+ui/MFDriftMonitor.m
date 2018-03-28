@@ -553,7 +553,7 @@ classdef MFDriftMonitor < mic.Base
                 HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
                 for k=1:length(this.dHeightSensorDisplayChannels)
                     if ~isempty(this.apiDriftMonitor)
-                        HSValue(k,1)=this.uiHeightSensorChannels.getValRaw();
+                        HSValue(k,1)=this.uiHeightSensorChannels{k}.getValRaw();
                     else
                         HSValue(k,1)=randn(1);
                     end
@@ -576,8 +576,8 @@ classdef MFDriftMonitor < mic.Base
                     this.haHS.Title.String = 'Virtual Height Sensor Scanning';
                     this.haDMI.Title.String = 'Virtual DMI Scanning';
                 end
-            catch 
-                %this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
+            catch mE
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 %         %AW(5/24/13) : Added a timer stop when the axis instance has been
                 %         %deleted
                 %         if (strcmp(mE.identifier,'MATLAB:class:InvalidHandle'))
@@ -588,10 +588,10 @@ classdef MFDriftMonitor < mic.Base
                 %         end
 
                 % CA 2016 remove the task from the timer
-                if isvalid(this.clock) && ...
-                        this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
+%                 if isvalid(this.clock) && ...
+%                         this.clock.has(this.id())
+%                     this.clock.remove(this.id());
+%                 end
 
                % error(mE);
             end

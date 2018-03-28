@@ -4,7 +4,7 @@
 		{
 			"name": "Volts",
 			"slope": "1",
-			"offset": 0,
+			"offset": 6.35,
 			"precision": 3
 		}
 	]
