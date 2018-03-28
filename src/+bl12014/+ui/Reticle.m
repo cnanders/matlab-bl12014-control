@@ -125,7 +125,6 @@ classdef Reticle < mic.Base
             import bl12014.device.GetNumberFromDeltaTauPowerPmac
             
             % Devices
-            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
             deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
             deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
             deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
@@ -135,7 +134,6 @@ classdef Reticle < mic.Base
             deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
             
              % Set Devices 
-            this.uiWorkingMode.ui.setDevice(deviceWorkingMode);
             this.uiCoarseStage.uiX.setDevice(deviceCoarseX);
             this.uiCoarseStage.uiY.setDevice(deviceCoarseY);
             this.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
@@ -145,7 +143,6 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiY.setDevice(deviceFineY);
             
             % Turn on
-            this.uiWorkingMode.ui.turnOn();
             this.uiCoarseStage.uiX.turnOn();
             this.uiCoarseStage.uiY.turnOn();
             this.uiCoarseStage.uiZ.turnOn();
@@ -155,7 +152,6 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiY.turnOn();
             
             
-            % this.uiWorkingMode.ui.syncDestination();
             this.uiCoarseStage.uiX.syncDestination();
             this.uiCoarseStage.uiY.syncDestination();
             this.uiCoarseStage.uiZ.syncDestination();
@@ -166,6 +162,8 @@ classdef Reticle < mic.Base
             
 
             this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
+            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
+
         end
         
         function disconnectDeltaTauPowerPmac(this)
@@ -189,7 +187,7 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiY.setDevice([]);
             
             this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
-                        
+            this.uiWorkingMode.disconnectDeltaTauPowerPmac();            
         end
         
         
@@ -246,11 +244,14 @@ classdef Reticle < mic.Base
             dTop = dTop + 15 + dSep;
             
             
-            % this.mod3cap.build(this.hFigure, dPad, dTop);
+            dTop = 10;
+            dLeft = 290;
             
             this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + this.uiWorkingMode.dHeight + dPad;
             
+            dLeft = 10;
+            dTop = 210;
+                        
             this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             

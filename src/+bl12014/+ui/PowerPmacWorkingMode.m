@@ -1,16 +1,23 @@
 classdef PowerPmacWorkingMode < mic.Base
     
     properties
-        % {mic.ui.device.GetSetText 1x1}}
-        ui
+        % {mic.ui.device.GetSetText 1x1}
+        uiWorkingMode
+        
+        % {mic.ui.device.GetLogical 1x1}
+        uiWaferPositionLocked
+        uiReticlePositionLocked
+        uiAtWaferTransferPosition
+        uiAtReticleTransferPosition
          
     end
     
     
     properties (SetAccess = private)
         
-        dWidth = 600
-        dHeight = 80
+        dWidth = 450
+        dWidthName = 130
+        dHeight = 190
         
         cName = 'power-pmac-working-mode'
         
@@ -20,7 +27,6 @@ classdef PowerPmacWorkingMode < mic.Base
         
         clock
         hPanel
-        dWidthName = 70
         
     end
     
@@ -40,21 +46,65 @@ classdef PowerPmacWorkingMode < mic.Base
         end
         
         
-        function turnOn(this)
-            this.ui.turnOn();
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            import bl12014.device.GetLogicalFromDeltaTauPowerPmac
+            
+            % Devices
+            device = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
+            this.uiWorkingMode.setDevice(device);
+            this.uiWorkingMode.turnOn();
+            
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_AT_WAFER_TRANSFER_POSITION);
+            this.uiAtWaferTransferPosition.setDevice(device);
+            this.uiAtWaferTransferPosition.turnOn();
+            
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_AT_RETICLE_TRANSFER_POSITION);
+            this.uiAtReticleTransferPosition.setDevice(device);
+            this.uiAtReticleTransferPosition.turnOn();
+            
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_RETICLE_POSITION_LOCKED);
+            this.uiReticlePositionLocked.setDevice(device);
+            this.uiReticlePositionLocked.turnOn();
+            
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_WAFER_POSITION_LOCKED);
+            this.uiWaferPositionLocked.setDevice(device);
+            this.uiWaferPositionLocked.turnOn();
+            
+            %this.uiWorkingMode.syncDestination();
+                        
+            
         end
         
-        function turnOff(this)
-            this.ui.turnOff();
-           
-        end
         
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiWorkingMode.turnOff();
+            this.uiWorkingMode.setDevice([]);
+            
+            this.uiAtWaferTransferPosition.turnOff();
+            this.uiAtWaferTransferPosition.setDevice([]);
+            
+            this.uiAtReticleTransferPosition.turnOff();
+            this.uiAtReticleTransferPosition.setDevice([]);
+            
+            this.uiWaferPositionLocked.turnOff();
+            this.uiWaferPositionLocked.setDevice([]);
+            
+            this.uiReticlePositionLocked.turnOff();
+            this.uiReticlePositionLocked.setDevice([]);
+            
+            
+        end
+                
         function build(this, hParent, dLeft, dTop)
             
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Working Mode',...
+                'Title', 'Working Mode and EPS IO',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -69,14 +119,25 @@ classdef PowerPmacWorkingMode < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.ui.build(this.hPanel, dLeft, dTop);
+            this.uiWorkingMode.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
+            this.uiAtReticleTransferPosition.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiReticlePositionLocked.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
             
             
-
+            this.uiAtWaferTransferPosition.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
             
+            this.uiWaferPositionLocked.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+                       
+                        
         end
         
         function delete(this)
@@ -97,9 +158,56 @@ classdef PowerPmacWorkingMode < mic.Base
     
     methods (Access = private)
         
+        function ce = getUiCommonProps(this)
+            ce = { ...
+                'lShowLabels', false, ...
+                'lShowInitButton', false, ...
+                'dWidthName', this.dWidthName, ...
+                'clock', this.clock ...  
+            };
+        end
+        
+        function initUiAtWaferTransferPosition(this)
+            
+            ceProps = this.getUiCommonProps();
+            this.uiAtWaferTransferPosition = mic.ui.device.GetLogical(...
+                'cName', [this.cName, 'at-wafer-transfer-position'], ...
+                'cLabel', 'At Wafer Transfer Pos', ...
+                ceProps{:} ...
+            );
+        end
+        
+        function initUiAtReticleTransferPosition(this)
+            
+            ceProps = this.getUiCommonProps();
+            this.uiAtReticleTransferPosition = mic.ui.device.GetLogical(...
+                'cName', [this.cName, 'at-reticle-transfer-position'], ...
+                'cLabel', 'At Reticle Transfer Pos', ...
+                ceProps{:} ...
+            );
+        end
+        
+        function initUiReticlePositionLocked(this)
+            
+            ceProps = this.getUiCommonProps();
+            this.uiReticlePositionLocked = mic.ui.device.GetLogical(...
+                'cName', [this.cName, 'reticle-position-locked'], ...
+                'cLabel', 'Reticle Pos Locked', ...
+                ceProps{:} ...
+            );
+        end
+        
+        function initUiWaferPositionLocked(this)
+            ceProps = this.getUiCommonProps();
+            this.uiWaferPositionLocked = mic.ui.device.GetLogical(...
+                'cName', [this.cName, 'wafer-position-locked'], ...
+                'cLabel', 'Wafer Pos Locked', ...
+                ceProps{:} ...
+            );
+        end
+        
          
-         
-        function initUi(this)
+        function initUiWorkingMode(this)
             
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -111,7 +219,7 @@ classdef PowerPmacWorkingMode < mic.Base
                 'cPath',  cPathConfig ...
             );
             
-            this.ui = mic.ui.device.GetSetText(...
+            this.uiWorkingMode = mic.ui.device.GetSetText(...
                 'cName', this.cName, ...
                 'cLabel', 'Working Mode', ...
                 'clock', this.clock, ...
@@ -119,7 +227,7 @@ classdef PowerPmacWorkingMode < mic.Base
                 'lShowDest', false, ...
                 'lShowPlay', false, ...
                 'lShowInitButton', false, ...
-                'dWidthName', 100, ...
+                'dWidthName', this.dWidthName, ...
                 'dWidthVal', 120, ...
                 'dWidthStores', 120, ...
                 'lShowStores', true ...
@@ -133,9 +241,11 @@ classdef PowerPmacWorkingMode < mic.Base
         
         function init(this)
             this.msg('init()');
-            this.initUi();
-            
-            
+            this.initUiWorkingMode();
+            this.initUiWaferPositionLocked();
+            this.initUiReticlePositionLocked();
+            this.initUiAtReticleTransferPosition();
+            this.initUiAtWaferTransferPosition();
         end
         
         

@@ -3,8 +3,8 @@ classdef Wafer < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1600 %1295
-        dHeight     = 845
+        dWidth      = 1560 %1295
+        dHeight     = 820
         
     end
     
@@ -143,7 +143,6 @@ classdef Wafer < mic.Base
             import bl12014.device.GetSetTextFromDeltaTauPowerPmac
             
             % Devices
-            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
             deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
             deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
             deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
@@ -153,7 +152,6 @@ classdef Wafer < mic.Base
             deviceCoarseXLsi = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
             
             % Set Devices
-            this.uiWorkingMode.ui.setDevice(deviceWorkingMode);
             this.uiCoarseStage.uiX.setDevice(deviceCoarseX);
             this.uiCoarseStage.uiY.setDevice(deviceCoarseY);
             this.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
@@ -163,7 +161,6 @@ classdef Wafer < mic.Base
             this.uiLsiCoarseStage.uiX.setDevice(deviceCoarseXLsi);
             
             % Turn on
-            this.uiWorkingMode.ui.turnOn();
             this.uiCoarseStage.uiX.turnOn();
             this.uiCoarseStage.uiY.turnOn();
             this.uiCoarseStage.uiZ.turnOn();
@@ -172,8 +169,6 @@ classdef Wafer < mic.Base
             this.uiLsiCoarseStage.uiX.turnOn();
             this.uiFineStage.uiZ.turnOn();
             
-            
-            %this.uiWorkingMode.ui.syncDestination();
             this.uiCoarseStage.uiX.syncDestination();
             this.uiCoarseStage.uiY.syncDestination();
             this.uiCoarseStage.uiZ.syncDestination();
@@ -182,12 +177,14 @@ classdef Wafer < mic.Base
             this.uiLsiCoarseStage.uiX.syncDestination();
             this.uiFineStage.uiZ.syncDestination();
             
+            
+            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
+            
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.uiWorkingMode.ui.turnOff();
             this.uiCoarseStage.uiX.turnOff();
             this.uiCoarseStage.uiY.turnOff();
             this.uiCoarseStage.uiZ.turnOff();
@@ -196,14 +193,15 @@ classdef Wafer < mic.Base
             this.uiLsiCoarseStage.uiX.turnOff();
             this.uiFineStage.uiZ.turnOff();
                         
-            this.uiWorkingMode.ui.setDevice([]);
             this.uiCoarseStage.uiX.setDevice([]);
             this.uiCoarseStage.uiY.setDevice([]);
             this.uiCoarseStage.uiZ.setDevice([]);
             this.uiCoarseStage.uiTiltX.setDevice([]);
             this.uiCoarseStage.uiTiltY.setDevice([]);
             this.uiLsiCoarseStage.uiX.setDevice([]);
-            this.uiFineStage.uiZ.setDevice([]);
+            this.uiFineStage.uiZ.setDevice([])
+           
+            this.uiWorkingMode.disconnectDeltaTauPowerPmac();
             
         end
         
@@ -263,11 +261,17 @@ classdef Wafer < mic.Base
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
+            
             % this.hs.build(this.hFigure, dPad, dTop);
             
-            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + this.uiWorkingMode.dHeight + dPad;
+            dTop = 10;
+            dLeft = 290;
             
+            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
+            
+            dLeft = 10;
+            dTop = 210;
+                        
             this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
