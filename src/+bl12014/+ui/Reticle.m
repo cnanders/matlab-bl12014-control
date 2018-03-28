@@ -188,7 +188,7 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiX.setDevice([]);
             this.uiFineStage.uiY.setDevice([]);
             
-            this.uiMod3CapSensors.disconnectDeltaTauPowerPmac(comm)
+            this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
                         
         end
         
