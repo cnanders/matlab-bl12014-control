@@ -5,10 +5,12 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
     properties (Constant)
         
         
+        %{
         cTYPE_AT_WAFER_TRANSFER_POSITION = 'at-wafer-transfer-position'
         cTYPE_AT_RETICLE_TRANSFER_POSITION = 'at-reticle-transfer-position'
         cTYPE_WAFER_POSITION_LOCKED = 'wafer-position-locked'
         cTYPE_RETICLE_POSITION_LOCKED = 'reticle-position-locked'
+        %}
         
         cTYPE_CATEGORY_CS_ERROR = 'cs-error'
         cTYPE_CATEGORY_CS_STATUS = 'cs-status'
@@ -571,14 +573,7 @@ classdef GetLogicalFromDeltaTauPowerPmac < mic.interface.device.GetLogical
                     l = this.getIoInfo();
                 case this.cTYPE_CATEGORY_MET50_ERROR
                     l = this.getMet50Error();
-                case this.cTYPE_AT_WAFER_TRANSFER_POSITION
-                    l = this.comm.getWaferAtTransferPosition();
-                case this.cTYPE_AT_RETICLE_TRANSFER_POSITION
-                    l = this.comm.getReticleAtTransferPosition();
-                case this.cTYPE_RETICLE_POSITION_LOCKED
-                    l = this.comm.getReticlePositionLocked();
-                case this.cTYPE_WAFER_POSITION_LOCKED
-                    l = this.comm.getWaferPositionLocked();
+                
             end
                     
         end

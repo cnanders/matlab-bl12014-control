@@ -57,19 +57,19 @@ classdef PowerPmacWorkingMode < mic.Base
             this.uiWorkingMode.setDevice(device);
             this.uiWorkingMode.turnOn();
             
-            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_AT_WAFER_TRANSFER_POSITION);
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_IO_INFO_AT_WAFER_TRANSFER_POSITION);
             this.uiAtWaferTransferPosition.setDevice(device);
             this.uiAtWaferTransferPosition.turnOn();
             
-            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_AT_RETICLE_TRANSFER_POSITION);
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_IO_INFO_AT_RETICLE_TRANSFER_POSITION);
             this.uiAtReticleTransferPosition.setDevice(device);
             this.uiAtReticleTransferPosition.turnOn();
             
-            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_RETICLE_POSITION_LOCKED);
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_IO_INFO_RETICLE_POSITION_LOCKED);
             this.uiReticlePositionLocked.setDevice(device);
             this.uiReticlePositionLocked.turnOn();
             
-            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_WAFER_POSITION_LOCKED);
+            device = GetLogicalFromDeltaTauPowerPmac(comm, GetLogicalFromDeltaTauPowerPmac.cTYPE_IO_INFO_WAFER_POSITION_LOCKED);
             this.uiWaferPositionLocked.setDevice(device);
             this.uiWaferPositionLocked.turnOn();
             
