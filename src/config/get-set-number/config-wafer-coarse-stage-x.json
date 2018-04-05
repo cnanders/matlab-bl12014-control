@@ -33,8 +33,8 @@
             "raw": 2
         },
         {
-            "name": "loadlock (FIXME)",
-            "raw": 1.5
+            "name": "loadlock (-449)",
+            "raw": -449
         }
     ],
     "min": -450,

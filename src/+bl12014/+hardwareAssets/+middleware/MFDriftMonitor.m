@@ -72,7 +72,7 @@ classdef MFDriftMonitor < mic.Base
         javaAPI
 
         % Number of samples to average
-        dNumSampleAverage = 10
+        dNumSampleAverage = 25
             
         % Interpolant structure computed from calibration data
         stInterpolant = struct
@@ -120,10 +120,11 @@ classdef MFDriftMonitor < mic.Base
             %this.u8FitModel = this.u8FITMODEL_LINEAR_FIT;
             this.u8HSModel  = this.u8HSMODEL_CALIBRATION;
             
-            % Loads calibration data.  Set this on init
-            stData = load(this.cDefaultData); 
-            this.initCalibrationInterpolant(stData.stCalibrationData);
-            this.initGeometricInterpolant();
+           
+            
+        end
+        
+        function start(this)
             
             % If there is no clock then make one:
             if isempty(this.clock)
@@ -132,8 +133,7 @@ classdef MFDriftMonitor < mic.Base
             end
             
             % Init clock update tasks:
-            this.clock.add(@this.onClock, this.id(), this.dUpdateInterval);
-            
+            this.clock.add(@this.onClock, this.id(), 1);
         end
         
          function delete(this)
@@ -199,7 +199,7 @@ classdef MFDriftMonitor < mic.Base
 
                 
         function l = isReady(this)
-            l = this.javaAPI.isMonitoring();  
+            l = this.javaAPI.isConnected();  
         end
         
         function dVal = getHeightSensorValue(this, u8Channel)
@@ -229,13 +229,9 @@ classdef MFDriftMonitor < mic.Base
         end
         
         
-        function loadInterpolant(this, cName)
-            load(fullfile(this.cInterpolantConfigDir, [cName, '.mat']));
-            this.stActiveInterpolant = stInterpolant;
-        end
         
         function setInterpolant(this, stInterpolant)
-            this.initCalibrationInterpolant(stInterpolant);
+            this.initCalibrationInterpolant(stInterpolant)
         end
         
     end

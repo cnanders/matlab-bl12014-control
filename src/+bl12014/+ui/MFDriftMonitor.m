@@ -92,6 +92,7 @@ classdef MFDriftMonitor < mic.Base
         uiHeightSensorChannels
         haHS
         uibClearHS
+        uibResetDMI
         uicbHeightSensorChannels
 
         
@@ -115,6 +116,13 @@ classdef MFDriftMonitor < mic.Base
         haScanMonitors = {}
         hpScanMonitor
         
+        uiSLCalibration
+        cLastCalibrationPath
+        stActiveInterpolant
+        cDefaultInterpolantPath = fullfile(fileparts(mfilename('fullpath')),...
+             '..', '..', 'config', 'interpolants', 'cal-interp_2018-04-04_20.25.mat')
+        
+        
         % Scan progress text elements
         
         
@@ -135,6 +143,10 @@ classdef MFDriftMonitor < mic.Base
         % Configuration
         uicHexapodConfigs
         uicWaferConfigs
+        
+        
+        % Calibration text:
+        uitCalibrationText
         
         
     end
@@ -195,6 +207,13 @@ classdef MFDriftMonitor < mic.Base
                                 ),...
                 'fhIsInitialized', @()true,... 
                 'fhIsVirtual', @false ...
+                );
+            
+            this.uitCalibrationText = mic.ui.common.Text(...
+                'lShowLabel', false, ...
+                'dFontSize', 30, ... 
+                'cFontWeight', 'bold', ...
+                'cVal', 'Height sensor calibration interpolant: cal-interp_2018-03-21_15.52.mat' ...
                 );
            
             
@@ -307,8 +326,8 @@ classdef MFDriftMonitor < mic.Base
                     'config', uiConfig, ...
                     'cLabel', this.ceHSChannelNames{u8Channel}, ...
                     'lUseFunctionCallbacks', true, ...
-                    'lShowZero', false, ...
-                    'lShowRel',  false, ...
+                    'lShowZero', (k >=7 ), ...
+                    'lShowRel',  (k >= 7), ...
                     'lShowDevice', false, ...
                     'fhGet', @()this.apiDriftMonitor.getHeightSensorValue(u8Channel),...
                     'fhIsReady', @()this.apiDriftMonitor.isReady(),...
@@ -317,7 +336,15 @@ classdef MFDriftMonitor < mic.Base
                 this.uicbHeightSensorChannels{k}= mic.ui.common.Checkbox(...
                     'cLabel',this.ceHSChannelNames{u8Channel},...
                     'fhDirectCallback', @(src, evt)this.cb(src));
+                
+                % By default plot hs rx, ry, rz:
+                if any(k == [7, 8, 9])
+                    this.uicbHeightSensorChannels{k}.set(true);
+                else
+                    this.uicbHeightSensorChannels{k}.set(false);
+                end
             end
+            
             
             % Init DMI sensor UI
             for k = 1:length(this.dDMIDisplayChannels)
@@ -358,13 +385,9 @@ classdef MFDriftMonitor < mic.Base
            % this.uiDMIChannels{1}.get()
             this.uieUpdateInterval    = mic.ui.common.Edit('cLabel', 'Interval(s)', 'cType', 'd');
             this.uieUpdateInterval.set(0.5);
-            this.uibClearDMI     = mic.ui.common.Button('cText', 'Clear', 'fhDirectCallback', @(src, evt)this.cb(src));
-            this.uibClearHS     = mic.ui.common.Button('cText', 'Clear', 'fhDirectCallback', @(src, evt)this.cb(src));
-%            x=1;
-%             t = timer('TimerFcn','disp(x);x=x+1;', 'Period', 1, 'ExecutionMode', 'fixedSpacing', 'TasksToExecute', 10);
-%             start(t);
-%             
-            
+            this.uibClearDMI    = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
+            this.uibClearHS     = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
+            this.uibResetDMI    = mic.ui.common.Button('cText', 'Zero DMI', 'fhDirectCallback', @(src, evt)this.cb(src));
             
             % UI:Calibrate:
             
@@ -383,6 +406,17 @@ classdef MFDriftMonitor < mic.Base
                 @(ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames)...
                 this.onScan(this.ssCalibration, ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames) ...
                 );
+            
+            
+            % Save/Load Calibrations
+             this.uiSLCalibration = mic.ui.common.PositionRecaller(...
+                'cConfigPath',  fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config'), ...
+                'cName', 'Calibration interpolant', ...
+                'lDisableSave', true, ... 
+                'hGetCallback', @this.getCalibration, ...
+                'hSetCallback', @this.setCalibration);
+            
+            
             
             % Scan text elements:
              % Scan progress text elements:
@@ -419,6 +453,9 @@ classdef MFDriftMonitor < mic.Base
             this.uiTextTimeRemaining.setFontSize(dStatusFontSize);
             this.uiTextStatus.setFontSize(dStatusFontSize);
             
+            
+            
+            
         end
         
         %% Accessor:
@@ -429,6 +466,27 @@ classdef MFDriftMonitor < mic.Base
             dVal = [this.apiDriftMonitor.getDMIValue(1);this.apiDriftMonitor.getDMIValue(2)];
         end
         
+        function dVal = getHSValues(this)
+            this.apiDriftMonitor.forceUpdate();
+             dVal = [this.apiDriftMonitor.getHeightSensorValue(7); this.apiDriftMonitor.getHeightSensorValue(8);  this.apiDriftMonitor.getHeightSensorValue(9)];
+        end
+        
+        %% Calibration S/L handlers:
+        function setCalibration(this, dVal)
+            this.cLastCalibrationPath = dVal;
+            [~, p, e] = fileparts(dVal);
+            this.uitCalibrationText.set(sprintf('Height sensor calibration interpolant: %s', [p, e]));
+            
+            load(dVal);
+            
+            this.apiDriftMonitor.setInterpolant(stCalibrationData);
+            this.stActiveInterpolant = stCalibrationData;
+            msgbox(sprintf('Set calibration interpolant to: %s', p));
+        end
+        
+        function dVal = getCalibration(this)
+            dVal = regexprep(this.cLastCalibrationPath, '\', '/');
+        end
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)
@@ -440,6 +498,12 @@ classdef MFDriftMonitor < mic.Base
                 this.clock.add(@this.onClock, this.id(), this.uieUpdateInterval.get());
                 this.uieUpdateInterval.disable();
             end
+            
+            % Init interpolant:
+            this.setCalibration(this.cDefaultInterpolantPath);
+            this.apiDriftMonitor.start();
+            this.apiDriftMonitor.setDMIZero();
+            
         end
         
 
@@ -528,7 +592,7 @@ classdef MFDriftMonitor < mic.Base
                 DMIValue=zeros(length(this.dDMIDisplayChannels),1);
                 for k=1:length(this.dDMIDisplayChannels)
                     if ~isempty(this.apiDriftMonitor)
-                        DMIValue(k,1)=this.uiDMIChannels{k}.getValRaw();
+                        DMIValue(k,1)=this.uiDMIChannels{k}.getValCalDisplay;
                     else
                         DMIValue(k,1)=randn(1);
                     end
@@ -553,7 +617,7 @@ classdef MFDriftMonitor < mic.Base
                 HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
                 for k=1:length(this.dHeightSensorDisplayChannels)
                     if ~isempty(this.apiDriftMonitor)
-                        HSValue(k,1)=this.uiHeightSensorChannels{k}.getValRaw();
+                        HSValue(k,1)=this.uiHeightSensorChannels{k}.getValCalDisplay();
                     else
                         HSValue(k,1)=randn(1);
                     end
@@ -607,6 +671,8 @@ classdef MFDriftMonitor < mic.Base
                 case this.uibClearHS
                     this.dHS=[];
                     this.dHSScanningTime=[];
+                case this.uibResetDMI
+                    this.apiDriftMonitor.setDMIZero();
             end
         end
       
@@ -630,18 +696,13 @@ classdef MFDriftMonitor < mic.Base
                         end
                         
                         dUnit =  this.uiDeviceArrayHexapod{dAxis}.getUnit().name;
-                        dInitialState.values(k) = this.uiDeviceArrayHexapod{dAxis}.getDestCal(dUnit);
+                        dInitialState.values(k) = this.uiDeviceArrayHexapod{dAxis}.getValCal(dUnit);
                         
                     case {4, 5, 6} % wafer
-                        if isempty(this.apiWafer)
-                            %                             msgbox('Reticle is not connected\n')
-                            dInitialState.values(k) = 0;
-                            continue
-                            %                             return
-                        end
+                       
                         
-                        dUnit =  this.uiDeviceArrayWafer{dAxis}.getUnit().name;
-                        dInitialState.values(k) = this.uiDeviceArrayWafer{dAxis - 3}.getDestCal(dUnit);
+                        dUnit =  this.uiDeviceArrayWafer{dAxis - 3}.getUnit().name;
+                        dInitialState.values(k) = this.uiDeviceArrayWafer{dAxis - 3}.getValCal(dUnit);
                         
                 end
             end
@@ -884,8 +945,12 @@ classdef MFDriftMonitor < mic.Base
             stCalibrationData.RxIdx = scanRanges{2} + dInitialState.values(2);
             stCalibrationData.RyIdx = scanRanges{3} + dInitialState.values(3);
             
-            save([cInterpolantsPath, filesep, cInterpolantName, '.mat'], 'stCalibrationData')
+            cCalibrationPath = [cInterpolantsPath, filesep, cInterpolantName, '.mat'];
+            save(cCalibrationPath, 'stCalibrationData')
+            % add this to save list
             
+            this.cLastCalibrationPath = cCalibrationPath;
+            this.uiSLCalibration.programmaticSave(cInterpolantName);
         end
         
         function onScanAbort(this, dInitialState, fhSetState, fhIsAtState)
@@ -1007,7 +1072,9 @@ classdef MFDriftMonitor < mic.Base
             dLeft = 10;
             
             % Connect button above tabs:
-            this.uicConnectDriftMonitor.build(this.hFigure, dLeft, dTop)
+            this.uicConnectDriftMonitor.build(this.hFigure, dLeft, dTop);
+            
+            this.uitCalibrationText.build(this.hFigure, dLeft + 320, dTop + 5, 400, 30);
             
             
             this.hpDMI = uipanel(...
@@ -1039,7 +1106,9 @@ classdef MFDriftMonitor < mic.Base
                                  'Units', 'pixels', ...
                                  'Position', [50, 350, 430, 300], ...
                                  'XTick', [], 'YTick', []);
-            this.uibClearDMI.build  (this.hpDMI, 500, 330, 80, 20);     
+            this.uibClearDMI.build  (this.hpDMI, 500, 330, 80, 20); 
+            
+            this.uibResetDMI.build  (this.hpDMI, 300, 418, 80, 20);
             this.uieUpdateInterval.build  (this.hpDMI, 500, 50, 80, 20);
                              
             this.haHS = axes('Parent',  this.hpHS, ...
@@ -1079,7 +1148,6 @@ classdef MFDriftMonitor < mic.Base
             
             for k=1:9
                 this.uicbHeightSensorChannels{k}.build(this.hpHS, 550, 20+k*30, 100, 20);
-                this.uicbHeightSensorChannels{k}.set(true);
             end
             
             % Calibrate Tab:
@@ -1120,6 +1188,11 @@ classdef MFDriftMonitor < mic.Base
                      'units', 'pixels', ...
                      'Position', [1200 30 150 250] ...
                      );
+                 
+                 
+            this.uiSLCalibration.build(uitCalibrate, 850, 30, 340, 250);
+            
+            
             this.uiTextStatus.build(hScanProgress, 10, 10, 100, 30);
             this.uiTextTimeElapsed.build(hScanProgress, 10, 60, 100, 30);
             this.uiTextTimeRemaining.build(hScanProgress, 10, 110, 100, 30);

@@ -19,9 +19,14 @@
         {
             "name": "Dose Monitor",
             "raw": 6.95
-        },
+		},
+		{
+            "name": "Print",
+            "raw": -10
+		},
+		
         {
-            "name": "loadlock FIX ME",
+            "name": "loadlock",
             "raw": 7
         }
     ],
