@@ -10,7 +10,8 @@ classdef MFDriftMonitor < mic.Base
         
         cName = 'Drift monitor'
         
-        
+        dHS_ZTOL = 0.05; % 50 nm
+        dHS_RTOL = 0.01; % 10 URAD
         
         u8DEVICE_DMI            = 1
         u8DEVICE_HEIGHT_SENSOR  = 2
@@ -37,12 +38,15 @@ classdef MFDriftMonitor < mic.Base
             'HS-Channel-5', 'HS-Channel-6', 'HS-Rx', 'HS-Ry', 'HS-Z'}
         ceDMIChannelNames = {'DMI-Ret-X', 'DMI-Ret-Y', 'DMI-Wafer-X', 'DMI-Wafer-Y'}
         
+        ceDMIPowerNames = {'Ret-U AC', 'Ret-V AC', 'Waf-U AC', 'Waf-V AC'; 'Ret-U DC', 'Ret-V DC','Waf-U DC', 'Waf-V DC'}
+        
         ceScanAxisLabels = {'Hexapod-Z', 'Hexapod-Rx', 'Hexapod-Ry', 'Wafer-Z', 'Wafer-Rx', 'Wafer-Ry'}
         ceScanOutputLabels = {'Height sensor channels'};
         
         cHexapodAxisLabels = { 'Z', 'Rx', 'Ry'};
         cWaferLabels = { 'Waf-Z', 'Waf-Rx', 'Waf-Ry'};
                      
+        
         
     end
     
@@ -86,7 +90,12 @@ classdef MFDriftMonitor < mic.Base
         haDMI
         uibClearDMI
         uicbDMIChannels
+        uicbDMIDrift
         uieUpdateInterval
+        
+        uiDMIACPower
+        uiDMIDCPower
+        
         % UI:Montor:HS
         hpHS
         uiHeightSensorChannels
@@ -96,6 +105,15 @@ classdef MFDriftMonitor < mic.Base
         uicbHeightSensorChannels
 
         
+        % UI:Wafer-level
+        
+        haLevelMonitors
+        uieZTarget
+        uieRxTarget
+        uieRyTarget
+        uibLevel
+        uiSLLevelCoordinateLoader
+        uibClearLevelPlots
         
         % UI:Calibrate
         uicConnectHexapod
@@ -297,7 +315,7 @@ classdef MFDriftMonitor < mic.Base
             % MAIN TABGROUP:
             this.uitgMode = ...
                 mic.ui.common.Tabgroup('ceTabNames', ...
-                {'Monitor', 'Calibrate'});
+                {'Monitor', 'Wafer-level', 'Calibrate'});
             
             
             % UI:Monitor:
@@ -326,7 +344,7 @@ classdef MFDriftMonitor < mic.Base
                     'config', uiConfig, ...
                     'cLabel', this.ceHSChannelNames{u8Channel}, ...
                     'lUseFunctionCallbacks', true, ...
-                    'lShowZero', (k >=7 ), ...
+                    'lShowZero', (k >= 7), ...
                     'lShowRel',  (k >= 7), ...
                     'lShowDevice', false, ...
                     'fhGet', @()this.apiDriftMonitor.getHeightSensorValue(u8Channel),...
@@ -381,6 +399,51 @@ classdef MFDriftMonitor < mic.Base
                     'cLabel',this.ceDMIChannelNames{u8Channel},...
                     'fhDirectCallback', @(src, evt)this.cb(src));
             end
+            for k = 1:2
+                ceDriftNames = {'Drift X', 'Drift Y'};
+                this.uicbDMIDrift{k} = mic.ui.common.Checkbox(...
+                    'cLabel' ,ceDriftNames{k},...
+                    'fhDirectCallback', @(src, evt)this.cb(src));
+            end
+            for k = 1:size(this.ceDMIPowerNames, 2)
+                this.uiDMIACPower =  mic.ui.device.GetNumber(...
+                    'clock', this.clock, ...
+                    'dWidthName', this.dWidthName, ...
+                    'dWidthUnit', this.dWidthUnit, ...
+                    'dWidthVal', this.dWidthVal, ...
+                    'dWidthPadUnit', this.dWidthPadUnit, ...
+                    'cName', this.ceDMIPowerNames{1, k}, ...
+                    'config', uiConfig, ...
+                    'cLabel', this.ceDMIPowerNames{1, k}, ...
+                    'lUseFunctionCallbacks', true, ...
+                    'lShowZero', false, ...
+                    'lShowRel',  false, ...
+                    'lShowDevice', false, ...
+                    'fhGet', @()this.apiDriftMonitor.getACPower(k),...
+                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
+                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    );
+                 this.uiDMIDCPower =  mic.ui.device.GetNumber(...
+                    'clock', this.clock, ...
+                    'dWidthName', this.dWidthName, ...
+                    'dWidthUnit', this.dWidthUnit, ...
+                    'dWidthVal', this.dWidthVal, ...
+                    'dWidthPadUnit', this.dWidthPadUnit, ...
+                    'cName', this.ceDMIPowerNames{2, k}, ...
+                    'config', uiConfig, ...
+                    'cLabel', this.ceDMIPowerNames{2, k}, ...
+                    'lUseFunctionCallbacks', true, ...
+                    'lShowZero', false, ...
+                    'lShowRel',  false, ...
+                    'lShowDevice', false, ...
+                    'fhGet', @()this.apiDriftMonitor.getDCPower(k),...
+                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
+                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    );
+            end
+            
+            % Init DMI power
+            
            % bl12014.hardwareAssets.middleware.MFDriftMonitor.getDMIValue(1)
            % this.uiDMIChannels{1}.get()
             this.uieUpdateInterval    = mic.ui.common.Edit('cLabel', 'Interval(s)', 'cType', 'd');
@@ -388,6 +451,26 @@ classdef MFDriftMonitor < mic.Base
             this.uibClearDMI    = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
             this.uibClearHS     = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
             this.uibResetDMI    = mic.ui.common.Button('cText', 'Zero DMI', 'fhDirectCallback', @(src, evt)this.cb(src));
+            
+            
+            % UI:wafer-level:
+            this.uiSLLevelCoordinateLoader = mic.ui.common.PositionRecaller(...
+                'cConfigPath',  fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config'), ...
+                'cName', 'Wafer level coordinates', ...
+                'hGetCallback', @this.getWaferLoadCoordinates, ...
+                'hSetCallback', @this.setWaferLoadCoordinates);
+            
+            this.uieZTarget     = mic.ui.common.Edit('cLabel', 'Z target (um)', 'cType', 'd');
+            this.uieRxTarget    = mic.ui.common.Edit('cLabel', 'Rx target (mRad)', 'cType', 'd');
+            this.uieRyTarget    = mic.ui.common.Edit('cLabel', 'Ry target (mRad)', 'cType', 'd');
+            
+            this.uibLevel       = mic.ui.common.Button('cText', 'Level Wafer', 'fhDirectCallback', @(src, evt)this.cb(src));
+            
+            this.uibClearLevelPlots = mic.ui.common.Button('cText', 'Clear Plots', 'fhDirectCallback', @(src, evt)this.cb(src));
+            
+            this.uieZTarget.set(350);
+            this.uieRxTarget.set(-3);
+            this.uieRyTarget.set(-1);
             
             % UI:Calibrate:
             
@@ -486,6 +569,21 @@ classdef MFDriftMonitor < mic.Base
         
         function dVal = getCalibration(this)
             dVal = regexprep(this.cLastCalibrationPath, '\', '/');
+        end
+        
+        
+        function setWaferLoadCoordinates(this, dVal)
+            this.uieZTarget.set(dVal(1));
+            this.uieRxTarget.set(dVal(2));
+            this.uieRyTarget.set(dVal(3));
+        end
+        
+        function dVal = getWaferLoadCoordinates(this)
+            dZTarget  = this.uieZTarget.get();
+            dRxTarget = this.uieRxTarget.get();
+            dRyTarget = this.uieRyTarget.get();
+            
+            dVal = [dZTarget, dRxTarget, dRyTarget];
         end
         %% Hardware init:
         % Set up hardware connect/disconnects:
@@ -586,8 +684,13 @@ classdef MFDriftMonitor < mic.Base
         
         function onClock(this)
             try
+            
                 %DMI Scanning
                 plotDMI=[];
+                dZVals = [];
+                dRxVals = [];
+                dRyVals = [];
+                
                 lgdDMI=[];
                 DMIValue=zeros(length(this.dDMIDisplayChannels),1);
                 for k=1:length(this.dDMIDisplayChannels)
@@ -605,12 +708,27 @@ classdef MFDriftMonitor < mic.Base
                         lgdDMI{end+1}=this.ceDMIChannelNames{k};
                     end
                 end
-                if ~isempty(plotDMI)
-                    plot(this.haDMI, this.dDMIScanningTime,plotDMI);legend(this.haDMI,lgdDMI);
+                
+                % Plot DMI difference channels:
+                ceDifferenceChannelNames = {'X drift', 'Y drift'};
+                for k = 1:2
+                    if this.uicbDMIDrift{k}.get()
+                       
+                        if k == 1 % X
+                            % Ret fine X points toward 3:00, wafer coarse x
+                            % also points to 3:00
+                             plotDMI(end+1,: )= 5*this.dDMI(k + 2,:) + this.dDMI(k,:);
+                        elseif k == 2 % Y
+                             % in y, reticle fine y and wafer y point in
+                            % opposite physical directions.  reticle fine y
+                            % points to 12:00; wafer fine y points to 06:00
+                             plotDMI(end+1,: )= -5*this.dDMI(k + 2,:) + this.dDMI(k,:);
+                        end
+                        lgdDMI{end+1}=ceDifferenceChannelNames{k};
+                    end
                 end
-                this.haDMI.Title.String = 'DMI Scanning';
-                this.haDMI.XLabel.String = 'Scanning Time (s)';
-                this.haDMI.YLabel.String = 'Unit';
+                
+               
                 %HS Scanning
                 plotHS=[];
                 lgdHS=[];
@@ -629,17 +747,82 @@ classdef MFDriftMonitor < mic.Base
                         plotHS(end+1,:)=this.dHS(k,:);
                         lgdHS{end+1}=this.ceHSChannelNames{k};
                     end
+                    
                 end
-                if ~isempty(plotHS)
-                plot(this.haHS, this.dHSScanningTime,plotHS);legend(this.haHS,lgdHS);
+                dZVals(end+1, :) = this.dHS(9,:);
+                dRxVals(end+1, :) = this.dHS(7,:);
+                dRyVals(end+1, :) = this.dHS(8,:);
+                
+                
+                % plot only if monitor tab is active
+                if strcmp(this.uitgMode.getSelectedTabName(), 'Monitor')
+                    % Plot dmi
+                    if ~isempty(plotDMI)
+                        plot(this.haDMI, this.dDMIScanningTime,plotDMI);legend(this.haDMI,lgdDMI, 'location', 'southwest');
+                    end
+                    this.haDMI.Title.String = 'DMI trace';
+                    this.haDMI.XLabel.String = 'Scan Time (s)';
+                    this.haDMI.YLabel.String = 'Unit';
+                    
+                    % Plot HS
+                    if ~isempty(plotHS)
+                        plot(this.haHS, this.dHSScanningTime,plotHS);legend(this.haHS,lgdHS, 'location', 'southwest');
+                    end
+                    this.haHS.Title.String = 'Height sensor trace';
+                    this.haHS.XLabel.String = 'Scan Time (s)';
+                    this.haHS.YLabel.String = 'Unit';
                 end
-                this.haHS.Title.String = 'Height Sensor Scanning';
-                this.haHS.XLabel.String = 'Scanning Time (s)';
-                this.haHS.YLabel.String = 'Unit';
-                if isempty(this.apiDriftMonitor)
-                    this.haHS.Title.String = 'Virtual Height Sensor Scanning';
-                    this.haDMI.Title.String = 'Virtual DMI Scanning';
+                
+                % Plot on wafer level if tab is active
+                if strcmp(this.uitgMode.getSelectedTabName(), 'Wafer-level')
+                    plot(this.haLevelMonitors{1}, this.dHSScanningTime, dZVals, 'k');
+                    plot(this.haLevelMonitors{2}, this.dHSScanningTime, dRxVals, 'k');
+                    plot(this.haLevelMonitors{3}, this.dHSScanningTime, dRyVals, 'k');
+                    
+                    this.haLevelMonitors{1}.NextPlot = 'add';
+                    this.haLevelMonitors{2}.NextPlot = 'add';
+                    this.haLevelMonitors{3}.NextPlot = 'add';
+                    
+                    % Show targets:
+                    dZTarget = this.uieZTarget.get();
+                    dRxTarget = this.uieRxTarget.get();
+                    dRyTarget = this.uieRyTarget.get();
+                    
+                    dZH = dZTarget + this.dHS_ZTOL/2;
+                    dZL = dZTarget - this.dHS_ZTOL/2;
+                    dRxH = dRxTarget + this.dHS_RTOL/2;
+                    dRxL = dRxTarget - this.dHS_RTOL/2;
+                    dRyH = dRyTarget + this.dHS_RTOL/2;
+                    dRyL = dRyTarget - this.dHS_RTOL/2;
+                    
+                    dFirstIdx = this.dHSScanningTime(1);
+                    dLastIdx = this.dHSScanningTime(end);
+                    
+                    % Plot centerline
+                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZTarget*[1, 1], 'g');
+                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxTarget*[1, 1], 'g');
+                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyTarget*[1, 1], 'g');
+                    
+                    
+                    % Plot H/L tol
+                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZH*[1, 1], 'm');
+                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZL*[1, 1], 'm');
+                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxH*[1, 1], 'm');
+                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxL*[1, 1], 'm');
+                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyH*[1, 1], 'm');
+                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyL*[1, 1], 'm');
+                    
+                    this.haLevelMonitors{1}.Title.String = sprintf('Z');
+                    this.haLevelMonitors{2}.Title.String = sprintf('Rx');
+                    this.haLevelMonitors{3}.Title.String = sprintf('Ry');
+                    
+                    this.haLevelMonitors{1}.NextPlot = 'replace';
+                    this.haLevelMonitors{2}.NextPlot = 'replace';
+                    this.haLevelMonitors{3}.NextPlot = 'replace';
+                    
                 end
+                
+                
             catch mE
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
                 %         %AW(5/24/13) : Added a timer stop when the axis instance has been
@@ -668,7 +851,7 @@ classdef MFDriftMonitor < mic.Base
                     this.dDMI=[];
                     this.dDMIScanningTime=[];
                     
-                case this.uibClearHS
+                case {this.uibClearHS, this.uibClearLevelPlots}
                     this.dHS=[];
                     this.dHSScanningTime=[];
                 case this.uibResetDMI
@@ -1063,6 +1246,7 @@ classdef MFDriftMonitor < mic.Base
             
             this.uitgMode.build(this.hFigure, 10, 10, this.dWidth - 20, this.dHeight - 100)
             uitMonitor      = this.uitgMode.getTabByName('Monitor');
+            uitWaferLevel   = this.uitgMode.getTabByName('Wafer-level');
             uitCalibrate    = this.uitgMode.getTabByName('Calibrate');
             
             
@@ -1108,12 +1292,12 @@ classdef MFDriftMonitor < mic.Base
                                  'XTick', [], 'YTick', []);
             this.uibClearDMI.build  (this.hpDMI, 500, 330, 80, 20); 
             
-            this.uibResetDMI.build  (this.hpDMI, 300, 418, 80, 20);
+            this.uibResetDMI.build  (this.hpDMI, 500, 360, 80, 20);
             this.uieUpdateInterval.build  (this.hpDMI, 500, 50, 80, 20);
                              
             this.haHS = axes('Parent',  this.hpHS, ...
              'Units', 'pixels', ...
-             'Position', [50, 350, 430, 300], ...
+             'Position', [70, 350, 450, 300], ...
              'XTick', [], 'YTick', []);
             this.uibClearHS.build  (this.hpHS, 550, 330, 80, 20);  
             drawnow;
@@ -1125,9 +1309,13 @@ classdef MFDriftMonitor < mic.Base
             
             for k = 1:length(this.uiDMIChannels)
                 this.uiDMIChannels{k}.build(this.hpDMI, dLeft, dTop);
-                this.uicbDMIChannels{k}.build(this.hpDMI, 500, 90+k*40,100, 20);
+                this.uicbDMIChannels{k}.build(this.hpDMI, 500, 70+k*35,100, 20);
                 this.uicbDMIChannels{k}.set(true);
                 dTop = dTop + mic.Utils.tern(mod(k,2) == 1, dSep, 2*dSep);
+            end
+            for k = 1:2
+                this.uicbDMIDrift{k}.build(this.hpDMI, 500, 70+(k + length(this.uiDMIChannels))*35, 100, 20);
+                this.uicbDMIDrift{k}.set(true);
             end
             
             dLeft = 10;
@@ -1149,6 +1337,22 @@ classdef MFDriftMonitor < mic.Base
             for k=1:9
                 this.uicbHeightSensorChannels{k}.build(this.hpHS, 550, 20+k*30, 100, 20);
             end
+            
+            
+            % Wafer level tab
+            for k = 1:3
+                this.haLevelMonitors{k} = axes('Parent',  uitWaferLevel, ...
+                                         'Units', 'pixels', ...
+                                         'Position', [50 + 450*(k-1), 350, 370, 370], ...
+                                         'XTick', [], 'YTick', []);
+            end
+            
+            this.uiSLLevelCoordinateLoader.build(uitWaferLevel, 500, 20, 370, 250);
+            this.uieZTarget.build(uitWaferLevel, 50, 500, 110, 20);
+            this.uieRxTarget.build(uitWaferLevel, 50, 550, 110, 20);
+            this.uieRyTarget.build(uitWaferLevel, 50, 600, 110, 20);
+            this.uibLevel.build(uitWaferLevel, 250, 613, 150, 25);
+            this.uibClearLevelPlots.build(uitWaferLevel, 250, 563, 150, 25);
             
             % Calibrate Tab:
             dLeft = 10;

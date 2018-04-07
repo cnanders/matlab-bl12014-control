@@ -23,8 +23,8 @@
 	"step": 0.1,
 	"stores": [
 		{
-            "name": "Conjugate",
-            "raw": 1589
+            "name": "Print",
+            "raw": -1589
 		}
     ],
     "min": -5000,

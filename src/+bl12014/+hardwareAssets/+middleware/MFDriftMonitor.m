@@ -81,6 +81,9 @@ classdef MFDriftMonitor < mic.Base
         dHSChannelData = [0 0 0 0 0 0]'
         dDMIData = [0 0 ; 0 0]
         
+        dDCPower = [0, 0, 0, 0]
+        dACPower = [0, 0, 0, 0]
+        
         % Computed Heigth sensor positions, [Rx, Ry, Z]
         dHSPositions = [0, 0, 0]'
         
@@ -224,6 +227,13 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
+        function dVal = getDCPower(this, idx)
+            dVal = this.dDCPower(idx);
+        end
+        function dVal = getACPower(this, idx)
+            dVal = this.dACPower(idx);
+        end
+        
         function forceUpdate(this)
             this.updateChannelData();
         end
@@ -245,9 +255,15 @@ classdef MFDriftMonitor < mic.Base
             
             % Next update HS positions:
              this.updateHSPositions();
+             
+             this.updateDMIPower();
             
         end
         
+        function updateDMIPower(this)
+%             this.dDCPower = this.javaAPI;
+%             this.dACPower(idx);
+        end
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
@@ -296,9 +312,9 @@ classdef MFDriftMonitor < mic.Base
                 dErrV_waf = dDMIRawData(this.u8WAFER_V);
                  
                 dXDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
-                dYDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
+                dYDat_ret = -this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
                 
-                dXDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
+                dXDat_waf = -this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
                 dYDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf);
                 this.dDMIData = [dXDat_ret, dYDat_ret; dXDat_waf, dYDat_waf];
 
