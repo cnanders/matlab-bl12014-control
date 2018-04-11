@@ -21,6 +21,7 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400'
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-keithley-6482', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-3gstore-remote-power-switch', 'src')));
 
 
 addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-control')));

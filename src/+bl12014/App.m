@@ -29,6 +29,9 @@ classdef App < mic.Base
         
         cTcpipRigolDG1000Z = '192.168.20.35' % Temporary
         
+        cTcpip3GStoreRemotePowerSwitch1 = '192.168.10.30'; % Beamline
+        cTcpip3GStoreRemotePowerSwitch2 = '192.168.20.30'; % End station
+        
 
         % Video Subnet
         
@@ -119,6 +122,11 @@ classdef App < mic.Base
         % Since uses dll, this will be true or false
         commMightex1
         commMightex2
+        
+        % {threegstore.RemotePowerSwitch}
+        % github.com/cnanders/matlab-3gstore-remote-power-switch
+        comm3GStoreRemotePowerSwitch1
+        comm3GStoreRemotePowerSwitch2
         
         
         uiApp
@@ -245,6 +253,9 @@ classdef App < mic.Base
             this.destroyAndDisconnectSmarActMcsM141();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
+            this.destroyAndDisconnect3GStoreRemotePowerSwitch1();
+            this.destroyAndDisconnect3GStoreRemotePowerSwitch2();
+            this.destroyAndDisconnectMightex();
             this.destroyAndDisconnectMet5Instruments();
 
         end
@@ -309,6 +320,14 @@ classdef App < mic.Base
         
         function l = getDataTranslationMeasurPoint(this)
             l = ~isempty(this.commDataTranslationMeasurPoint);
+        end
+        
+        function l = get3GStoreRemotePowerSwitch1(this)
+            l = ~isempty(this.comm3GStoreRemotePowerSwitch1);
+        end
+        
+        function l = get3GStoreRemotePowerSwitch2(this)
+            l = ~isempty(this.comm3GStoreRemotePowerSwitch2);
         end
         
         function l = getKeithley6482Reticle(this)
@@ -813,6 +832,54 @@ classdef App < mic.Base
         end
         
         
+        function initAndConnect3GStoreRemotePowerSwitch1(this)
+            
+            
+            if this.get3GStoreRemotePowerSwitch1()
+                return
+            end
+               
+            try
+                this.comm3GStoreRemotePowerSwitch1 = threegstore.RemotePowerSwitch(...
+                    'cHost', this.cTcpip3GStoreRemotePowerSwitch1 ...
+                );
+                
+            catch mE
+                this.comm3GStoreRemotePowerSwitch1 = [];
+                cMsg = sprintf('initAndConnect3GStoreRemotePowerSwitch1() %s', mE.message);
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                return
+            end
+                        
+            this.uiApp.uiCameraLEDs.connect3GStoreRemotePowerSwitch1(this.comm3GStoreRemotePowerSwitch1);
+            
+                        
+        end
+        
+        function initAndConnect3GStoreRemotePowerSwitch2(this)
+            
+            
+            if this.get3GStoreRemotePowerSwitch2()
+                return
+            end
+               
+            try
+                this.comm3GStoreRemotePowerSwitch2 = threegstore.RemotePowerSwitch(...
+                    'cHost', this.cTcpip3GStoreRemotePowerSwitch2 ...
+                );
+                
+            catch mE
+                this.comm3GStoreRemotePowerSwitch2 = [];
+                cMsg = sprintf('initAndConnect3GStoreRemotePowerSwitch2() %s', mE.message);
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                return
+            end
+                        
+            this.uiApp.uiCameraLEDs.connect3GStoreRemotePowerSwitch2(this.comm3GStoreRemotePowerSwitch2);
+            
+                        
+        end
+        
         function initAndConnectKeithley6482Reticle(this)
             
             
@@ -837,6 +904,26 @@ classdef App < mic.Base
             this.uiApp.uiReticle.connectKeithley6482(this.commKeithley6482Reticle);
                         
         end
+        
+        function destroyAndDisconnect3GStoreRemotePowerSwitch1(this)
+            if ~this.get3GStoreRemotePowerSwitch1()
+                return
+            end
+            
+            this.uiApp.uiCameraLEDs.disconnect3GStoreRemotePowerSwitch1()
+            this.comm3GStoreRemotePowerSwitch1 = [];
+        end
+        
+        function destroyAndDisconnect3GStoreRemotePowerSwitch2(this)
+            if ~this.get3GStoreRemotePowerSwitch2()
+                return
+            end
+            
+            this.uiApp.uiCameraLEDs.disconnect3GStoreRemotePowerSwitch2()
+            this.comm3GStoreRemotePowerSwitch2 = [];
+        end
+        
+        
         
         function destroyAndDisconnectKeithley6482Reticle(this)
             
@@ -1283,6 +1370,8 @@ classdef App < mic.Base
             
         end
         
+        
+        
         function initAndConnectMightex(this)
             
             if this.getMightex()
@@ -1574,6 +1663,18 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectCxroHeightSensor ...
             );
         
+            gslcComm3GStoreRemotePowerSwitch1 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.get3GStoreRemotePowerSwitch1 , ...
+                'fhSetTrue', @this.initAndConnect3GStoreRemotePowerSwitch1 , ...
+                'fhSetFalse', @this.destroyAndDisconnect3GStoreRemotePowerSwitch1 ...
+            );
+        
+            gslcComm3GStoreRemotePowerSwitch2 = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.get3GStoreRemotePowerSwitch2 , ...
+                'fhSetTrue', @this.initAndConnect3GStoreRemotePowerSwitch2 , ...
+                'fhSetFalse', @this.destroyAndDisconnect3GStoreRemotePowerSwitch2 ...
+            );
+        
             gslcCommKeithley6482Reticle = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getKeithley6482Reticle, ...
                 'fhSetTrue', @this.initAndConnectKeithley6482Reticle, ...
@@ -1768,6 +1869,11 @@ classdef App < mic.Base
             this.uiApp.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiShutter.uiCommRigol.turnOn();
             
+            % Camera LEDs
+            this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);
+            this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.turnOn();
+            this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch2.setDevice(gslcComm3GStoreRemotePowerSwitch2);
+            this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch2.turnOn();
         end
         
         

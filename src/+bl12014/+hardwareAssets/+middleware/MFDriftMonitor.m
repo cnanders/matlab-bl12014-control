@@ -72,7 +72,7 @@ classdef MFDriftMonitor < mic.Base
         javaAPI
 
         % Number of samples to average
-        dNumSampleAverage = 10
+        dNumSampleAverage = 25
             
         % Interpolant structure computed from calibration data
         stInterpolant = struct
@@ -80,6 +80,9 @@ classdef MFDriftMonitor < mic.Base
         % Data: Internally keep track of all HS and DMI data
         dHSChannelData = [0 0 0 0 0 0]'
         dDMIData = [0 0 ; 0 0]
+        
+        dDCPower = [0, 0, 0, 0]
+        dACPower = [0, 0, 0, 0]
         
         % Computed Heigth sensor positions, [Rx, Ry, Z]
         dHSPositions = [0, 0, 0]'
@@ -94,6 +97,8 @@ classdef MFDriftMonitor < mic.Base
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
             '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-03-21_15.52.mat')
+%          cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
+%             '..', '..', '..', 'config', 'interpolants', ' cal-interp_2018-03-21_12.07.mat')
 
         
         u8FitModel
@@ -103,7 +108,7 @@ classdef MFDriftMonitor < mic.Base
     methods
         
         function this = MFDriftMonitor(varargin)
-            
+           
              for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -118,10 +123,11 @@ classdef MFDriftMonitor < mic.Base
             %this.u8FitModel = this.u8FITMODEL_LINEAR_FIT;
             this.u8HSModel  = this.u8HSMODEL_CALIBRATION;
             
-            % Loads calibration data.  Set this on init
-            stData = load(this.cDefaultData); 
-            this.initCalibrationInterpolant(stData.stCalibrationData);
-            this.initGeometricInterpolant();
+           
+            
+        end
+        
+        function start(this)
             
             % If there is no clock then make one:
             if isempty(this.clock)
@@ -130,8 +136,7 @@ classdef MFDriftMonitor < mic.Base
             end
             
             % Init clock update tasks:
-            this.clock.add(@this.onClock, this.id(), this.dUpdateInterval);
-            
+            this.clock.add(@this.onClock, this.id(), 1);
         end
         
          function delete(this)
@@ -197,7 +202,7 @@ classdef MFDriftMonitor < mic.Base
 
                 
         function l = isReady(this)
-            l = this.javaAPI.isMonitoring();  
+            l = this.javaAPI.isConnected();  
         end
         
         function dVal = getHeightSensorValue(this, u8Channel)
@@ -222,18 +227,21 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
+        function dVal = getDCPower(this, idx)
+            dVal = this.dDCPower(idx);
+        end
+        function dVal = getACPower(this, idx)
+            dVal = this.dACPower(idx);
+        end
+        
         function forceUpdate(this)
             this.updateChannelData();
         end
         
         
-        function loadInterpolant(this, cName)
-            load(fullfile(this.cInterpolantConfigDir, [cName, '.mat']));
-            this.stActiveInterpolant = stInterpolant;
-        end
         
         function setInterpolant(this, stInterpolant)
-            this.initCalibrationInterpolant(stInterpolant);
+            this.initCalibrationInterpolant(stInterpolant)
         end
         
     end
@@ -247,9 +255,15 @@ classdef MFDriftMonitor < mic.Base
             
             % Next update HS positions:
              this.updateHSPositions();
+             
+             this.updateDMIPower();
             
         end
         
+        function updateDMIPower(this)
+%             this.dDCPower = this.javaAPI;
+%             this.dACPower(idx);
+        end
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
@@ -257,6 +271,7 @@ classdef MFDriftMonitor < mic.Base
             
             
             % Set HS data
+            % dSampleAve.getHsData()
             dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
             lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 6, 2); % 6x2 logical
             
@@ -298,9 +313,9 @@ classdef MFDriftMonitor < mic.Base
                 dErrV_waf = dDMIRawData(this.u8WAFER_V);
                  
                 dXDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
-                dYDat_ret = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
+                dYDat_ret = -this.dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
                 
-                dXDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
+                dXDat_waf = -this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
                 dYDat_waf = this.dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf);
                 this.dDMIData = [dXDat_ret, dYDat_ret; dXDat_waf, dYDat_waf];
 
