@@ -271,6 +271,7 @@ classdef MFDriftMonitor < mic.Base
             
             
             % Set HS data
+            % dSampleAve.getHsData()
             dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
             lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 6, 2); % 6x2 logical
             
