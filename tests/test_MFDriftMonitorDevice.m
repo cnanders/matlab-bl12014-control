@@ -18,10 +18,12 @@ addpath(genpath(cDirMic));
 hardware = bl12014.Hardware();
 apiDriftMonitor = hardware.getMFDriftMonitor();
 
-%%
-
 % Instantiate a HS device accessor:
 HSDevice = bl12014.device.GetNumberFromSimpleHeightSensorZ(apiDriftMonitor);
+
+%%
+
+
 
 % You can set the number of samples to average:
 HSDevice.setSampleAverage(50);

@@ -18,13 +18,12 @@ classdef GetNumberFromSimpleHeightSensorZ < mic.interface.device.GetNumber
     
     methods
         
-        function this = GetNumberFromMFDriftMonitor(...
-                apiDriftMonitor)
+        function this = GetNumberFromSimpleHeightSensorZ(apiDriftMonitor)
             this.api            = apiDriftMonitor;
         end
         
         function d = get(this)
-            d = apiDriftMonitor.getSimpleZ(this.dSampleAverage);
+            d = this.api.getSimpleZ(this.dSampleAverage);
         end
                 
         function l = isReady(this)
