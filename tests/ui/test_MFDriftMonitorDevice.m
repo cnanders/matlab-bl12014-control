@@ -18,12 +18,15 @@ apiDriftMonitor = this.hardware.getMFDriftMonitor();
 
 %%
 
-% Init interpolant:
-dNumAverage = 10; % number of samples to average
+% Instantiate a HS device accessor:
+HSDevice = bl12014.device.GetNumberFromSimpleHeightSensorZ(apiDriftMonitor);
+
+% You can set the number of samples to average:
+HSDevice.setSampleAverage(50);
 
 % Bypasses Interpolant and uses CWCork slope values.  Probably best for
 % determining Z when not at the calibration location
-dSimpleHeight = apiDriftMonitor.getSimpleZ(dNumAverage);
+dSimpleHeight = HSDevice.get();
 
 
 fprintf('Height sensor simple z value: %0.3f nm\n', dSimpleHeight);
