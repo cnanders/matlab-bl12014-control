@@ -186,7 +186,8 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
-        % Standalone function that bypasses interpolant
+        % Standalone function that bypasses interpolant. Returns average HS
+        % position in nm based on averaging 6 channels.
         function dVal = getSimpleZ(this, dNumAverage)
             if nargin == 1
                 dNumAverage = 10;
@@ -197,7 +198,7 @@ classdef MFDriftMonitor < mic.Base
             % Uses CWCork slopes
             dSimpleHeights = this.javaAPI.hsGetPositions(dSampleAve);
             
-            dVal = mean(dSimpleHeights(:));
+            dVal = mean(dSimpleHeights(:))/10;
             
         end
         
