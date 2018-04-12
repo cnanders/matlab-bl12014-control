@@ -1,33 +1,5 @@
 % This is a bridge between hardware device and MATLAB UI
 
-% Raw HS values at lower limit:
-% 
-%    -450   -164
-%    -430    241
-%    -360    -45
-%    -298     19
-%    -498   -381
-%    -334   -125
-%    -263   -234
-%    -254   -294
-%    -215   -685
-%      -1   -377
-%    -670    -50
-%    -611    354
-
-%    -468   -194
-%    -448    212
-%    -495   -201
-%    -276     20
-%    -269   -149
-%     -66    140
-%    -411   -395
-%    -180   -229
-%    -218   -738
-%     -10   -425
-%    -291    242
-%    -263    589
-
     
 classdef MFDriftMonitor < mic.Base
     
@@ -40,10 +12,12 @@ classdef MFDriftMonitor < mic.Base
         
         u8FITMODEL_CUBIC_FIT           = 0
         u8FITMODEL_CUBIC_INTERPOLATION = 1
-        u8FITMODEL_LINEAR_FIT               = 2
+        u8FITMODEL_LINEAR_FIT          = 2
         
         u8HSMODEL_GEOMETRIC   = 0
         u8HSMODEL_CALIBRATION = 1
+        
+        DEFAULT_CHANNEL_Z_SLOPE = 1 % Converts diff over sum to Z using averages instead of interpolant
         
         
         dDMI_SCALE      = 632.9907/4096; % dmi axes come in units of 1.5 angstroms
@@ -65,8 +39,6 @@ classdef MFDriftMonitor < mic.Base
         
         % Update and interpolate intervals
         dUpdateInterval = 2
-        
-        
         
         % Handle to the MFDriftMonitor java interface
         javaAPI
@@ -212,6 +184,21 @@ classdef MFDriftMonitor < mic.Base
                 case {7, 8, 9}
                     dVal = this.dHSPositions(u8Channel - 6);
             end
+        end
+        
+        % Standalone function that bypasses interpolant
+        function dVal = getSimpleZ(this, dNumAverage)
+            if nargin == 1
+                dNumAverage = 10;
+            end
+            
+            dSampleAve = this.javaAPI.getSampleDataAvg(dNumAverage);
+            
+            % Uses CWCork slopes
+            dSimpleHeights = this.javaAPI.hsGetPositions(dSampleAve);
+            
+            dVal = mean(dSimpleHeights(:));
+            
         end
         
         function dVal = getDMIValue(this, u8Channel)
