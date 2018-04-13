@@ -41,6 +41,8 @@ javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOC
 
 % MET5 devices built by Carl Cork
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'));
+% Required by cwcork cxro.met5.Instruments
+cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
 
 % BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
 javaaddpath(fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'));
@@ -56,8 +58,7 @@ javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.
 % Used by GetLogicalPing
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
 
-% Required by cwcork cxro.met5.Instruments
-cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
+
 
 
 app = bl12014.App(...

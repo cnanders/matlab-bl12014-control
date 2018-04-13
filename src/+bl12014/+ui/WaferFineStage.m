@@ -1,11 +1,7 @@
 classdef WaferFineStage < mic.Base
     
     properties
-      
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceZ
-                
+                      
         % {mic.ui.device.GetSetNumber 1x1}}
         uiZ
         
@@ -43,15 +39,23 @@ classdef WaferFineStage < mic.Base
             this.init();
         
         end
-        
-        
-        function turnOn(this)
+               
+        function connectDeltaTauPowerPmac(this, comm)
+         
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            
+            deviceZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            this.uiZ.setDevice(deviceZ);
             this.uiZ.turnOn();
+            this.uiZ.syncDestination();
+
         end
         
-        function turnOff(this)
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
             this.uiZ.turnOff();
-           
+            this.uiZ.setDevice([])
             
         end
         
@@ -105,9 +109,7 @@ classdef WaferFineStage < mic.Base
             if isfield(st, 'uiZ')
                 this.uiZ.load(st.uiZ)
             end
-            
-            
-            
+           
         end
         
         

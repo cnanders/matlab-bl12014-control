@@ -60,25 +60,63 @@ classdef WaferCoarseStage < mic.Base
         
         end
         
-        
-        function turnOn(this)
+         function connectDeltaTauPowerPmac(this, comm)
             
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            deviceTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            
+            % Set Devices
+            this.uiX.setDevice(deviceX);
+            this.uiY.setDevice(deviceY);
+            this.uiZ.setDevice(deviceZ);
+            this.uiTiltX.setDevice(deviceTiltX);
+            this.uiTiltY.setDevice(deviceTiltY);
+            
+            % Turn on
             this.uiX.turnOn();
             this.uiY.turnOn();
             this.uiZ.turnOn();
             this.uiTiltX.turnOn();
             this.uiTiltY.turnOn();
             
+            
+            this.uiX.syncDestination();
+            this.uiY.syncDestination();
+            this.uiZ.syncDestination();
+            this.uiTiltX.syncDestination();
+            this.uiTiltY.syncDestination();
+            
+
+            
         end
         
-        function turnOff(this)
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
             this.uiX.turnOff();
             this.uiY.turnOff();
             this.uiZ.turnOff();
             this.uiTiltX.turnOff();
             this.uiTiltY.turnOff();
+
+            
+                        
+            this.uiX.setDevice([]);
+            this.uiY.setDevice([]);
+            this.uiZ.setDevice([]);
+            this.uiTiltX.setDevice([]);
+            this.uiTiltY.setDevice([]);
+
             
         end
+
         
         function build(this, hParent, dLeft, dTop)
             

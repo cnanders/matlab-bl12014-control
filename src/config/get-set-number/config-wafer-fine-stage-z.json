@@ -2,18 +2,6 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "mm",
-			"slope": "1",
-			"offset": 0,
-			"precision": 3
-		},
-        {
-			"name": "um",
-			"slope": "10^3",
-			"offset": 0,
-			"precision": 3
-		},
-		{
 			"name": "nm",
 			"slope": "10^6",
 			"offset": 0,

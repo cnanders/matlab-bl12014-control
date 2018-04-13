@@ -39,6 +39,26 @@ classdef LsiCoarseStage < mic.Base
         
         end
         
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            
+            deviceX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
+            this.uiX.setDevice(deviceX);
+            this.uiX.turnOn();
+            this.uiX.syncDestination();
+
+            
+        end
+        
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiX.turnOff();
+            this.uiX.setDevice([]);
+           
+        end
         
         
         function build(this, hParent, dLeft, dTop)

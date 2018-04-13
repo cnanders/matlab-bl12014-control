@@ -5,7 +5,7 @@
 			"name": "urad",
 			"slope": 1,
 			"offset": 0,
-			"precision": 3
+			"precision": 1
     },
     {
 			"name": "mrad",

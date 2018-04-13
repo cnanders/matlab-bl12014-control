@@ -1,4 +1,8 @@
-    [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+try
+    purge
+end
+
+[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
 cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
@@ -11,15 +15,19 @@ cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control'
 addpath(genpath(cDirMic));
 
 
-purge
+
+
+hardware = bl12014.Hardware();
 
 clock = mic.Clock('Master');
 
 ui = bl12014.ui.Wafer(...
-    'clock', clock ...
+    'clock', clock, ...
+    'hardware', hardware ...
 );
 
 ui.build();
+ui.
 
 
  
