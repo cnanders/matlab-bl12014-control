@@ -123,11 +123,18 @@ classdef PrescriptionTool < mic.Base
         function st = save(this)
              st = struct();
              st.cDirSave = this.cDirSave;
+             st.uiPupilFillTool = this.uiPupilFillTool.save();
              
         end
         
         function load(this, st)
             this.cDirSave = st.cDirSave;
+            
+            if isfield(st, 'uiPupilFillTool')
+                this.uiPupilFillTool.load(st.uiPupilFillTool);
+            end
+            
+            
             this.updateUiTextDir();
             this.uiListPrescriptions.refresh();
         end

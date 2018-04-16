@@ -1,5 +1,8 @@
-classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
+classdef HeightSensorZClosedLoopCoarse < mic.interface.device.GetSetNumber
        
+    % On set(), sends wafer fine z to middle of range (5000 nm), then
+    % iteratively marces wafer fine z until height sensor reads desired
+    % value within a tolernace of 50 nm default
     
     properties (Constant)
         
@@ -8,16 +11,18 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
     
     properties (SetAccess = private)
         
-        cName = 'device-height-sensor-z-closed-loop'
+        cName = 'fix-me'
     end
     
     
     
     properties (Access = private)
         
+        % {< mic.interface.device.GetSetNumber 1x1}
+        zWaferFine
         
         % {< mic.interface.device.GetSetNumber 1x1}
-        zWafer
+        zWaferCoarse
         
         % {< mic.interface.device.GetNumber 1x1}
         zHeightSensor
@@ -30,7 +35,7 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         dSetGoal
         
         % {double 1x1} desired tolerance in nm
-        dTolerance = 1;
+        dTolerance = 50;
         
         % {uint8 1x1 maximum number of moves of the wafer fine z}
         u8MovesMax = uint8(5);
@@ -44,7 +49,7 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         % {double 1x1} number of samples to average when getting a value
         % from the Height Sensor drift monitor
         u8SampleAverage = 50
-        u8SampleAverageDuringControl = 1000;
+        u8SampleAverageDuringControl = 50;
         
         % {logical 1x1} set to true to debug the scan
         lDebugScan = true
@@ -52,22 +57,24 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
     
     methods
         
-        function this = HeightSensorZClosedLoop(clock, zWafer, zHeightSensor, varargin)
+        function this = HeightSensorZClosedLoopCoarse(clock, zWaferFine, zWaferCoarse, zHeightSensor, varargin)
             
             % Input validation and parsing
             
             p = inputParser;
             addRequired(p, 'clock', @(x) isa(x, 'mic.Clock'))
-            addRequired(p, 'zWafer', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
+            addRequired(p, 'zWaferFine', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
+            addRequired(p, 'zWaferCoarse', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
             addRequired(p, 'zHeightSensor', @(x) isa(x, 'mic.interface.device.GetNumber')) % also has method setSampleAverage
             addParameter(p, 'dTolerance', this.dTolerance, @(x) isscalar(x) && isnumeric(x) && x > 0)
-            addParameter(p, 'u8MovesMax', this.u8MovesMax, @(x) isscalar(x) && isinteger(x) && x > 0)
+            addParameter(p, 'u8MovesMax', this.u8MovesMax, @(x) isscalar(x) && isinteger(x) && x > 1)
             addParameter(p, 'cName', this.cName, @(x) ischar(x));
             
-            parse(p, clock, zWafer, zHeightSensor, varargin{:});
+            parse(p, clock, zWaferFine, zWaferCoarse, zHeightSensor, varargin{:});
 
             this.clock = p.Results.clock;
-            this.zWafer = p.Results.zWafer;
+            this.zWaferFine = p.Results.zWaferFine;
+            this.zWaferCoarse = p.Results.zWaferCoarse;
             this.zHeightSensor = p.Results.zHeightSensor;
             
             for k = 1 : 2: length(varargin)
@@ -96,12 +103,19 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                         
             ceValues = cell(1, this.u8MovesMax);
             for n = 1 : this.u8MovesMax
-                ceValues{n} = struct('zWafer', 0);
+                if n == 1
+                    % On first state, move wafer fine to center of range
+                    ceValues{n} = struct('zWaferFine', 0);
+                else
+                    % On all other states, adjust wafer coarse
+                    ceValues{n} = struct('zWaferCoarse', 0);
+                end
             end
             
             unit = struct(...
-                'zWafer', 'nm', ...
-                'zHeightSensor', 'nm' ...
+                'zWaferFine', 'nm', ... % raw units are mm
+                'zWaferCoarse', 'nm', ... % raw units are mm
+                'zHeightSensor', 'nm' ... % raw units are nm
             );
         
             stRecipe = struct();
@@ -117,9 +131,15 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 @this.onScanAcquire, ...
                 @this.onScanIsAcquired, ...
                 @this.onScanComplete, ...
-                @this.onScanAbort ...
+                @this.onScanAbort, ...
+                0.1 ... % giving enough time for communication with DeltaTauPMAC
             );
 
+        
+        
+            if this.lDebugScan
+                this.msg('set() starting new scan)', this.u8_MSG_TYPE_SCAN);
+            end
             this.scan.start();
             
         end
@@ -152,10 +172,34 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
     
     methods (Access = private)
         
+        % @param {struct} stUnit - the unit definition structure 
+        % @param {struct} stState - the state
+        function onScanSetState1(this, stUnit, stValue)
+            
+            
+            if this.lDebugScan
+                cMsg = [...
+                  'onScanSetState1() setting zWaferFine to middle of range (5000 nm)' ...
+                ];
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            
+            % send to middle of range;
+            this.zWaferFine.set(5000 * 1e-6);
+            
+        end
         
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
         function onScanSetState(this, stUnit, stValue)
+            
+            
+            if isfield(stValue, 'zWaferFine')
+                this.onScanSetState1(stUnit, stValue)
+                return
+            end
+            
             
             if this.lDebugScan
                 this.msg('onScanSetState()', this.u8_MSG_TYPE_SCAN);
@@ -172,7 +216,7 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                     cMsg = [...
                         'onScanSetState() ', ...
                         ' calling scan.stop()', ...
-                        sprintf(' abs(error) = %1.3f nm', abs(dError)), ...
+                        sprintf(' error = %1.3f nm', dError), ...
                         sprintf(' < tolerance of %1.3f nm', this.dTolerance) ...
                     ];
                     this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
@@ -185,23 +229,25 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 % then back to mm
                 mm2nm = 1e6;
                 nm2mm = 1e-6;
-                dZWaferGoal = (this.zWafer.get() * mm2nm + dError) * nm2mm;
+                dZWafer = this.zWaferCoarse.get();
+                dZWaferGoal = (dZWafer * mm2nm + dError) * nm2mm;
                 
-                if (dZWaferGoal > 10000 * nm2mm || ...
-                    dZWaferGoal < 0)
+                dZWaferCoarseMax = 1;
+                dZWaferCoarseMin = -1;
+                if (dZWaferGoal > dZWaferCoarseMax || ...
+                    dZWaferGoal < dZWaferCoarseMin)
                 
                     cMsg = [...
                         sprintf('DID NOT REACH GOAL.\n\n') ...
                         sprintf('To achieve the target height sensor value of %1.3f nm,', this.dSetGoal), ...
-                        sprintf(' wafer fine z needs to move to %1.1f nm,', dZWaferGoal * 1e6), ...
+                        sprintf(' wafer coarse z needs to move to %1.1f nm,', dZWaferGoal * 1e6), ...
                         sprintf(' which is out of the allowed range of the wafer fine z stage.\n\n'), ...
-                        sprintf('min allowed value of wafer fine z = 0 nm\n'), ...
-                        sprintf('max allowed value of wafer fine z = 10000 nm\n\n'), ...
-                        sprintf('Try moving wafer coarse z to bring the height sensor z closer to the target value and repeating.') ...
+                        sprintf('min allowed value of wafer fine z = %1.1f mm\n', dZWaferCoarseMin), ...
+                        sprintf('max allowed value of wafer fine z = %1.1f mm\n\n', dZWaferCoarseMax), ...
                     ];
                     msgbox( ...
                         cMsg, ...
-                        'HeightSensorZClosedLoop Aborted.', ...
+                        'HeightSensorZClosedLoopCoarse Aborted.', ...
                         'error', ...
                         'modal' ...
                     );
@@ -213,15 +259,23 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 if this.lDebugScan
                     cMsg = [...
                         'onScanSetState()', ...
-                        sprintf(' abs(error) = %1.3f nm', abs(dError)), ...
-                        sprintf(' setting zWafer to %1.1f nm', dZWaferGoal * 1e6) ...
+                        sprintf(' error = %1.3f nm', dError), ...
+                        sprintf(' setting zWaferCoarse from %1.1f nm to %1.1f nm', dZWafer * 1e6, dZWaferGoal * 1e6) ...
                     ];
                     this.msg(cMsg, this.u8_MSG_TYPE_SCAN)
                 end
-                this.zWafer.set(dZWaferGoal);
+                this.zWaferCoarse.set(dZWaferGoal);
             end
             
             
+        end
+        
+        
+        function l = onScanIsAtState1(this, stUnit, stValue)
+            if this.lDebugScan
+                this.msg('onScanIsAtState1()', this.u8_MSG_TYPE_SCAN);
+            end
+            l = this.zWaferFine.isReady();
         end
         
         
@@ -229,10 +283,22 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         % @param {struct} stState - the state
         % @returns {logical} - true if the system is at the state
         function l = onScanIsAtState(this, stUnit, stValue)
-            if this.lDebugScan
-                this.msg('onScanIsAtState()', this.u8_MSG_TYPE_SCAN);
+            
+            if isfield(stValue, 'zWaferFine')
+                l = this.onScanIsAtState1(stUnit, stValue);
+                return
             end
-            l = this.zWafer.isReady();
+            
+            
+            if this.lDebugScan
+                cMsg = [
+                    'onScanIsAtState()', ...
+                    sprintf('wafer coarse z = %1.1f nm', this.zWaferCoarse.get() * 1e6) ...
+                ];
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            l = this.zWaferCoarse.isReady();
+            % this.zWaferCoarse.get()
         end
         
             

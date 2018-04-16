@@ -21,6 +21,9 @@ classdef ReticleCoarseStage < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}}
         uiTiltY
         
+        % {mic.ui.common.PositionRecaller 1x1}
+        uiPositionRecaller
+        
         
         
     end
@@ -28,12 +31,13 @@ classdef ReticleCoarseStage < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 730
-        dHeight = 190
+        dWidth = 1030
+        dHeight = 205
         
         cName = 'ReticleCoarseStage'
         
         lShowRange = true
+        lShowStores = false
         
     end
     
@@ -120,6 +124,10 @@ classdef ReticleCoarseStage < mic.Base
             this.uiTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
+            dLeft = 630;
+            dTop = 20;
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 360, 170);
+            
             
 
             
@@ -195,6 +203,7 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', 'reticle-coarse-stage-x', ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'lShowStores', this.lShowStores, ...
                 'cLabel', 'X' ...
             );
         end
@@ -218,6 +227,7 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', 'reticle-coarse-stage-y', ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'lShowStores', this.lShowStores, ...
                 'cLabel', 'Y' ...
             );
         end
@@ -241,6 +251,7 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', 'reticle-coarse-stage-z', ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'lShowStores', this.lShowStores, ...
                 'cLabel', 'Z' ...
             );
         end
@@ -265,6 +276,7 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', 'reticle-coarse-stage-tilt-x', ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'lShowStores', this.lShowStores, ...
                 'cLabel', 'Tilt X' ...
             );
         end
@@ -288,7 +300,22 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', 'reticle-coarse-stage-tilt-y', ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'lShowStores', this.lShowStores, ...
                 'cLabel', 'Tilt Y' ...
+            );
+        end
+        
+        function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', [this.cName, '-position-recaller'], ...
+                'cTitleOfPanel', 'Position Stores', ...
+                'lShowLabelOfList', false, ...
+                'hGetCallback', @this.getValues, ...
+                'hSetCallback', @this.setValues ...
             );
         end
         
@@ -300,6 +327,35 @@ classdef ReticleCoarseStage < mic.Base
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
+            this.initUiPositionRecaller();
+            
+        end
+        
+        % Return list of values from your app
+        function dValues = getValues(this)
+            dValues = [...
+                this.uiX.getValRaw(), ...
+                this.uiY.getValRaw(), ...
+                this.uiZ.getValRaw(), ...
+                this.uiTiltX.getValRaw(), ...
+                this.uiTiltY.getValRaw(), ...
+            ];
+        end
+        
+        % Set recalled values into your app
+        function setValues(this, dValues)
+            
+            this.uiX.setDestRaw(dValues(1));
+            this.uiY.setDestRaw(dValues(2));
+            this.uiZ.setDestRaw(dValues(3));
+            this.uiTiltX.setDestRaw(dValues(4));
+            this.uiTiltY.setDestRaw(dValues(5));
+            
+            this.uiX.moveToDest();
+            this.uiY.moveToDest();
+            this.uiZ.moveToDest();
+            this.uiTiltX.moveToDest();
+            this.uiTiltY.moveToDest();
             
         end
         

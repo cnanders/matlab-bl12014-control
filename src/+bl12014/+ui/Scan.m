@@ -745,8 +745,10 @@ classdef Scan < mic.Base
                         this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'waferZ'
-                        this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(dValue, cUnit);
-                        this.uiWafer.uiFineStage.uiZ.moveToDest();  % click
+                        %this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(dValue, cUnit);
+                        %this.uiWafer.uiFineStage.uiZ.moveToDest();  % click
+                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(dValue, cUnit);
+                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'pupilFill'
                         % FIX ME
@@ -874,7 +876,8 @@ classdef Scan < mic.Base
                             case 'waferY'
                                 lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
                             case 'waferZ'
-                               lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
+                               % lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
+                               lReady = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().isReady();
                             case 'pupilFill'
                                 % FIX ME
                                 
@@ -1057,8 +1060,8 @@ classdef Scan < mic.Base
                 ]
                 %}
                 dExposure = [
-                    -this.uiWafer.uiCoarseStage.uiX.getValCal('m') ...
-                    -this.uiWafer.uiCoarseStage.uiY.getValCal('m') ...
+                    -this.uiWafer.uiCoarseStage.uiX.getValCal('mm') ...
+                    -this.uiWafer.uiCoarseStage.uiY.getValCal('mm') ...
                     stValue.task.femCol ...
                     stValue.task.femCols ...
                     stValue.task.femRow ...
@@ -1128,6 +1131,7 @@ classdef Scan < mic.Base
                 end
                 
                 this.scan = mic.Scan(...
+                    'ui-fem-scan', ...
                     this.clock, ...
                     stRecipe, ...
                     @this.onScanSetState, ...
@@ -1288,8 +1292,14 @@ classdef Scan < mic.Base
             
             % Wafer Fine Stage
             
+            %{
             if ~this.uiWafer.uiFineStage.uiZ.isActive()
                 cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiFineStage.uiZ.id());
+            end
+            %}
+            
+             if ~this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.isActive() 
+                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.id());
             end
             
             
@@ -1363,25 +1373,9 @@ classdef Scan < mic.Base
         end
         
                 
-        % Helper functions use by waitFor() (see below)
+
         
-        function lReturn = rcsIsThere(this)
-            
-            lReturn = this.uiReticle.uiCoarseStage.hioX.lIsThere && this.uiReticle.uiCoarseStage.hioY.lIsThere;
-            
-        end
         
-        function lReturn = wcsXYIsThere(this)
-           
-            lReturn = this.uiWafer.uiCoarseStage.hioX.lIsThere && this.uiWafer.uiCoarseStage.hioY.lIsThere;
-            
-        end
-        
-        function lReturn = wfsIsThere(this)
-            
-            lReturn = this.uiWafer.uiFineStage.hioZ.lIsThere;
-            
-        end
         
         
         function lReturn = shIsClosed(this)

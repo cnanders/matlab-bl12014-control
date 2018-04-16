@@ -4,6 +4,7 @@ classdef NetworkCommunication < mic.Base
 
         % {mic.ui.device.GetLogical 1xn}
         uis = {}
+        cName = 'Network Status (Updates every 2 sec)'
         
     end
     
@@ -12,7 +13,7 @@ classdef NetworkCommunication < mic.Base
         dWidth = 600
         dHeight = 750
         
-        cName = 'Network Status (Updates every 2 sec)'
+        
         hFigure
         
         % {struct 1xn}

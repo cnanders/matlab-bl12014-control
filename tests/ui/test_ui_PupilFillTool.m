@@ -1,3 +1,7 @@
+try 
+    purge
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg

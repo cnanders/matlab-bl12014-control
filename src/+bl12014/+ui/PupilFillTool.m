@@ -20,8 +20,7 @@ classdef PupilFillTool < mic.Base
     properties (Access = private)
                               
         hPanel
-        cDir
-        uilOptions
+        uiListDir
         cDirThis
         cDirSrc
         cDirSave
@@ -75,7 +74,7 @@ classdef PupilFillTool < mic.Base
 			drawnow;
             
             dPad = 10;
-            this.uilOptions.build(this.hPanel, ...
+            this.uiListDir.build(this.hPanel, ...
                 10, ...
                 20, ...
                 this.dWidth - 20, ...
@@ -106,7 +105,7 @@ classdef PupilFillTool < mic.Base
         
         % @return {char 1xm} selected pupil fill
         function c = get(this)
-            ceSelected = this.uilOptions.get();
+            ceSelected = this.uiListDir.get();
             if ~isempty(ceSelected)
                 c = ceSelected{1};
             else 
@@ -114,21 +113,16 @@ classdef PupilFillTool < mic.Base
             end
         end
         
-        % @return {struct} state to save
+        
         function st = save(this)
-            % Store the name of the selected fill.  Try to select it on
-            % load
             st = struct();
-            st.cSelected = this.get();
+        	st.uiListDir = this.uiListDir.save();
         end
         
-        % @param {struct} state to load.  See save() for struct props
         function load(this, st)
             
-            % strcmp returns a {logical} list
-            lMatches = strcmp(st.cSelected, this.uilOptions.getOptions());
-            if any(lMatches)
-                this.uilOptions.setSelectedIndexes(uint8(find(lMatches)));
+            if isfield(st, 'uiListDir') 
+                this.uiListDir.load(st.uiListDir);
             end
         end
 
@@ -140,42 +134,25 @@ classdef PupilFillTool < mic.Base
         function init(this)
               
             this.msg('init()');
-            this.uilOptions = mic.ui.common.List(...
-                'ceOptions', cell(1,0), ...
+            this.uiListDir = mic.ui.common.ListDir(...
                 'cLabel', '', ...
+                'cDir', this.cDirSave, ...
                 'lShowDelete', false, ...
                 'lShowMove', false, ...
                 'lShowLabel', false, ...
-                'lShowRefresh', false ...
+                'lShowRefresh', true ...
             );
-            this.uilOptions.setRefreshFcn(@this.refresh);
-            this.uilOptions.refresh();
             
             this.uitQA = mic.ui.common.Toggle(...
                 'cTextTrue', 'X', ...
                 'cTextFalse', 'OK' ...
             );
             
-            addlistener(this.uilOptions, 'eChange', @this.onOptionsChange);
             addlistener(this.uitQA, 'eChange', @this.onQA);
+            
+        end
+        
 
-            
-            
-        end
-        
-        function ceReturn = refresh(this)
-            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'descend', '*.mat');
-        end
-        
-        function onOptionsChange(this, ~, ~)
-            
-            %{
-            ceSelected = this.uilOptions.get();
-            if ~isempty(ceSelected)
-                this.cSelected = ceSelected{1};
-            end
-            %}
-        end
         
         function onQA(this, ~, ~)
             

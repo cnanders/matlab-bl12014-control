@@ -2,8 +2,8 @@ classdef Reticle < mic.Base
         
     properties (Constant)
       
-        dWidth      = 1515
-        dHeight     = 775
+        dWidth      = 1830
+        dHeight     = 790
         
     end
     
@@ -168,7 +168,6 @@ classdef Reticle < mic.Base
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.uiWorkingMode.ui.turnOff();
             this.uiCoarseStage.uiX.turnOff();
             this.uiCoarseStage.uiY.turnOff();
             this.uiCoarseStage.uiZ.turnOff();
@@ -177,7 +176,6 @@ classdef Reticle < mic.Base
             this.uiFineStage.uiX.turnOff();
             this.uiFineStage.uiY.turnOff();
             
-            this.uiWorkingMode.ui.setDevice([]);
             this.uiCoarseStage.uiX.setDevice([]);
             this.uiCoarseStage.uiY.setDevice([]);
             this.uiCoarseStage.uiZ.setDevice([]);
@@ -264,7 +262,7 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
-            dLeft = 750;
+            dLeft = 1050;
             dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;

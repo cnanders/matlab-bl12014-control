@@ -258,7 +258,7 @@ classdef App < mic.Base
             this.uiM142 = bl12014.ui.M142('clock', this.clock);
             this.uiM143 = bl12014.ui.M143('clock', this.clock);
             this.uiReticle = bl12014.ui.Reticle('clock', this.clock);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clock);
+            this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'hardware', this.hHardware);
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
