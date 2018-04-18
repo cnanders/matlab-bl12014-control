@@ -715,13 +715,13 @@ classdef MFDriftMonitor < mic.Base
                     if this.uicbDMIDrift{k}.get()
                        
                         if k == 1 % X
-                            % Ret fine X points toward 3:00, wafer coarse x
-                            % also points to 3:00
+                            % Ret fine X points toward 03:00, wafer coarse x
+                            % also points to 09:00
                              plotDMI(end+1,: )= 5*this.dDMI(k + 2,:) + this.dDMI(k,:);
                         elseif k == 2 % Y
                              % in y, reticle fine y and wafer y point in
                             % opposite physical directions.  reticle fine y
-                            % points to 12:00; wafer fine y points to 06:00
+                            % points to 12:00; wafer coarse y points to 06:00
                              plotDMI(end+1,: )= -5*this.dDMI(k + 2,:) + this.dDMI(k,:);
                         end
                         lgdDMI{end+1}=ceDifferenceChannelNames{k};

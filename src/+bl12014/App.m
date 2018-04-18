@@ -1419,8 +1419,8 @@ classdef App < mic.Base
             this.uiApp.uiHeightSensorLEDs.disconnectMightex1();
             this.uiApp.uiHeightSensorLEDs.disconnectMightex2();
             
-            this.commMightex1.disconnect();
-            this.commMightex2.disconnect();
+            % this.commMightex1.disconnect();
+            % this.commMightex2.disconnect();
             
             this.commMightex1 = [];
             this.commMightex2 = [];
@@ -1809,11 +1809,11 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
+            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
             this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
-            this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
+            % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
             % Power PMAC Status
             this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)

@@ -325,7 +325,7 @@ classdef Reticle < mic.Base
             
             dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
             dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
-            this.uiAxes.setStagePosition(dX, -dY); % Flip y so screen corresponds to plan view
+            this.uiAxes.setStagePosition(-dX, -dY); % Flip y so screen corresponds to plan view
                         
         end
         
@@ -447,11 +447,17 @@ classdef Reticle < mic.Base
        
         
         function onUiAxesClickField(this, src, evt)
-                       
-            this.uiCoarseStage.uiX.setDestCalDisplay(-evt.stData.dX);
-            this.uiCoarseStage.uiY.setDestCalDisplay(-evt.stData.dY);
+             
+            % evt.stData.dX is in units of mm
+            dX = -this.uiAxes.dXChiefRay * 1000 + evt.stData.dX; %mm
+            this.uiCoarseStage.uiX.setDestCal(dX, 'mm');
             this.uiCoarseStage.uiX.moveToDest();
-            this.uiCoarseStage.uiY.moveToDest();            
+            
+            dY = -this.uiAxes.dYChiefRay * 1000 + evt.stData.dY; %mm
+            this.uiCoarseStage.uiY.setDestCal(dY, 'mm');
+            this.uiCoarseStage.uiY.moveToDest();  
+          
+            
             
         end
         

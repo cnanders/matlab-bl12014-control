@@ -15,8 +15,9 @@ classdef ReticleAxes < mic.Base
     properties (SetAccess = private)
         
         dWidth = 600
-        dHeight = 450
+        dHeight = 600
         dZoomMax = 200
+        dZoomMinForFieldLabels = 40
         
         cName = 'ReticleAxes'
     
@@ -27,11 +28,58 @@ classdef ReticleAxes < mic.Base
         hTrack
         hCarriage
         hIllum
+
+        hCrosshairChiefRay
+        hCrosshairZero
+        hCrosshairLoadLock
+        
+        hReticle
+        hLabels
+        hFields
+        
         dFieldX
         dFieldY
         
-        dXReticleCenter = 20e-3
-        dYReticleCenter = 20e-3
+        % {double 1x1} height of crosshair at center of wafer
+        dSizeCrosshairWafer = 100e-3;
+        dSizeCrosshairChiefRay = 20e-3;
+        
+        hClockTimes
+        
+        % 2018.04.18 PROBABLY DEPRECATE
+        dXReticleCenter = 0e-3
+        dYReticleCenter = 0e-3
+        
+        
+        % {double 1x1} thickness of crosshair at center of wafer
+        dThicknessOfCrosshair
+                
+        dAlphaCrosshairWafer = 1;
+        dColorCrosshairWafer = [0 1 0];
+        
+        dAlphaCrosshairChiefRay = 1;
+        dColorCrosshairChiefRay = [1 0 1];
+        
+        dAlphaCrosshairZero = 1;
+        dColorCrosshairZero = [1 1 1];
+        
+        dAlphaCrosshairLoadLock = 1;
+        dColorCrosshairLoadLock = [1 1 1];
+        
+        
+        
+        dXZero = 0
+        dYZero = 0
+        
+        dXLoadLock = -0.35 % As drawn, needs to be on left, even through this is positive X coordinate of stage.
+        dYLoadLock = 0
+                
+    end
+    
+    properties (SetAccess = private)
+        
+        dXChiefRay = -42.17/1000
+        dYChiefRay = 3.39/1000
         
     end
     
@@ -63,6 +111,9 @@ classdef ReticleAxes < mic.Base
         
                 
         function build(this, hParent, dLeft, dTop)
+            
+            this.dThicknessOfCrosshair = this.getThicknessOfCrosshair();
+
                         
             % There is a bug in the default 'painters' renderer when
             % drawing stacked patches.  This is required to make ordering
@@ -84,7 +135,16 @@ classdef ReticleAxes < mic.Base
                 'HitTest', 'off' ...
             );
             this.drawCarriage();
+            
+            this.hReticle         = hggroup('Parent', this.hCarriage);
             this.drawReticle();
+            
+            
+            this.hLabels = hggroup('Parent', this.hReticle);
+            this.drawLabels();
+            
+            this.hFields = hggroup('Parent', this.hReticle);
+            this.drawFields();
             
             this.hIllum = hggroup(...
                 'Parent', this.uiZoomPanAxes.hHggroup, ...
@@ -92,6 +152,20 @@ classdef ReticleAxes < mic.Base
             );
             this.drawIllum();
             
+            
+            this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairChiefRay();
+            
+            this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairZero();
+            
+            this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairLoadLock();
+            
+            
+            
+            this.hClockTimes    = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawClockTimes();
             
         end
         
@@ -148,11 +222,51 @@ classdef ReticleAxes < mic.Base
         function init(this)
             this.msg('init()');
             this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
-
+            addlistener(this.uiZoomPanAxes, 'eZoom', @this.onZoom);
+            addlistener(this.uiZoomPanAxes, 'ePanX', @this.onPan);
+            addlistener(this.uiZoomPanAxes, 'ePanY', @this.onPan);
         end
         
         
+        function onZoom(this, ~, ~)
+            
+            
+            
+            dThickness = this.getThicknessOfCrosshair();
+            if dThickness ~= this.dThicknessOfCrosshair
+                
+                % Update for future
+                this.dThicknessOfCrosshair = dThickness;
+                
+                % Redraw crosshairs
+                
+                this.deleteCrosshairChiefRay();
+                this.drawCrosshairChiefRay();
+                
+                this.deleteCrosshairZero();
+                this.drawCrosshairZero();
+                
+                this.deleteCrosshairLoadLock();
+                this.drawCrosshairLoadLock();
+                
+                
+                this.deleteFields();
+                this.drawFields();
+                
+                this.deleteLabels();
+                this.drawLabels();
+            end
+            
+            this.deleteClockTimes();
+            this.drawClockTimes();
+            
+            
+        end
         
+        function onPan(this, ~, ~)
+            this.deleteClockTimes();
+            this.drawClockTimes(); 
+        end
         
         function drawTrack(this)
            
@@ -188,10 +302,10 @@ classdef ReticleAxes < mic.Base
         
         function drawIllum(this)
                         
-            dL = -1000e-6/2 + this.dXReticleCenter;
-            dR = 1000e-6/2 + this.dXReticleCenter;
-            dT = 150e-6/2 + this.dYReticleCenter;
-            dB = -150e-6/2 + this.dYReticleCenter;
+            dL = -1000e-6/2 + this.dXChiefRay;
+            dR = 1000e-6/2 + this.dXChiefRay;
+            dT = 150e-6/2 + this.dYChiefRay;
+            dB = -150e-6/2 + this.dYChiefRay;
 
             hPatch = patch( ...
                 [dL dL dR dR], ...
@@ -204,7 +318,7 @@ classdef ReticleAxes < mic.Base
                 'EdgeColor', [1, 1, 1] ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
         end
         
         function drawCarriage(this)
@@ -267,26 +381,19 @@ classdef ReticleAxes < mic.Base
             
         end
         
+        function deleteLabels(this)
+            this.deleteChildren(this.hLabels)            
+        end
         
-        function drawReticle(this)
+        
+        
+        function drawLabels(this)
+            
+            
+            if this.uiZoomPanAxes.getZoom() < this.dZoomMinForFieldLabels
+                return
+            end
                         
-            dL = -3*25.4e-3 + this.dXReticleCenter;
-            dR = 3*25.4e-3 + this.dXReticleCenter;
-            dT = 3*25.4e-3 + this.dYReticleCenter;
-            dB = -3*25.4e-3 + this.dYReticleCenter;
-
-            patch( ...
-                [dL dL dR dR], ...
-                [dB dT dT dB], ...
-                [0, 0, 0], ...
-                'HitTest', 'off', ...
-                'Parent', this.hCarriage, ...
-                'EdgeColor', 'none' ...
-            );
-            
-            
-            % The fields
-            
             dX = 2.5e-3;           
             dY = 2.5e-3;
             
@@ -302,6 +409,66 @@ classdef ReticleAxes < mic.Base
             
             dTextYOffset = -0.3e-3;
             
+            for k = 1:length(this.dFieldX) % col
+                for l = 1:length(this.dFieldY) % row
+                    % fprintf('x: %1.4f, y: %1.4f\n', dFieldX(k), dFieldY(l));
+                
+                    % cLabel = sprintf('R%1.0f C%1.0f', l, k);
+                    cLabel = sprintf('%02d, %02d', l, k);
+                    
+                    text( ...
+                        this.dFieldX(k) + dL, this.dFieldY(l) + dTextYOffset, cLabel, ...
+                        'Parent', this.hLabels, ...
+                        'Interpreter', 'none', ...
+                        'Clipping', 'on', ...
+                        'HitTest', 'off', ...
+                        'Color', [0.8, 0.8, 0.8] ...
+                    );                    
+                end
+            end         
+            
+        end
+        
+        
+        function drawReticle(this)
+                        
+            dL = -3*25.4e-3 + this.dXReticleCenter;
+            dR = 3*25.4e-3 + this.dXReticleCenter;
+            dT = 3*25.4e-3 + this.dYReticleCenter;
+            dB = -3*25.4e-3 + this.dYReticleCenter;
+
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                [0, 0, 0], ...
+                'HitTest', 'off', ...
+                'Parent', this.hReticle, ...
+                'EdgeColor', 'none' ...
+            );
+        
+        end
+        
+        
+        function deleteFields(this)
+            this.deleteChildren(this.hFields)
+        end
+        
+        
+        function drawFields(this)
+                        
+            dX = 2.5e-3;           
+            dY = 2.5e-3;
+            
+            this.dFieldX = (-9*dX : dX : 9*dX) + this.dXReticleCenter;        % center
+            this.dFieldY = (9*dY : -dY : -9*dY) + this.dYReticleCenter;        % center
+            
+            % Field is 1 mm x 150 um
+            
+            dL = -0.5e-3 - this.dThicknessOfCrosshair/2;
+            dR = 0.5e-3 + this.dThicknessOfCrosshair/2;
+            dT = 0.15e-3/2 + this.dThicknessOfCrosshair/2;
+            dB = -0.15e-3/2 - this.dThicknessOfCrosshair/2;
+                        
             % use HSV to get a rainbow.
             % H in [0:1] goes between ROYGBIV
             % S in [0:1] is how vivid the color is
@@ -318,27 +485,18 @@ classdef ReticleAxes < mic.Base
                     dH = k/length(this.dFieldX);
                     dV = dMinV + (1 - dMinV)*l/length(this.dFieldY);
                     
-                    patch( ...
+                    hPatch = patch( ...
                         [dL dL dR dR] + this.dFieldX(k), ...
                         [dB dT dT dB] + this.dFieldY(l), ...
                         hsv2rgb([dH, 1, dV]), ...
-                        'Parent', this.hCarriage, ...
+                        'Parent', this.hFields, ...
                         'EdgeColor', 'none', ...
                         'HitTest', 'on', ...
                         'ButtonDownFcn', {@this.onFieldClick, k, l} ...
                     );
                 
-                    % cLabel = sprintf('R%1.0f C%1.0f', l, k);
-                    cLabel = sprintf('%02d, %02d', l, k);
-                    
-                    text( ...
-                        this.dFieldX(k) + dL, this.dFieldY(l) + dTextYOffset, cLabel, ...
-                        'Parent', this.hCarriage, ...
-                        'Interpreter', 'none', ...
-                        'Clipping', 'on', ...
-                        'HitTest', 'off', ...
-                        'Color', [0.5, 0.5, 0.5] ...
-                    );                    
+                    % uistack(hPatch, 'top');
+                               
                 end
             end             
         end
@@ -355,6 +513,277 @@ classdef ReticleAxes < mic.Base
             e = mic.EventWithData(stData);
             notify(this, 'eClickField', e);                     
             
+        end
+        
+        function deleteClockTimes(this)
+            this.deleteChildren(this.hClockTimes)
+        end
+        
+        function drawClockTimes(this)
+            
+            ceProps = {
+               'Parent', this.hClockTimes, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 10, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', [1, 1, 1] ... 
+            };
+            [dLeft, dBottom, dWidth, dHeight] = this.uiZoomPanAxes.getVisibleSceneLBWH();
+                        
+            % 12:00
+            text( ...
+                dLeft + dWidth/2, dBottom + 0.12 * dHeight, '06:00 (+CY) (-FY)', ...
+                ceProps{:} ...
+            ); 
+        
+            % 03:00
+            text( ...
+                dLeft + dWidth * 0.05, dBottom + dHeight * 0.5, '03:00 (+X)', ...
+                ceProps{:}, ...
+                'HorizontalAlignment', 'Left' ...
+            );
+        
+            % 06:00
+            text( ...
+                dLeft + dWidth/2, dBottom + dHeight - 0.05 * dHeight, '12:00 (-CY) (+FY)', ...
+                ceProps{:} ...
+            );
+        
+            % 09:00
+            text( ...
+                dLeft + dWidth * 0.97, dBottom + dHeight * 0.5, '09:00 (-X)', ...
+                ceProps{:}, ...
+                'HorizontalAlignment', 'Right' ...
+            );
+            
+            
+        end
+        
+        function deleteChildren(this, h)
+            
+            % This is a utility to delete all children of an axes, hggroup,
+            % or hgtransform instance
+            
+            if ~ishandle(h)
+                return
+            end
+            
+            hChildren = get(h, 'Children');
+            for k = 1:length(hChildren)
+                if ishandle(hChildren(k))
+                    delete(hChildren(k));
+                end
+            end
+        end
+        
+        
+        function drawCrosshairChiefRay(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXChiefRay;
+            dR = this.dThicknessOfCrosshair/2 + this.dXChiefRay;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYChiefRay;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYChiefRay;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairChiefRay, ...
+                'Parent', this.hCrosshairChiefRay, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairChiefRay ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXChiefRay;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXChiefRay;
+            dT = this.dThicknessOfCrosshair/2 + this.dYChiefRay;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYChiefRay;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairChiefRay, ...
+                'Parent', this.hCrosshairChiefRay, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairChiefRay ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXChiefRay + dShiftX, this.dYChiefRay + dShiftY, 'EUV', ...
+                'Parent', this.hCrosshairChiefRay, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairChiefRay ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairZero(this)
+            
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXZero;
+            dR = this.dThicknessOfCrosshair/2 + this.dXZero;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYZero;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYZero;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairZero, ...
+                'Parent', this.hCrosshairZero, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairZero ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXZero;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXZero;
+            dT = this.dThicknessOfCrosshair/2 + this.dYZero;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYZero;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairZero, ...
+                'Parent', this.hCrosshairZero, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairZero ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXZero + dShiftX, this.dYZero + dShiftY, '(0, 0)', ...
+                'Parent', this.hCrosshairZero, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairZero ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+                        
+        end 
+        
+        
+        
+        function drawCrosshairLoadLock(this)
+            
+            % Vertical Line
+
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXLoadLock;
+            dR = this.dThicknessOfCrosshair/2 + this.dXLoadLock;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairLoadLock, ...
+                'Parent', this.hCrosshairLoadLock, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairLoadLock ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
+            dT = this.dThicknessOfCrosshair/2 + this.dYLoadLock;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYLoadLock;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairLoadLock, ...
+                'Parent', this.hCrosshairLoadLock, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairLoadLock ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXLoadLock + dShiftX, this.dYLoadLock + dShiftY, 'LL', ...
+                'Parent', this.hCrosshairLoadLock, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', [1, 1, 1] ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+                        
+        end
+        
+        function deleteCrosshairChiefRay(this)
+            this.deleteChildren(this.hCrosshairChiefRay)
+        end
+        
+        function deleteCrosshairZero(this)
+            this.deleteChildren(this.hCrosshairZero)
+        end
+        
+        function deleteCrosshairLoadLock(this)
+            this.deleteChildren(this.hCrosshairLoadLock)
+        end
+        
+        function [dX, dY] = getShiftOfCrosshairLabel(this)
+            
+            dZoom = this.uiZoomPanAxes.getZoom();
+            dX = .005/dZoom;
+            dY = -0.015/dZoom;
+        end
+        
+        
+        function d = getThicknessOfCrosshair(this)
+        
+            dZoomUi = this.uiZoomPanAxes.getZoom();
+            
+            % Start with a thickness and a zoom transition level.  The idea
+            % is if you double the zoom, halve the thickness.  Keep doing
+            % this until you get to this.dZoomMax
+            
+            dThickStart = 5e-3;
+            dZoomStart = 1.25;
+            
+            % Compute number of zoom levels.  If dZoomStart is 1.5, they
+            % look like this:
+            % 1.5, 3, 6, 12, 24, 48, ...
+            % Use this equation:
+            % dZoomStart * 2^(n - 1) = this.dZoomMax
+            
+            dLevels = ceil(log10(this.dZoomMax / dZoomStart) / log10(2) + 1);
+            dLevel = 1 : dLevels;
+            dZoom = dZoomStart * 2.^(dLevel - 1);
+            dThick = dThickStart ./ 2.^(dLevel - 1);
+            
+            for n = 1 : length(dZoom)
+                if dZoomUi < dZoom(n)
+                    d = dThick(n);
+                    return;
+                end
+            end
+            
+            d = dThick(end);
         end
         
 

@@ -19,7 +19,7 @@ ui = bl12014.ui.ReticleAxes();
 
 
 dWidth = 800;
-dHeight = 700;
+dHeight = 800;
 
 dScreenSize = get(0, 'ScreenSize');
             
@@ -27,17 +27,7 @@ h = figure( ...
     'Position', [ ...
         (dScreenSize(3) - dWidth)/2 ...
         (dScreenSize(4) - dHeight)/2 ...
-        
-        
-
-        
-        
-        
-        
-        
-
-  
-        dWidth ...
+         dWidth ...
         dHeight ...
      ] ...
 );

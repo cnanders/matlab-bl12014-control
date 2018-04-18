@@ -431,6 +431,7 @@ classdef Scan < mic.Base
             this.uiListActive = mic.ui.common.List(...
                 'ceOptions', cell(1,0), ...
                 'cLabel', 'Added prescriptions', ...
+                'fhDirectCallback', @this.onListActiveChange, ...
                 'lShowDelete', true, ...
                 'lShowMove', true, ...
                 'lShowLabel', true, ...
@@ -608,18 +609,41 @@ classdef Scan < mic.Base
             
         end
         
+        function onListActiveChange(this)
+            
+            this.drawFemPreviewOfAllAddedPrescriptions();
+            
+        end
+        
+        
+        
         function onAddToWafer(this, src, evt)
+                        
+            % For all prescriptions highlihged when the user clicks 
+            % "add to wafer", add them to ListActive 
+            
+            ceSelected = this.uiListPrescriptions.get();
+            for k = 1:length(ceSelected)
+                this.uiListActive.append(ceSelected{k});
+            end
+           
+            this.drawFemPreviewOfAllAddedPrescriptions();
+           
+            
+        end 
+        
+        function drawFemPreviewOfAllAddedPrescriptions(this)
             
             % Loop through all selected prescriptions and push them to the
             % active list
             
             this.uiWafer.uiAxes.deleteFemPreviewScan();
-
-            ceSelected = this.uiListPrescriptions.get();
-            for k = 1:length(ceSelected)
-                this.uiListActive.append(ceSelected{k});
+            
+            ceOptions = this.uiListActive.getOptions();
+            for k = 1:length(ceOptions)
                 
-                cFile = fullfile(this.cDirPrescriptions, ceSelected{k});
+                % Read file, build recipe
+                cFile = fullfile(this.cDirPrescriptions, ceOptions{k});
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile);
                 
                 [dX, dY] = this.getFemGrid(...
@@ -634,10 +658,8 @@ classdef Scan < mic.Base
                     
             end
             
-            % Build a recipe for each prescription and use it to update the
-            % FEM preview on the wafer axes
             
-        end  
+        end
         
         function [stRecipe, lError] = buildRecipeFromFile(this, cPath)
            

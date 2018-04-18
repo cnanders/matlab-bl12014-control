@@ -29,25 +29,41 @@ classdef WaferAxes < mic.Base
         dMinV = 0.5      
         
         % {double 1x1} width of an exposure in meters
-        dFieldWidth = 200e-6
+        dWidthField = 200e-6
         
         % {double 1x1} height of an exposure in meters
-        dFieldHeight = 30e-6
+        dHeightField = 30e-6
         
         % {double 1x1} height of crosshair at center of wafer
-        dSizeWaferCrosshair = 100e-3;
-        dSizeChiefRayCrosshair = 20e-3;
+        dSizeCrosshairWafer = 100e-3;
+        dSizeCrosshairChiefRay = 20e-3;
         
         % {double 1x1} thickness of crosshair at center of wafer
-        dThickCrosshair
+        dThicknessOfCrosshair
                 
-        dAlphaWaferCrosshair = 1;
-        dColorWaferCrosshair = [0 1 0];
+        dAlphaCrosshairWafer = 1;
+        dColorCrosshairWafer = [0 1 0];
         
-        dAlphaChiefRayCrosshair = 1;
-        dColorChiefRayCrosshair = [1 0 1];
-            
-        dZoomMax = 500;
+        dAlphaCrosshairChiefRay = 1;
+        dColorCrosshairChiefRay = [1 0 1];
+        
+        dAlphaCrosshairZero = 1;
+        dColorCrosshairZero = [1 1 1];
+        
+        dAlphaCrosshairLoadLock = 1;
+        dColorCrosshairLoadLock = [1 1 1];
+        
+        
+        dXChiefRay = -.005
+        dYChiefRay = -.01
+        
+        dXZero = 0
+        dYZero = 0
+        
+        dXLoadLock = -0.45
+        dYLoadLock = 0
+        
+        dZoomMax = 700;
         
         % {logical 1x1} true when exposing.  Adds pink overlay over
         % everything
@@ -55,12 +71,15 @@ classdef WaferAxes < mic.Base
         
         uiZoomPanAxes
         hTrack
+        hClockTimes
         hCarriage
         hCarriageLsi
         hIllum
-        hChiefRayCrosshair
+        hCrosshairChiefRay
+        hCrosshairZero
+        hCrosshairLoadLock
         hWafer
-        hWaferCrosshair
+        hCrosshairWafer
         hFemPreviewPrescription
         hFemPreviewScan
         hExposures
@@ -129,7 +148,7 @@ classdef WaferAxes < mic.Base
                         
             this.uiZoomPanAxes.build(hParent, dLeft, dTop);
             
-            this.dThickCrosshair = this.getThickCrosshair();
+            this.dThicknessOfCrosshair = this.getThicknessOfCrosshair();
             
             % Build heirarchy of hggroups/hgtransforms for drawing
             
@@ -158,6 +177,8 @@ classdef WaferAxes < mic.Base
             this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawTrack(); 
             
+           
+            
             this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawCarriage(); 
             
@@ -167,8 +188,8 @@ classdef WaferAxes < mic.Base
             this.hWafer         = hggroup('Parent', this.hCarriage);
             this.drawWafer();
             
-            this.hWaferCrosshair = hggroup('Parent', this.hWafer);
-            this.drawWaferCrosshair();
+            this.hCrosshairWafer = hggroup('Parent', this.hWafer);
+            this.drawCrosshairWafer();
 
             this.hFemPreviewPrescription    = hggroup('Parent', this.hWafer);
             this.hFemPreviewScan    = hggroup('Parent', this.hWafer);
@@ -179,12 +200,20 @@ classdef WaferAxes < mic.Base
             this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawIllum();
             
-            this.hChiefRayCrosshair = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawChiefRayCrosshair();
+            this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairChiefRay();
+            
+            this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairZero();
+            
+            
+            this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairLoadLock();
             
             this.hOverlay       = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             
-            
+            this.hClockTimes    = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawClockTimes();
             
         end
         
@@ -246,12 +275,24 @@ classdef WaferAxes < mic.Base
                         
         end
         
-        function deleteWaferCrosshair(this)
-            this.deleteChildren(this.hWaferCrosshair)
+        function deleteClockTimes(this)
+            this.deleteChildren(this.hClockTimes)
         end
         
-        function deleteChiefRayCrosshair(this)
-            this.deleteChildren(this.hChiefRayCrosshair)
+        function deleteCrosshairWafer(this)
+            this.deleteChildren(this.hCrosshairWafer)
+        end
+        
+        function deleteCrosshairChiefRay(this)
+            this.deleteChildren(this.hCrosshairChiefRay)
+        end
+        
+        function deleteCrosshairZero(this)
+            this.deleteChildren(this.hCrosshairZero)
+        end
+        
+        function deleteCrosshairLoadLock(this)
+            this.deleteChildren(this.hCrosshairLoadLock)
         end
         
         function purgeExposures(this)
@@ -404,23 +445,49 @@ classdef WaferAxes < mic.Base
             this.msg('init()');
             this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
             addlistener(this.uiZoomPanAxes, 'eZoom', @this.onZoom);
+            addlistener(this.uiZoomPanAxes, 'ePanX', @this.onPan);
+            addlistener(this.uiZoomPanAxes, 'ePanY', @this.onPan);
         end
         
         function onZoom(this, ~, ~)
             
-            dThick = this.getThickCrosshair();
-            if dThick ~= this.dThickCrosshair
-                this.dThickCrosshair = dThick;
-                this.deleteWaferCrosshair();
-                this.deleteChiefRayCrosshair();
-                this.drawWaferCrosshair();
-                this.drawChiefRayCrosshair();
+            dThickness = this.getThicknessOfCrosshair();
+            if dThickness ~= this.dThicknessOfCrosshair
+                
+                % Update for future
+                this.dThicknessOfCrosshair = dThickness;
+                
+                % Redraw wafer crosshair
+                this.deleteCrosshairWafer();
+                this.drawCrosshairWafer();
+                
+                % Redraw chief ray crosshair
+                this.deleteCrosshairChiefRay();
+                this.drawCrosshairChiefRay();
+                
+                % Redraw zero crosshair
+                this.deleteCrosshairZero();
+                this.drawCrosshairZero();
+                
+                % Redraw load lock crosshair
+                this.deleteCrosshairLoadLock();
+                this.drawCrosshairLoadLock();
             end
+            
+            
+            this.deleteClockTimes();
+            this.drawClockTimes();
             
             cMsg = sprintf('zoom = %1.2e', this.uiZoomPanAxes.getZoom());
             this.msg(cMsg);
             
         end
+        
+        function onPan(this, ~, ~)
+            this.deleteClockTimes();
+            this.drawClockTimes(); 
+        end
+        
         function drawTrack(this)
             
            
@@ -458,10 +525,10 @@ classdef WaferAxes < mic.Base
         
         function drawIllum(this)
             
-            dL = -this.dFieldWidth/2;
-            dR = this.dFieldWidth/2;
-            dT = this.dFieldHeight/2;
-            dB = -this.dFieldHeight/2;
+            dL = -this.dWidthField/2 + this.dXChiefRay;
+            dR = this.dWidthField/2 + this.dXChiefRay;
+            dT = this.dHeightField/2 + this.dYChiefRay;
+            dB = -this.dHeightField/2 + this.dYChiefRay;
 
             hPatch = patch( ...
                 [dL dL dR dR], ...
@@ -547,41 +614,41 @@ classdef WaferAxes < mic.Base
                         
         end
         
-        function drawWaferCrosshair(this)
+        function drawCrosshairWafer(this)
             
             % Vertical Line
                        
-            dL = -this.dThickCrosshair/2;
-            dR = this.dThickCrosshair/2;
-            dT = this.dSizeWaferCrosshair/2;
-            dB = -this.dSizeWaferCrosshair/2;
+            dL = -this.dThicknessOfCrosshair/2;
+            dR = this.dThicknessOfCrosshair/2;
+            dT = this.dSizeCrosshairWafer/2;
+            dB = -this.dSizeCrosshairWafer/2;
 
             
             hPatch = patch( ...
                 [dL dL dR dR], ...
                 [dB dT dT dB], ...
-                this.dColorWaferCrosshair, ...
-                'Parent', this.hWaferCrosshair, ...
+                this.dColorCrosshairWafer, ...
+                'Parent', this.hCrosshairWafer, ...
                 'EdgeColor', 'none', ...
-                'FaceAlpha', this.dAlphaWaferCrosshair ...
+                'FaceAlpha', this.dAlphaCrosshairWafer ...
             );
         
             uistack(hPatch, 'top');
             
             % Horizontal Line
             
-            dL = -this.dSizeWaferCrosshair/2;
-            dR = this.dSizeWaferCrosshair/2;
-            dT = this.dThickCrosshair/2;
-            dB = -this.dThickCrosshair/2;
+            dL = -this.dSizeCrosshairWafer/2;
+            dR = this.dSizeCrosshairWafer/2;
+            dT = this.dThicknessOfCrosshair/2;
+            dB = -this.dThicknessOfCrosshair/2;
 
             hPatch = patch( ...
                 [dL dL dR dR], ...
                 [dB dT dT dB], ...
-                this.dColorWaferCrosshair, ...
-                'Parent', this.hWaferCrosshair, ...
+                this.dColorCrosshairWafer, ...
+                'Parent', this.hCrosshairWafer, ...
                 'EdgeColor', 'none', ...
-                'FaceAlpha', this.dAlphaWaferCrosshair ...
+                'FaceAlpha', this.dAlphaCrosshairWafer ...
             );
         
             uistack(hPatch, 'top');
@@ -591,49 +658,208 @@ classdef WaferAxes < mic.Base
         end 
         
         
-        function drawChiefRayCrosshair(this)
+        function drawCrosshairChiefRay(this)
             
             % Vertical Line
+            
                        
-            dL = -this.dThickCrosshair/2;
-            dR = this.dThickCrosshair/2;
-            dT = this.dSizeChiefRayCrosshair/2;
-            dB = -this.dSizeChiefRayCrosshair/2;
+            dL = -this.dThicknessOfCrosshair/2 + this.dXChiefRay;
+            dR = this.dThicknessOfCrosshair/2 + this.dXChiefRay;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYChiefRay;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYChiefRay;
 
             
             hPatch = patch( ...
                 [dL dL dR dR], ...
                 [dB dT dT dB], ...
-                this.dColorChiefRayCrosshair, ...
-                'Parent', this.hChiefRayCrosshair, ...
+                this.dColorCrosshairChiefRay, ...
+                'Parent', this.hCrosshairChiefRay, ...
                 'EdgeColor', 'none', ...
-                'FaceAlpha', this.dAlphaChiefRayCrosshair ...
+                'FaceAlpha', this.dAlphaCrosshairChiefRay ...
             );
         
             uistack(hPatch, 'top');
             
             % Horizontal Line
             
-            dL = -this.dSizeChiefRayCrosshair/2;
-            dR = this.dSizeChiefRayCrosshair/2;
-            dT = this.dThickCrosshair/2;
-            dB = -this.dThickCrosshair/2;
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXChiefRay;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXChiefRay;
+            dT = this.dThicknessOfCrosshair/2 + this.dYChiefRay;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYChiefRay;
 
             hPatch = patch( ...
                 [dL dL dR dR], ...
                 [dB dT dT dB], ...
-                this.dColorChiefRayCrosshair, ...
-                'Parent', this.hChiefRayCrosshair, ...
+                this.dColorCrosshairChiefRay, ...
+                'Parent', this.hCrosshairChiefRay, ...
                 'EdgeColor', 'none', ...
-                'FaceAlpha', this.dAlphaChiefRayCrosshair ...
+                'FaceAlpha', this.dAlphaCrosshairChiefRay ...
             );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXChiefRay + dShiftX, this.dYChiefRay + dShiftY, 'EUV', ...
+                'Parent', this.hCrosshairChiefRay, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairChiefRay ... 
+            ); 
         
             uistack(hPatch, 'top');
             
             
             
-        end 
+        end
+        
+        
+        function drawCrosshairZero(this)
             
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXZero;
+            dR = this.dThicknessOfCrosshair/2 + this.dXZero;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYZero;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYZero;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairZero, ...
+                'Parent', this.hCrosshairZero, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairZero ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXZero;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXZero;
+            dT = this.dThicknessOfCrosshair/2 + this.dYZero;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYZero;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairZero, ...
+                'Parent', this.hCrosshairZero, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairZero ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXZero + dShiftX, this.dYZero + dShiftY, '(0, 0)', ...
+                'Parent', this.hCrosshairZero, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairZero ... 
+            ); 
+        
+            uistack(hPatch, 'top');
+                        
+        end 
+        
+        
+        
+        function drawCrosshairLoadLock(this)
+            
+            % Vertical Line
+
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXLoadLock;
+            dR = this.dThicknessOfCrosshair/2 + this.dXLoadLock;
+            dT = this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
+            dB = -this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairLoadLock, ...
+                'Parent', this.hCrosshairLoadLock, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairLoadLock ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
+            dR = this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
+            dT = this.dThicknessOfCrosshair/2 + this.dYLoadLock;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYLoadLock;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairLoadLock, ...
+                'Parent', this.hCrosshairLoadLock, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairLoadLock ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXLoadLock + dShiftX, this.dYLoadLock + dShiftY, 'LL', ...
+                'Parent', this.hCrosshairLoadLock, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', [1, 1, 1] ... 
+            ); 
+        
+            uistack(hPatch, 'top');
+                        
+        end 
+        
+        function [dX, dY] = getShiftOfCrosshairLabel(this)
+            
+            dZoom = this.uiZoomPanAxes.getZoom();
+            dX = .005/dZoom;
+            dY = -0.015/dZoom;
+        end
+            
+        function drawClockTimes(this)
+            
+            ceProps = {
+               'Parent', this.hClockTimes, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 10, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', [1, 1, 1] ... 
+            };
+            [dLeft, dBottom, dWidth, dHeight] = this.uiZoomPanAxes.getVisibleSceneLBWH();
+                        
+            % 12:00
+            text( ...
+                dLeft + dWidth/2, dBottom + 0.12 * dHeight, '12:00 (-Y)', ...
+                ceProps{:} ...
+            ); 
+        
+            % 03:00
+            text( ...
+                dLeft + dWidth * 0.1, dBottom + dHeight * 0.5, '03:00 (-X)', ...
+                ceProps{:} ...
+            );
+        
+            % 06:00
+            text( ...
+                dLeft + dWidth/2, dBottom + dHeight - 0.05 * dHeight, '06:00 (+Y)', ...
+                ceProps{:} ...
+            );
+        
+            % 09:00
+            text( ...
+                dLeft + dWidth * 0.93, dBottom + dHeight * 0.5, '09:00 (+X)', ...
+                ceProps{:} ...
+            );
+            
+            
+        end
+        
         
         function drawWafer(this)
             
@@ -681,10 +907,10 @@ classdef WaferAxes < mic.Base
             for row = 1:dFocusNum
                 for col = 1:dDoseNum
                 
-                    dL = dX(row, col) - this.dFieldWidth/2;
-                    dR = dX(row, col) + this.dFieldWidth/2;
-                    dT = dY(row, col) + this.dFieldHeight/2;
-                    dB = dY(row, col) - this.dFieldHeight/2;
+                    dL = dX(row, col) - this.dWidthField/2;
+                    dR = dX(row, col) + this.dWidthField/2;
+                    dT = dY(row, col) + this.dHeightField/2;
+                    dB = dY(row, col) - this.dHeightField/2;
 
                     patch( ...
                         [dL dL dR dR], ...
@@ -722,10 +948,10 @@ classdef WaferAxes < mic.Base
             dH = (dData(5) - 1)/dData(6); 
             dV = this.dMinV + (1 - this.dMinV)*dData(3)/dData(4);
 
-            dL = dData(1) - this.dFieldWidth/2;
-            dR = dData(1) + this.dFieldWidth/2;
-            dT = dData(2) + this.dFieldHeight/2;
-            dB = dData(2) - this.dFieldHeight/2;
+            dL = dData(1) - this.dWidthField/2;
+            dR = dData(1) + this.dWidthField/2;
+            dT = dData(2) + this.dHeightField/2;
+            dB = dData(2) - this.dHeightField/2;
 
             patch( ...
                 [dL dL dR dR], ...
@@ -783,7 +1009,7 @@ classdef WaferAxes < mic.Base
         end
         
         
-        function d = getThickCrosshair(this)
+        function d = getThicknessOfCrosshair(this)
         
             dZoomUi = this.uiZoomPanAxes.getZoom();
             
