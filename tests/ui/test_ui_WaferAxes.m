@@ -36,7 +36,7 @@ ui.build(h, 10, 10);
 ui.addFakeExposures();
 ui.addFakeFemPreview();
 
-ui.setXLsi(100)
+ui.setXLsi(400)
 
 
  

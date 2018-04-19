@@ -20,6 +20,9 @@ classdef WaferAxes < mic.Base
         % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
         dHeight = 600
         
+        dXChiefRay = -.005 % m
+        dYChiefRay = -.01 % m
+        
         
     end
     
@@ -48,14 +51,13 @@ classdef WaferAxes < mic.Base
         dColorCrosshairChiefRay = [1 0 1];
         
         dAlphaCrosshairZero = 1;
-        dColorCrosshairZero = [1 1 1];
+        dColorCrosshairZero = [1 1 0];
         
         dAlphaCrosshairLoadLock = 1;
-        dColorCrosshairLoadLock = [1 1 1];
+        dColorCrosshairLoadLock = [1 1 0];
         
         
-        dXChiefRay = -.005
-        dYChiefRay = -.01
+        
         
         dXZero = 0
         dYZero = 0
@@ -651,6 +653,15 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairWafer ...
             );
         
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                dShiftX, dShiftY, 'Wafer (0,0)', ...
+                'Parent', this.hCrosshairWafer, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairWafer ... 
+            ); 
+        
             uistack(hPatch, 'top');
             
             
@@ -750,7 +761,7 @@ classdef WaferAxes < mic.Base
         
             [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
             text( ...
-                this.dXZero + dShiftX, this.dYZero + dShiftY, '(0, 0)', ...
+                this.dXZero + dShiftX, this.dYZero + dShiftY, 'Stage (0,0) ', ...
                 'Parent', this.hCrosshairZero, ...
                 ...%'HorizontalAlignment', 'center', ...
                 'Color', this.dColorCrosshairZero ... 
@@ -805,7 +816,7 @@ classdef WaferAxes < mic.Base
                 this.dXLoadLock + dShiftX, this.dYLoadLock + dShiftY, 'LL', ...
                 'Parent', this.hCrosshairLoadLock, ...
                 ...%'HorizontalAlignment', 'center', ...
-                'Color', [1, 1, 1] ... 
+                'Color', this.dColorCrosshairLoadLock ... 
             ); 
         
             uistack(hPatch, 'top');

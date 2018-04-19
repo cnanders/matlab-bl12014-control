@@ -17,7 +17,7 @@ classdef Scan < mic.Base
         dWidthUiScan = 270
         
         dPauseTime = 1
-        mJPerCm2PerSec = 5         % Eventually replace with real num
+        mJPerCm2PerSec = 10         % Eventually replace with real num
         
         dWidthPanelAvailable = 600
         dHeightPanelAvailable = 255
@@ -67,6 +67,7 @@ classdef Scan < mic.Base
         uiReticle
         uiPupilFill
         uiShutter
+        uiBeamline % Temporary, allows control of the shutter
         
         clock
         
@@ -751,19 +752,36 @@ classdef Scan < mic.Base
                 
                 switch ceFields{n}
                     case 'reticleX'
-                        this.uiReticle.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
-                        this.uiReticle.uiCoarseStage.uiX.moveToDest(); % click
+                        
+                        % TEMPORARILY DONT MOVE 2018.04.19
+                        % this.uiReticle.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
+                        % this.uiReticle.uiCoarseStage.uiX.moveToDest(); % click
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'reticleY'
-                        this.uiReticle.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
-                        this.uiReticle.uiCoarseStage.uiY.moveToDest(); % click
+                        % this.uiReticle.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
+                        % this.uiReticle.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'waferX'
-                        this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
+                        
+                        % The FEM is constructed with positions relative to
+                        % the center of the wafer in mm.  
+                        % We need to tell the stage
+                        % where to go to to make sure the EUV is at this 
+                        % location on the wafer. Use
+                        % uiWafer.uiAxes.dXChiefRay (mm)
+                        % uiWafer.uiAxes.dYChiefRay (mm)
+                        % to offset the stage correctly
+                        
+                        dX = dValue + this.uiWafer.uiAxes.dXChiefRay * 1e3; % mm
+                        this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dX, 'mm');
                         this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'waferY'
-                        this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
+                        
+                        % See comment in waferX
+                        
+                        dY = dValue + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
+                        this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
                         this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.(ceFields{n}).lIssued = true;
                     case 'waferZ'
@@ -972,13 +990,23 @@ classdef Scan < mic.Base
             dSec = stValue.task.dose / this.mJPerCm2PerSec;
             
             % Set the shutter UI time (ms)
+            %{
             this.uiShutter.uiShutter.setDestCal(...
                 dSec * 1000, ...
                 this.uiShutter.uiShutter.getUnit().name ...
             );
-                        
             % Trigger the shutter UI
             this.uiShutter.uiShutter.moveToDest();
+            %}
+            
+            % 2018.04.19
+            this.uiBeamline.uiShutter.setDestCal(...
+                dSec * 1e3, ... % ms
+                'ms (1x)' ...
+            );
+            this.uiBeamline.uiShutter.moveToDest();
+                        
+            
             
             % Update the UI of wafer to show exposing
             this.uiWafer.uiAxes.setExposing(true);
@@ -1022,9 +1050,13 @@ classdef Scan < mic.Base
                         
                         switch cField
                             case 'shutter'
+                                
+                               %{ 
                                if ~this.uiShutter.uiShutter.getDevice().isReady()
                                    lReady = false;
                                end
+                                %}
+                               lReady = this.uiBeamline.uiShutter.getDevice().isReady();
                                  
                             otherwise
                                 
@@ -1081,14 +1113,18 @@ classdef Scan < mic.Base
                     stValue.task.femRows ...
                 ]
                 %}
+                
+                % Needs units of m
+                
+                % Could also use stValue.waferX / 1000, stValue.waferY / 1000
                 dExposure = [
-                    -this.uiWafer.uiCoarseStage.uiX.getValCal('mm') ...
-                    -this.uiWafer.uiCoarseStage.uiY.getValCal('mm') ...
+                    this.uiWafer.uiAxes.dXChiefRay - this.uiWafer.uiCoarseStage.uiX.getValCal('mm') / 1000 ...
+                    this.uiWafer.uiAxes.dYChiefRay - this.uiWafer.uiCoarseStage.uiY.getValCal('mm') / 1000 ...
                     stValue.task.femCol ...
                     stValue.task.femCols ...
                     stValue.task.femRow ...
                     stValue.task.femRows ...
-                ]
+                ];
                 this.uiWafer.uiAxes.addExposure(dExposure);
             
                 % Update the UI of wafer to show exposing
