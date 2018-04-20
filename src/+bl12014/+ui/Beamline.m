@@ -186,8 +186,10 @@ classdef Beamline < mic.Base
         
         end
         
-         function connectKeithley6482(this, comm)
+        function connectKeithley6482(this, comm)
             % Temporary Hack using Keithley to get D141 photo current
+            % Need to click "connect" button from Wafer Module since
+            % there is not one in this UI
             device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
             this.uiD141Current.setDevice(device);
             this.uiD141Current.turnOn();

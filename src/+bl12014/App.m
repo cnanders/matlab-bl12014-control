@@ -788,10 +788,6 @@ classdef App < mic.Base
         
         function initAndConnectKeithley6482Wafer(this)
             
-            
-            
-
-         
             if this.getKeithley6482Wafer()
                 return
             end
