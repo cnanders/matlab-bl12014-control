@@ -1208,27 +1208,28 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lIssued = false;
             
             % Pre-exp pause.  xVal prop will return type double
-            pause(stValue.task.pausePreExpose);
+            % pause(stValue.task.pausePreExpose);
 
             % Calculate the exposure time
             dSec = stValue.task.dose / this.mJPerCm2PerSec;
             
             % Set the shutter UI time (ms)
-            %{
             this.uiShutter.uiShutter.setDestCal(...
-                dSec * 1000, ...
-                this.uiShutter.uiShutter.getUnit().name ...
+                dSec * 1e3, ...
+                'ms' ...
             );
             % Trigger the shutter UI
             this.uiShutter.uiShutter.moveToDest();
-            %}
+            
             
             % 2018.04.19
+            %{
             this.uiBeamline.uiShutter.setDestCal(...
                 dSec * 1e3, ... % ms
                 'ms (1x)' ...
             );
             this.uiBeamline.uiShutter.moveToDest();
+            %}
                         
             
             
