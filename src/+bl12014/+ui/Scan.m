@@ -17,7 +17,7 @@ classdef Scan < mic.Base
         dWidthUiScan = 270
         
         dPauseTime = 1
-        mJPerCm2PerSec = 10         % Eventually replace with real num
+        mJPerCm2PerSec = 25         % Eventually replace with real num
         
         dWidthPanelAvailable = 600
         dHeightPanelAvailable = 255
