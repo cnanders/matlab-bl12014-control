@@ -253,11 +253,21 @@ classdef PrescriptionTool < mic.Base
         
         function stRecipe = getRecipe(this)
             
+            
+            % There is order to the states.
+            % We need to move stage (x,y)
+            % once there, move height sensor z via wafer coarse and fine z closed loop,
+            % once there, set working mode to drift control
+            % once there, perform exposure task
+            % when exposure task is done, set working mode to normal
+            % Is it possible to achieve this with one state?
+            
             ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
             
             % Use first state to set reticle and pupil fill 
             
             stValue = struct();
+            stValue.type = 'setup';
             stValue.reticleX = this.uiReticleTool.dX;
             stValue.reticleY = this.uiReticleTool.dY;
             stValue.pupilFill = this.uiPupilFillTool.get();
@@ -271,11 +281,16 @@ classdef PrescriptionTool < mic.Base
             for m = 1 : length(this.uiFemTool.dDose)
                 for n = 1 : length(this.uiFemTool.dFocus)
 
+                    
+                    
                     % State
                     stValue = struct();
+                    stValue.type = 'exposure';
+                    stValue.workingModeStart = '5'; % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue.waferX = -this.uiFemTool.dX(m);
                     stValue.waferY = -this.uiFemTool.dY(n);
                     stValue.waferZ = this.uiFemTool.dFocus(n);
+                    stValue.workingModeEnd = '4'; % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     
                     % Exposure task
                     stTask = struct();
@@ -301,6 +316,8 @@ classdef PrescriptionTool < mic.Base
             stUnit.reticleX = 'mm';
             stUnit.reticleY = 'mm';
             stUnit.pupilFill = 'n/a';
+            stUnit.workingModeStart = 'n/a';
+            stUnit.workingModeEnd = 'n/a';
             
             stRecipe = struct();
             stRecipe.process = this.uiProcessTool.save();

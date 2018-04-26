@@ -1,3 +1,7 @@
+try
+    purge
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
@@ -7,15 +11,16 @@ addpath(genpath(cDirBl12014));
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
 
-purge
+
 
 clock = mic.Clock('master');
+hardware = bl12014.Hardware();
 
 uiReticle = bl12014.ui.Reticle('clock', clock);
-uiWafer = bl12014.ui.Wafer('clock', clock);
+uiWafer = bl12014.ui.Wafer('clock', clock, 'hardware', hardware);
 uiShutter = bl12014.ui.Shutter('clock', clock);
             
 

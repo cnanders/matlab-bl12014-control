@@ -31,6 +31,7 @@ classdef VibrationIsolationSystem < mic.Base
         % {mic.ui.common.Button 1x1}
         uiButtonGoDest
         uiButtonGoStep
+        uiButtonStop
         
         uiPositionRecaller
         
@@ -318,6 +319,10 @@ classdef VibrationIsolationSystem < mic.Base
             
             this.uiStage4.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
+            
+            
+            dLeft = 313 - this.dWidthDest - 5;
+            this.uiButtonStop.build(this.hFigure, dLeft, dTop, this.dWidthDest, 24);
             
             dLeft = 313;
             this.uiButtonGoDest.build(this.hFigure, dLeft, dTop, this.dWidthDest, 24);
@@ -693,6 +698,14 @@ classdef VibrationIsolationSystem < mic.Base
             );
         end
         
+        function initUiButtonStop(this)
+            this.uiButtonStop = mic.ui.common.Button( ...
+                'cText', 'Stop', ...
+                'fhDirectCallback', @this.onButtonClickStop ...
+            );
+        end
+        
+        
         function initUiPositionRecaller(this)
             
             cDirThis = fileparts(mfilename('fullpath'));
@@ -722,12 +735,21 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiStage4.moveToDest();
         end
         
+        function onButtonClickStop(this, src, evt)
+            
+            this.uiStage1.stop();
+            this.uiStage2.stop();
+            this.uiStage3.stop();
+            this.uiStage4.stop();
+        end
+        
 
         function init(this)
             this.msg('init');
             
             this.initUiButtonGoStep()
             this.initUiButtonGoDest();
+            this.initUiButtonStop();
             
             this.initUiCommGalil();
             this.initUiCommDataTranslation();

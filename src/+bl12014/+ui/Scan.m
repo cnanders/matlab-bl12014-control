@@ -497,11 +497,14 @@ classdef Scan < mic.Base
                 'waferX', ...
                 'waferY', ...
                 'waferZ' ...
+                'workingModeStart', ...
+                'workingModeEnd', ...
             };
 
             for n = 1 : length(ceFields)
                 this.stScanSetContract.(ceFields{n}).lRequired = false;
                 this.stScanSetContract.(ceFields{n}).lIssued = false;
+                this.stScanSetContract.(ceFields{n}).lAchieved = false;
             end
             
         end
@@ -527,6 +530,7 @@ classdef Scan < mic.Base
             for n = 1 : length(ceFields)
                 this.stScanSetContract.(ceFields{n}).lRequired = false;
                 this.stScanSetContract.(ceFields{n}).lIssued = false;
+                this.stScanSetContract.(ceFields{n}).lAchieved = false;
             end
             
         end
@@ -537,6 +541,7 @@ classdef Scan < mic.Base
             for n = 1 : length(ceFields)
                 this.stScanAcquireContract.(ceFields{n}).lRequired = false;
                 this.stScanAcquireContract.(ceFields{n}).lIssued = false;
+                this.stScanAcquireContract.(ceFields{n}).lAchieved = false;
             end
             
         end
@@ -714,10 +719,7 @@ classdef Scan < mic.Base
         
         
         
-        
-        % @param {struct} stUnit - the unit definition structure 
-        % @param {struct} stState - the state
-        function onScanSetState(this, stUnit, stValue)
+        function onScanSetStateOfTypeSetup(this, stUnit, stValue)
             
             this.resetScanSetContract();
             
@@ -726,7 +728,7 @@ classdef Scan < mic.Base
             ceFields = fieldnames(stValue);
             for n = 1 : length(ceFields)
                 switch ceFields{n}
-                    case 'task'
+                    case {'task', 'type'}
                         % Do nothing
                     otherwise
                         this.stScanSetContract.(ceFields{n}).lRequired = true;
@@ -734,6 +736,8 @@ classdef Scan < mic.Base
                 end
             end
             
+            
+            % Prior to moving 
             % Move to new state.   Setting the state programatically does
             % exactly what would happen if the user were to do it manually
             % with the UI. I.E., we programatically update the UI and
@@ -741,58 +745,31 @@ classdef Scan < mic.Base
             
             for n = 1 : length(ceFields)
                 
+                cField = ceFields{n};
                 
-                switch ceFields{n}
-                    case 'task'
+                switch cField
+                    case {'task', 'type'}
                         % Do nothing
                     otherwise
-                        cUnit = stUnit.(ceFields{n}); 
-                        dValue = stValue.(ceFields{n});
+                        cUnit = stUnit.(cField); 
+                        dValue = stValue.(cField); % Technically, this need not be of type double, should use hungarian x
                 end
                 
-                switch ceFields{n}
+                switch cField
                     case 'reticleX'
                         
                         % TEMPORARILY DONT MOVE 2018.04.19
                         % this.uiReticle.uiCoarseStage.uiX.setDestCalDisplay(dValue, cUnit);
                         % this.uiReticle.uiCoarseStage.uiX.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                        this.stScanSetContract.(cField).lIssued = true;
                     case 'reticleY'
                         % this.uiReticle.uiCoarseStage.uiY.setDestCalDisplay(dValue, cUnit);
                         % this.uiReticle.uiCoarseStage.uiY.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferX'
-                        
-                        % The FEM is constructed with positions relative to
-                        % the center of the wafer in mm.  
-                        % We need to tell the stage
-                        % where to go to to make sure the EUV is at this 
-                        % location on the wafer. Use
-                        % uiWafer.uiAxes.dXChiefRay (mm)
-                        % uiWafer.uiAxes.dYChiefRay (mm)
-                        % to offset the stage correctly
-                        
-                        dX = dValue + this.uiWafer.uiAxes.dXChiefRay * 1e3; % mm
-                        this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dX, 'mm');
-                        this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferY'
-                        
-                        % See comment in waferX
-                        
-                        dY = dValue + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
-                        this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
-                        this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
-                    case 'waferZ'
-                        %this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(dValue, cUnit);
-                        %this.uiWafer.uiFineStage.uiZ.moveToDest();  % click
-                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(dValue, cUnit);
-                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                        this.stScanSetContract.(cField).lIssued = true;
+                    
                     case 'pupilFill'
                         % FIX ME
-                        this.stScanSetContract.(ceFields{n}).lIssued = true;
+                        this.stScanSetContract.(cField).lIssued = true;
                         
                         %{
 
@@ -837,16 +814,351 @@ classdef Scan < mic.Base
                     otherwise
                         % do nothing
                         
-                end
-                
-                
-                
+                end                
             end
-                        
+        end
+        
+        function onScanSetStateOfTypeExposure(this, stUnit, stValue)
+            
+            this.resetScanSetContract();
+            
+            % Update the stScanSetContract properties listed in stValue 
+            
+            ceFields = fieldnames(stValue);
+            for n = 1 : length(ceFields)
+                switch ceFields{n}
+                    case {'task', 'type'}
+                        % Do nothing
+                    otherwise
+                        this.stScanSetContract.(ceFields{n}).lRequired = true;
+                        this.stScanSetContract.(ceFields{n}).lIssued = false;
+                end
+            end
+            
+            % "Exposure" types of states are set in serial, mostly in the
+            % isAtState() method.  The first step of an exposure state is
+            % to set workign mode to 5 so the stages can move.  Assume
+            % the working mode is unknown. Most often, it will be 4 ("Run
+            % Exposure") where the stages are locked
+            
+            this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeStart); % Run
+            this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
+            this.stScanSetContract.workingModeStart.lIssued = true;
+            
+        end
+        
+        
+        
+        % @param {struct} stUnit - the unit definition structure 
+        % @param {struct} stState - the state
+        function onScanSetState(this, stUnit, stValue)
+            
+            switch stValue.type
+                case "setup"
+                    this.onScanSetStateOfTypeSetup(stUnit, stValue)
+                    return;
+                case "exposure"
+                    this.onScanSetStateOfTypeExposure(stUnit, stValue)
+                    return
+            end        
 
         end
 
 
+        function lOut = onScanIsAtStateOfTypeSetup(this, stUnit, stValue)
+            
+            cFn = 'onScanIsAtStateOfTypeSetup';
+            lDebug = false;           
+            lOut = true;
+                        
+            ceFields= fieldnames(stValue);
+            
+            for n = 1:length(ceFields)
+                
+                cField = ceFields{n};
+                
+                switch cField
+                    case {'task', 'type'}
+                        continue;
+                end               
+                
+                if this.stScanSetContract.(cField).lRequired
+                    if lDebug
+                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                    end
+
+                    if this.stScanSetContract.(cField).lIssued
+                        
+                        if lDebug
+                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        end
+                        
+                        if this.stScanSetContract.(cField).lAchieved
+                            
+                            if lDebug
+                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+                            
+                            continue % no need to check this property
+                        end
+                        
+                        % Check if the set operation is complete
+                        
+                        lReady = true;
+                        
+                        switch cField
+                            case 'reticleX'
+                                lReady = this.uiReticle.uiCoarseStage.uiX.getDevice().isReady();
+                            case 'reticleY'
+                                lReady = this.uiReticle.uiCoarseStage.uiY.getDevice().isReady();
+                            case 'pupilFill'
+                                % FIX ME
+                                
+                            otherwise
+                                
+                                % UNSUPPORTED
+                                
+                        end
+                        
+                        
+                        if lReady
+                            
+                            this.stScanSetContract.(cField).lAchieved = true;
+                        	
+                            if lDebug
+                                this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+ 
+                        else
+                            % still isn't there.
+                            if lDebug
+                                this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+                            lOut = false;
+                            return;
+                        end
+                    else
+                        % need to move and hasn't been issued.
+                        if lDebug
+                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        end
+                        
+                        lOut = false;
+                        return;
+                    end                    
+                else
+                    
+                    if lDebug
+                        this.msg(sprintf('%s %s N/A', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                    end
+                   % don't need to move, this param is OK. Don't false. 
+                end
+            end
+        end
+        
+        
+        function lOut = onScanIsAtStateOfTypeExposure(this, stUnit, stValue)
+            
+            cFn = 'onScanIsAtStateOfTypeExposure';
+            
+            % See comments in onScanIsAtState.
+            % Achieving the desired state requires serial / sequential 
+            % moves of individual degrees of freedom.  
+            
+            % 1) Set working mode to "Run"
+            % 2) After 1 is complete: move stage (x,y)
+            % 3) After 2 is complete: move height sensor z via wafer coarse and fine z closed loop
+            % 4) After 3 is complete: set working mode to "Run Exposure" 
+            % 5) After 4 is complete: trigger shutter
+            
+            % Consequently, 
+            % some setting of state happens in here. The state "contract"
+            % makes this possible.
+            
+            lDebug = false;           
+            lOut = true;
+                        
+            ceFields= fieldnames(stValue);
+            
+            for n = 1:length(ceFields)
+                
+                cField = ceFields{n};
+                                
+                switch cField
+                    case {'task', 'type'}
+                        continue;
+                end
+                
+                
+                if this.stScanSetContract.(cField).lRequired
+                    if lDebug
+                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                    end
+
+                    if this.stScanSetContract.(cField).lIssued
+                        
+                        if lDebug
+                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        end
+                        
+                        
+                        if this.stScanSetContract.(cField).lAchieved
+                            
+                            if lDebug
+                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+                            
+                            continue % no need to check this property
+                        end
+                        
+                        % Check if the set operation is complete
+                        
+                        lReady = true;
+                        
+                        switch cField
+                            case 'workingModeStart'
+                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), stValue.(cField));
+   
+                                % When lReady, triggers waferX and waferY
+                                % in parallel
+                                
+                                if lReady && ...
+                                   this.stScanSetContract.waferX.lRequired == true && ...
+                                   this.stScanSetContract.waferX.lIssued == false 
+                        
+                                    % The FEM is constructed with positions relative to
+                                    % the center of the wafer in mm.  
+                                    % We need to tell the stage
+                                    % where to go to to make sure the EUV is at this 
+                                    % location on the wafer. Use
+                                    % uiWafer.uiAxes.dXChiefRay (mm)
+                                    % uiWafer.uiAxes.dYChiefRay (mm)
+                                    % to offset the stage correctly
+
+                                    dX = stValue.waferX + this.uiWafer.uiAxes.dXChiefRay * 1e3; % mm
+                                    this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dX, 'mm');
+                                    this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
+                                    this.stScanSetContract.waferX.lIssued = true;
+                                    
+                                end
+                                
+                                if lReady && ...
+                                   this.stScanSetContract.waferY.lRequired == true && ...
+                                   this.stScanSetContract.waferY.lIssued == false 
+                               
+                                    % See comment in waferX
+
+                                    dY = stValue.waferY + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
+                                    this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
+                                    this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
+                                    this.stScanSetContract.waferY.lIssued = true;
+                               
+                                end
+                                
+                            
+                            case 'waferX'
+                                lReady = this.uiWafer.uiCoarseStage.uiX.getDevice().isReady();
+   
+                                
+                                % waferX can trigger waferZ
+                                
+                                if lReady && ...
+                                   this.uiWafer.uiCoarseStage.uiY.getDevice().isReady() && ...
+                                   this.stScanSetContract.waferZ.lRequired == true && ...
+                                   this.stScanSetContract.waferZ.lIssued == false
+                               
+                                    % Trigger wafer Z
+                                    
+                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
+                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
+                                    this.stScanSetContract.waferZ.lIssued = true;
+                                end
+                                
+                                
+                            case 'waferY'
+                                lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
+                                
+                                
+                                % This can trigger waferZ
+                                
+                                if lReady && ...
+                                   this.uiWafer.uiCoarseStage.uiX.getDevice().isReady() && ...
+                                   this.stScanSetContract.waferZ.lRequired == true && ...
+                                   this.stScanSetContract.waferZ.lIssued == false
+                               
+                                    % Trigger wafer Z
+                                    
+                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
+                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
+                                    this.stScanSetContract.waferZ.lIssued = true;
+                                end
+                                
+                            case 'waferZ'
+                               % lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
+                               lReady = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().isReady();
+                               
+          
+                               
+                               % This can trigger workingMode
+                               if lReady && ...
+                                  this.stScanSetContract.workingModeEnd.lRequired == true && ...
+                                  this.stScanSetContract.workingModeEnd.lIssued == false
+                              
+                                    this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeEnd)
+                                    this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
+                                    this.stScanSetContract.workingModeEnd.lIssued = true;
+                               end
+                               
+                            case 'workingModeEnd'
+                                
+                                % mic.device.GetSetText don't support
+                                % isReady() method.
+                                
+                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), stValue.(cField));                                
+                                                                
+                            otherwise
+                                
+                                % UNSUPPORTED
+                                
+                        end % switch
+                        
+                        
+                        if lReady
+                            
+                            this.stScanSetContract.(cField).lAchieved = true;
+                                
+                        	if lDebug
+                                this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+ 
+                        else
+                            % still isn't there.
+                            if lDebug
+                                this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+                            lOut = false;
+                            return;
+                        end
+                    else % required, issued, but not yet achieved
+                        
+                        % need to move and hasn't been issued.
+                        if lDebug
+                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        end
+                        
+                        lOut = false;
+                        return;
+                    end                    
+                else
+                    
+                    if lDebug
+                        this.msg(sprintf('%s %s N/A', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                    end
+                   % don't need to move, this param is OK. Don't false. 
+                end
+            end
+        end
+        
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
         % @returns {logical} - true if the system is at the state
@@ -873,91 +1185,19 @@ classdef Scan < mic.Base
             % Ryan / Antine you might know a better way to do this nested
             % loop / conditional but I wanted readability and debugginb so
             % I made it verbose
-             
-            this.updateUiScanStatus()
-                        
-            lDebug = true;           
-            lOut = true;
-                        
-            ceFields= fieldnames(stValue);
             
-            for n = 1:length(ceFields)
-                
-                cField = ceFields{n};
-                
-                % special case, skip task
-                if strcmp(cField, 'task')
-                    continue;
-                end
-                
-                
-                if this.stScanSetContract.(cField).lRequired
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is required', cField));
-                    end
-
-                    if this.stScanSetContract.(cField).lIssued
-                        
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField));
-                        end
-                        
-                        % Check if the set operation is complete
-                        
-                        lReady = true;
-                        
-                        switch cField
-                            case 'reticleX'
-                               lReady = this.uiReticle.uiCoarseStage.uiX.getDevice().isReady();
-                            case 'reticleY'
-                               lReady = this.uiReticle.uiCoarseStage.uiY.getDevice().isReady();
-                            case 'waferX'
-                                lReady = this.uiWafer.uiCoarseStage.uiX.getDevice().isReady();
-                            case 'waferY'
-                                lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
-                            case 'waferZ'
-                               % lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
-                               lReady = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().isReady();
-                            case 'pupilFill'
-                                % FIX ME
-                                
-                            otherwise
-                                
-                                % UNSUPPORTED
-                                
-                        end
-                        
-                        
-                        if lReady
-                        	if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set operation complete', cField));
-                            end
- 
-                        else
-                            % still isn't there.
-                            if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s is still setting', cField));
-                            end
-                            lOut = false;
-                            return;
-                        end
-                    else
-                        % need to move and hasn't been issued.
-                        if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField));
-                        end
-                        
-                        lOut = false;
-                        return;
-                    end                    
-                else
-                    
-                    if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s N/A', cField));
-                    end
-                   % don't need to move, this param is OK. Don't false. 
-                end
+            this.updateUiScanStatus()
+            
+            switch stValue.type
+                case "setup"
+                    lOut = this.onScanIsAtStateOfTypeSetup(stUnit, stValue);
+                    return;
+                case "exposure"
+                    lOut = this.onScanIsAtStateOfTypeExposure(stUnit, stValue);
+                    return
             end
+                        
+            
         end
 
 
@@ -984,27 +1224,28 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lIssued = false;
             
             % Pre-exp pause.  xVal prop will return type double
-            pause(stValue.task.pausePreExpose);
+            % pause(stValue.task.pausePreExpose);
 
             % Calculate the exposure time
             dSec = stValue.task.dose / this.mJPerCm2PerSec;
             
             % Set the shutter UI time (ms)
-            %{
             this.uiShutter.uiShutter.setDestCal(...
-                dSec * 1000, ...
-                this.uiShutter.uiShutter.getUnit().name ...
+                dSec * 1e3, ...
+                'ms' ...
             );
             % Trigger the shutter UI
             this.uiShutter.uiShutter.moveToDest();
-            %}
+            
             
             % 2018.04.19
+            %{
             this.uiBeamline.uiShutter.setDestCal(...
                 dSec * 1e3, ... % ms
                 'ms (1x)' ...
             );
             this.uiBeamline.uiShutter.moveToDest();
+            %}
                         
             
             
@@ -1197,7 +1438,8 @@ classdef Scan < mic.Base
                     @this.onScanAcquire, ...
                     @this.onScanIsAcquired, ...
                     @this.onScanComplete, ...
-                    @this.onScanAbort ...
+                    @this.onScanAbort, ...
+                    0.5 ... % Callbacks every 500 ms
                 );
                 
                 this.scan.start();
