@@ -867,7 +867,8 @@ classdef Scan < mic.Base
 
         function lOut = onScanIsAtStateOfTypeSetup(this, stUnit, stValue)
             
-            lDebug = true;           
+            cFn = 'onScanIsAtStateOfTypeSetup';
+            lDebug = false;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -883,13 +884,22 @@ classdef Scan < mic.Base
                 
                 if this.stScanSetContract.(cField).lRequired
                     if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is required', cField), this.u8_MSG_TYPE_SCAN);
+                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
 
                     if this.stScanSetContract.(cField).lIssued
                         
                         if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField), this.u8_MSG_TYPE_SCAN);
+                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        end
+                        
+                        if this.stScanSetContract.(cField).lAchieved
+                            
+                            if lDebug
+                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            end
+                            
+                            continue % no need to check this property
                         end
                         
                         % Check if the set operation is complete
@@ -912,14 +922,17 @@ classdef Scan < mic.Base
                         
                         
                         if lReady
-                        	if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set operation complete', cField), this.u8_MSG_TYPE_SCAN);
+                            
+                            this.stScanSetContract.(cField).lAchieved = true;
+                        	
+                            if lDebug
+                                this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
  
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s is still setting', cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
@@ -927,7 +940,7 @@ classdef Scan < mic.Base
                     else
                         % need to move and hasn't been issued.
                         if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField), this.u8_MSG_TYPE_SCAN);
+                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         lOut = false;
@@ -936,7 +949,7 @@ classdef Scan < mic.Base
                 else
                     
                     if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s N/A', cField), this.u8_MSG_TYPE_SCAN);
+                        this.msg(sprintf('%s %s N/A', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
                    % don't need to move, this param is OK. Don't false. 
                 end
@@ -946,20 +959,23 @@ classdef Scan < mic.Base
         
         function lOut = onScanIsAtStateOfTypeExposure(this, stUnit, stValue)
             
+            cFn = 'onScanIsAtStateOfTypeExposure';
+            
             % See comments in onScanIsAtState.
             % Achieving the desired state requires serial / sequential 
             % moves of individual degrees of freedom.  
             
-            % 1) Need to set working mode to "Run"
+            % 1) Set working mode to "Run"
             % 2) After 1 is complete: move stage (x,y)
             % 3) After 2 is complete: move height sensor z via wafer coarse and fine z closed loop
-            % 4) After 3 is complete: set working mode to "Run Exposure"            
+            % 4) After 3 is complete: set working mode to "Run Exposure" 
+            % 5) After 4 is complete: trigger shutter
             
             % Consequently, 
             % some setting of state happens in here. The state "contract"
             % makes this possible.
             
-            lDebug = true;           
+            lDebug = false;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -976,20 +992,20 @@ classdef Scan < mic.Base
                 
                 if this.stScanSetContract.(cField).lRequired
                     if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s set is required', cField), this.u8_MSG_TYPE_SCAN);
+                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
 
                     if this.stScanSetContract.(cField).lIssued
                         
                         if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set has been issued', cField), this.u8_MSG_TYPE_SCAN);
+                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         
                         if this.stScanSetContract.(cField).lAchieved
                             
                             if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set has been achieved', cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             
                             continue % no need to check this property
@@ -1112,13 +1128,13 @@ classdef Scan < mic.Base
                             this.stScanSetContract.(cField).lAchieved = true;
                                 
                         	if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s set operation complete', cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
  
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('onScanIsAtState() %s is still setting', cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
@@ -1127,7 +1143,7 @@ classdef Scan < mic.Base
                         
                         % need to move and hasn't been issued.
                         if lDebug
-                            this.msg(sprintf('onScanIsAtState() %s set not yet issued', cField), this.u8_MSG_TYPE_SCAN);
+                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         lOut = false;
@@ -1136,7 +1152,7 @@ classdef Scan < mic.Base
                 else
                     
                     if lDebug
-                        this.msg(sprintf('onScanIsAtState() %s N/A', cField), this.u8_MSG_TYPE_SCAN);
+                        this.msg(sprintf('%s %s N/A', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
                    % don't need to move, this param is OK. Don't false. 
                 end
