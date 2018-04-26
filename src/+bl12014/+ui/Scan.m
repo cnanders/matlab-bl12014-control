@@ -17,7 +17,6 @@ classdef Scan < mic.Base
         dWidthUiScan = 270
         
         dPauseTime = 1
-        mJPerCm2PerSec = 25         % Eventually replace with real num
         
         dWidthPanelAvailable = 600
         dHeightPanelAvailable = 255
@@ -38,6 +37,8 @@ classdef Scan < mic.Base
     end
     
     properties (SetAccess = private)
+        
+        uiEditMjPerCm2PerSec
     
     end
     
@@ -169,6 +170,7 @@ classdef Scan < mic.Base
              st.cDirPrescriptions = this.cDirPrescriptions;
              st.lWaferLoadLock = this.uicWaferLL.get();
              st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get(); 
+             st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
         end
         
         function load(this, st)
@@ -176,6 +178,13 @@ classdef Scan < mic.Base
             this.updateUiTextDir();
             this.uicWaferLL.set(st.lWaferLoadLock);
             this.uicAutoVentAtLL.set(st.lAutoVentAtLoadLock);
+            
+            if isfield(st, 'uiEditMjPerCm2PerSec')
+                try
+                    this.uiEditMjPerCm2PerSec.load(st.uiEditMjPerCm2PerSec);
+                end
+            end
+            
             this.refreshPrescriptions();
         end
         
@@ -315,6 +324,8 @@ classdef Scan < mic.Base
            dTop = dTop + 30;
            
            this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
+           
+           this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop + 50, 100, 24);
             
         end
              
@@ -485,6 +496,14 @@ classdef Scan < mic.Base
             
             this.initScanSetContract();
             this.initScanAcquireContract();
+            
+            this.uiEditMjPerCm2PerSec = mic.ui.common.Edit(...
+                'cLabel', 'mJ/cm2/s', ...
+                'cType', 'd' ...
+            );
+            this.uiEditMjPerCm2PerSec.set(10);
+            this.uiEditMjPerCm2PerSec.setMin(0);
+            this.uiEditMjPerCm2PerSec.setMax(1e5);
                        
         end
         
@@ -1017,7 +1036,8 @@ classdef Scan < mic.Base
                         
                         switch cField
                             case 'workingModeStart'
-                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), stValue.(cField));
+                                
+                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run'); % HACK stValue.(cField));
    
                                 % When lReady, triggers waferX and waferY
                                 % in parallel
@@ -1114,7 +1134,7 @@ classdef Scan < mic.Base
                                 % mic.device.GetSetText don't support
                                 % isReady() method.
                                 
-                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), stValue.(cField));                                
+                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run Exposure'); % HACK stValue.(cField));                                
                                                                 
                             otherwise
                                 
@@ -1227,7 +1247,7 @@ classdef Scan < mic.Base
             % pause(stValue.task.pausePreExpose);
 
             % Calculate the exposure time
-            dSec = stValue.task.dose / this.mJPerCm2PerSec;
+            dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
             
             % Set the shutter UI time (ms)
             this.uiShutter.uiShutter.setDestCal(...
