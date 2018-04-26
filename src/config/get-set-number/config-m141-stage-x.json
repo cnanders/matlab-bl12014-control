@@ -21,20 +21,20 @@
             "raw": 0
         },
         {
-            "name": "m141r",
+            "name": "m141r (12)",
             "raw": 12
 		},
         {
-            "name": "m141",
-            "raw": 48.43
+            "name": "m141 (46.43",
+            "raw": 46.43
 		},
 		
 		{
-            "name": "yag",
+            "name": "yag (63.4)",
             "raw": 63.4
         },
         {
-            "name": "diode",
+            "name": "diode (82)",
             "raw": 82
         }
     ],
