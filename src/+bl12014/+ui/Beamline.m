@@ -114,6 +114,7 @@ classdef Beamline < mic.Base
         cDirSrc
         % {char 1xm} - full path to the directory where scans are saved
         cDirSave
+        
         % {char 1xm} - full path to a particular scan (recipe.json +
         % result.json) are saved.  Each scan is saved to a new folder
         cDirScan

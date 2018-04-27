@@ -75,6 +75,8 @@ classdef Scan < mic.Base
         cDirThis
         cDirSrc
         cDirPrescriptions
+        cDirSave
+        cDirScan % new directory for every scan
         
         hPanelAvailable
         hPanelAdded
@@ -108,6 +110,9 @@ classdef Scan < mic.Base
         % two props: lRequired, lIssued
         stScanSetContract
         stScanAcquireContract
+        
+        % {cell of struct} storage of state during each acquire
+        ceValues
             
         
     end
@@ -132,7 +137,7 @@ classdef Scan < mic.Base
                 'save', ...
                 'prescriptions' ...
             );
-        
+            this.cDirSave = fullfile(this.cDirSrc, 'save', 'fem-scans');
             this.cDirPrescriptions = mic.Utils.path2canonical(this.cDirPrescriptions);
         
             
@@ -596,6 +601,7 @@ classdef Scan < mic.Base
         end
         
         function onUiScanAbort(this, ~, ~)
+            this.saveScanResults(stUnit, true);
             this.scan.stop(); % calls onScanAbort()
         end
         
@@ -1254,6 +1260,14 @@ classdef Scan < mic.Base
             
             this.stScanAcquireContract.shutter.lIssued = true;
             
+            
+            if isfield(stValue, 'task')
+                % Store the state of the system
+                stState = this.getState(stUnit);
+                stState.dose_mj_per_cm2 = stValue.task.dose;
+                this.ceValues{this.scan.u8Index} = stState;
+            end
+            
         end
 
         % @param {struct} stUnit - the unit definition structure 
@@ -1383,6 +1397,7 @@ classdef Scan < mic.Base
 
 
         function onScanComplete(this, stUnit)
+              this.saveScanResults(stUnit);
              this.uiScan.reset();
              this.updateUiScanStatus()
         end
@@ -1406,7 +1421,6 @@ classdef Scan < mic.Base
             % Store all of the selected items in uiListActive into a temporary
             % cell 
             
-            this.cePrescriptions = this.uiListActive.get();
                        
             % Create new log file
             
@@ -1417,17 +1431,24 @@ classdef Scan < mic.Base
                         
             % Loop through prescriptions (k, l, m)
             
-            for k = 1:length(this.cePrescriptions)
+            % for k = 1:length(this.cePrescriptions)
             
                 % Build the recipe from .json file (we dogfood our own .json recipes always)
                 
-                cFile = fullfile(this.cDirPrescriptions, this.cePrescriptions{k});
+                cFile = this.getPathRecipe();  
+                
+                % Create a new folder to save results
+                this.cDirScan = this.getDirScan();
+                
+
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
                 
                 if lError 
                     this.abort('There was an error building the scan recipe from the .json file.');
                     return;
                 end
+                
+                this.ceValues = cell(size(stRecipe.values));
                 
                 this.scan = mic.Scan(...
                     'ui-fem-scan', ...
@@ -1443,7 +1464,7 @@ classdef Scan < mic.Base
                 );
                 
                 this.scan.start();
-            end
+            % end
             
         end
         
@@ -1731,9 +1752,163 @@ classdef Scan < mic.Base
             
         end
         
+        function saveScanResults(this, stUnit, lAborted)
+            this.msg('saveScanResults()');
+            
+            if nargin <3
+                lAborted = false;
+            end
+            this.saveScanResultsJson(stUnit, lAborted);
+            this.saveScanResultsCsv(stUnit, lAborted);
+        end
         
+        function saveScanResultsJson(this, stUnit, lAborted)
+       
+            this.msg('saveScanResultsJson()');
+             
+            switch lAborted
+                case true
+                    cName = 'result-aborted.json';
+                case false
+                    cName = 'result.json';
+            end
+            
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                cName ...
+            );
+        
+            stResult = struct();
+            stResult.recipe = this.getPathRecipe();
+            stResult.unit = stUnit;
+            stResult.values = this.ceValues;
+            
+            stOptions = struct();
+            stOptions.FileName = cPath;
+            stOptions.Compact = 0;
+            
+            
+            savejson('', stResult, stOptions);     
 
+        end
+        
+        
+        function saveScanResultsCsv(this, stUnit, lAborted)
+        
+            this.msg('saveScanResultsCsv()');
+            
+            switch lAborted
+                case true
+                    cName = 'result-aborted.csv';
+                case false
+                    cName = 'result.csv';
+            end
+            
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                cName ...
+            );
+            
+            if isempty(this.ceValues)
+                return
+            end
+            
+            % Open the file
+            fid = fopen(cPath, 'w');
+
+            % Write the header
+            % Device
+            % fprintf(fid, '# "%s"\n', this.uiPopupRecipeDevice.get().cValue);
+            
+            % Write the field names
+            ceNames = fieldnames(this.ceValues{2});
+            for n = 1:length(ceNames)
+                fprintf(fid, '%s,', ceNames{n});
+            end
+            fprintf(fid, '\n');
+
+            % Write values
+            for n = 1 : length(this.ceValues)
+                stValue = this.ceValues{n};
+                if ~isstruct(stValue)
+                    continue
+                end
+                ceNames = fieldnames(stValue);
+                for m = 1 : length(ceNames)
+                    switch ceNames{m}
+                        case 'time'
+                            fprintf(fid, '%s,', stValue.(ceNames{m}));
+                        otherwise
+                            fprintf(fid, '%1.3e,', stValue.(ceNames{m}));
+                    end
+                end
+                fprintf(fid, '\n');
+            end
+
+            % Close the file
+            fclose(fid);
+
+        end
+        
+        function c = getDirScan(this)
+            
+            % Get name of recipe
+            [cPath, cName, cExt] = fileparts(this.getPathRecipe());
+            
+            c = sprintf('%s__PRE_%s', ...
+                datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), ...
+                cName ...
+            );
+        
+            c = fullfile(this.cDirSave, c);
+            c = mic.Utils.path2canonical(c);
+            mic.Utils.checkDir(c);
+            
+        end
+        
+        
+        function c = getPathRecipe(this)
+            
+            cePrescriptions = this.uiListActive.get();
+            c = fullfile(this.cDirPrescriptions, cePrescriptions{1});
                 
+        end
+        
+        
+        function st = getState(this, stUnit)
+            
+        	st = struct();
+            
+            st.als_current_ma = 500; % FIX ME
+            st.exit_slit_um = this.uiBeamline.uiExitSlit.getValCal('um');
+            st.undulator_gap_mm = this.uiBeamline.uiUndulatorGap.getValCal('mm');
+            st.wavelength_nm = this.uiBeamline.uiGratingTiltX.getValCal('wav (nm)');
+            
+            st.x_reticle_coarse_mm = this.uiReticle.uiCoarseStage.uiX.getValCal('mm');
+            st.y_reticle_coarse_mm = this.uiReticle.uiCoarseStage.uiY.getValCal('mm');
+            st.z_reticle_coarse_mm = this.uiReticle.uiCoarseStage.uiZ.getValCal('mm');
+            st.tilt_x_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltX.getValCal('urad');
+            st.tilt_y_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltY.getValCal('urad');
+            
+            st.x_reticle_fine_nm = this.uiReticle.uiFineStage.uiX.getValCal('nm');
+            st.y_reticle_fine_nm = this.uiReticle.uiFineStage.uiY.getValCal('nm');
+            
+            st.x_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiX.getValCal('mm');
+            st.y_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiY.getValCal('mm');
+            st.z_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiZ.getValCal('mm');
+            st.tilt_x_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltX.getValCal('urad');
+            st.tilt_y_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltY.getValCal('urad');
+            
+            st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
+            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
+            
+            st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
+            st.flux_mj_per_cm2_per_s = 100;
+            st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
+
+        end
+        
+                          
 
     end 
     
