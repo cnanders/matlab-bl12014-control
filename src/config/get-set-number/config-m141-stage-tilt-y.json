@@ -2,25 +2,25 @@
 	"delay": .5,
 	"units": [
 		{
-			"name": "deg",
+			"name": "mrad",
 			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mdeg",
-			"slope": 1000,
+			"name": "deg",
+			"slope": 1/17.45,
 			"offset": 0,
 			"precision": 3
 		},
 		{
-			"name": "mrad",
-			"slope": 17.453292519943297,
+			"name": "mdeg",
+			"slope": 1000/17.45,
 			"offset": 0,
 			"precision": 3
 		}
+		
 	],
     "step": 0.1
 }	
-	
 	

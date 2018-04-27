@@ -178,10 +178,18 @@
             end
             %}
             
+            if ~isscalar(l)
+                fprintf('GetSetNumberFromDeltaTauPowerPmac.isReady() received non scalar from comm, returning false\n');
+                l = false;
+                return
+            end
+            
             if ~islogical(l)
                 fprintf('GetSetNumberFromDeltaTauPowerPmac.isReady() received non logical from comm, returning false\n');
                 l = false;
+                return;
             end
+            
         end
         
         function stop(this)
