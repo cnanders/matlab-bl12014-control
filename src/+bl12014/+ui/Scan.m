@@ -9,7 +9,7 @@ classdef Scan < mic.Base
     properties (Constant)
        
         dWidth = 950
-        dHeight = 570
+        dHeight = 470
         
         
         dWidthList = 700
@@ -22,7 +22,7 @@ classdef Scan < mic.Base
         dHeightPanelAvailable = 255
         
         dWidthPanelAdded = 600
-        dHeightPanelAdded = 280
+        dHeightPanelAdded = 440
         
         dWidthPanelBorder = 0
         
@@ -39,6 +39,8 @@ classdef Scan < mic.Base
     properties (SetAccess = private)
         
         uiEditMjPerCm2PerSec
+        uiEditRowStart
+        uiEditColStart
     
     end
     
@@ -176,6 +178,8 @@ classdef Scan < mic.Base
              st.lWaferLoadLock = this.uicWaferLL.get();
              st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get(); 
              st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
+             st.uiEditRowStart = this.uiEditRowStart.save();
+             st.uiEditColStart = this.uiEditColStart.save();
         end
         
         function load(this, st)
@@ -187,6 +191,18 @@ classdef Scan < mic.Base
             if isfield(st, 'uiEditMjPerCm2PerSec')
                 try
                     this.uiEditMjPerCm2PerSec.load(st.uiEditMjPerCm2PerSec);
+                end
+            end
+            
+            if isfield(st, 'uiEditColStart')
+                try
+                    this.uiEditColStart.load(st.uiEditColStart);
+                end
+            end
+            
+            if isfield(st, 'uiEditRowStart')
+                try
+                    this.uiEditRowStart.load(st.uiEditRowStart);
                 end
             end
             
@@ -249,7 +265,7 @@ classdef Scan < mic.Base
             dTop = dTop + this.dHeightList + this.dHeightPadFigure;  
             
             this.uibAddToWafer.build(this.hPanelAvailable, ...
-                dLeft, ...
+                dWidth - this.dWidthPadFigure - this.dWidthButton, ...
                 dTop, ...
                 this.dWidthButton, ...
                 this.dHeightButton);
@@ -265,14 +281,21 @@ classdef Scan < mic.Base
             
             dLeft = this.dWidthPadFigure;
             
-             dWidth = this.dWidthPadPanel + ...
+            dWidth = this.dWidthPadPanel + ...
                 this.dWidthList + ...
                 this.dWidthPadPanel;
+            
+            dTop = 10;
+            dLeft = this.dWidthPadFigure + ...
+                this.dWidthPadPanel + ...
+                this.dWidthList + ...
+                this.dWidthPadPanel + ...
+                this.dWidthPadFigure;
             
             this.hPanelAdded = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
-                'Title', 'Wafer FEM Scan',...
+                'Title', '',...
                 'BorderWidth', this.dWidthPanelBorder, ...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
@@ -284,10 +307,26 @@ classdef Scan < mic.Base
                 ) ...
             );
         
-            dTop = this.dHeightPadFigure + 10;
-            dLeft = this.dWidthPadFigure;
             
-            this.uibNewWafer.build(this.hPanelAdded, ...
+            dLeft = this.dWidthPadFigure;
+            dTop = this.dWidthPadFigure;
+            
+            this.uiListActive.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthList, ...
+                40);
+            
+           dTop = 30;
+           dSep = 20;
+           dTop = 140;
+           
+           %dLeft = dPad + this.dWidthList + dPad;
+           
+           dTop = 70;
+           dLeft = this.dWidthPadFigure;
+           
+           this.uibNewWafer.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthButton, ...
@@ -300,19 +339,23 @@ classdef Scan < mic.Base
                 100, ...
                 this.dHeightButton);
             
-            dLeft = this.dWidthPadFigure;
-            dTop = dTop + this.dHeightButton + 10;
-            this.uiListActive.build(this.hPanelAdded, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthList, ...
-                40);
-            
-           dTop = 30;
-           dSep = 20;
-           dTop = 130;
            
-           %dLeft = dPad + this.dWidthList + dPad;
+           dLeft = this.dWidthPadFigure;
+           dTop = dTop + 50
+           
+           dSep = 40;
+           this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+           dTop = dTop + dSep;
+                      
+           this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+           dTop = dTop + dSep;
+           
+           this.uiEditRowStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+           dTop = dTop + dSep;
+           
+           dTop = dTop + 10;
+           
+           dSep = 20;
            
            this.uicWaferLL.build(this.hPanelAdded, ...
                dLeft, ...
@@ -328,9 +371,12 @@ classdef Scan < mic.Base
                20);
            dTop = dTop + 30;
            
+           % dLeft = 150;
+           % dTop = 180
            this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
+
            
-           this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop + 50, 100, 24);
+           
             
         end
              
@@ -345,9 +391,13 @@ classdef Scan < mic.Base
             
             
              dWidth = this.dWidthPadFigure + ...
-                 this.dWidthPadPanel + ...
+                this.dWidthPadPanel + ...
                 this.dWidthList + ...
                 this.dWidthPadPanel + ...
+                this.dWidthPadFigure + ...
+                this.dWidthPadPanel + ...
+                this.dWidthList + ...
+                this.dWidthPadPanel + ...                
                 this.dWidthPadFigure;
             
             dScreenSize = get(0, 'ScreenSize');
@@ -509,6 +559,22 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.set(10);
             this.uiEditMjPerCm2PerSec.setMin(0);
             this.uiEditMjPerCm2PerSec.setMax(1e5);
+            
+            
+            this.uiEditRowStart = mic.ui.common.Edit(...
+                'cLabel', 'Row Start', ...
+                'cType', 'u8' ...
+            );
+            this.uiEditRowStart.set(uint8(1));
+            this.uiEditRowStart.setMin(uint8(0));
+            
+            this.uiEditColStart = mic.ui.common.Edit(...
+                'cLabel', 'Col Start', ...
+                'cType', 'u8' ...
+            );
+            this.uiEditColStart.set(uint8(1));
+            this.uiEditColStart.setMin(uint8(0));
+            
                        
         end
         
@@ -620,7 +686,6 @@ classdef Scan < mic.Base
         end
         
         function onUiScanAbort(this, ~, ~)
-            this.saveScanResults(stUnit, true);
             this.scan.stop(); % calls onScanAbort()
         end
         
@@ -1000,7 +1065,7 @@ classdef Scan < mic.Base
             % some setting of state happens in here. The state "contract"
             % makes this possible.
             
-            lDebug = false;           
+            lDebug = true;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -1043,7 +1108,10 @@ classdef Scan < mic.Base
                         switch cField
                             case 'workingModeStart'
                                 
-                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run'); % HACK stValue.(cField));
+                                % HACK stValue.(cField));
+                                lReady = ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run') || ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), '5');
    
                                 % When lReady, triggers waferX and waferY
                                 % in parallel
@@ -1140,7 +1208,11 @@ classdef Scan < mic.Base
                                 % mic.device.GetSetText don't support
                                 % isReady() method.
                                 
-                                lReady = strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run Exposure'); % HACK stValue.(cField));                                
+                                % HACK stValue.(cField)); 
+                                
+                                lReady = ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run Exposure') || ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), '4');                                
                                                                 
                             otherwise
                                 
@@ -1409,6 +1481,7 @@ classdef Scan < mic.Base
 
 
         function onScanAbort(this, stUnit)
+             this.saveScanResults(stUnit, true);
              this.abort();
              % Update the UI of wafer to show exposing
              this.uiWafer.uiAxes.setExposing(false);
@@ -1462,6 +1535,8 @@ classdef Scan < mic.Base
                 
 
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
+                
+                stRecipe = this.getRecipeModifiedForSkippedColsAndRows(stRecipe);
                 
                 if lError 
                     this.abort('There was an error building the scan recipe from the .json file.');
@@ -1522,6 +1597,7 @@ classdef Scan < mic.Base
             % Write to logs.
             this.writeToLog(sprintf('The FEM was aborted: %s', cMsg));
 
+            
             this.uiScan.reset()
             
         end
@@ -1923,9 +1999,35 @@ classdef Scan < mic.Base
             st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
             
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
-            st.flux_mj_per_cm2_per_s = 100;
+            st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
+        end
+        
+        function stRecipe = getRecipeModifiedForSkippedColsAndRows(this, stRecipe)
+           
+            % Figure out number of skipped states.  Assumes FEM does column 
+            % by column and that rows per column is number of focus.
+            
+            dNumOfStatesSkipped = ...
+                (this.uiEditColStart.get() - 1) * stRecipe.fem.u8FocusNum + ...
+                (this.uiEditRowStart.get() - 1);
+            
+            ceValues = stRecipe.values;
+            
+            if dNumOfStatesSkipped > 0
+                
+                % Skip the first setup state
+                ceValues = ceValues(2 : end);
+                
+                % Skip states
+                for n = 1 : dNumOfStatesSkipped
+                   ceValues = ceValues(2 : end); 
+                end
+            end
+            
+            stRecipe.values = ceValues;
+            
         end
         
                           
