@@ -20,6 +20,12 @@ classdef ReticleAxes < mic.Base
         dZoomMinForFieldLabels = 40
         
         cName = 'ReticleAxes'
+        
+        dXDiode = 97.93/1000
+        dYDiode = 4.18/1000
+        
+        dXYag = 97.93/1000
+        dYYag = -3.32/1000
     
     end
     
@@ -32,6 +38,8 @@ classdef ReticleAxes < mic.Base
         hCrosshairChiefRay
         hCrosshairZero
         hCrosshairLoadLock
+        hCrosshairDiode
+        hCrosshairYag
         
         hReticle
         hLabels
@@ -43,6 +51,9 @@ classdef ReticleAxes < mic.Base
         % {double 1x1} height of crosshair at center of wafer
         dSizeCrosshairWafer = 100e-3;
         dSizeCrosshairChiefRay = 20e-3;
+        
+        dSizeCrosshairDiode = 10e-3;
+        dSizeCrosshairYag = 10e-3;
         
         hClockTimes
         
@@ -66,6 +77,12 @@ classdef ReticleAxes < mic.Base
         dAlphaCrosshairLoadLock = 1;
         dColorCrosshairLoadLock = [1 1 0];
         
+        
+        dAlphaCrosshairDiode = 1;
+        dColorCrosshairDiode = [1 1 0];
+        
+        dAlphaCrosshairYag = 1;
+        dColorCrosshairYag = [1 1 0];
         
         
         dXZero = 0
@@ -135,6 +152,13 @@ classdef ReticleAxes < mic.Base
                 'HitTest', 'off' ...
             );
             this.drawCarriage();
+            
+            this.hCrosshairDiode = hggroup('Parent', this.hCarriage);
+            this.drawCrosshairDiode();
+            
+            this.hCrosshairYag = hggroup('Parent', this.hCarriage);
+            this.drawCrosshairYag();
+            
             
             this.hReticle         = hggroup('Parent', this.hCarriage);
             this.drawReticle();
@@ -248,6 +272,16 @@ classdef ReticleAxes < mic.Base
                 
                 this.deleteCrosshairLoadLock();
                 this.drawCrosshairLoadLock();
+                
+                % Redraw diode crosshair
+                this.deleteCrosshairDiode();
+                this.drawCrosshairDiode();
+                
+                % Redraw diode crosshair
+                
+                this.deleteCrosshairYag();
+                this.drawCrosshairYag();
+                
                 
                 
                 this.deleteFields();
@@ -734,6 +768,125 @@ classdef ReticleAxes < mic.Base
                         
         end
         
+        function drawCrosshairDiode(this)
+            
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXDiode;
+            dR = this.dThicknessOfCrosshair/2 + this.dXDiode;
+            dT = this.dSizeCrosshairDiode/2 + this.dYDiode;
+            dB = -this.dSizeCrosshairDiode/2 + this.dYDiode;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairDiode ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairDiode/2 + this.dXDiode;
+            dR = this.dSizeCrosshairDiode/2 + this.dXDiode;
+            dT = this.dThicknessOfCrosshair/2 + this.dYDiode;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYDiode;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairDiode ...
+            );
+        
+            % Face of diode
+            dWidthDiode = 2.3e-3; %m
+            dHeightDiode = 2.3e-3;
+            
+            dL = this.dXDiode - dWidthDiode / 2;
+            dR = this.dXDiode + dWidthDiode / 2;
+            dT = this.dYDiode + dHeightDiode / 2;
+            dB = this.dYDiode - dHeightDiode / 2;
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', 0.5 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXDiode + dShiftX, this.dYDiode + dShiftY, 'Diode', ...
+                'Parent', this.hCrosshairDiode, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairDiode ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+                        
+        end 
+        
+        
+        function drawCrosshairYag(this)
+            
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXYag;
+            dR = this.dThicknessOfCrosshair/2 + this.dXYag;
+            dT = this.dSizeCrosshairYag/2 + this.dYYag;
+            dB = -this.dSizeCrosshairYag/2 + this.dYYag;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairYag, ...
+                'Parent', this.hCrosshairYag, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairYag ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairYag/2 + this.dXYag;
+            dR = this.dSizeCrosshairYag/2 + this.dXYag;
+            dT = this.dThicknessOfCrosshair/2 + this.dYYag;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYYag;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairYag, ...
+                'Parent', this.hCrosshairYag, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairYag ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXYag + dShiftX, this.dYYag + dShiftY, 'Yag', ...
+                'Parent', this.hCrosshairYag, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairYag ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+                        
+        end 
+        
+        
+        
         function deleteCrosshairChiefRay(this)
             this.deleteChildren(this.hCrosshairChiefRay)
         end
@@ -744,6 +897,14 @@ classdef ReticleAxes < mic.Base
         
         function deleteCrosshairLoadLock(this)
             this.deleteChildren(this.hCrosshairLoadLock)
+        end
+        
+        function deleteCrosshairDiode(this)
+            this.deleteChildren(this.hCrosshairDiode)
+        end
+        
+        function deleteCrosshairYag(this)
+            this.deleteChildren(this.hCrosshairYag)
         end
         
         function [dX, dY] = getShiftOfCrosshairLabel(this)

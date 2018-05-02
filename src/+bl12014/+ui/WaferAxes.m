@@ -41,6 +41,9 @@ classdef WaferAxes < mic.Base
         dSizeCrosshairWafer = 100e-3;
         dSizeCrosshairChiefRay = 20e-3;
         
+        dSizeCrosshairDiode = 10e-3;
+        dSizeCrosshairYag = 10e-3;
+        
         % {double 1x1} thickness of crosshair at center of wafer
         dThicknessOfCrosshair
                 
@@ -57,10 +60,23 @@ classdef WaferAxes < mic.Base
         dColorCrosshairLoadLock = [1 1 0];
         
         
+        dAlphaCrosshairDiode = 1;
+        dColorCrosshairDiode = [1 1 0];
+        
+        dAlphaCrosshairYag = 1;
+        dColorCrosshairYag = [1 1 0];
+        
+        
         
         
         dXZero = 0
         dYZero = 0
+        
+        dXDiode = 104.55/1000
+        dYDiode = 0/1000
+        
+        dXYag = 120/1000
+        dYYag = -7/1000
         
         dXLoadLock = -0.45
         dYLoadLock = 0
@@ -79,6 +95,8 @@ classdef WaferAxes < mic.Base
         hIllum
         hCrosshairChiefRay
         hCrosshairZero
+        hCrosshairDiode
+        hCrosshairYag
         hCrosshairLoadLock
         hWafer
         hCrosshairWafer
@@ -190,8 +208,17 @@ classdef WaferAxes < mic.Base
             this.hWafer         = hggroup('Parent', this.hCarriage);
             this.drawWafer();
             
+            this.hCrosshairDiode = hggroup('Parent', this.hCarriage);
+            this.drawCrosshairDiode();
+            
+            this.hCrosshairYag = hggroup('Parent', this.hCarriage);
+            % this.drawCrosshairYag();
+            
             this.hCrosshairWafer = hggroup('Parent', this.hWafer);
             this.drawCrosshairWafer();
+            
+         
+            
 
             this.hFemPreviewPrescription    = hggroup('Parent', this.hWafer);
             this.hFemPreviewScan    = hggroup('Parent', this.hWafer);
@@ -207,6 +234,7 @@ classdef WaferAxes < mic.Base
             
             this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawCrosshairZero();
+            
             
             
             this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
@@ -291,6 +319,14 @@ classdef WaferAxes < mic.Base
         
         function deleteCrosshairZero(this)
             this.deleteChildren(this.hCrosshairZero)
+        end
+        
+        function deleteCrosshairDiode(this)
+            this.deleteChildren(this.hCrosshairDiode)
+        end
+        
+        function deleteCrosshairYag(this)
+            this.deleteChildren(this.hCrosshairYag)
         end
         
         function deleteCrosshairLoadLock(this)
@@ -453,6 +489,10 @@ classdef WaferAxes < mic.Base
         
         function onZoom(this, ~, ~)
             
+            % The thickness of crosshairs dynamically changes with zoom
+            % so the crosshair takes up same angular FOV for observer on
+            % computer screen at all zooms
+            
             dThickness = this.getThicknessOfCrosshair();
             if dThickness ~= this.dThicknessOfCrosshair
                 
@@ -470,6 +510,16 @@ classdef WaferAxes < mic.Base
                 % Redraw zero crosshair
                 this.deleteCrosshairZero();
                 this.drawCrosshairZero();
+                
+                % Redraw diode crosshair
+                this.deleteCrosshairDiode();
+                this.drawCrosshairDiode();
+                
+                % Redraw diode crosshair
+                %{
+                this.deleteCrosshairYag();
+                this.drawCrosshairYag();
+                %}
                 
                 % Redraw load lock crosshair
                 this.deleteCrosshairLoadLock();
@@ -769,6 +819,124 @@ classdef WaferAxes < mic.Base
         
             uistack(hPatch, 'top');
                         
+        end
+        
+        
+        function drawCrosshairDiode(this)
+            
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXDiode;
+            dR = this.dThicknessOfCrosshair/2 + this.dXDiode;
+            dT = this.dSizeCrosshairDiode/2 + this.dYDiode;
+            dB = -this.dSizeCrosshairDiode/2 + this.dYDiode;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairDiode ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairDiode/2 + this.dXDiode;
+            dR = this.dSizeCrosshairDiode/2 + this.dXDiode;
+            dT = this.dThicknessOfCrosshair/2 + this.dYDiode;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYDiode;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairDiode ...
+            );
+        
+            % Face of diode
+            dWidthDiode = 2.3e-3; %m
+            dHeightDiode = 2.3e-3;
+            
+            dL = this.dXDiode - dWidthDiode / 2;
+            dR = this.dXDiode + dWidthDiode / 2;
+            dT = this.dYDiode + dHeightDiode / 2;
+            dB = this.dYDiode - dHeightDiode / 2;
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairDiode, ...
+                'Parent', this.hCrosshairDiode, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', 0.5 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXDiode + dShiftX, this.dYDiode + dShiftY, 'Diode', ...
+                'Parent', this.hCrosshairDiode, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairDiode ... 
+            ); 
+        
+            uistack(hPatch, 'top');
+                        
+        end 
+        
+        
+        function drawCrosshairYag(this)
+            
+            % Vertical Line
+            
+            dL = -this.dThicknessOfCrosshair/2 + this.dXYag;
+            dR = this.dThicknessOfCrosshair/2 + this.dXYag;
+            dT = this.dSizeCrosshairYag/2 + this.dYYag;
+            dB = -this.dSizeCrosshairYag/2 + this.dYYag;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairYag, ...
+                'Parent', this.hCrosshairYag, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairYag ...
+            );
+        
+            uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairYag/2 + this.dXYag;
+            dR = this.dSizeCrosshairYag/2 + this.dXYag;
+            dT = this.dThicknessOfCrosshair/2 + this.dYYag;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYYag;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairYag, ...
+                'Parent', this.hCrosshairYag, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairYag ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXYag + dShiftX, this.dYYag + dShiftY, 'Yag', ...
+                'Parent', this.hCrosshairYag, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairYag ... 
+            ); 
+        
+            uistack(hPatch, 'top');
+                        
         end 
         
         
@@ -880,7 +1048,7 @@ classdef WaferAxes < mic.Base
                 190/180:dDTheta:360/180]*pi;
             
             
-            dR = 150e-3;
+            dR = 100e-3;
             dTheta = dTheta - 90*pi/180;
             
             hPatch = patch( ...

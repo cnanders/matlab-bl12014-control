@@ -22,7 +22,7 @@ hardware = bl12014.Hardware();
 uiReticle = bl12014.ui.Reticle('clock', clock);
 uiWafer = bl12014.ui.Wafer('clock', clock, 'hardware', hardware);
 uiShutter = bl12014.ui.Shutter('clock', clock);
-            
+uiBeamline = bl12014.ui.Beamline('clock', clock);          
 
 ui = bl12014.ui.Scan(...
     'clock', clock, ...
