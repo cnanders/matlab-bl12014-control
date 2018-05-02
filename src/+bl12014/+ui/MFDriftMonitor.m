@@ -204,6 +204,11 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+        function lVal = isAPIOn(this)
+            lVal = ~isempty(this.apiDriftMonitor) && this.apiDriftMonitor.isConnected() && this.apiDriftMonitor.isReady() && ...
+                ~isempty(this.hardware.commMFDriftMonitor);
+        end
+        
         function init(this)
             
             
@@ -218,7 +223,7 @@ classdef MFDriftMonitor < mic.Base
                 'cName', 'mf-drift-monitor', ...
                 'cLabel', 'MFDrift Monitor',...
                 'lUseFunctionCallbacks', true, ...
-                'fhGet', @() ~isempty(this.apiDriftMonitor) && this.apiDriftMonitor.isConnected() && this.apiDriftMonitor.isReady(),...
+                'fhGet', @()this.isAPIOn,...
                 'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
                                    @this.connectDriftMonitor, ...
                                    @this.disconnectDriftMontior...
@@ -588,9 +593,8 @@ classdef MFDriftMonitor < mic.Base
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)
-            try
+            if ~this.isAPIOn()
                 this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
-            catch
             end
             if ~isempty(this.clock)&&~this.clock.has(this.id())
                 this.clock.add(@this.onClock, this.id(), this.uieUpdateInterval.get());
@@ -608,11 +612,16 @@ classdef MFDriftMonitor < mic.Base
         function disconnectDriftMontior(this)
             this.hardware.deleteMFDriftMonitor();
             this.apiDriftMonitor = [];
-            if isvalid(this.clock) && ...
-                    this.clock.has(this.id())
+            this.disconnectMiddleware();
+            this.uieUpdateInterval.enable();
+            
+            
+        end
+        
+        function disconnectMiddleware(this)
+            if isvalid(this.clock) &&  this.clock.has(this.id())
                 this.clock.remove(this.id());
             end
-            this.uieUpdateInterval.enable();
         end
         
          % Builds hexapod java api, connecting getSetNumber UI elements
@@ -685,6 +694,10 @@ classdef MFDriftMonitor < mic.Base
         function onClock(this)
             try
             
+                if ~this.isAPIOn()
+                    this.disconnectMiddleware();
+                    return
+                end
                 %DMI Scanning
                 plotDMI=[];
                 dZVals = [];
@@ -1238,10 +1251,14 @@ classdef MFDriftMonitor < mic.Base
                 'name', 'Drift Monitor (DMI and Height Sensor)',...
                 'Units', 'pixels',...
                 'Position', [5+dLeft, 5+dTop,  this.dWidth, this.dHeight],...
-                'handlevisibility','off',... %out of reach gcf
                 'numberTitle','off',...
                 'Toolbar','none',...
-                'Menubar','none');
+                'Menubar','none', ...
+                'Resize', 'off',...
+                'HandleVisibility', 'on',... % lets close all close the figure
+                'Visible', 'on',...
+                'CloseRequestFcn', @this.onCloseRequest ...
+                );
             
             
             this.uitgMode.build(this.hFigure, 10, 10, this.dWidth - 20, this.dHeight - 100)
@@ -1347,7 +1364,7 @@ classdef MFDriftMonitor < mic.Base
                                          'XTick', [], 'YTick', []);
             end
             
-            this.uiSLLevelCoordinateLoader.build(uitWaferLevel, 500, 20, 370, 250);
+            this.uiSLLevelCoordinateLoader.build(uitWaferLevel, 500, 500, 370, 250);
             this.uieZTarget.build(uitWaferLevel, 50, 500, 110, 20);
             this.uieRxTarget.build(uitWaferLevel, 50, 550, 110, 20);
             this.uieRyTarget.build(uitWaferLevel, 50, 600, 110, 20);
@@ -1409,18 +1426,21 @@ classdef MFDriftMonitor < mic.Base
             
             
         end
+       
+        function delete(this, src, evt)
+           1
+           
+        end
         
-        function delete(this)
+        function onCloseRequest(this, src, evt)
             
-            this.msg('delete');
+            this.clock.stop();
+            delete(this.clock);
             
-            % Delete the figure
             
-            if ishandle(this.hPanel)
-                delete(this.hPanel);
+            if ishandle(this.hFigure)
+                delete(this.hFigure);
             end
-            
-            
         end
         
         
