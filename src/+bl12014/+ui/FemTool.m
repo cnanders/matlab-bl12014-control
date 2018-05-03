@@ -521,9 +521,7 @@ classdef FemTool < mic.Base
             addlistener(this.uieFocusNum, 'eChange', @this.onSize);
             addlistener(this.uieFocusCenter, 'eChange', @this.onFocus);
             addlistener(this.uieFocusStep, 'eChange', @this.onFocus);
-            %}
-            git s
-            
+            %}            
 
         end
         
