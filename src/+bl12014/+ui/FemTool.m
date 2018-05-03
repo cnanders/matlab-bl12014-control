@@ -492,11 +492,16 @@ classdef FemTool < mic.Base
             addlistener(this.uieFocusCenter, 'eChange', @this.onFocus);
             addlistener(this.uieFocusStep, 'eChange', @this.onFocus);
             
+            addlistener(this.uieFocusNum, 'eEnter', @this.onSize);
+            addlistener(this.uieFocusCenter, 'eEnter', @this.onFocus);
+            addlistener(this.uieFocusStep, 'eEnter', @this.onFocus);
+            
             
         end
         
         
         function initPositionPanel(this)
+            
             this.uiePositionStartX = mic.ui.common.Edit(...
                 'cLabel', 'Start X', ...
                 'cType', 'd' ...

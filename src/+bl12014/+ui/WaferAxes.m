@@ -20,8 +20,9 @@ classdef WaferAxes < mic.Base
         % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
         dHeight = 600
         
-        dXChiefRay = -.005 % m
-        dYChiefRay = -.01 % m
+        
+        dXChiefRay = -2.4e-3 % m
+        dYChiefRay = -2.4e-3 % m
         
         
     end
@@ -72,11 +73,11 @@ classdef WaferAxes < mic.Base
         dXZero = 0
         dYZero = 0
         
-        dXDiode = 104.55/1000
-        dYDiode = 0/1000
+        dXDiode = 103.45e-3
+        dYDiode = -6.95e-3
         
-        dXYag = 120/1000
-        dYYag = -7/1000
+        dXYag = 120e-3
+        dYYag = -7e-3
         
         dXLoadLock = -0.45
         dYLoadLock = 0
