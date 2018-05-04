@@ -34,7 +34,7 @@ classdef PrescriptionTool < mic.Base
     
     properties (Constant)
        
-        dWidth          = 1250
+        dWidth          = 1350
         dHeight         = 720
         dColorFigure = [200 200 200]./255
 
