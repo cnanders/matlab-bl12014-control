@@ -29,6 +29,7 @@ classdef App < mic.Base
         uiScannerMA
         uiHeightSensorLEDs
         uiCameraLEDs
+        uiScanResultPlot2x2
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -131,6 +132,8 @@ classdef App < mic.Base
             delete(this.uiFocusSensor)
             delete(this.uiHeightSensorLEDs)
             delete(this.uiCameraLEDs)
+            delete(this.uiScanResultPlot2x2)
+            
             % Delete the clock
             delete(this.clock);
                        
@@ -301,6 +304,7 @@ classdef App < mic.Base
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
                 'clock', this.clock ...
             );
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2();
 
             addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
             addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
@@ -409,6 +413,11 @@ classdef App < mic.Base
             'cTooltip',  'Diag. Cam + LED Power');
         
         
+            stScanResultPlot2x2 = struct(...
+            'cLabel',  'Scan Result Plotter 2x2', ...
+            'fhOnClick',  @() this.uiScanResultPlot2x2.build(), ...
+            'cTooltip',  'Scan Result Plotter 2x2');
+        
             
             stScannerM142 = struct(...
             'cLabel',  'M142 Scanner', ...
@@ -470,6 +479,7 @@ classdef App < mic.Base
               stLSIAnalyze, ...
               stHeightSensorLEDs, ...
               stCameraLEDs, ...
+              stScanResultPlot2x2, ...
               stShutter ...
            ];
             

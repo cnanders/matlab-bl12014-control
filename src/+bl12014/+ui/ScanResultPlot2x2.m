@@ -10,20 +10,20 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth              = 1200;
+        dWidth              = 1300;
         dHeight             = 900;
         
         dWidthPadAxesLeft = 60
         dWidthPadAxesRight = 40
-        dHeightPadAxesTop = 5
-        dHeightPadAxesBottom = 60
-        dWidthAxes = 300
-        dHeightAxes = 200
+        dHeightPadAxesTop = 10
+        dHeightPadAxesBottom = 40
+        dWidthAxes = 550
+        dHeightAxes = 330
         dHeightOffsetTop = 30;
        
         dWidthPopup = 200;
         dHeightPopup = 24;
-        dHeightPopupFull = 40;
+        dHeightPopupFull = 30;
         dHeightPadPopupTop = 10;
         
     
@@ -50,6 +50,13 @@ classdef ScanResultPlot2x2 < mic.Base
         
         cPath
         cFile
+        
+        % {struct 1x1} storage of the result struct loaded from JSON
+        stResult
+        
+        % {struct 1x1} computed storage of results in format more useful
+        % for plotting
+        stResultForPlotting
                 
     end
     
@@ -68,7 +75,10 @@ classdef ScanResultPlot2x2 < mic.Base
         function this = ScanResultPlot2x2()
             
             this.init();
-            this.cPath = '';
+            
+            [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+
+            this.cPath = fullfile(cDirThis, '..', '..', 'save');
             this.cFile = '';
             
         end
@@ -99,18 +109,7 @@ classdef ScanResultPlot2x2 < mic.Base
         function ce = getPropsSaved(this)
             
             ce = {...
-                'uiePositionX', ...
-                'uiePositionY', ...
-                'uiePositionStepX', ...
-                'uiePositionStepY', ...
-                'uipPositionType', ...
-                'uieDoseNum', ...
-                'uieDoseCenter', ...
-                'uieDoseStep', ...
-                'uipDoseStepType', ...
-                'uieFocusNum', ...
-                'uieFocusCenter', ...
-                'uieFocusStep' ...
+                'uiTextFile'
             };
         
         end
@@ -118,8 +117,6 @@ classdef ScanResultPlot2x2 < mic.Base
         
         % @return {struct} UI state to save
         function st = save(this)
-            st  = struct();
-            return;
             
             ceProps = this.getPropsSaved();
         
@@ -134,9 +131,7 @@ classdef ScanResultPlot2x2 < mic.Base
         % @param {struct} UI state to load.  See save() for info on struct
         function load(this, st)
             
-            return
             
-            %{
             this.lLoading = true;
             
             ceProps = this.getPropsSaved();
@@ -150,16 +145,8 @@ classdef ScanResultPlot2x2 < mic.Base
                 end
             end
             
-            
             this.lLoading = false;
-            
-            % call updateSize() to dispatch the event
-            this.updateSize();
-            this.updateFocus();
-            this.updateDose();
-            %}
-            
-            
+                        
         end
         
         function build(this)
@@ -186,7 +173,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.hFigure, ...
                 dLeft, ...
                 dTop, ...
-                600, ...
+                900, ...
                 24 ...
             );
                 
@@ -250,8 +237,8 @@ classdef ScanResultPlot2x2 < mic.Base
         function onButtonFile(this, src, evt)
             
             [cFile, cPath] = uigetfile(...
-                '*.csv', ...
-                'Select a Scan Result .csv File', ...
+                '*.json', ...
+                'Select a Scan Result .json File', ...
                 this.cPath ...
             );
         
@@ -263,24 +250,162 @@ classdef ScanResultPlot2x2 < mic.Base
             this.cFile = cFile;
             
             % this.refresh(); 
-            this.uiTextFile.set([this.cPath, this.cFile]);      
+            
+            cPathFull = fullfile(this.cPath, this.cFile);
+            this.uiTextFile.set(cPathFull);
+            
+            this.stResult = loadjson(cPathFull);
+            
+            this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
+            this.updatePopups()
+            
+            
+        end
+        
+        % Returns a {struct 1x1} where each prop is a list of values of
+        % of a saved result property.  The result structure loaded from
+        % .json has a values field that is a cell of structures.  
+        function stOut = getValuesStructFromResultStruct(this, st)
+            
+            % Initialize the structure
+            stOut = struct();
+            
+            if ~this.getResultStructHasValues(st)
+                return
+            end
+            
+            ceValues = this.stResult.values;
+            stValue = ceValues{1};
+            
+            % Initialize empty structure
+            ceFields = fieldnames(stValue);
+            for m = 1 : length(ceFields)
+                cField = ceFields{m};
+                switch cField
+                    case 'time'
+                        stOut.(cField) = NaT(1, length(ceValues)); % Allocate list of "Not a time"
+                    otherwise
+                        stOut.(cField) = zeros(1, length(ceValues));
+                end
+            end
+             
+            % Write values
+            for idxValue = 1 : length(ceValues)
+                stValue = ceValues{idxValue};
+                if ~isstruct(stValue)
+                    continue
+                end
+                ceFields = fieldnames(stValue);
+                for idxField = 1 : length(ceFields)
+                    
+                    cField = ceFields{idxField};
+                    switch cField
+                        case 'time'
+                            stOut.(cField)(1, idxValue) = datetime(...
+                                stValue.(cField), ...
+                                'Format', 'yyyy-MM-dd HH:mm:ss' ...
+                            );
+                        otherwise
+                            stOut.(cField)(1, idxValue) = stValue.(cField);
+                    end
+                end
+            end
+            
+            
         end
         
         
-        function onPopup1(this, src, evt)
+        function l = getResultStructHasValues(this, st)
             
+            l = false;
+            
+            if isempty(st)
+                return
+            end
+            
+            if ~isfield(st, 'values')
+                return
+            end
+                        
+            if isempty(st.values)
+                return
+            end  
+            
+            l = true;
+            
+        end
+        
+        
+        function updatePopups(this)
+            
+            if ~this.getResultStructHasValues(this.stResult)
+                return
+            end
+            
+            ceValues = this.stResult.values;
+            stValue = ceValues{1};
+            ceFields = fieldnames(stValue);
+            
+            this.uiPopup1.setOptions(ceFields);
+            this.uiPopup2.setOptions(ceFields);
+            this.uiPopup3.setOptions(ceFields);
+            this.uiPopup4.setOptions(ceFields);
+            
+            if length(ceFields) > 0
+                this.uiPopup1.setSelectedIndex(uint8(1))
+            end
+            
+            if length(ceFields) > 1
+                this.uiPopup2.setSelectedIndex(uint8(2))
+            end
+            
+            if length(ceFields) > 2
+                this.uiPopup3.setSelectedIndex(uint8(3))
+            end
+            
+            if length(ceFields) > 3
+                this.uiPopup4.setSelectedIndex(uint8(4))
+            end
+            
+            this.onPopup1([], []);
+            this.onPopup2([], []);
+            this.onPopup3([], []);
+            this.onPopup4([], []);
+            
+        end
+        
+        
+        function updateAxes(this, hAxes, cProp)
+            
+            if ~this.getResultStructHasValues(this.stResult)
+                return
+            end
+            
+            plot(hAxes, ...
+                this.stResultForPlotting.(cProp), '.-b');
+            xlabel(hAxes, 'State Num');
+            try
+                ylabel(hAxes, this.stResult.unit.(cProp));
+            end
+            
+        end
+        
+        function onPopup1(this, src, evt)
+            this.updateAxes(this.hAxes1, this.uiPopup1.get());
         end
         
         function onPopup2(this, src, evt)
-            
+            this.updateAxes(this.hAxes2, this.uiPopup2.get());
         end
         
         function onPopup3(this, src, evt)
-            
+        	this.updateAxes(this.hAxes3, this.uiPopup3.get());
+
         end
         
         function onPopup4(this, src, evt)
-            
+            this.updateAxes(this.hAxes4, this.uiPopup4.get());
+
         end
         
         function init(this)
@@ -294,15 +419,19 @@ classdef ScanResultPlot2x2 < mic.Base
                 'cVal', '...' ...
             );
             this.uiPopup1 = mic.ui.common.Popup(...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup1 ...
             );
             this.uiPopup2 = mic.ui.common.Popup(...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup2 ...
                 );
             this.uiPopup3 = mic.ui.common.Popup(...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup3 ...
                 );
             this.uiPopup4 = mic.ui.common.Popup(...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup4 ...
                 );
             
@@ -321,7 +450,7 @@ classdef ScanResultPlot2x2 < mic.Base
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...
                 'MenuBar', 'none', ...
-                'Name', 'Beamline Control', ...
+                'Name', 'Scan Result 2x2 Plotter', ...
                 'CloseRequestFcn', @this.onFigureCloseRequest, ...
                 'Position', [ ...
                     (dScreenSize(3) - this.dWidth)/2 ...
@@ -331,8 +460,12 @@ classdef ScanResultPlot2x2 < mic.Base
                  ],... % left bottom width height
                 'Resize', 'off', ... 
                 'HandleVisibility', 'on', ... % lets close all close the figure
+                'Toolbar', 'figure', ...
                 'Visible', 'on' ...
             );
+        
+            % zoom(this.hFigure, 'on')
+            % uitoolbar(this.hFigure)
 
             
         end
