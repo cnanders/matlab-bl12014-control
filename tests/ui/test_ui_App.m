@@ -18,6 +18,7 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppma
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-quasar', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-generator', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
 
 purge
 
@@ -26,7 +27,7 @@ ui = bl12014.ui.App(...
     'dWidthButtonButtonList', 200 ...
 );
 h = figure(...
-    'Position', [50 50 245 700] ... % left bottom width height
+    'Position', [50 50 245 760] ... % left bottom width height
 );
 ui.build(h, 10, 10);
 

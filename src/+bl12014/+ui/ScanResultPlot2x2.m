@@ -57,6 +57,9 @@ classdef ScanResultPlot2x2 < mic.Base
         % {struct 1x1} computed storage of results in format more useful
         % for plotting
         stResultForPlotting
+        
+        % {logical 1x1} 
+        lLoading
                 
     end
     
@@ -85,7 +88,6 @@ classdef ScanResultPlot2x2 < mic.Base
         
         function delete(this)
                         
-            
             delete(this.uiPopup1);
             delete(this.uiPopup2);
             delete(this.uiPopup3);
@@ -106,10 +108,14 @@ classdef ScanResultPlot2x2 < mic.Base
 
         end
         
-        function ce = getPropsSaved(this)
+        function ce = getUiPropsSaved(this)
             
             ce = {...
-                'uiTextFile'
+                'uiTextFile', ...
+                'uiPopup1', ...
+                'uiPopup2', ...
+                'uiPopup3', ...
+                'uiPopup4', ...
             };
         
         end
@@ -118,9 +124,13 @@ classdef ScanResultPlot2x2 < mic.Base
         % @return {struct} UI state to save
         function st = save(this)
             
-            ceProps = this.getPropsSaved();
         
             st = struct();
+            
+            st.cPath = this.cPath;
+            st.cFile = this.cFile;
+            
+            ceProps = this.getUiPropsSaved();
             for n = 1 : length(ceProps)
                 cProp = ceProps{n};
                 st.(cProp) = this.(cProp).save();
@@ -134,7 +144,17 @@ classdef ScanResultPlot2x2 < mic.Base
             
             this.lLoading = true;
             
-            ceProps = this.getPropsSaved();
+            if isfield(st, 'cPath')
+                this.cPath = st.cPath;
+            end
+            
+            if isfield(st, 'cFile')
+                this.cFile = st.cFile;
+            end
+            
+            this.loadFileAndUpdateAll();
+            
+            ceProps = this.getUiPropsSaved();
         
             for n = 1 : length(ceProps)
                 cProp = ceProps{n};
@@ -251,11 +271,26 @@ classdef ScanResultPlot2x2 < mic.Base
             
             % this.refresh(); 
             
+            this.loadFileAndUpdateAll()
+            
+            
+            
+        end
+        
+        function loadFileAndUpdateAll(this)
+            
+            if isempty(this.cPath)
+                return
+            end
+            
+            if isempty(this.cFile)
+                return
+            end
+            
             cPathFull = fullfile(this.cPath, this.cFile);
             this.uiTextFile.set(cPathFull);
             
             this.stResult = loadjson(cPathFull);
-            
             this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
             this.updatePopups()
             
