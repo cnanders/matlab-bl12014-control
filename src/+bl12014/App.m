@@ -28,7 +28,6 @@ classdef App < mic.Base
         cTcpipKeithley6482Reticle = '192.168.20.28'
         
         cTcpipRigolDG1000Z = '192.168.20.35' % Temporary
-        
         cTcpip3GStoreRemotePowerSwitch1 = '192.168.10.30'; % Beamline
         cTcpip3GStoreRemotePowerSwitch2 = '192.168.20.30'; % End station
         
@@ -644,6 +643,16 @@ classdef App < mic.Base
             ui.setReticleAxisDevice(deviceCoarseTiltY, 5);
             ui.setReticleAxisDevice(deviceFineX, 6);
             ui.setReticleAxisDevice(deviceFineY, 7);
+            
+            
+            deviceWaferX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceWaferY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+            deviceWaferZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            
+            % Set LSI wafer control
+            ui.setWaferAxisDevice(deviceWaferX, 1);
+            ui.setWaferAxisDevice(deviceWaferY, 2);
+            ui.setWaferAxisDevice(deviceWaferZ, 3);
         end
          function connectCommDeltaTauPowerPmacToDM(this, comm, ui)
             
@@ -715,7 +724,11 @@ classdef App < mic.Base
             for k = 1:7
                 ui.disconnectReticleAxisDevice(k);
             end
+            for k = 1:3
+                ui.disconnectWaferAxisDevice(k);
+            end
         end
+        
         function disconnectCommDeltaTauPowerPmacFromUiDM(this, ui)
             for k = 1:3
                 ui.disconnectWaferAxisDevice(k);
