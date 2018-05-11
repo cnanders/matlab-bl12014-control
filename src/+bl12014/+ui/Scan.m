@@ -1055,17 +1055,18 @@ classdef Scan < mic.Base
             % Achieving the desired state requires serial / sequential 
             % moves of individual degrees of freedom.  
             
-            % 1) Set working mode to "Run"
-            % 2) After 1 is complete: move stage (x,y)
-            % 3) After 2 is complete: move height sensor z via wafer coarse and fine z closed loop
-            % 4) After 3 is complete: set working mode to "Run Exposure" 
-            % 5) After 4 is complete: trigger shutter
+            % Set working mode to "Run"
+            % After prev is complete: move stage x
+            % After prev is complete: move state y
+            % After prev is complete: move height sensor z via wafer coarse and fine z closed loop
+            % After prev is complete: set working mode to "Run Exposure" 
+            % After prev is complete: trigger shutter
             
             % Consequently, 
             % some setting of state happens in here. The state "contract"
             % makes this possible.
             
-            lDebug = false;           
+            lDebug = true;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -1113,11 +1114,9 @@ classdef Scan < mic.Base
                                     strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run') || ...
                                     strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), '5');
    
-                                % When lReady, triggers waferX and waferY
-                                % in parallel
+                                % When lReady, triggers waferX
                                 
                                 if lReady && ...
-                                   this.stScanSetContract.waferX.lRequired == true && ...
                                    this.stScanSetContract.waferX.lIssued == false 
                         
                                     % The FEM is constructed with positions relative to
@@ -1136,12 +1135,18 @@ classdef Scan < mic.Base
                                     
                                 end
                                 
+                                
+                                
+                            
+                            case 'waferX'
+                                lReady = this.uiWafer.uiCoarseStage.uiX.getDevice().isReady();
+   
+                                % waferX triggers waferY
+                                
                                 if lReady && ...
-                                   this.stScanSetContract.waferY.lRequired == true && ...
                                    this.stScanSetContract.waferY.lIssued == false 
                                
-                                    % See comment in waferX
-
+                                    % See comment above
                                     dY = stValue.waferY + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
                                     this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
                                     this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
@@ -1149,39 +1154,14 @@ classdef Scan < mic.Base
                                
                                 end
                                 
-                            
-                            case 'waferX'
-                                lReady = this.uiWafer.uiCoarseStage.uiX.getDevice().isReady();
-   
-                                
-                                % waferX can trigger waferZ
-                                
-                                if lReady && ...
-                                   this.uiWafer.uiCoarseStage.uiY.getDevice().isReady() && ...
-                                   this.stScanSetContract.waferZ.lRequired == true && ...
-                                   this.stScanSetContract.waferZ.lIssued == false
-                               
-                                    % Trigger wafer Z
-                                    
-                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
-                                    this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
-                                    this.stScanSetContract.waferZ.lIssued = true;
-                                end
-                                
-                                
                             case 'waferY'
                                 lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
                                 
-                                
-                                % This can trigger waferZ
+                                % waferY triggers waferZ
                                 
                                 if lReady && ...
-                                   this.uiWafer.uiCoarseStage.uiX.getDevice().isReady() && ...
-                                   this.stScanSetContract.waferZ.lRequired == true && ...
                                    this.stScanSetContract.waferZ.lIssued == false
-                               
-                                    % Trigger wafer Z
-                                    
+                                                                   
                                     this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
                                     this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
                                     this.stScanSetContract.waferZ.lIssued = true;
@@ -1195,7 +1175,6 @@ classdef Scan < mic.Base
                                
                                % This can trigger workingMode
                                if lReady && ...
-                                  this.stScanSetContract.workingModeEnd.lRequired == true && ...
                                   this.stScanSetContract.workingModeEnd.lIssued == false
                               
                                     this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeEnd)
@@ -1228,6 +1207,7 @@ classdef Scan < mic.Base
                         	if lDebug
                                 this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
+                            % Don't return can check next property of goal state
  
                         else
                             % still isn't there.
@@ -1235,7 +1215,7 @@ classdef Scan < mic.Base
                                 this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
-                            return;
+                            return; % Don't need to check any more props of goal state
                         end
                     else % required, issued, but not yet achieved
                         
@@ -1539,7 +1519,19 @@ classdef Scan < mic.Base
                 
 
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
-                
+                                
+                % Figure out number of skipped states.  Assumes FEM does column 
+                % by column and that rows per column is number of focus.
+                if stRecipe.fem.u8DoseNum < this.uiEditColStart.get()
+                    this.abort('The start column is larger than the number of dose colums in the FEM')
+                    return 
+                end
+
+                if stRecipe.fem.u8FocusNum < this.uiEditRowStart.get()
+                    this.abort('The start row is larger than the number of focus rows in the FEM')
+                    return 
+                end
+            
                 stRecipe = this.getRecipeModifiedForSkippedColsAndRows(stRecipe);
                 
                 if lError 
@@ -1601,8 +1593,7 @@ classdef Scan < mic.Base
             % Write to logs.
             this.writeToLog(sprintf('The FEM was aborted: %s', cMsg));
 
-            
-            this.uiScan.reset()
+            this.uiScan.reset();
             
         end
         
@@ -1921,7 +1912,29 @@ classdef Scan < mic.Base
             % fprintf(fid, '# "%s"\n', this.uiPopupRecipeDevice.get().cValue);
             
             % Write the field names
-            ceNames = fieldnames(this.ceValues{2});
+            ceNames = {...
+                'als_current_ma', ...
+                'exit_slit_um', ...
+                'undulator_gap_mm', ...
+                'wavelength_nm', ...
+                'x_reticle_coarse_mm', ...
+                'y_reticle_coarse_mm', ...
+                'z_reticle_coarse_mm', ...
+                'tilt_x_reticle_coarse_urad', ...
+                'tilt_y_reticle_coarse_urad', ...
+                'x_reticle_fine_nm', ...
+                'y_reticle_fine_nm', ...
+                'x_wafer_coarse_mm', ...
+                'y_wafer_coarse_mm', ...
+                'z_wafer_coarse_mm', ...
+                'tilt_x_wafer_coarse_urad', ...
+                'tilt_y_wafer_coarse_urad', ...
+                'z_wafer_fine_nm', ...
+                'z_height_sensor_nm', ...
+                'shutter_ms', ...
+                'flux_mj_per_cm2_per_s', ...
+                'time' ...
+            };
             for n = 1:length(ceNames)
                 fprintf(fid, '%s,', ceNames{n});
             end
@@ -2010,8 +2023,6 @@ classdef Scan < mic.Base
         
         function stRecipe = getRecipeModifiedForSkippedColsAndRows(this, stRecipe)
            
-            % Figure out number of skipped states.  Assumes FEM does column 
-            % by column and that rows per column is number of focus.
             
             dNumOfStatesSkipped = ...
                 (this.uiEditColStart.get() - 1) * stRecipe.fem.u8FocusNum + ...

@@ -47,7 +47,7 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         u8SampleAverageDuringControl = 1000;
         
         % {logical 1x1} set to true to debug the scan
-        lDebugScan = true
+        lDebugScan = false
     end
     
     methods
