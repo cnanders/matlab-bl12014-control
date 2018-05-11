@@ -27,6 +27,7 @@ classdef MFDriftMonitor < mic.Base
         u8HS_CHANNEL_RX = 7;
         u8HS_CHANNEL_RY = 8;
         u8HS_CHANNEL_Z = 9;
+        u8HS_CHANNEL_SZ = 10;
         
         % DMI channels:
         u8DMI_CHANNEL_RETX = 1;
@@ -35,7 +36,7 @@ classdef MFDriftMonitor < mic.Base
         u8DMI_CHANNEL_WAFY = 4;
         
         ceHSChannelNames = {'HS-Channel-1', 'HS-Channel-2', 'HS-Channel-3', 'HS-Channel-4', ...
-            'HS-Channel-5', 'HS-Channel-6', 'HS-Rx', 'HS-Ry', 'HS-Z'}
+            'HS-Channel-5', 'HS-Channel-6', 'HS-Rx', 'HS-Ry', 'HS-Z', 'HS-Simple-Z'}
         ceDMIChannelNames = {'DMI-Ret-X', 'DMI-Ret-Y', 'DMI-Wafer-X', 'DMI-Wafer-Y'}
         
         ceDMIPowerNames = {'Ret-U AC', 'Ret-V AC', 'Waf-U AC', 'Waf-V AC'; 'Ret-U DC', 'Ret-V DC','Waf-U DC', 'Waf-V DC'}
@@ -61,7 +62,7 @@ classdef MFDriftMonitor < mic.Base
     properties (SetAccess = private)
         % Channels to display, set these variables to a subset of this list
         % to show less channels
-        dHeightSensorDisplayChannels = 1:9
+        dHeightSensorDisplayChannels = 1:10
         dDMIDisplayChannels = 1:4
         dDMI
         dDMIScanningTime
@@ -597,7 +598,7 @@ classdef MFDriftMonitor < mic.Base
                 this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
             end
             if ~isempty(this.clock)&&~this.clock.has(this.id())
-                this.clock.add(@this.onClock, this.id(), this.uieUpdateInterval.get());
+                this.clock.add(@this.onClock, this.id(), 1);
                 this.uieUpdateInterval.disable();
             end
             
@@ -1246,6 +1247,12 @@ classdef MFDriftMonitor < mic.Base
         %% BUILD
         function build(this, dLeft, dTop)
             
+            if ishghandle(this.hFigure)
+                % Bring to front
+                figure(this.hFigure);
+                return
+            end
+            
             % build the main window
             this.hFigure = figure(...
                 'name', 'Drift Monitor (DMI and Height Sensor)',...
@@ -1310,7 +1317,7 @@ classdef MFDriftMonitor < mic.Base
             this.uibClearDMI.build  (this.hpDMI, 500, 330, 80, 20); 
             
             this.uibResetDMI.build  (this.hpDMI, 500, 360, 80, 20);
-            this.uieUpdateInterval.build  (this.hpDMI, 500, 50, 80, 20);
+            %this.uieUpdateInterval.build  (this.hpDMI, 500, 50, 80, 20);
                              
             this.haHS = axes('Parent',  this.hpHS, ...
              'Units', 'pixels', ...
@@ -1339,7 +1346,9 @@ classdef MFDriftMonitor < mic.Base
             dSep = 40;
             dTop = 400;
             dWidthPadCol = 400;
-            this.uiHeightSensorChannels{9}.build(this.hpHS, dLeft, dTop); dTop = dTop + dSep;
+            this.uiHeightSensorChannels{9}.build(this.hpHS, dLeft, dTop); 
+            this.uiHeightSensorChannels{10}.build(this.hpHS, dLeft + 350, dTop);
+            dTop = dTop + dSep;
             this.uiHeightSensorChannels{7}.build(this.hpHS, dLeft, dTop); dTop = dTop + dSep;
             this.uiHeightSensorChannels{8}.build(this.hpHS, dLeft, dTop); dTop = dTop + dSep;
             dTop = dTop + dSep;
@@ -1351,8 +1360,8 @@ classdef MFDriftMonitor < mic.Base
             end
             dTop = dTop + 15;
             
-            for k=1:9
-                this.uicbHeightSensorChannels{k}.build(this.hpHS, 550, 20+k*30, 100, 20);
+            for k=1:10
+                this.uicbHeightSensorChannels{k}.build(this.hpHS, 550, 20+k*27, 100, 20);
             end
             
             

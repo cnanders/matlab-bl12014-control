@@ -4,14 +4,23 @@ classdef FemTool < mic.Base
     
 	properties
                
-        
+       c_POSITION_TYPE_START = 'Start:';
+       c_POSITION_TYPE_CENTER = 'Center:';
+       
     end
     
     properties (SetAccess = private)
         
-        dWidth              = 450;
+        dWidth              = 550;
         dHeight             = 250;
        
+        dWidthPosition      = 250;
+        dHeightPosition     = 170;
+        dWidthDose          = 275;
+        dHeightDose         = 100;
+        dWidthFocus         = 275;
+        dHeightFocus        = 100;
+        
         
         % {double 1xm} list of focuses
         dFocus              
@@ -41,10 +50,12 @@ classdef FemTool < mic.Base
         hPanelFocus
         hPanelPause
         
-        uiePositionStartX
+        uipPositionType 
+        uiePositionX
         uiePositionStepX
-        uiePositionStartY
+        uiePositionY
         uiePositionStepY
+        uitPositionStepLabel
         uitPositionRangeX
         uitPositionRangeY
         
@@ -59,14 +70,10 @@ classdef FemTool < mic.Base
         uieFocusStep
         uitFocusRange
         
+        
         uitQA
         
-        dWidthPosition      = 140;
-        dHeightPosition     = 170;
-        dWidthDose          = 275;
-        dHeightDose         = 100;
-        dWidthFocus         = 275;
-        dHeightFocus        = 100;
+        
         
         uibMatrix
         
@@ -97,13 +104,33 @@ classdef FemTool < mic.Base
             
         end
         
-        % @return {struct} UI state to save
-        function st = save(this)
+        function ce = getPropsSaved(this)
+            
+            ce = {...
+                'uiePositionX', ...
+                'uiePositionY', ...
+                'uiePositionStepX', ...
+                'uiePositionStepY', ...
+                'uipPositionType', ...
+                'uieDoseNum', ...
+                'uieDoseCenter', ...
+                'uieDoseStep', ...
+                'uipDoseStepType', ...
+                'uieFocusNum', ...
+                'uieFocusCenter', ...
+                'uieFocusStep' ...
+            };
+        
+        end
+        
+        function st = savePublic(this)
+            
+       
             st = struct();
             
-            st.dPositionStartX = this.uiePositionStartX.get();
+            st.dPositionStartX = this.dX(1);
             st.dPositionStepX = this.uiePositionStepX.get();
-            st.dPositionStartY = this.uiePositionStartY.get();
+            st.dPositionStartY = this.dY(1);
             st.dPositionStepY = this.uiePositionStepY.get();
             
             st.u8DoseNum = this.uieDoseNum.get();
@@ -115,30 +142,46 @@ classdef FemTool < mic.Base
             st.dFocusCenter = this.uieFocusCenter.get();
             st.dFocusStep = this.uieFocusStep.get();
             
+            
+        end
+
+        
+        % @return {struct} UI state to save
+        function st = save(this)
+            
+            ceProps = this.getPropsSaved();
+        
+            st = struct();
+            for n = 1 : length(ceProps)
+                cProp = ceProps{n};
+                st.(cProp) = this.(cProp).save();
+            end
+            
         end
         
         % @param {struct} UI state to load.  See save() for info on struct
         function load(this, st)
             
             this.lLoading = true;
-            this.uiePositionStartX.set(st.dPositionStartX);
-            this.uiePositionStepX.set(st.dPositionStepX);
-            this.uiePositionStartY.set(st.dPositionStartY);
-            this.uiePositionStepY.set(st.dPositionStepY);
             
-            this.uieDoseNum.set(st.u8DoseNum);
-            this.uieDoseCenter.set(st.dDoseCenter);
-            this.uieDoseStep.set(st.dDoseStep);
-            this.uipDoseStepType.setSelectedIndex(st.u8DoseStepType);
-
-            this.uieFocusNum.set(st.u8FocusNum);
-            this.uieFocusCenter.set(st.dFocusCenter);
-            this.uieFocusStep.set(st.dFocusStep);
+            ceProps = this.getPropsSaved();
+        
+            for n = 1 : length(ceProps)
+                cProp = ceProps{n};
+                if isfield(st, cProp)
+                    try
+                        this.(cProp).load(st.(cProp));
+                    end
+                end
+            end
+            
             
             this.lLoading = false;
             
             % call updateSize() to dispatch the event
             this.updateSize();
+            this.updateFocus();
+            this.updateDose();
             
             
         end
@@ -350,7 +393,7 @@ classdef FemTool < mic.Base
             
             dTop = 20;
             dWidthEdit = 50;
-            dWidthPopup = 80;
+            dWidthPopup = 90;
             
             
             this.hPanelPos = uipanel(...
@@ -369,24 +412,34 @@ classdef FemTool < mic.Base
             
             % Size panel is two-col
             
-            dWidthEdit = 50;
-            dWidthPopup = 80;
             dTop = 20;
             
             
             % Position panel
             
-            this.uiePositionStartX.build( ...
+            dLeft = this.dWidthPad;
+            this.uipPositionType.build(...
                 this.hPanelPos, ...
-                this.dWidthPad, ...
+                dLeft, ...
+                dTop + 18, ...
+                dWidthPopup, ...
+                mic.Utils.dEDITHEIGHT ...
+            )
+            
+        
+            dLeft = dLeft + dWidthPopup + this.dWidthPad;
+            this.uiePositionX.build( ...
+                this.hPanelPos, ...
+                dLeft, ...
                 dTop, ...
                 dWidthEdit, ...
                 mic.Utils.dEDITHEIGHT ...
             );
         
-            this.uiePositionStartY.build( ...
+            dLeft = dLeft + dWidthEdit + this.dWidthPad;
+            this.uiePositionY.build( ...
                 this.hPanelPos, ...
-                2*this.dWidthPad + dWidthEdit, ...
+                dLeft, ...
                 dTop, ...
                 dWidthEdit, ...
                 mic.Utils.dEDITHEIGHT ...
@@ -394,18 +447,30 @@ classdef FemTool < mic.Base
         
         
             dTop = dTop + mic.Utils.dEDITHEIGHT + 2 * this.dHeightPad;
+            dTop = dTop - this.dHeightPad + 5;
+            dLeft = this.dWidthPad;
             
+            this.uitPositionStepLabel.build(...
+                this.hPanelPos, ...
+                dLeft + 50, ...
+                dTop + 5, ...
+                70, ...
+                mic.Utils.dEDITHEIGHT ...
+            )
+            
+            dLeft = dLeft + dWidthPopup + this.dWidthPad;
             this.uiePositionStepX.build( ...
                 this.hPanelPos, ...
-                this.dWidthPad, ...
+                dLeft, ...
                 dTop, ...
                 dWidthEdit, ...
                 mic.Utils.dEDITHEIGHT ...
             );
         
+            dLeft = dLeft + dWidthEdit + this.dWidthPad;
             this.uiePositionStepY.build( ...
                 this.hPanelPos, ...
-                2*this.dWidthPad + dWidthEdit, ...
+                dLeft, ...
                 dTop, ...
                 dWidthEdit, ...
                 mic.Utils.dEDITHEIGHT ...
@@ -477,6 +542,7 @@ classdef FemTool < mic.Base
         
         function onDoseNum(this, src, evt)
             this.updateSize();
+            this.updateDose();
         end
         
         function onDoseCenter(this, src, evt)
@@ -542,23 +608,33 @@ classdef FemTool < mic.Base
                 
         function initPositionPanel(this)
             
-            this.uiePositionStartX = mic.ui.common.Edit(...
-                'cLabel', 'Start X', ...
-                'fhDirectCallback', @this.onPositionStartX, ...
+
+            this.uipPositionType = mic.ui.common.Popup(...
+                'ceOptions', {this.c_POSITION_TYPE_START, this.c_POSITION_TYPE_CENTER}, ...
+                'fhDirectCallback', @this.onPositionType, ...
+                'cLabel', '', ...
+                'lShowLabel', false ...
+            );
+        
+            this.uiePositionX = mic.ui.common.Edit(...
+                'cLabel', 'X', ...
+                'fhDirectCallback', @this.onPositionX, ...
                 'cType', 'd' ...
             );
-            this.uiePositionStartY = mic.ui.common.Edit(...
-                'cLabel', 'Start Y', ...
-                'fhDirectCallback', @this.onPositionStartY, ...
+            this.uiePositionY = mic.ui.common.Edit(...
+                'cLabel', 'Y', ...
+                'fhDirectCallback', @this.onPositionY, ...
                 'cType', 'd' ...
             );
             this.uiePositionStepX = mic.ui.common.Edit( ...
-                'cLabel', 'Step X', ...
+                'cLabel', 'X', ...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPositionStepX, ...
                 'cType', 'd' ...
             );
             this.uiePositionStepY = mic.ui.common.Edit(...
-                'cLabel', 'Step Y', ...
+                'cLabel', 'Y', ...
+                'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPositionStepY, ...
                 'cType', 'd' ...
             );
@@ -568,16 +644,19 @@ classdef FemTool < mic.Base
             this.uitPositionRangeY = mic.ui.common.Text(...
                 'cVal', 'y: [,]' ...
             );
+            this.uitPositionStepLabel = mic.ui.common.Text(...
+                'cVal', 'Step:' ...
+            );
         
             
-            this.uiePositionStartX.set(-5);
-            this.uiePositionStartY.set(0);
+            this.uiePositionX.set(0);
+            this.uiePositionY.set(0);
             this.uiePositionStepX.set(2);
-            this.uiePositionStepY.set(-2);
+            this.uiePositionStepY.set(2);
             
             %{
-            addlistener(this.uiePositionStartX, 'eChange', @this.onSize);
-            addlistener(this.uiePositionStartY, 'eChange', @this.onSize);
+            addlistener(this.uiePositionX, 'eChange', @this.onSize);
+            addlistener(this.uiePositionY, 'eChange', @this.onSize);
             addlistener(this.uiePositionStepX, 'eChange', @this.onSize);
             addlistener(this.uiePositionStepY, 'eChange', @this.onSize);
             %}
@@ -587,7 +666,7 @@ classdef FemTool < mic.Base
         end
         
         
-        function onPositionStartX(this, src, evt)
+        function onPositionX(this, src, evt)
             
             
             this.updateSize();
@@ -595,7 +674,7 @@ classdef FemTool < mic.Base
             
         end
         
-        function onPositionStartY(this, src, evt)
+        function onPositionY(this, src, evt)
             
             this.updateSize();
             
@@ -609,6 +688,12 @@ classdef FemTool < mic.Base
         end
         
         function onPositionStepY(this, src, evt)
+            
+            this.updateSize();
+            
+        end
+        
+        function onPositionType(this, src, evt)
             
             this.updateSize();
             
@@ -641,11 +726,21 @@ classdef FemTool < mic.Base
         end
         
         function onPrintMatrix(this, ~, ~)
-                       
-            fprintf('\nFEM: [%1d, %1d]\n', length(this.dDose), length(this.dFocus));
+              
+            fprintf('\n%1d (dose) x %1d (focus)\n', length(this.dDose), length(this.dFocus));
+            fprintf('Dose (mJ/cm2), Focus (nm)\n');
             for k = 1:length(this.dY)
                 for l = 1:length(this.dX)
                    fprintf('%1.2f, %1.0f \t', this.dDose(l), this.dFocus(k));
+                end
+                
+                fprintf('\n');
+            end
+            
+            fprintf('X (mm), Y (mm)\n');
+            for k = 1:length(this.dY)
+                for l = 1:length(this.dX)
+                   fprintf('%1.2f, %1.0f \t', this.dX(l), this.dY(k));
                 end
                 
                 fprintf('\n');
@@ -695,31 +790,71 @@ classdef FemTool < mic.Base
                 return
             end
             
-            this.dX = this.uiePositionStartX.get() : this.uiePositionStepX.get() : this.uiePositionStartX.get() + (double(this.uieDoseNum.get()) - 1)*this.uiePositionStepX.get();
-            this.dY = this.uiePositionStartY.get() : this.uiePositionStepY.get() : this.uiePositionStartY.get() + (double(this.uieFocusNum.get()) - 1)*this.uiePositionStepY.get();
-             
+            if this.lLoading
+                return
+            end
+            
+            dNumDose = double(this.uieDoseNum.get());
+            dNumFocus = double(this.uieFocusNum.get());
+            
+            switch this.uipPositionType.getSelectedValue()
+                case this.c_POSITION_TYPE_START
+                    this.dX = this.uiePositionX.get() : this.uiePositionStepX.get() : this.uiePositionX.get() + (dNumDose - 1)*this.uiePositionStepX.get();
+                    this.dY = this.uiePositionY.get() : this.uiePositionStepY.get() : this.uiePositionY.get() + (dNumFocus - 1)*this.uiePositionStepY.get();
+                case this.c_POSITION_TYPE_CENTER
+                    % Center
+                   
+                    % X positions (dose)
+                    if mod(this.uieDoseNum.get(), 2) == 0
+                        % Even
+                        dXStart = this.uiePositionX.get() - this.uiePositionStepX.get() * dNumDose / 2;
+                        dXEnd = this.uiePositionX.get() + this.uiePositionStepX.get() * (dNumDose / 2 - 1);
+                    else
+                        % Odd
+                        dXStart = this.uiePositionX.get() - this.uiePositionStepX.get() * (dNumDose - 1)/2;
+                        dXEnd = this.uiePositionX.get() + this.uiePositionStepX.get() * (dNumDose - 1)/2;
+                        
+                        
+                    end
+                    
+                    % Y positions (focus)
+                    if mod(this.uieFocusNum.get(), 2) == 0
+                        % Even
+                        dYStart = this.uiePositionY.get() - this.uiePositionStepY.get() *  dNumFocus / 2;
+                        dYEnd = this.uiePositionY.get() + this.uiePositionStepY.get() * (dNumFocus / 2 - 1);
+                    else
+                        % Odd
+                        dYStart = this.uiePositionY.get() - this.uiePositionStepY.get() * (dNumFocus - 1)/2;
+                        dYEnd = this.uiePositionY.get() + this.uiePositionStepY.get() * (dNumFocus - 1)/2;
+                    end
+                    
+                    this.dX = dXStart : this.uiePositionStepX.get() : dXEnd;
+                    this.dY = dYStart : this.uiePositionStepY.get() : dYEnd;
+                    
+            end % Switch
+            
             if ~isempty(this.dX)
                 cVal = sprintf( ...
-                    'x: [%1.1f, %1.1f]', ...
+                    'x: [%1.1f, %1.1f] mm', ...
                     this.dX(1), ...
                     this.dX(end) ...
                 );
                 
                 this.uitPositionRangeX.set(cVal)
             else 
-                this.uitPositionRangeY.set('x: [,]');
+                this.uitPositionRangeY.set('x: [,] mm');
             end
             
             if ~isempty(this.dY)
         
                 cVal = sprintf( ...
-                    'y: [%1.1f, %1.1f]', ...
+                    'y: [%1.1f, %1.1f] mm', ...
                     this.dY(1), ...
                     this.dY(end) ...
                 ); 
                 this.uitPositionRangeY.set(cVal)
             else 
-                this.uitPositionRangeY.set('y: [,]');
+                this.uitPositionRangeY.set('y: [,] mm');
             end
             
             [dXGrid, dYGrid] = meshgrid(this.dX*1e-3, this.dY*1e-3);
@@ -744,6 +879,10 @@ classdef FemTool < mic.Base
                 return
             end
             
+            if this.lLoading
+                return
+            end
+            
             % relative factor:
             % Even: for 6 do -2 -1 0 1 2 3
             % Odd:  for 7 do -3 -2 -1 0 1 2 3
@@ -755,7 +894,7 @@ classdef FemTool < mic.Base
             
             if ~isempty(this.dFocus)
                 cVal = sprintf( ...
-                    'Range: %1.0f nm to %1.0f nm', ...
+                    '[%1.0f, %1.0f] nm', ...
                     this.dFocus(1), ...
                     this.dFocus(end) ...
                 );
@@ -772,6 +911,11 @@ classdef FemTool < mic.Base
             if ~this.lInitialized
                 return
             end
+            
+            if this.lLoading
+                return
+            end
+            
             % Even: for 6 do -2 -1 0 1 2 3
             % Odd:  for 7 do -3 -2 -1 0 1 2 3
             
@@ -793,7 +937,7 @@ classdef FemTool < mic.Base
             
             if ~isempty(this.dDose)
                 cVal = sprintf( ...
-                    'Range: %1.2f to %1.2f mJ/cm2', ...
+                    '[%1.2f, %1.2f] mJ/cm2', ...
                     this.dDose(1), ...
                     this.dDose(end) ...
                 );

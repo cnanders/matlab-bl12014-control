@@ -29,6 +29,8 @@ classdef App < mic.Base
         uiScannerMA
         uiHeightSensorLEDs
         uiCameraLEDs
+        uiScanResultPlot2x2
+        uiMADiagnostics
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -117,6 +119,7 @@ classdef App < mic.Base
             delete(this.uiShutter)
             delete(this.uiM141)
             delete(this.uiM142)
+            delete(this.uiMADiagnostics)
             delete(this.uiM143)
             delete(this.uiD141)
             delete(this.uiD142)
@@ -131,6 +134,8 @@ classdef App < mic.Base
             delete(this.uiFocusSensor)
             delete(this.uiHeightSensorLEDs)
             delete(this.uiCameraLEDs)
+            delete(this.uiScanResultPlot2x2)
+            
             % Delete the clock
             delete(this.clock);
                        
@@ -149,12 +154,14 @@ classdef App < mic.Base
             %uiShutter
             st.uiM141 = this.uiM141.save();
             st.uiM142 = this.uiM142.save();
+            st.uiMADiagnostics = this.uiMADiagnostics.save();
             st.uiM143 = this.uiM143.save();
             st.uiD141 = this.uiD141.save();
             st.uiD142 = this.uiD142.save();
             % uiVibrationIsolationSystem
             st.uiReticle = this.uiReticle.save();
             st.uiWafer = this.uiWafer.save();
+            st.uiScanResultPlot2x2 = this.uiScanResultPlot2x2.save()
             % uiPowerPmacStatus
             % uiPrescriptionTool           
             % uiScan
@@ -170,6 +177,10 @@ classdef App < mic.Base
                         
             if isfield(st, 'uiPrescriptionTool') 
                 this.uiPrescriptionTool.load(st.uiPrescriptionTool);
+            end
+            
+            if isfield(st, 'uiScanResultPlot2x2') 
+                this.uiScanResultPlot2x2.load(st.uiScanResultPlot2x2);
             end
             
             if isfield(st, 'uiScannerMA')
@@ -189,6 +200,10 @@ classdef App < mic.Base
             
             if isfield(st, 'uiM142')
                 this.uiM142.load(st.uiM142)
+            end
+            
+            if isfield(st, 'uiMADiagnostics')
+                this.uiMADiagnostics.load(st.uiMADiagnostics)
             end
             
             if isfield(st, 'uiM143')
@@ -281,7 +296,7 @@ classdef App < mic.Base
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', this.hHardware, ...
                                'clock', this.clock);
             catch me
-                error(me.message);
+                % error(me.message);
                 % Don't have LSIControl installed
             end
             
@@ -301,7 +316,9 @@ classdef App < mic.Base
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
                 'clock', this.clock ...
             );
-
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2();
+            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clock);
+            
             addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
             addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
             addlistener(this.uiPrescriptionTool, 'eDelete', @this.onPrescriptionToolDelete);
@@ -354,6 +371,11 @@ classdef App < mic.Base
             'cLabel',  'M142', ...
             'fhOnClick',  @() this.uiM142.build(), ...
             'cTooltip',  'Beamline');
+        
+            stMADiagnostics = struct(...
+            'cLabel',  'MA Diagnostics', ...
+            'fhOnClick',  @() this.uiMADiagnostics.build(), ...
+            'cTooltip',  'MA Diagnostics');
             
             stM143 = struct(...
             'cLabel',  'M143', ...
@@ -409,6 +431,11 @@ classdef App < mic.Base
             'cTooltip',  'Diag. Cam + LED Power');
         
         
+            stScanResultPlot2x2 = struct(...
+            'cLabel',  'Scan Result Plotter 2x2', ...
+            'fhOnClick',  @() this.uiScanResultPlot2x2.build(), ...
+            'cTooltip',  'Scan Result Plotter 2x2');
+        
             
             stScannerM142 = struct(...
             'cLabel',  'M142 Scanner', ...
@@ -457,6 +484,7 @@ classdef App < mic.Base
               stD142, ...
               stM143, ...
               stVibrationIsolationSystem, ...
+              stMADiagnostics, ...
               stScannerMA, ...
               stReticle, ...
               stWafer, ...
@@ -470,6 +498,7 @@ classdef App < mic.Base
               stLSIAnalyze, ...
               stHeightSensorLEDs, ...
               stCameraLEDs, ...
+              stScanResultPlot2x2, ...
               stShutter ...
            ];
             

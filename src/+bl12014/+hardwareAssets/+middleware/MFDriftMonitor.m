@@ -59,6 +59,8 @@ classdef MFDriftMonitor < mic.Base
         % Computed Heigth sensor positions, [Rx, Ry, Z]
         dHSPositions = [0, 0, 0]'
         
+        dSimpleZPosition = 0;
+        
         % Interpolants:
         stGeometricInterpolant
         stCalibrationInterpolant
@@ -183,6 +185,8 @@ classdef MFDriftMonitor < mic.Base
                     dVal = this.dHSChannelData(u8Channel);
                 case {7, 8, 9}
                     dVal = this.dHSPositions(u8Channel - 6);
+                case 10
+                    dVal = this.getSimpleZ();
             end
         end
         
@@ -190,15 +194,20 @@ classdef MFDriftMonitor < mic.Base
         % position in nm based on averaging last 3 channels.
         function dVal = getSimpleZ(this, dNumAverage)
             if nargin == 1
-                dNumAverage = 10;
+                % Use stored value
+                dVal = this.dSimpleZPosition;
+                return
             end
             
             dSampleAve = this.javaAPI.getSampleDataAvg(dNumAverage);
-            
-            % Uses CWCork slopes
+            dVal = this.computeSimpleZ(dSampleAve);
+           
+        end
+        
+        function dVal = computeSimpleZ(this, dSampleAve)
+             % Uses CWCork slopes
             dSimpleHeights = this.javaAPI.hsGetPositions(dSampleAve);
             dVal = mean(dSimpleHeights(4:6))/10;
-            
         end
         
         function dVal = getDMIValue(this, u8Channel)
@@ -256,6 +265,8 @@ classdef MFDriftMonitor < mic.Base
         function updateChannelData(this)
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
             
+            % update simple Z:
+            this.dSimpleZPosition = this.computeSimpleZ(dSampleAve);
             
             % Set HS data
             % dSampleAve.getHsData()

@@ -34,7 +34,7 @@ classdef PrescriptionTool < mic.Base
     
     properties (Constant)
        
-        dWidth          = 1250
+        dWidth          = 1350
         dHeight         = 720
         dColorFigure = [200 200 200]./255
 
@@ -287,9 +287,9 @@ classdef PrescriptionTool < mic.Base
                     stValue = struct();
                     stValue.type = 'exposure';
                     stValue.workingModeStart = '5'; % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-                    stValue.waferX = -this.uiFemTool.dX(m);
-                    stValue.waferY = -this.uiFemTool.dY(n);
-                    stValue.waferZ = this.uiFemTool.dFocus(n);
+                    stValue.waferX = -this.uiFemTool.dX(m); % Position on wafer you want the exposure to be
+                    stValue.waferY = -this.uiFemTool.dY(n); % Position on wafer you want exposure to be
+                    stValue.waferZ = this.uiFemTool.dFocus(n);% Val you want HS to read during exposure
                     stValue.workingModeEnd = '4'; % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     
                     % Exposure task
@@ -321,7 +321,7 @@ classdef PrescriptionTool < mic.Base
             
             stRecipe = struct();
             stRecipe.process = this.uiProcessTool.save();
-            stRecipe.fem = this.uiFemTool().save();
+            stRecipe.fem = this.uiFemTool().savePublic();
             stRecipe.unit = stUnit;
             stRecipe.values = ceValues;
             

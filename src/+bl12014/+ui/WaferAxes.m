@@ -21,8 +21,8 @@ classdef WaferAxes < mic.Base
         dHeight = 600
         
         
-        dXChiefRay = -2.4e-3 % m
-        dYChiefRay = -2.4e-3 % m
+        dXChiefRay = 1e-3 % m
+        dYChiefRay = 1e-3 % m
         
         
     end

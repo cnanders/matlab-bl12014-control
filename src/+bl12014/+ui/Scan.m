@@ -1065,7 +1065,7 @@ classdef Scan < mic.Base
             % some setting of state happens in here. The state "contract"
             % makes this possible.
             
-            lDebug = true;           
+            lDebug = false;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -1476,6 +1476,10 @@ classdef Scan < mic.Base
             
                 % Update the UI of wafer to show exposing
                 this.uiWafer.uiAxes.setExposing(false);
+                
+                % Overwrite the results file
+                
+                this.saveScanResults(stUnit);
             end
         end
 
