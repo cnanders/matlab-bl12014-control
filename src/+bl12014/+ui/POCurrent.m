@@ -8,15 +8,18 @@ classdef POCurrent < mic.Base
         % {mic.ui.device.GetNumber 1x1}
         uiCurrent
         
+        
     end
     
     properties (Access = private)
         
         clock
-        dWidth = 610
+        dWidth = 1210
         dHeight = 680
         
-        dWidthAxes = 400
+        dWidthPadLeftAxes = 80
+        
+        dWidthAxes = 1000
         dHeightAxes = 500
         
         hFigure
@@ -27,6 +30,8 @@ classdef POCurrent < mic.Base
         
         % {datetime 1xm} storage of measurement times
         dtTimes = NaT(0, 0)
+        
+        uiButtonClear
                        
     end
     
@@ -56,6 +61,7 @@ classdef POCurrent < mic.Base
             device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
             this.uiCurrent.setDevice(device);
             this.uiCurrent.turnOn()
+            this.clearValues();
             
         end
         
@@ -78,15 +84,25 @@ classdef POCurrent < mic.Base
             this.buildFigure();
             
             dTop = 10;
-            dLeft = 10;
+            dLeft = this.dWidthPadLeftAxes;
             dSep = 30;
             
             this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep + 15;
                         
             this.uiCurrent.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
             
+            
+            dLeft = 900;
+            this.uiButtonClear.build(...
+                this.hFigure, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                24 ...
+            );
+        
+        
             this.buildAxes();
             
         end
@@ -114,11 +130,14 @@ classdef POCurrent < mic.Base
         
         function st = save(this)
             st = struct();
+            st.uiCurrent = this.uiCurrent.save();
             
         end
         
         function load(this, st)
-            
+            if isfield(st, 'uiCurrent')
+                this.uiCurrent.load(st.uiCurrent);
+            end
         end
         
         function d = get(this)
@@ -127,6 +146,7 @@ classdef POCurrent < mic.Base
         
         function clearValues(this)
             this.dValues = [];
+            this.dtTimes = NaT(0, 0);
         end
         
         
@@ -174,9 +194,6 @@ classdef POCurrent < mic.Base
             if length(dX) ~= length(dY)
                 return
             end
-            
-            length(dX)
-            length(dY)
                 
             plot(...
                 this.hAxes, ...
@@ -204,7 +221,7 @@ classdef POCurrent < mic.Base
                 'cName', sprintf('%s-current', this.cName), ...
                 'config', uiConfig, ...
                 'cLabel', 'Current', ...
-                'dWidthPadUnit', 277, ...
+                'dWidthPadUnit', 25, ...
                 'lShowInitButton', true, ...
                 'lShowLabels', false ...
             );
@@ -239,19 +256,31 @@ classdef POCurrent < mic.Base
             this.msg('init');
             this.initUiCurrent();
             this.initUiCommKeithley6482();
+            this.initUiButtonClear();
             
             if ~isempty(this.clock)
-                this.clock.add(@this.onClock, this.id(), 100/1000);
+                this.clock.add(@this.onClock, this.id(), 400/1000);
             end
         end
         
+        function initUiButtonClear(this)
+            this.uiButtonClear = mic.ui.common.Button(...
+                'cText', 'Reset', ...
+                'fhDirectCallback', @this.onButtonClear ...
+            );
+        
+        end
+        
+        function onButtonClear(this, src, evt)
+            this.clearValues()
+        end
         
         function buildAxes(this)
                         
             this.hAxes = axes(...
                 'Parent', this.hFigure, ...
                 'Units', 'pixels',...
-                'Position', mic.Utils.lt2lb([80, 100, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'Position', mic.Utils.lt2lb([this.dWidthPadLeftAxes, 100, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
                 'HandleVisibility', 'on', ...
                 'XMinorTick','on', ...
                 'YMinorTick','on', ...

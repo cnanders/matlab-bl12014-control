@@ -836,6 +836,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.connectKeithley6482(this.commKeithley6482Wafer);
             % this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
             this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer);
+            this.uiApp.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer);
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
@@ -848,6 +849,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.disconnectKeithley6482();
             % this.uiApp.uiWafer.disconnectKeithley6482()
             this.uiApp.uiLSIControl.disconnectKeithley6482();
+            this.uiApp.uiPOCurrent.disconnectKeithley6482();
             
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
@@ -1876,6 +1878,9 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
             this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
            
+            this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
+            this.uiApp.uiPOCurrent.uiCommKeithley6482.turnOn();
+            
             % Wafer
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);

@@ -31,6 +31,7 @@ classdef App < mic.Base
         uiCameraLEDs
         uiScanResultPlot2x2
         uiMADiagnostics
+        uiPOCurrent
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -126,6 +127,7 @@ classdef App < mic.Base
             delete(this.uiVibrationIsolationSystem)
             delete(this.uiReticle)
             delete(this.uiWafer)
+            delete(this.uiPOCurrent)
             delete(this.uiScannerMA)
             delete(this.uiScannerM142)
             delete(this.uiPrescriptionTool)           
@@ -155,6 +157,7 @@ classdef App < mic.Base
             st.uiM141 = this.uiM141.save();
             st.uiM142 = this.uiM142.save();
             st.uiMADiagnostics = this.uiMADiagnostics.save();
+            st.uiPOCurrent = this.uiPOCurrent.save();
             st.uiM143 = this.uiM143.save();
             st.uiD141 = this.uiD141.save();
             st.uiD142 = this.uiD142.save();
@@ -210,6 +213,9 @@ classdef App < mic.Base
                 this.uiM143.load(st.uiM143)
             end
             
+            if isfield(st, 'uiPOCurrent')
+                this.uiPOCurrent.load(st.uiPOCurrent)
+            end 
             if isfield(st, 'uiD141')
                 this.uiD141.load(st.uiD141)
             end
@@ -318,6 +324,7 @@ classdef App < mic.Base
             );
             this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2();
             this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clock);
+            this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clock);
             
             addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
             addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
@@ -396,6 +403,11 @@ classdef App < mic.Base
             'cLabel',  'Wafer', ...
             'fhOnClick',  @() this.uiWafer.build(), ...
             'cTooltip',  'Beamline');
+        
+       stPOCurrent = struct(...
+            'cLabel',  'PO Current (MDM)', ...
+            'fhOnClick',  @() this.uiPOCurrent.build(), ...
+            'cTooltip',  'PO Current (MDM)');
         
             stPowerPmacStatus = struct(...
                 'cLabel',  'Power PMAC Status', ...
@@ -488,6 +500,7 @@ classdef App < mic.Base
               stScannerMA, ...
               stReticle, ...
               stWafer, ...
+              stPOCurrent, ...
               stPowerPmacStatus, ...
               stPrescriptionTool, ...
               stExptControl, ...
