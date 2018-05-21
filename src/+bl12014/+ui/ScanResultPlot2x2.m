@@ -11,7 +11,7 @@ classdef ScanResultPlot2x2 < mic.Base
     properties (SetAccess = private)
         
         dWidth              = 1300;
-        dHeight             = 980;
+        dHeight             = 960;
         
         dWidthPadAxesLeft = 60
         dWidthPadAxesRight = 40
@@ -41,6 +41,12 @@ classdef ScanResultPlot2x2 < mic.Base
         uiPopup2
         uiPopup3
         uiPopup4
+        
+        uiCheckboxDC1
+        uiCheckboxDC2
+        uiCheckboxDC3
+        uiCheckboxDC4
+        
         
         uiPopupIndexStart
         uiPopupIndexEnd
@@ -233,6 +239,13 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
             );
+            this.uiCheckboxDC1.build(...
+                this.hFigure, ...
+                dLeft + this.dWidthPopup + 20, ...
+                dTop, ...
+                this.dWidthPopup, ...
+                this.dHeightPopup ...
+            );
         
         
             dLeft = this.getLeft2();
@@ -241,6 +254,13 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopup2.build(...
                 this.hFigure, ...
                 dLeft , ...
+                dTop, ...
+                this.dWidthPopup, ...
+                this.dHeightPopup ...
+            );
+            this.uiCheckboxDC2.build(...
+                this.hFigure, ...
+                dLeft + this.dWidthPopup + 20, ...
                 dTop, ...
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
@@ -257,6 +277,13 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
             );
+            this.uiCheckboxDC3.build(...
+                this.hFigure, ...
+                dLeft + this.dWidthPopup + 20, ...
+                dTop, ...
+                this.dWidthPopup, ...
+                this.dHeightPopup ...
+            );
         
         
             dLeft = this.getLeft2();
@@ -265,6 +292,13 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopup4.build(...
                 this.hFigure, ...
                 dLeft , ...
+                dTop, ...
+                this.dWidthPopup, ...
+                this.dHeightPopup ...
+            );
+          this.uiCheckboxDC4.build(...
+                this.hFigure, ...
+                dLeft + this.dWidthPopup + 20, ...
                 dTop, ...
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
@@ -461,7 +495,30 @@ classdef ScanResultPlot2x2 < mic.Base
         end
         
         
-        function updateAxes(this, hAxes, cProp)
+        function updateAxes(this, u8Axes)
+            
+            
+            switch u8Axes
+                case 1
+                   hAxes = this.hAxes1;
+                   cProp = this.uiPopup1.get();
+                   lRemoveDC = this.uiCheckboxDC1.get();
+                case 2
+                    hAxes = this.hAxes2;
+                    cProp = this.uiPopup2.get();
+                    lRemoveDC = this.uiCheckboxDC2.get();
+                case 3
+                    hAxes = this.hAxes3;
+                    cProp = this.uiPopup3.get();
+                    lRemoveDC = this.uiCheckboxDC3.get();
+                case 4
+                    hAxes = this.hAxes4;
+                    cProp = this.uiPopup4.get();
+                    lRemoveDC = this.uiCheckboxDC4.get();
+                    
+                    
+            end
+                        
             
             if ~this.getResultStructHasValues(this.stResult)
                 return
@@ -469,6 +526,11 @@ classdef ScanResultPlot2x2 < mic.Base
             
             dValues = this.stResultForPlotting.(cProp);
             dValues = dValues(this.uiPopupIndexStart.getSelectedIndex() : this.uiPopupIndexEnd.getSelectedIndex());
+            if lRemoveDC
+                dValues = dValues - mean(dValues)
+            end
+            
+            
             plot(hAxes, ...
                 dValues, '.-b');
             xlabel(hAxes, 'State Num');
@@ -506,23 +568,38 @@ classdef ScanResultPlot2x2 < mic.Base
         end
         
         
+        function onCheckboxDC1(this, src, evt)
+            this.onPopup1(src, evt)
+        end
+        
+        function onCheckboxDC2(this, src, evt)
+            this.onPopup2(src, evt)
+        end
+        
+        function onCheckboxDC3(this, src, evt)
+            this.onPopup3(src, evt)
+        end
+        
+        function onCheckboxDC4(this, src, evt)
+            this.onPopup4(src, evt)
+        end
         
         
         function onPopup1(this, src, evt)
-            this.updateAxes(this.hAxes1, this.uiPopup1.get());
+            this.updateAxes(1);
         end
         
         function onPopup2(this, src, evt)
-            this.updateAxes(this.hAxes2, this.uiPopup2.get());
+            this.updateAxes(2);
         end
         
         function onPopup3(this, src, evt)
-        	this.updateAxes(this.hAxes3, this.uiPopup3.get());
+        	this.updateAxes(3);
 
         end
         
         function onPopup4(this, src, evt)
-            this.updateAxes(this.hAxes4, this.uiPopup4.get());
+            this.updateAxes(4);
 
         end
         
@@ -552,6 +629,26 @@ classdef ScanResultPlot2x2 < mic.Base
                 'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup4 ...
                 );
+            
+            this.uiCheckboxDC1 = mic.ui.common.Checkbox(...
+                'cLabel', 'Remove DC', ...
+                'fhDirectCallback', @this.onCheckboxDC1 ...
+            );
+        
+            this.uiCheckboxDC2 = mic.ui.common.Checkbox(...
+                'cLabel', 'Remove DC', ...
+                'fhDirectCallback', @this.onCheckboxDC2 ...
+            );
+        
+            this.uiCheckboxDC3 = mic.ui.common.Checkbox(...
+                'cLabel', 'Remove DC', ...
+                'fhDirectCallback', @this.onCheckboxDC3 ...
+            );
+        
+            this.uiCheckboxDC4 = mic.ui.common.Checkbox(...
+                'cLabel', 'Remove DC', ...
+                'fhDirectCallback', @this.onCheckboxDC4 ...
+            );
             
             this.uiPopupIndexStart = mic.ui.common.Popup(...
                 'lShowLabel', true, ...
