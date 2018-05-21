@@ -950,6 +950,9 @@ classdef Scan < mic.Base
                 case "exposure"
                     this.onScanSetStateOfTypeExposure(stUnit, stValue)
                     return
+                case "cleanup"
+                    this.onScanSetStateOfTypeCleanup(stUnit, stValue);
+                    return;
             end        
 
         end
