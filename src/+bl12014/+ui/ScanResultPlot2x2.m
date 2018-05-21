@@ -11,7 +11,7 @@ classdef ScanResultPlot2x2 < mic.Base
     properties (SetAccess = private)
         
         dWidth              = 1300;
-        dHeight             = 900;
+        dHeight             = 980;
         
         dWidthPadAxesLeft = 60
         dWidthPadAxesRight = 40
@@ -19,7 +19,7 @@ classdef ScanResultPlot2x2 < mic.Base
         dHeightPadAxesBottom = 40
         dWidthAxes = 550
         dHeightAxes = 330
-        dHeightOffsetTop = 30;
+        dHeightOffsetTop = 80;
        
         dWidthPopup = 200;
         dHeightPopup = 24;
@@ -41,6 +41,9 @@ classdef ScanResultPlot2x2 < mic.Base
         uiPopup2
         uiPopup3
         uiPopup4
+        
+        uiPopupIndexStart
+        uiPopupIndexEnd
         
         uiButtonFile
         uiTextFile
@@ -92,6 +95,8 @@ classdef ScanResultPlot2x2 < mic.Base
             delete(this.uiPopup2);
             delete(this.uiPopup3);
             delete(this.uiPopup4);
+            delete(this.uiPopupIndexStart);
+            delete(this.uiPopupIndexEnd);
             delete(this.uiButtonFile);
             delete(this.uiTextFile);
             delete(this.hAxes1);
@@ -193,8 +198,29 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.hFigure, ...
                 dLeft, ...
                 dTop, ...
-                900, ...
+                1000, ...
                 24 ...
+            );
+        
+            dLeft = this.getLeft1();
+            dTop = 40;
+        
+            dWidth = 70
+            this.uiPopupIndexStart.build(...
+                this.hFigure, ...
+                dLeft , ...
+                dTop, ...
+                dWidth, ...
+                this.dHeightPopup ...
+            );
+        
+            dLeft = dLeft + dWidth + 10;
+            this.uiPopupIndexEnd.build(...
+                this.hFigure, ...
+                dLeft , ...
+                dTop, ...
+                dWidth, ...
+                this.dHeightPopup ...
             );
                 
             
@@ -374,6 +400,10 @@ classdef ScanResultPlot2x2 < mic.Base
             
         end
         
+  
+        
+        
+        
         
         function updatePopups(this)
             
@@ -385,10 +415,27 @@ classdef ScanResultPlot2x2 < mic.Base
             stValue = ceValues{2};
             ceFields = fieldnames(stValue);
             
+            
             this.uiPopup1.setOptions(ceFields);
             this.uiPopup2.setOptions(ceFields);
             this.uiPopup3.setOptions(ceFields);
             this.uiPopup4.setOptions(ceFields);
+            
+            % Returns a {cell 1xm} with values for the index start and index
+            % end popups
+        
+            dValues = this.stResultForPlotting.(ceFields{1});
+            ceOptions = cell(1, length(dValues));
+            for n = 1 : length(dValues)
+               ceOptions{n} = num2str(n); 
+            end
+            
+           
+            this.uiPopupIndexStart.setOptions(ceOptions);
+            this.uiPopupIndexEnd.setOptions(ceOptions);
+            
+            this.uiPopupIndexStart.setSelectedIndex(uint8(1));
+            this.uiPopupIndexEnd.setSelectedIndex(uint8(length(dValues)));
             
             if length(ceFields) > 0
                 this.uiPopup1.setSelectedIndex(uint8(1))
@@ -421,7 +468,7 @@ classdef ScanResultPlot2x2 < mic.Base
             end
             
             dValues = this.stResultForPlotting.(cProp);
-            dValues = dValues(2 : end);
+            dValues = dValues(this.uiPopupIndexStart.getSelectedIndex() : this.uiPopupIndexEnd.getSelectedIndex());
             plot(hAxes, ...
                 dValues, '.-b');
             xlabel(hAxes, 'State Num');
@@ -430,6 +477,36 @@ classdef ScanResultPlot2x2 < mic.Base
             end
             
         end
+        
+        
+        function onPopupIndexStart(this, src, evt)
+            
+            if this.uiPopupIndexEnd.getSelectedIndex() < this.uiPopupIndexStart.getSelectedIndex()
+                this.uiPopupIndexEnd.setSelectedIndex(this.uiPopupIndexStart.getSelectedIndex())
+            end
+            
+            this.onPopup1([], []);
+            this.onPopup2([], []);
+            this.onPopup3([], []);
+            this.onPopup4([], []);
+            
+        end
+        
+        function onPopupIndexEnd(this, src, evt)
+            
+            if this.uiPopupIndexStart.getSelectedIndex() > this.uiPopupIndexEnd.getSelectedIndex()
+                this.uiPopupIndexStart.setSelectedIndex(this.uiPopupIndexEnd.getSelectedIndex())
+            end
+            
+            this.onPopup1([], []);
+            this.onPopup2([], []);
+            this.onPopup3([], []);
+            this.onPopup4([], []);
+            
+        end
+        
+        
+        
         
         function onPopup1(this, src, evt)
             this.updateAxes(this.hAxes1, this.uiPopup1.get());
@@ -474,6 +551,17 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopup4 = mic.ui.common.Popup(...
                 'lShowLabel', false, ...
                 'fhDirectCallback', @this.onPopup4 ...
+                );
+            
+            this.uiPopupIndexStart = mic.ui.common.Popup(...
+                'lShowLabel', true, ...
+                'cLabel', 'Index Start', ...
+                'fhDirectCallback', @this.onPopupIndexStart ...
+                );
+            this.uiPopupIndexEnd = mic.ui.common.Popup(...
+                'lShowLabel', true, ...
+                'cLabel', 'Index End', ...
+                'fhDirectCallback', @this.onPopupIndexEnd ...
                 );
             
         end
