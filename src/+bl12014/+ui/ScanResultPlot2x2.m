@@ -420,8 +420,10 @@ classdef ScanResultPlot2x2 < mic.Base
                 return
             end
             
+            dValues = this.stResultForPlotting.(cProp);
+            dValues = dValues(2 : end);
             plot(hAxes, ...
-                this.stResultForPlotting.(cProp), '.-b');
+                dValues, '.-b');
             xlabel(hAxes, 'State Num');
             try
                 ylabel(hAxes, this.stResult.unit.(cProp));

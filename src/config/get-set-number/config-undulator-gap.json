@@ -11,12 +11,16 @@
     "step": 0.15,
     "stores": [
         {
-            "name": "met",
+            "name": "met (40.24)",
             "raw": 40.24
         },
         {
-            "name": "dct",
+            "name": "dct (40)",
             "raw": 40
+        },
+        { 
+            "name": "met5 (39.73)",
+            "raw": 39.73
         }
     ],
     "min": 10,
