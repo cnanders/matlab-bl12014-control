@@ -61,7 +61,6 @@ classdef PrescriptionTool < mic.Base
         hPanelSaved
         cDirThis
         cDirSrc
-        cDirSave
         
         
         uiListPrescriptions
@@ -77,10 +76,7 @@ classdef PrescriptionTool < mic.Base
         stStatePresent
         % {cell of struct}
         cestStatesFuture 
-        
-        uiButtonChooseDir
-        uiTextDir
-        
+                
         dWidthBorderPanel = 0
     
     end
@@ -104,8 +100,7 @@ classdef PrescriptionTool < mic.Base
             
             this.cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
-            this.cDirSave = fullfile(this.cDirSrc, 'save', 'prescriptions');
-            this.cDirSave = mic.Utils.path2canonical(this.cDirSave);
+            
             
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
@@ -124,18 +119,21 @@ classdef PrescriptionTool < mic.Base
         
         function st = save(this)
              st = struct();
-             st.cDirSave = this.cDirSave;
              st.uiPupilFillTool = this.uiPupilFillTool.save();
+             st.uiListPrescriptions = this.uiListPrescriptions.save();
              
         end
         
         function load(this, st)
-            this.cDirSave = st.cDirSave;
+
             
             if isfield(st, 'uiPupilFillTool')
                 this.uiPupilFillTool.load(st.uiPupilFillTool);
             end
             
+            if isfield(st, 'uiListPrescriptions')
+                this.uiListPrescriptions.loat(st.uiListPrescriptions);
+            end            
             
             this.updateUiTextDir();
             this.uiListPrescriptions.refresh();
@@ -205,24 +203,6 @@ classdef PrescriptionTool < mic.Base
             dWidthButton = 100;
             dHeightButton = 24;
             
-            this.uiButtonChooseDir.build(...
-                this.hPanelSaved, ...
-                dLeft, ...
-                dTop, ...
-                dWidthButton, ...
-                dHeightButton ...
-            );
-        
-            this.uiTextDir.build(...
-                this.hPanelSaved, ...
-                dLeft + dWidthButton + 10, ...
-                dTop, ...
-                1000, ...
-                dHeightButton ...
-            );
-
-            dTop = dTop + dHeightButton + 10;
-            
             
             this.uiListPrescriptions.build( ...
                 this.hPanelSaved, ...
@@ -249,9 +229,6 @@ classdef PrescriptionTool < mic.Base
         end
         
         
-        function ceReturn = refreshSaved(this)
-            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'descend', '*.json');
-        end
         
         function stRecipe = getRecipe(this)
             
@@ -385,31 +362,22 @@ classdef PrescriptionTool < mic.Base
             addlistener(this.ec, 'ePreChange', @this.onPreChange);
             %}
             
-            this.uiButtonChooseDir = mic.ui.common.Button(...
-                'cText', 'Choose Dir' ...
-            );
-            this.uiTextDir = mic.ui.common.Text(...
-                'cVal', '...' ...
-            );
-            this.updateUiTextDir();
-            
-            addlistener(this.uiButtonChooseDir, 'eChange', @this.onUiButtonChooseDir);
+            cDir = fullfile(this.cDirSrc, 'save', 'prescriptions');
+            cDir = mic.Utils.path2canonical(cDir);
 
-           
-            this.uiListPrescriptions = mic.ui.common.List(...
-                'ceOptions', cell(1,0), ...
+            this.uiListPrescriptions = mic.ui.common.ListDir(...
+                'cDir', cDir, ...
                 'cLabel', '', ...
+                'cFilter', '*.json', ...
                 'lShowDelete', true, ...
                 'lShowMove', false, ...
                 'lShowLabel', false, ...
                 'lShowRefresh', true ...
             );
-            this.uiListPrescriptions.setRefreshFcn(@this.refreshSaved);
+            % this.uiListPrescriptions.setRefreshFcn(@this.refreshSaved);
             
-            addlistener(this.uiListPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
+            % addlistener(this.uiListPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
             addlistener(this.uiListPrescriptions, 'eChange', @this.onPrescriptionsChange);
-            
-            
            
         end        
         
@@ -461,8 +429,8 @@ classdef PrescriptionTool < mic.Base
             cName = this.getSuggestedName();
             
             % Use cDirSave as suggested path
-            if ~exist(this.cDirSave, 'dir')
-                mkdir(this.cDirSave)
+            if ~exist(this.uiListPrescriptions.getDir(), 'dir')
+                mkdir(this.uiListPrescriptions.getDir())
             end
                                 
             
@@ -488,7 +456,7 @@ classdef PrescriptionTool < mic.Base
             Old way allows overriding dir and path.  No longer doing it
             this way, use the dir defined by "choose dir"
             
-            cPath = fullfile(this.cDirSave, cName);
+            cPath = fullfile(this.uiListPrescriptions.getDir(), cName);
 
             [   cUserFile, ...
                 cUserPath, ...
@@ -507,8 +475,8 @@ classdef PrescriptionTool < mic.Base
             
             cNameJson = [ceAnswer{1}, '.json'];
             cNameMat = [ceAnswer{1}, '.mat'];
-            cPathJson = fullfile(this.cDirSave, cNameJson);
-            cPathMat = fullfile(this.cDirSave, cNameMat);
+            cPathJson = fullfile(this.uiListPrescriptions.getDir(), cNameJson);
+            cPathMat = fullfile(this.uiListPrescriptions.getDir(), cNameMat);
             
             this.saveRecipeToDisk(cPathJson)
             this.saveRecipeMatToDisk(cPathMat)
@@ -586,33 +554,7 @@ classdef PrescriptionTool < mic.Base
                
         end
         
-        function onPrescriptionsDelete(this, src, evt)
         
-            % In this case, evt is an instance of EventWithData (custom
-            % class that extends event.EventData) that has a property
-            % stData (a structure).  The structure has one property called
-            % options which is a cell array of the items on the list that
-            % were just deleted.
-            % 
-            % Need to loop through them and delete them from the directory.
-            % The actual filenames are appended with .mat
-                        
-            for k = 1:length(evt.stData.ceOptions)
-                
-                cFile = fullfile(this.cDirSave, evt.stData.ceOptions{k});
-                            
-                if exist(cFile, 'file') ~= 0
-                    % File exists, delete it
-                    delete(cFile);
-                else
-                    this.msg(sprintf('Cannot find file: %s; not deleting.', cFile));
-                end
-                
-            end
-            
-            notify(this, 'eDelete')
-            
-        end
                
         
         function onPrescriptionsChange(this, src, evt)
@@ -626,7 +568,7 @@ classdef PrescriptionTool < mic.Base
                 % Load the .mat file (assume that cName is the filename in the
                 % prescriptions directory
 
-                cPath = this.replaceExtension(fullfile(this.cDirSave, ceSelected{1}), '.mat');
+                cPath = this.replaceExtension(fullfile(this.uiListPrescriptions.getDir(), ceSelected{1}), '.mat');
                 this.loadRecipeMatFromDisk(cPath);
             end
             
@@ -642,31 +584,9 @@ classdef PrescriptionTool < mic.Base
         end
         
         
-        function onUiButtonChooseDir(this, src, evt)
-           
-            cName = uigetdir(...
-                this.cDirSave, ...
-                'Please choose a directory' ...
-            );
         
-            if isequal(cName,0)
-               return; % User clicked "cancel"
-            end
-            
-            this.cDirSave = mic.Utils.path2canonical(cName);
-            this.uiListPrescriptions.refresh(); 
-            this.updateUiTextDir();            
-        end
         
-        function updateUiTextDir(this)
-            this.uiTextDir.setTooltip(sprintf(...
-                'The directory where scan recipe/result files are saved: %s', ...
-                this.cDirSave ...
-            ));
-            cVal = mic.Utils.truncate(this.cDirSave, 200, true);
-            this.uiTextDir.set(cVal);
-            
-        end
+        
         
         function buildFigure(this)
             if ishghandle(this.hFigure)
