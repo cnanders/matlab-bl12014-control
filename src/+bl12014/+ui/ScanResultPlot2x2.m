@@ -479,6 +479,7 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopupIndexStart.setSelectedIndex(uint8(1));
             this.uiPopupIndexEnd.setSelectedIndex(uint8(length(dValues)));
             
+            %{
             if length(ceFields) > 0
                 this.uiPopup1.setSelectedIndex(uint8(1))
             end
@@ -494,6 +495,7 @@ classdef ScanResultPlot2x2 < mic.Base
             if length(ceFields) > 3
                 this.uiPopup4.setSelectedIndex(uint8(4))
             end
+            %}
             
             this.onPopup1([], []);
             this.onPopup2([], []);
@@ -538,6 +540,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 dValues = dValues - mean(dValues)
             end
             
+            cla(hAxes);
             
             plot(hAxes, ...
                 dValues, '.-b');
