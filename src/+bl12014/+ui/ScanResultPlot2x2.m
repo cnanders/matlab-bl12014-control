@@ -10,14 +10,14 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth              = 1300;
+        dWidth              = 1500;
         dHeight             = 960;
         
         dWidthPadAxesLeft = 60
         dWidthPadAxesRight = 40
         dHeightPadAxesTop = 10
         dHeightPadAxesBottom = 40
-        dWidthAxes = 550
+        dWidthAxes = 650
         dHeightAxes = 330
         dHeightOffsetTop = 80;
        
@@ -204,7 +204,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.hFigure, ...
                 dLeft, ...
                 dTop, ...
-                1000, ...
+                1200, ...
                 24 ...
             );
         
