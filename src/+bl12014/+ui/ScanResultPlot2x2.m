@@ -370,7 +370,10 @@ classdef ScanResultPlot2x2 < mic.Base
             end
             
             ceValues = st.values;
-            stValue = ceValues{2};
+            idxNonEmpty = find(~cellfun(@isempty, ceValues));
+            ceValues = ceValues(idxNonEmpty);
+                        
+            stValue = ceValues{1};
             
             % Initialize empty structure
             ceFields = fieldnames(stValue);
@@ -446,7 +449,12 @@ classdef ScanResultPlot2x2 < mic.Base
             end
             
             ceValues = this.stResult.values;
-            stValue = ceValues{2};
+            
+            % Remove empty values
+            idxNonEmpty = find(~cellfun(@isempty, ceValues));
+            ceValues = ceValues(idxNonEmpty);
+                                    
+            stValue = ceValues{1};
             ceFields = fieldnames(stValue);
             
             

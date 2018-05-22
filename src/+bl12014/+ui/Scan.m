@@ -811,6 +811,7 @@ classdef Scan < mic.Base
         
         function onScanSetState(this, stUnit, stValue)
             
+            cFn = 'onScanSetState';
             this.resetScanSetContract();
             
             % Update the stScanSetContract properties listed in stValue 
@@ -983,7 +984,7 @@ classdef Scan < mic.Base
             
             
             cFn = 'onScanIsAtState';
-            lDebug = false;           
+            lDebug = true;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);

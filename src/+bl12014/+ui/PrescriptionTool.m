@@ -62,6 +62,8 @@ classdef PrescriptionTool < mic.Base
         cDirThis
         cDirSrc
         cDirSave
+        
+        
         uiListPrescriptions
         uibSave         % button for saving
         
@@ -248,7 +250,7 @@ classdef PrescriptionTool < mic.Base
         
         
         function ceReturn = refreshSaved(this)
-            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'ascend', '*.json');
+            ceReturn = mic.Utils.dir2cell(this.cDirSave, 'date', 'descend', '*.json');
         end
         
         function stRecipe = getRecipe(this)
@@ -335,6 +337,14 @@ classdef PrescriptionTool < mic.Base
                 end
             end
             
+            % Set to run at the end
+            % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+            stValue = struct();
+            stValue.workingModeEnd = '5'; 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+                    
+                    
             stUnit = struct();
             stUnit.waferX = 'mm';
             stUnit.waferY = 'mm';
