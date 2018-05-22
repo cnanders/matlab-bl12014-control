@@ -281,16 +281,42 @@ classdef PrescriptionTool < mic.Base
             for m = 1 : length(this.uiFemTool.dDose)
                 for n = 1 : length(this.uiFemTool.dFocus)
 
+                    % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                    stValue = struct();
+                    stValue.workingModeStart = '5'; 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    
+                    % Position on wafer you want the exposure to be
+                    stValue = struct();
+                    stValue.waferX = -this.uiFemTool.dX(m); 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % Position on wafer you want exposure to be
+                    stValue = struct();
+                    stValue.waferY = -this.uiFemTool.dY(n); 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % Val you want HS to read during exposure
+                    stValue = struct();
+                    stValue.waferZ = this.uiFemTool.dFocus(n);
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                    stValue = struct();
+                    stValue.workingModeEnd = '4'; 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
                     
                     
                     % State
                     stValue = struct();
                     stValue.type = 'exposure';
-                    stValue.workingModeStart = '5'; % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-                    stValue.waferX = -this.uiFemTool.dX(m); % Position on wafer you want the exposure to be
-                    stValue.waferY = -this.uiFemTool.dY(n); % Position on wafer you want exposure to be
-                    stValue.waferZ = this.uiFemTool.dFocus(n);% Val you want HS to read during exposure
-                    stValue.workingModeEnd = '4'; % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     
                     % Exposure task
                     stTask = struct();
