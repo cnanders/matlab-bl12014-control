@@ -132,10 +132,10 @@ classdef PrescriptionTool < mic.Base
             end
             
             if isfield(st, 'uiListPrescriptions')
-                this.uiListPrescriptions.loat(st.uiListPrescriptions);
+                this.uiListPrescriptions.load(st.uiListPrescriptions);
             end            
             
-            this.updateUiTextDir();
+            %this.updateUiTextDir();
             this.uiListPrescriptions.refresh();
         end
         

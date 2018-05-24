@@ -35,8 +35,11 @@ classdef MFDriftMonitor < mic.Base
         u8DMI_CHANNEL_WAFX = 3;
         u8DMI_CHANNEL_WAFY = 4;
         
-        ceHSChannelNames = {'HS-Channel-1', 'HS-Channel-2', 'HS-Channel-3', 'HS-Channel-4', ...
-            'HS-Channel-5', 'HS-Channel-6', 'HS-Rx', 'HS-Ry', 'HS-Z', 'HS-Simple-Z'}
+        ceHSChannelNames = {'HS-Channel-6', 'HS-Channel-5', 'HS-Channel-4', 'HS-Channel-3', ...
+            'HS-Channel-2', 'HS-Channel-1', 'HS-Rx', 'HS-Ry', 'HS-Z', 'HS-Simple-Z'}
+%         ceHSChannelNames = {'HS-6: ang 8:30', 'HS-5: ang 4:30', 'HS-4: ang 0:30', 'HS-3: Z 1:30', ...
+%             'HS-2: Z 9:30', 'HS-1: Z 5:30', 'HS-Rx', 'HS-Ry', 'HS-Z', 'HS-Simple-Z'}
+        
         ceDMIChannelNames = {'DMI-Ret-X', 'DMI-Ret-Y', 'DMI-Wafer-X', 'DMI-Wafer-Y'}
         
         ceDMIPowerNames = {'Ret-U AC', 'Ret-V AC', 'Waf-U AC', 'Waf-V AC'; 'Ret-U DC', 'Ret-V DC','Waf-U DC', 'Waf-V DC'}

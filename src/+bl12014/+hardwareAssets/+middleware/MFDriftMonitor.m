@@ -264,6 +264,7 @@ classdef MFDriftMonitor < mic.Base
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
+            dSampleAve.getHsData();
             
             % update simple Z:
             this.dSimpleZPosition = this.computeSimpleZ(dSampleAve);
@@ -271,13 +272,13 @@ classdef MFDriftMonitor < mic.Base
             % Set HS data
             % dSampleAve.getHsData()
             dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
-            lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 6, 2); % 6x2 logical
+            lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 2, 6)'; % 6x2 logical
             
             dUpperDiode = dHSDiodeRaw(1:2:end);
             dLowerDiode = dHSDiodeRaw(2:2:end);
             this.dHSChannelData = (dUpperDiode - dLowerDiode)./(dUpperDiode + dLowerDiode);
             
-            dHSDiodeRaw = reshape(dHSDiodeRaw, 6, 2);
+            dHSDiodeRaw = reshape(dHSDiodeRaw, 2, 6)';
             % Flag values that are OOR:
             for k = 1:6
                 if any(lOutOfRangeValues(k,:))
