@@ -258,6 +258,21 @@ classdef PrescriptionTool < mic.Base
             u8Count = u8Count + 1;
             
             for m = 1 : length(this.uiFemTool.dDose)
+                
+                
+                % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                stValue = struct();
+                stValue.workingModeStart = '5'; 
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
+
+                % x position on wafer you want the exposure to be
+                stValue = struct();
+                stValue.waferX = -this.uiFemTool.dX(m); 
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1; 
+                
                 for n = 1 : length(this.uiFemTool.dFocus)
 
                     % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
@@ -267,13 +282,15 @@ classdef PrescriptionTool < mic.Base
                     u8Count = u8Count + 1;
                     
                     
-                    % Position on wafer you want the exposure to be
+                    %{
+                    % x position on wafer you want the exposure to be
                     stValue = struct();
                     stValue.waferX = -this.uiFemTool.dX(m); 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
+                    %}
                     
-                    % Position on wafer you want exposure to be
+                    % y position on wafer you want exposure to be
                     stValue = struct();
                     stValue.waferY = -this.uiFemTool.dY(n); 
                     ceValues{u8Count} = stValue;
@@ -290,7 +307,6 @@ classdef PrescriptionTool < mic.Base
                     stValue.workingModeEnd = '4'; 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
-                    
                     
                     
                     % State

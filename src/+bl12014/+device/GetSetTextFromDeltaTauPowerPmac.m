@@ -94,14 +94,14 @@ classdef GetSetTextFromDeltaTauPowerPmac < mic.interface.device.GetSetText
         
     end
     
-    methods (Access = protected)
+    methods (Static)
         
         
         % Returns the string / text representation of a working mode from
         % its numeric representation of a working mode (0-9)
         % @param {uint8 1x1} u8Val - numeric representation of working mode
         % (0-8)
-        function c = getWorkingModeString(this, u8Val)
+        function c = getWorkingModeString(u8Val)
             switch u8Val
                 case 0
                     c = 'Undefined';

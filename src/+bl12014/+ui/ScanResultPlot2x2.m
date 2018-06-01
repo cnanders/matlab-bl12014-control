@@ -48,16 +48,18 @@ classdef ScanResultPlot2x2 < mic.Base
         uiCheckboxDC4
         
         
+        
         uiPopupIndexStart
         uiPopupIndexEnd
         
+        uiButtonRefresh
         uiButtonFile
         uiTextFile
         
         % storage for handles returned by plot()
         hLines
         
-        cPath
+        cDir
         cFile
         
         % {struct 1x1} storage of the result struct loaded from JSON
@@ -90,7 +92,7 @@ classdef ScanResultPlot2x2 < mic.Base
             
             [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
-            this.cPath = fullfile(cDirThis, '..', '..', 'save');
+            this.cDir = fullfile(cDirThis, '..', '..', 'save');
             this.cFile = '';
             
         end
@@ -103,6 +105,7 @@ classdef ScanResultPlot2x2 < mic.Base
             delete(this.uiPopup4);
             delete(this.uiPopupIndexStart);
             delete(this.uiPopupIndexEnd);
+            delete(this.uiButtonRefresh);
             delete(this.uiButtonFile);
             delete(this.uiTextFile);
             delete(this.hAxes1);
@@ -138,7 +141,7 @@ classdef ScanResultPlot2x2 < mic.Base
         
             st = struct();
             
-            st.cPath = this.cPath;
+            st.cDir = this.cDir;
             st.cFile = this.cFile;
             
             ceProps = this.getUiPropsSaved();
@@ -155,8 +158,8 @@ classdef ScanResultPlot2x2 < mic.Base
             
             this.lLoading = true;
             
-            if isfield(st, 'cPath')
-                this.cPath = st.cPath;
+            if isfield(st, 'cDir')
+                this.cDir = st.cDir;
             end
             
             if isfield(st, 'cFile')
@@ -190,6 +193,16 @@ classdef ScanResultPlot2x2 < mic.Base
             
             dLeft = this.getLeft1();
             dTop = 10;
+            
+            this.uiButtonRefresh.build(...
+                this.hFigure, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                24 ...
+            );
+            dLeft = dLeft + 120;
+            
             this.uiButtonFile.build(...
                 this.hFigure, ...
                 dLeft, ...
@@ -197,7 +210,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 100, ...
                 24 ...
             );
-        
+            
             dLeft = dLeft + 120;
             dTop = dTop + 5;
             this.uiTextFile.build(...
@@ -307,26 +320,48 @@ classdef ScanResultPlot2x2 < mic.Base
             
         end
         
+        % @param {char 1xm} cPath - full path to results.json file
+        function setFile(this, cPath)
+            
+            if (exist(cPath, 'file') ~= 2)
+                cMsg = sprintf('setFile() %s is not a valid file', cPath);
+                this.msg(cMsg);
+                return;
+            end
+            
+            [cDir, cFile, cExt] = fileparts(cPath);
+            this.cDir = cDir;
+            this.cFile = [cFile, cExt]; % cExt includes the .
+            this.loadFileAndUpdateAll();
+        end
+        
+        function refresh(this)
+            
+            this.loadFileAndUpdateAll();
+        end
         
     end
     
     
     methods (Access = private)
         
+        function onButtonRefresh(this, src, evt)
+            this.refresh();
+        end
         
         function onButtonFile(this, src, evt)
             
-            [cFile, cPath] = uigetfile(...
+            [cFile, cDir] = uigetfile(...
                 '*.json', ...
                 'Select a Scan Result .json File', ...
-                this.cPath ...
+                this.cDir ...
             );
         
             if isequal(cFile, 0)
                return; % User clicked "cancel"
             end
             
-            this.cPath = mic.Utils.path2canonical(cPath);
+            this.cDir = mic.Utils.path2canonical(cDir);
             this.cFile = cFile;
             
             % this.refresh(); 
@@ -339,7 +374,7 @@ classdef ScanResultPlot2x2 < mic.Base
         
         function loadFileAndUpdateAll(this)
             
-            if isempty(this.cPath)
+            if isempty(this.cDir)
                 return
             end
             
@@ -347,10 +382,10 @@ classdef ScanResultPlot2x2 < mic.Base
                 return
             end
             
-            cPathFull = fullfile(this.cPath, this.cFile);
-            this.uiTextFile.set(cPathFull);
+            cPath = fullfile(this.cDir, this.cFile);
+            this.uiTextFile.set(cPath);
             
-            this.stResult = loadjson(cPathFull);
+            this.stResult = loadjson(cPath);
             this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
             this.updatePopups()
             
@@ -537,7 +572,7 @@ classdef ScanResultPlot2x2 < mic.Base
             dValues = this.stResultForPlotting.(cProp);
             dValues = dValues(this.uiPopupIndexStart.getSelectedIndex() : this.uiPopupIndexEnd.getSelectedIndex());
             if lRemoveDC
-                dValues = dValues - mean(dValues)
+                dValues = dValues - mean(dValues);
             end
             
             cla(hAxes);
@@ -619,6 +654,11 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiButtonFile = mic.ui.common.Button(...
                 'cText', 'Choose File', ...
                 'fhDirectCallback', @this.onButtonFile ...
+            );
+        
+            this.uiButtonRefresh = mic.ui.common.Button(...
+                'cText', 'Refresh', ...
+                'fhDirectCallback', @this.onButtonRefresh ...
             );
         
             this.uiTextFile = mic.ui.common.Text(...

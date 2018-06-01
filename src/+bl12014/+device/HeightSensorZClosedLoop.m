@@ -30,7 +30,7 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         dSetGoal
         
         % {double 1x1} desired tolerance in nm
-        dTolerance = 1;
+        dTolerance = 1.5;
         
         % {uint8 1x1 maximum number of moves of the wafer fine z}
         u8MovesMax = uint8(5);
@@ -44,10 +44,10 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         % {double 1x1} number of samples to average when getting a value
         % from the Height Sensor drift monitor
         u8SampleAverage = 50
-        u8SampleAverageDuringControl = 1000;
+        u8SampleAverageDuringControl = 200;
         
         % {logical 1x1} set to true to debug the scan
-        lDebugScan = false
+        lDebugScan = true
     end
     
     methods
@@ -85,6 +85,12 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
             d = this.zHeightSensor.get();                        
         end
         
+        function d = getAveraged(this)
+            this.zHeightSensor.setSampleAverage(this.u8SampleAverageDuringControl);
+            d = this.zHeightSensor.get();
+            this.zHeightSensor.setSampleAverage(this.u8SampleAverage);
+        end
+        
         % {double 1x1} dVal - desired reading of height sensor z in nm
         function set(this, dVal)
             
@@ -108,6 +114,12 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
             stRecipe.unit = unit;
             stRecipe.values = ceValues;
             
+            dPeriod = 0.5; 
+            
+            % Need enough time for ethernet to communicate w/ delta tau otherwise the scan will
+            % reach max number of steps and the move command to DeltaTau
+            % will hav enever reached the hardware
+            
             this.scan = mic.Scan(...
                 [this.cName, '-scan'], ...
                 this.clock, ...
@@ -117,10 +129,21 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 @this.onScanAcquire, ...
                 @this.onScanIsAcquired, ...
                 @this.onScanComplete, ...
-                @this.onScanAbort ...
+                @this.onScanAbort, ...
+                dPeriod ...
             );
 
+        
+            if this.lDebugScan
+                this.msg('---------------------------------------------------------', this.u8_MSG_TYPE_SCAN);
+                cMsg = sprintf(...
+                    'set() starting new scan with check period of %1.0f ms', ...
+                    dPeriod * 1000 ...
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
             this.scan.start();
+            
             
         end
         
@@ -162,7 +185,8 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
             end
             
             this.zHeightSensor.setSampleAverage(this.u8SampleAverageDuringControl);
-            dError = this.dSetGoal - this.zHeightSensor.get();
+            dZHeightSensor = this.zHeightSensor.get();
+            dError = this.dSetGoal - dZHeightSensor;
             this.zHeightSensor.setSampleAverage(this.u8SampleAverage);
             
             % Command the wafer to change value by to this position
@@ -185,7 +209,8 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 % then back to mm
                 mm2nm = 1e6;
                 nm2mm = 1e-6;
-                dZWaferGoal = (this.zWafer.get() * mm2nm + dError) * nm2mm;
+                dZWaferNm = this.zWafer.get() * mm2nm;
+                dZWaferGoal = (dZWaferNm + dError) * nm2mm;
                 
                 if (dZWaferGoal > 10000 * nm2mm || ...
                     dZWaferGoal < 0)
@@ -211,10 +236,22 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                     
                 
                 if this.lDebugScan
+                    
+                    cMsg = [...
+                        'onScanSetState() ', ...
+                        sprintf('hs goal = %1.1f nm ', this.dSetGoal) ...
+                    ];
+                    this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                    cMsg = [...
+                        'onScanSetState() ', ...
+                        sprintf('hs value with %1.0f sample avg = %1.1f nm', this.u8SampleAverageDuringControl, dZHeightSensor) ...
+                    ];
+                    this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                    
                     cMsg = [...
                         'onScanSetState()', ...
-                        sprintf(' abs(error) = %1.3f nm', abs(dError)), ...
-                        sprintf(' setting zWafer to %1.1f nm', dZWaferGoal * 1e6) ...
+                        sprintf(' hs error = %1.3f nm', dError), ...
+                        sprintf(' setting z wafer fine from %1.1f nm to %1.1f nm',  dZWaferNm, dZWaferGoal * 1e6) ...
                     ];
                     this.msg(cMsg, this.u8_MSG_TYPE_SCAN)
                 end
@@ -229,10 +266,16 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         % @param {struct} stState - the state
         % @returns {logical} - true if the system is at the state
         function l = onScanIsAtState(this, stUnit, stValue)
-            if this.lDebugScan
-                this.msg('onScanIsAtState()', this.u8_MSG_TYPE_SCAN);
-            end
+            
             l = this.zWafer.isReady();
+            
+            if this.lDebugScan
+                cMsg = [
+                    'onScanIsAtState()', ...
+                    sprintf('wafer fine z = %1.1f nm', this.zWafer.get() * 1e6) ...
+                ];
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
         end
         
             
@@ -263,7 +306,8 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         
         function onScanAbort(this, stUnit)
             if this.lDebugScan
-                this.msg('onScanAbort()');
+                this.msg('onScanAbort()', this.u8_MSG_TYPE_SCAN);
+                this.msg('---------------------------------------------------------', this.u8_MSG_TYPE_SCAN);
             end
             this.zHeightSensor.setSampleAverage(this.u8SampleAverage);
             this.lReady = true; 
@@ -272,7 +316,8 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
 
         function onScanComplete(this, stUnit)
             if this.lDebugScan
-                this.msg('onScanComplete()');
+                this.msg('onScanComplete()', this.u8_MSG_TYPE_SCAN);
+                this.msg('---------------------------------------------------------', this.u8_MSG_TYPE_SCAN);
             end
             this.zHeightSensor.setSampleAverage(this.u8SampleAverage);
             this.lReady = true;

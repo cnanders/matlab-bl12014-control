@@ -171,7 +171,6 @@ classdef Scan < mic.Base
             
         end
         
-        
         function st = save(this)
              st = struct();
              st.cDirPrescriptions = this.cDirPrescriptions;
@@ -984,7 +983,7 @@ classdef Scan < mic.Base
             
             
             cFn = 'onScanIsAtState';
-            lDebug = true;           
+            lDebug = false;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -1043,17 +1042,18 @@ classdef Scan < mic.Base
                                 % mic.device.GetSetText don't support
                                 % isReady() method.
                                 lReady = ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run Exposure') || ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), '4');                                
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeEnd))) || ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), num2str(stValue.workingModeEnd));                                
                                 
                             case 'workingModeStart'
                                 
                                 % mic.device.GetSetText don't support
                                 % isReady() method.
+                                % bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeStart))
                                 
                                 lReady = ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), 'Run') || ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), '5');
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeStart))) || ...
+                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), num2str(stValue.workingModeStart));
                                 
                             otherwise
                                 
@@ -1370,7 +1370,7 @@ classdef Scan < mic.Base
                     @this.onScanIsAcquired, ...
                     @this.onScanComplete, ...
                     @this.onScanAbort, ...
-                    0.5 ... % Callbacks every 500 ms
+                    0.2 ... % Callbacks every 500 ms
                 );
                 
                 this.scan.start();
@@ -1832,8 +1832,8 @@ classdef Scan < mic.Base
             st.tilt_y_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltY.getValCal('urad');
             
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
-            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
-            
+            %st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
+            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
