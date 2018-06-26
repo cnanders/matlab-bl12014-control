@@ -727,6 +727,7 @@ classdef App < mic.Base
             this.uiApp.uiReticle.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiWafer.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiPowerPmacStatus.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiPowerPmacHydraMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             
             % RYAN WILL REPLACE
             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
@@ -758,7 +759,8 @@ classdef App < mic.Base
             this.uiApp.uiReticle.disconnectDeltaTauPowerPmac()
             this.uiApp.uiWafer.disconnectDeltaTauPowerPmac();
             this.uiApp.uiPowerPmacStatus.disconnectDeltaTauPowerPmac()
-            
+            this.uiApp.uiPowerPmacHydraMotMin.disconnectDeltaTauPowerPmac();
+
             % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
             this.disconnectCommDeltaTauPowerPmacFromUiDM(this.uiApp.uiDriftMonitor);
@@ -1895,6 +1897,9 @@ classdef App < mic.Base
             this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.turnOn();
             
+            
+            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.turnOn();
             
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui            
