@@ -528,8 +528,8 @@ classdef MfDriftMonitorVibration < mic.Base
             % row3 = uWafer
             % row4 = vWafer
             
+            % samples is zero-indexed because uses Java interface
             dmi = zeros(4, samples.size());
-            
             for n = 0 : samples.size() - 1
                 dmi(:, n + 1) = double(samples.get(n).getDmiData());
             end
@@ -772,6 +772,10 @@ classdef MfDriftMonitorVibration < mic.Base
         % Returns a list of z channels to plot based on checkboxes
         function d = getHeightSensorChannels(this)
             d = [];
+            
+            % Put these in visual order so plot legend is same order as
+            % visual order
+            
             if this.uiCheckboxZ1.get()
                 d(end + 1) = 1;
             end
