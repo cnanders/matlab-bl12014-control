@@ -61,6 +61,7 @@ javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.
 % Used by GetLogicalPing
 javaaddpath(fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'));
 
+addpath(genpath(fullfile(cDirVendor, 'cnanderson')));
 
 
 

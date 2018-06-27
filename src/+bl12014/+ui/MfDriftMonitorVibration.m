@@ -17,6 +17,12 @@ classdef MfDriftMonitorVibration < mic.Base
         
         dHeightPadTop = 70
         dHeightPadTopAxes = 60;
+        dWidthPadLeftAxes = 70
+        
+        dWidthName = 70
+        dWidthUnit = 80
+        dWidthVal = 75
+        dWidthPadUnit = 25 % 280
         
         cName = 'mf-drift-monitor-vibration'
         
@@ -43,10 +49,7 @@ classdef MfDriftMonitorVibration < mic.Base
         hAxesPsd % power spectral density
         hAxesCas % cumulative amplitude spectrum
         
-        dWidthName = 70
-        dWidthUnit = 80
-        dWidthVal = 75
-        dWidthPadUnit = 25 % 280
+       
         
         % {< cxro.met5.device.mfdriftmonitorI}
         device 
@@ -97,7 +100,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function buildAxesTime(this)
             
-            dLeft = 50;
+            dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTop;
             
             this.hAxesTime = axes(...
@@ -119,7 +122,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function buildAxesPsd(this)
             
-            dLeft = 50;
+            dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTop + ...
                 this.dHeightAxes + this.dHeightPadTopAxes;
             
@@ -142,7 +145,8 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function buildAxesCas(this)
             
-            dLeft = 50;
+            dLeft = this.dWidthPadLeftAxes;
+            
             dTop = this.dHeightPadTop + ...
                 this.dHeightAxes + this.dHeightPadTopAxes + ...
                 this.dHeightAxes + this.dHeightPadTopAxes;
@@ -375,7 +379,6 @@ classdef MfDriftMonitorVibration < mic.Base
                 % PSD
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
-                
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
                 hold(this.hAxesPsd, 'on') % need to do after first loglog
 
@@ -383,7 +386,6 @@ classdef MfDriftMonitorVibration < mic.Base
                 % In-band CAS
                 [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
-                
                 semilogx(this.hAxesCas, f, sqrt(powerc));
                 hold(this.hAxesCas, 'on')
                 
@@ -409,17 +411,20 @@ classdef MfDriftMonitorVibration < mic.Base
 
                 % Time
                 plot(this.hAxesTime, t, pos - mean(pos));
+                hold(this.hAxesTime, 'on')
                 
                 % PSD
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
-
+                hold(this.hAxesPsd, 'on') % need to do after first loglog
+                
                 % In-band CAS
                 [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
                 semilogx(this.hAxesCas, f, sqrt(powerc));
-
+                hold(this.hAxesCas, 'on')
+                
                 cecLabels{end + 1} = cecLabelsXY{channel};
 
             end
