@@ -16,3 +16,8 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-co
 a = bl12014.hardwareAssets.virtual.MFDriftMonitor();
 
 samples = a.getSampleData(10);
+samples.get(1).getDmiData()
+samples.get(1).getHsData()
+
+samples.get(2).getDmiData()
+samples.get(2).getHsData()

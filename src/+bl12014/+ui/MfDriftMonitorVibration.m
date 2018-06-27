@@ -430,7 +430,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         % Returns a {double 6xm} time series of height zensor z in nm of
         % all six channels
-        % @param {SampleData 1xm}
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
         % @return {double 6xm} - height sensor z (nm) of six channels at 1 kHz
         % @return(1, :) {double 1xm} - z 5:30 (ch 1)
         % @return(2, :) {double 1xm} - z 9:30 (ch 2)
@@ -443,15 +443,17 @@ classdef MfDriftMonitorVibration < mic.Base
             
             m_per_diff_over_sum = 120e-6/2;  
 
-            hsraw = zeros(24, length(samples));
+            hsraw = zeros(24, samples.size());
             
-            for n = 1 : length(samples)
-                hsraw(:, n) = samples(n).getHsData();
+            % Samples.get() is zero-indexed since implementing java
+            % interface
+            for n = 0 : samples.size() - 1
+                hsraw(:, n + 1) = samples.get(n).getHsData();
             end
             
             
-            top = zeros(6, length(samples));
-            bot = zeros(6, length(samples));
+            top = zeros(6, samples.size());
+            bot = zeros(6, samples.size());
                 
             % Build a map of array index to physical configuration
             
@@ -509,7 +511,7 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         % Returns {double 4xm} x and y position of reticle and wafer in nm
-        % @param {SampleData 1xm} - sample data
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
         % @return {double 4xm} - position data of reticle and wafer nm
         % @return(1, :) {double 1xm} - xReticle
         % @return(2, :) {double 1xm} - yReticle
@@ -526,10 +528,10 @@ classdef MfDriftMonitorVibration < mic.Base
             % row3 = uWafer
             % row4 = vWafer
             
-            dmi = zeros(4, length(samples));
+            dmi = zeros(4, samples.size());
             
-            for n = 1 : length(samples)
-                dmi(:, n) = double(samples(n).getDmiData());
+            for n = 0 : samples.size() - 1
+                dmi(:, n + 1) = double(samples.get(n).getDmiData());
             end
                   
             
@@ -543,7 +545,7 @@ classdef MfDriftMonitorVibration < mic.Base
             dErrU_waf = dmi(3, :);
             dErrV_waf = dmi(4, :);
             
-            pos = zeros(4, length(samples));
+            pos = zeros(4, samples.size());
 
             pos(1, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
             pos(2, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);

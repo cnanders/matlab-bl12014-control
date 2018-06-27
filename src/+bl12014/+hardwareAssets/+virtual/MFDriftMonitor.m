@@ -19,20 +19,27 @@ classdef MFDriftMonitor < handle
             
         end
         
-        % Returns {java.util.ArrayList<SampleData>} of most recent HS / DMI 1 kHz data
+        % Returns { java.util.ArrayList<cxro.met5.device.mfdriftmonitor.SampleData> 1xn} of most recent HS / DMI 1 kHz data
         % @param {unt32 1x1} u32Samples - number of samples, max 10k.
        
-        function samples = getSampleData(this, u32Samples)
+        function list = getSampleData(this, u32Samples)
           
             if u32Samples > this.u32Capacity
                 u32Samples = this.u32Capacity;
             end
             
+            % Matlab classes to mimic interface of the Java classes used
+            % by the real MfDriftMonitor class
+            
             import bl12014.hardwareAssets.virtual.SampleData
+            import bl12014.hardwareAssets.virtual.ArrayList
+            
             samples(1, u32Samples) = bl12014.hardwareAssets.virtual.SampleData();
             for k = 1 : u32Samples
                 samples(1, k) = bl12014.hardwareAssets.virtual.SampleData();
             end
+            
+            list = ArrayList(samples);
                 
         end
         
