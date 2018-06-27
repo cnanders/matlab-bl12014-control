@@ -22,7 +22,5 @@ ui = bl12014.ui.MfDriftMonitorVibration(...
 );
 
 ui.build();
-
-ui.update();
  
 

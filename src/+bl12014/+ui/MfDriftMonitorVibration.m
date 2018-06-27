@@ -9,13 +9,14 @@ classdef MfDriftMonitorVibration < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1400
-        dHeight = 800
+        dWidth = 1500
+        dHeight = 960
         
-        dWidthAxes = 1100
-        dHeightAxes = 300
+        dWidthAxes = 1200
+        dHeightAxes = 240
         
         dHeightPadTop = 70
+        dHeightPadTopAxes = 60;
         
         cName = 'mf-drift-monitor-vibration'
         
@@ -27,6 +28,7 @@ classdef MfDriftMonitorVibration < mic.Base
                    
         hLinesPsd = []
         hLinesCas = []
+        hLinesTime = []
         
 
         
@@ -37,6 +39,7 @@ classdef MfDriftMonitorVibration < mic.Base
         clock
         
         hFigure
+        hAxesTime % amplitide vs. time
         hAxesPsd % power spectral density
         hAxesCas % cumulative amplitude spectrum
         
@@ -91,10 +94,34 @@ classdef MfDriftMonitorVibration < mic.Base
         
         end
         
-        function buildAxesPsd(this)
+        
+        function buildAxesTime(this)
             
             dLeft = 50;
             dTop = this.dHeightPadTop;
+            
+            this.hAxesTime = axes(...
+                'Parent', this.hFigure, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            drawnow;
+
+        end
+        
+        function buildAxesPsd(this)
+            
+            dLeft = 50;
+            dTop = this.dHeightPadTop + ...
+                this.dHeightAxes + this.dHeightPadTopAxes;
             
             this.hAxesPsd = axes(...
                 'Parent', this.hFigure, ...
@@ -116,7 +143,9 @@ classdef MfDriftMonitorVibration < mic.Base
         function buildAxesCas(this)
             
             dLeft = 50;
-            dTop = this.dHeightAxes + this.dHeightPadTop * 2;
+            dTop = this.dHeightPadTop + ...
+                this.dHeightAxes + this.dHeightPadTopAxes + ...
+                this.dHeightAxes + this.dHeightPadTopAxes;
             
             this.hAxesCas = axes(...
                 'Parent', this.hFigure, ...
@@ -193,6 +222,7 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCommMfDriftMonitor.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 5 + dSep;
             
+            this.buildAxesTime();
             this.buildAxesPsd();
             this.buildAxesCas();
             
@@ -293,6 +323,13 @@ classdef MfDriftMonitorVibration < mic.Base
                 return;
             end
             
+            if  isempty(this.hAxesTime) || ...
+                ~ishandle(this.hAxesTime)
+               
+                l = false;
+                return;
+            end
+            
             
         end
         
@@ -306,14 +343,13 @@ classdef MfDriftMonitorVibration < mic.Base
             %delete(this.hLinesPsd);
             %delete(this.hLinesCas);
             
+            cla(this.hAxesTime);
             cla(this.hAxesPsd);
             cla(this.hAxesCas);
             
             t = [0 : length(z) - 1] * 1e-3;
 
-            ceLabelsPsd = {};
-            ceLabelsCas = {};
-            
+            cecLabels = {}; % Fill with plotted things
             cecLabelsZ = {...
                 'z 5:30 (1)',  ...
                 'z 9:30 (2)',  ...
@@ -331,24 +367,28 @@ classdef MfDriftMonitorVibration < mic.Base
     
                 channel = n;
                 pos = z(channel, :);
-
+                
+                % Time
+                plot(this.hAxesTime, t, pos - mean(pos))
+                hold(this.hAxesTime, 'on') % need to do after first loglog
+                
                 % PSD
-
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
-
                 
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
-                ceLabelsPsd{end + 1} = cecLabelsZ{channel};
                 hold(this.hAxesPsd, 'on') % need to do after first loglog
 
 
                 % In-band CAS
                 [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
+                
                 semilogx(this.hAxesCas, f, sqrt(powerc));
-                ceLabelsCas{end + 1} = cecLabelsZ{channel};
                 hold(this.hAxesCas, 'on')
+                
+                cecLabels{end + 1} = cecLabelsZ{channel};
+
 
 
             end
@@ -367,21 +407,20 @@ classdef MfDriftMonitorVibration < mic.Base
                 channel = n;
                 pos = xy(channel, :);
 
+                % Time
+                plot(this.hAxesTime, t, pos - mean(pos));
+                
                 % PSD
-
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
-
-                
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
-                ceLabelsPsd{end + 1} = cecLabelsXY{channel};
 
                 % In-band CAS
-
                 [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
                 semilogx(this.hAxesCas, f, sqrt(powerc));
-                ceLabelsCas{end + 1} = cecLabelsXY{channel};
+
+                cecLabels{end + 1} = cecLabelsXY{channel};
 
             end
 
@@ -390,14 +429,13 @@ classdef MfDriftMonitorVibration < mic.Base
             if (~isequal(dChannelsHs, this.dChannelsHsPrevious) || ...
                 ~isequal(dChannelsDmi, this.dChannelsDmiPrevious) || ...
                 lForceNewLegend)
-                legend(this.hAxesPsd, ceLabelsPsd);
-                legend(this.hAxesCas, ceLabelsCas);
+                legend(this.hAxesTime, cecLabels);
+                legend(this.hAxesPsd, cecLabels);
+                legend(this.hAxesCas, cecLabels);
             end
                
             if ~this.lLabelsOfPlotInitialized
-                             
                 this.updateAxesLabels() 
-                
             end
             
             this.lLabelsOfPlotInitialized = true;
@@ -411,6 +449,10 @@ classdef MfDriftMonitorVibration < mic.Base
             if ~this.areAxesAvailable()
                 return
             end
+            
+            title(this.hAxesTime, 'Amplitude vs. Time');
+            xlabel(this.hAxesTime, 'Time (s)');
+            ylabel(this.hAxesTime, 'Amp. (nm)');
             
             title(this.hAxesPsd, 'PSD')
             xlabel(this.hAxesPsd, 'Freq (Hz)');
