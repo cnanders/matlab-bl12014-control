@@ -33,6 +33,7 @@ classdef App < mic.Base
         uiMADiagnostics
         uiPOCurrent
         uiPowerPmacHydraMotMin
+        uiMfDriftMonitorVibration
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -166,6 +167,7 @@ classdef App < mic.Base
             st.uiReticle = this.uiReticle.save();
             st.uiWafer = this.uiWafer.save();
             st.uiScanResultPlot2x2 = this.uiScanResultPlot2x2.save()
+            st.uiMfDriftMonitorVibration = this.uiMfDriftMonitorVibration.save();
             % uiPowerPmacStatus
             % uiPrescriptionTool           
             % uiScan
@@ -208,6 +210,10 @@ classdef App < mic.Base
             
             if isfield(st, 'uiMADiagnostics')
                 this.uiMADiagnostics.load(st.uiMADiagnostics)
+            end
+            
+            if isfield(st, 'uiMfDriftMonitorVibration')
+                this.uiMfDriftMonitorVibration.load(st.uiMfDriftMonitorVibration)
             end
             
             if isfield(st, 'uiM143')
@@ -283,6 +289,7 @@ classdef App < mic.Base
             this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'hardware', this.hHardware);
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiPowerPmacHydraMotMin = bl12014.ui.PowerPmacHydraMotMin('clock', this.clock);
+            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clock);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
             this.uiScannerM142 = bl12014.ui.Scanner(...
@@ -422,6 +429,12 @@ classdef App < mic.Base
                 'fhOnClick',  @() this.uiPowerPmacHydraMotMin.build(), ...
                 'cTooltip',  'Power PMAC Hydra MotMin' ...
             );
+        
+            stMfDriftMonitorVibration = struct(...
+                'cLabel',  'HS + DMI Vibration 1 kHz', ...
+                'fhOnClick',  @() this.uiMfDriftMonitorVibration.build(), ...
+                'cTooltip',  'HS + DMI Vibration 1 kHz' ...
+            );
             
             stPrescriptionTool = struct(...
             'cLabel',  'Pre Tool', ...
@@ -508,6 +521,7 @@ classdef App < mic.Base
               stScannerMA, ...
               stReticle, ...
               stWafer, ...
+              stMfDriftMonitorVibration, ...
               stPOCurrent, ...
               stPowerPmacStatus, ...
               stPowerPmacHydraMotMin, ...

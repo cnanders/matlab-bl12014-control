@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 250
-        dHeight = 830
+        dHeight = 930
         
         dWidthButton = 210
         
@@ -1302,7 +1302,7 @@ classdef App < mic.Base
             end
             
             
-            
+            this.uiApp.uiMfDriftMonitorVibration.connectMfDriftMonitor(this.commMFDriftMonitor);
             % Here connect any UIs that use this
             
 %             this.uiApp.uiMFDriftMonitor.setDevice(this.commMFDriftMonitor);
@@ -1311,6 +1311,9 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectMFDriftMonitor(this)
+            
+            this.uiApp.uiMfDriftMonitorVibration.disconnectMfDriftMonitor();
+            
             this.commMFDriftMonitor.disconnect();
             this.commMFDriftMonitor = [];
         end
@@ -1797,12 +1800,12 @@ classdef App < mic.Base
             );
         
         
-%             gslcCommMFDriftMonitor = bl12014.device.GetSetLogicalConnect(...
-%                 'fhGet', @this.getMFDriftMonitor, ...
-%                 'fhSetTrue', @this.initAndConnectMFDriftMonitor, ...
-%                 'fhSetFalse', @this.destroyAndDisconnectMFDriftMonitor ...
-%             );
-%         
+            gslcCommMFDriftMonitor = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getMFDriftMonitor, ...
+                'fhSetTrue', @this.initAndConnectMFDriftMonitor, ...
+                'fhSetFalse', @this.destroyAndDisconnectMFDriftMonitor ...
+            );
+        
 
             %this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
             %this.uiApp.uiShutter.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
@@ -1928,6 +1931,9 @@ classdef App < mic.Base
             this.uiApp.uiDriftMonitor.uicConnectWafer.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
             this.uiApp.uiDriftMonitor.uicConnectWafer.turnOn();
+            
+            this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
+            this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.turnOn();
         
             
             this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
