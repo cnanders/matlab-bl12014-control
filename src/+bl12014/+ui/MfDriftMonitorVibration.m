@@ -36,6 +36,8 @@ classdef MfDriftMonitorVibration < mic.Base
         hLinesCas = []
         hLinesTime = []
         
+        uiTogglePlayPause
+        
 
         
     end
@@ -77,6 +79,8 @@ classdef MfDriftMonitorVibration < mic.Base
         dChannelsDmiPrevious = []
         
         lLabelsOfPlotInitialized = false
+        
+        
         
     end
     
@@ -234,7 +238,8 @@ classdef MfDriftMonitorVibration < mic.Base
             dLeft = 100 + this.dWidthAxes;
             dSep = 20;
             
-            
+            this.uiTogglePlayPause.build(this.hFigure, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep + 20;
             
             this.uiCheckboxZ1.build(this.hFigure, dLeft, dTop, 100, 24);
             dTop = dTop + dSep;
@@ -729,6 +734,13 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCheckboxXWafer = mic.ui.common.Checkbox('cLabel', 'x wafer', 'lChecked', true);
             this.uiCheckboxYWafer = mic.ui.common.Checkbox('cLabel', 'y wafer', 'lChecked', true);
             
+            this.uiTogglePlayPause = mic.ui.common.Toggle(...
+                'cTextTrue', 'Pause', ...
+                'cTextFalse', 'Play', ...
+                'lVal', true, ...
+                'fhDirectCallback', @this.onUiTogglePlayPause ...
+            );
+        
             this.initUiEditFreqMin();
             this.initUiEditFreqMax();
             this.initUiEditNumOfSamples();
@@ -873,6 +885,37 @@ classdef MfDriftMonitorVibration < mic.Base
             end
             
         end
+        
+        function onUiTogglePlayPause(this, src, evt)
+                        
+            if this.uiTogglePlayPause.get() % says pause (playing) so make sure the clock task is added
+                
+                if ~isempty(this.clock) && ...
+                   ~this.clock.has(this.id())
+                    this.clock.add(@this.onClock, this.id(), this.dDelay);
+                    return;
+                end
+            
+            end
+            
+            
+            if ~this.uiTogglePlayPause.get() % says play so paused
+                
+                % Clean up clock tasks
+                if ~isempty(this.clock) && ...
+                    isvalid(this.clock) && ...
+                    this.clock.has(this.id())
+                    this.msg('delete() removing clock task', this.u8_MSG_TYPE_INFO); 
+                    this.clock.remove(this.id());
+                    return;
+                end
+                
+                
+            end
+            
+            
+        end
+        
         
         
     end
