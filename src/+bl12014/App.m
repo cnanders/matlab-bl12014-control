@@ -252,6 +252,7 @@ classdef App < mic.Base
             this.destroyAndDisconnectDeltaTauPowerPmac();
             this.destroyAndDisconnectKeithley6482Reticle();
             this.destroyAndDisconnectKeithley6482Wafer();
+            this.destroyAndDisconnectMFDriftMonitor();
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
             this.destroyAndDisconnectNewFocusModel8742MA();

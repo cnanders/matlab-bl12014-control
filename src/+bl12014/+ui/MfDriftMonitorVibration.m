@@ -10,13 +10,13 @@ classdef MfDriftMonitorVibration < mic.Base
     properties (SetAccess = private)
         
         dWidth = 1500
-        dHeight = 960
+        dHeight = 1000
         
         dWidthAxes = 1200
         dHeightAxes = 240
         
         dHeightPadTop = 70
-        dHeightPadTopAxes = 60;
+        dHeightPadTopAxes = 70;
         dWidthPadLeftAxes = 70
         
         dWidthName = 70
@@ -467,6 +467,7 @@ classdef MfDriftMonitorVibration < mic.Base
             title(this.hAxesPsd, 'PSD')
             xlabel(this.hAxesPsd, 'Freq (Hz)');
             ylabel(this.hAxesPsd, 'PSD (nm^2/Hz)');
+            xlim(this.hAxesPsd, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
 
             cTitle = sprintf(...
                 'Cumulative Amplitude Spectrum [%1.0fHz, %1.0fHz]', ...
@@ -476,7 +477,7 @@ classdef MfDriftMonitorVibration < mic.Base
             title(this.hAxesCas, cTitle);
             xlabel(this.hAxesCas, 'Freq (Hz)');
             ylabel(this.hAxesCas, 'Cumulative Amplitude RMS (nm)');
-                
+            xlim(this.hAxesCas, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
         end
         
         
