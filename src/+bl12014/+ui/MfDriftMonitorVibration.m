@@ -9,7 +9,7 @@ classdef MfDriftMonitorVibration < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1500
+        dWidth = 1600
         dHeight = 960
         
         dWidthAxes = 1200
@@ -37,6 +37,8 @@ classdef MfDriftMonitorVibration < mic.Base
         hLinesTime = []
         
         uiTogglePlayPause
+        uiButtonSave
+        uiListDir
         
 
         
@@ -79,6 +81,10 @@ classdef MfDriftMonitorVibration < mic.Base
         dChannelsDmiPrevious = []
         
         lLabelsOfPlotInitialized = false
+        
+        % { < java.util.ArrayList<cxro.met5.device.mfdriftmonitor.SampleData>}
+        % Store them so save can have access to frozen data set.
+        samples
         
         
         
@@ -236,11 +242,14 @@ classdef MfDriftMonitorVibration < mic.Base
             
             dTop = 100;
             dLeft = 100 + this.dWidthAxes;
-            dSep = 20;
+            dSep = 30;
             
             this.uiTogglePlayPause.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep + 20;
+            dTop = dTop + dSep;
             
+            
+            
+            dSep = 20;
             this.uiCheckboxZ1.build(this.hFigure, dLeft, dTop, 100, 24);
             dTop = dTop + dSep;
             this.uiCheckboxZ2.build(this.hFigure, dLeft, dTop, 100, 24);
@@ -277,6 +286,18 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiEditFreqMax.build(this.hFigure, dLeft, dTop, 150, 24);
             dTop = dTop + dSep;
             
+            dTop = dTop + 50;
+            
+            this.uiListDir.build(this.hFigure, dLeft, dTop, 250, 200);
+            dTop = dTop + 200 + dSep;
+            dTop = dTop + 100;
+            
+            this.uiButtonSave.build(this.hFigure, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            
+            
+            
+            
             if ~isempty(this.clock)
                 this.clock.add(@this.onClock, this.id(), this.dDelay);
             end
@@ -307,9 +328,9 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function update(this)
             
-            samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
-            z = this.getHeightSensorZFromSampleData(samples);
-            xy = this.getDmiPositionFromSampleData(samples);
+            this.samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
+            z = this.getHeightSensorZFromSampleData(this.samples);
+            xy = this.getDmiPositionFromSampleData(this.samples);
             
             this.updateAxes(z, xy)
             
@@ -741,6 +762,22 @@ classdef MfDriftMonitorVibration < mic.Base
                 'fhDirectCallback', @this.onUiTogglePlayPause ...
             );
         
+            this.uiButtonSave = mic.ui.common.Button(...
+                'cText', 'Save', ...
+                'fhDirectCallback', @this.onUiButtonSave ...
+            );
+        
+            cDirThis = fileparts(mfilename('fullpath'));
+
+            cPath = mic.Utils.path2canonical(fullfile(cDirThis, '..', '..', 'save', 'hs-dmi'));
+            this.uiListDir = mic.ui.common.ListDir(...
+                'cDir', cPath, ...
+                'cFilter', '*.txt', ...
+                'lShowLabel', true, ...
+                'lShowChooseDir', true, ...
+                'cLabel', 'Save / Load Directory' ...
+            );
+        
             this.initUiEditFreqMin();
             this.initUiEditFreqMax();
             this.initUiEditNumOfSamples();
@@ -883,6 +920,70 @@ classdef MfDriftMonitorVibration < mic.Base
             if this.uiCheckboxYWafer.get()
                 d(end + 1) = 4;
             end
+            
+        end
+        
+        function onUiButtonSave(this, src, evt)
+            
+            
+            % Allow the user to change the suggested filename
+            
+            cNameSuggested = datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local')
+            cPrompt = { 'Save As (do not add .txt):' };
+            cTitle = 'Save As:';
+            u8Lines = [1 50];
+            cDefaultAns = { cNameSuggested };
+            ceAnswer = inputdlg(...
+                cPrompt, ...
+                cTitle, ...
+                u8Lines, ...
+                cDefaultAns ...
+            );
+        
+            if isempty(ceAnswer)
+                return
+            end
+ 
+            cPathOfDir = mic.Utils.path2canonical(this.uiListDir.getDir());
+
+            if ~isdir(cPathOfDir)
+                mkdir(cPathOfDir)
+            end
+            
+            cNameOfFile = [ceAnswer{1}, '.txt']; 
+            cPath = fullfile(cPathOfDir, cNameOfFile);
+            
+            samples = this.samples;
+                        
+            % Open a file for writing
+            u8FildId = fopen(cPath, 'w');
+            
+            % Write header
+            fprintf(u8FildId, '6T1,6B1,5T1,5B1,4T1,4B1,3T1,3B1,2T1,2B1,1T1,1B1,6T2,6B2,5T2,5B2,4T2,4B2,3T2,3B2,2T2,2B2,1T2,1B2,DMI1,DMI2,DMI3,DMI4\n');
+            
+            % Samples.get() is zero-indexed since implementing java
+            % ArrayList interface
+            for n = 0 : samples.size() - 1
+                hsraw = samples.get(n).getHsData();
+                dmi = samples.get(n).getDmiData();
+                
+                fprintf(...
+                    u8FildId, ...
+                    [...
+                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
+                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
+                        '%i,%i,%i,%i' ...
+                    ], ...
+                    [hsraw dmi] ...
+                ); 
+                if n < samples.size() - 1
+                    fprintf(u8FildId, '\n');
+                end
+            end
+            
+            fclose(u8FildId); 
+            
+            this.uiListDir.refresh();
             
         end
         
