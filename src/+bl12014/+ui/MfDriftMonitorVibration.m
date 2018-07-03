@@ -12,6 +12,8 @@ classdef MfDriftMonitorVibration < mic.Base
         dWidth = 1600
         dHeight = 1000
         
+        dHeightList = 150
+        
         dWidthAxes = 1200
         dHeightAxes = 240
         
@@ -38,7 +40,13 @@ classdef MfDriftMonitorVibration < mic.Base
         
         uiTogglePlayPause
         uiButtonSave
+        uiButtonLoad
         uiListDir
+        
+        hPanelCasSettings
+        
+        
+        
         
 
         
@@ -85,6 +93,11 @@ classdef MfDriftMonitorVibration < mic.Base
         % { < java.util.ArrayList<cxro.met5.device.mfdriftmonitor.SampleData>}
         % Store them so save can have access to frozen data set.
         samples
+        
+        % {double 7xm}
+        dZ = zeros(7, 1)
+        % {double 4xm}
+        dXY = zeros(4, 1)
         
         
         
@@ -218,6 +231,38 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        
+        function buildPanelCasSettings(this)
+            
+            dLeft = 100 + this.dWidthAxes;
+            dTop = 700;
+            dWidth = 200;
+            dHeight = 150;
+            
+            this.hPanelCasSettings = uipanel(...
+                'Parent', this.hFigure,...
+                'Units', 'pixels',...
+                'Title', 'CAS Settings',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                dWidth ...
+                dHeight], this.hFigure) ...
+            );
+            
+            dLeft = 10;
+            dTop = 20;
+            dSep = 40;
+            
+            this.uiEditFreqMin.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            this.uiEditFreqMax.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+                                    
+        end
+        
 
         function build(this) % , hParent, dLeft, dTop
                         
@@ -240,13 +285,32 @@ classdef MfDriftMonitorVibration < mic.Base
             this.buildAxesPsd();
             this.buildAxesCas();
             
-            dTop = 100;
+            dTop = 20;
             dLeft = 100 + this.dWidthAxes;
             dSep = 30;
             
             this.uiTogglePlayPause.build(this.hFigure, dLeft, dTop, 100, 24);
+            % dTop = dTop + dSep;
+            
+            dLeft = dLeft + 110;
+            this.uiEditNumOfSamples.build(this.hFigure, dLeft, dTop - 10, 150, 24);
             dTop = dTop + dSep;
             
+            dLeft = 100 + this.dWidthAxes;
+            dTop = dTop + 20;
+            
+            % Save / Load
+            this.uiButtonSave.build(this.hFigure, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;            
+            
+            dLeft = 100 + this.dWidthAxes;
+
+            % List Dir
+            this.uiListDir.build(this.hFigure, dLeft, dTop, 250, this.dHeightList);
+            dTop = dTop + this.dHeightList + 10 + dSep;
+            
+            this.uiButtonLoad.build(this.hFigure, dLeft, dTop, 100, 24);
+            dTop = dTop + 50 + dSep;
             
             
             dSep = 20;
@@ -277,23 +341,12 @@ classdef MfDriftMonitorVibration < mic.Base
             dTop = dTop + 20;
             dSep = 40;
             
-            this.uiEditNumOfSamples.build(this.hFigure, dLeft, dTop, 150, 24);
-            dTop = dTop + dSep;
             
-            this.uiEditFreqMin.build(this.hFigure, dLeft, dTop, 150, 24);
-            dTop = dTop + dSep;
+            this.buildPanelCasSettings();
             
-            this.uiEditFreqMax.build(this.hFigure, dLeft, dTop, 150, 24);
-            dTop = dTop + dSep;
             
-            dTop = dTop + 50;
             
-            this.uiListDir.build(this.hFigure, dLeft, dTop, 250, 200);
-            dTop = dTop + 200 + dSep;
-            dTop = dTop + 100;
             
-            this.uiButtonSave.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
             
             
             
@@ -329,10 +382,55 @@ classdef MfDriftMonitorVibration < mic.Base
         function update(this)
             
             this.samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
-            z = this.getHeightSensorZFromSampleData(this.samples);
-            xy = this.getDmiPositionFromSampleData(this.samples);
+            this.dZ = this.getHeightSensorZFromSampleData(this.samples);
+            this.dXY = this.getDmiPositionFromSampleData(this.samples);
             
-            this.updateAxes(z, xy)
+            this.updateAxes(this.dZ, this.dXY)
+            
+        end
+        
+        function updateFromFile(this)
+            
+            this.uiTogglePlayPause.set(false); % pause so it shows "play"
+            
+            ceFiles = this.uiListDir.get();
+            if isempty(ceFiles)
+                return
+            end
+            
+            cPathOfDir = mic.Utils.path2canonical(this.uiListDir.getDir());
+            cPath = fullfile(cPathOfDir, ceFiles{1});
+            hFile = fopen(cPath);
+
+            % %d = signed integer, 32-bit
+            cFormat = [...
+                '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,', ...
+                '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,', ...
+                '%d,%d,%d,%d' ...
+            ];
+
+            ceData = textscan(...
+                hFile, cFormat, -1, ...
+                'headerlines', 1 ...
+            );
+        
+            fclose(hFile);
+            
+            % To deal with data from the test routines on met5vme that
+            % usually contain partial data, truncate all sample
+            % arrays to the length of dmi4 sample appay
+
+            numSamples = length(ceData{28});
+            for n = 1 : length(ceData)
+                while length(ceData{n}) > numSamples
+                    ceData{n}(end) = [];
+                end
+            end
+
+            this.dZ = this.getHeightSensorZFromFileData(ceData);
+            this.dXY = this.getDmiPositionFromFileData(ceData);
+            
+            this.updateAxes(this.dZ, this.dXY);
             
         end
         
@@ -506,6 +604,71 @@ classdef MfDriftMonitorVibration < mic.Base
             xlim(this.hAxesCas, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
         end
         
+        % See getHeightSensorZFromSampleData
+        function z = getHeightSensorZFromFileData(this, ceData)
+            
+            m_per_diff_over_sum = 120e-6/2; 
+            
+            stMap = struct();
+            
+            stMap.ch6top1 = 1;
+            stMap.ch6bot1 = 2;
+            stMap.ch5top1 = 3;
+            stMap.ch5bot1 = 4;
+            stMap.ch4top1 = 5;
+            stMap.ch4bot1 = 6;
+            stMap.ch3top1 = 7;
+            stMap.ch3bot1 = 8;
+            stMap.ch2top1 = 9;
+            stMap.ch2bot1 = 10;
+            stMap.ch1top1 = 11;
+            stMap.ch1bot1 = 12;
+
+            stMap.ch6top2 = 13;
+            stMap.ch6bot2 = 14;
+            stMap.ch5top2 = 15;
+            stMap.ch5bot2 = 16;
+            stMap.ch4top2 = 17;
+            stMap.ch4bot2 = 18;
+            stMap.ch3top2 = 19;
+            stMap.ch3bot2 = 20;
+            stMap.ch2top2 = 21;
+            stMap.ch2bot2 = 22;
+            stMap.ch1top2 = 23;
+            stMap.ch1bot2 = 24;
+
+            % side === indicates to the capacitor used.  Do not confuse this with
+            % "side" of the diode.  "a", and "b" refer to "top" and "bottom" halves of
+            % the dual-diode, respectively
+            % A single measurement returns the "capacitor/side" of the ADC, and the
+            % counts from the top and bottom of each diode of each channel
+
+            % average the values from each cap within the 1 ms acquisition period
+
+            % top
+            top(1, :) = (ceData{stMap.ch1top1} + ceData{stMap.ch1top2}) / 2;
+            top(2, :) = (ceData{stMap.ch2top1} + ceData{stMap.ch2top2}) / 2;
+            top(3, :) = (ceData{stMap.ch3top1} + ceData{stMap.ch3top2}) / 2;
+            top(4, :) = (ceData{stMap.ch4top1} + ceData{stMap.ch4top2}) / 2;
+            top(5, :) = (ceData{stMap.ch5top1} + ceData{stMap.ch5top2}) / 2;
+            top(6, :) = (ceData{stMap.ch6top1} + ceData{stMap.ch6top2}) / 2; 
+
+            % bottom
+            bot(1, :) = (ceData{stMap.ch1bot1} + ceData{stMap.ch1bot2}) / 2;
+            bot(2, :) = (ceData{stMap.ch2bot1} + ceData{stMap.ch2bot2}) / 2;
+            bot(3, :) = (ceData{stMap.ch3bot1} + ceData{stMap.ch3bot2}) / 2;
+            bot(4, :) = (ceData{stMap.ch4bot1} + ceData{stMap.ch4bot2}) / 2;
+            bot(5, :) = (ceData{stMap.ch5bot1} + ceData{stMap.ch5bot2}) / 2;
+            bot(6, :) = (ceData{stMap.ch6bot1} + ceData{stMap.ch6bot2}) / 2;    
+
+            diff = top - bot;
+            sum = top + bot;
+            dos = double(diff)./double(sum);
+            z = dos * m_per_diff_over_sum * 1e9;
+            
+            % Ch "7" is average of three central
+            z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
+        end
         
         % Returns a {double 6xm} time series of height zensor z in nm of
         % all six channels
@@ -589,6 +752,37 @@ classdef MfDriftMonitorVibration < mic.Base
             z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
         end
         
+        
+        % See getDmiPositionFromSampleData
+        function pos = getDmiPositionFromFileData(this, ceData)
+            
+            
+            stMap = struct();
+            stMap.dmi1 = 25;
+            stMap.dmi2 = 26;
+            stMap.dmi3 = 27;
+            stMap.dmi4 = 28;
+            
+            dDMI_SCALE = 632.9907/4096; % dmi axes come in units of 1.5 angstroms
+                                  % Convert to nm
+                                 
+            dErrU_ret = double(ceData{stMap.dmi1});
+            dErrV_ret = double(ceData{stMap.dmi2});
+            dErrU_waf = double(ceData{stMap.dmi3});
+            dErrV_waf = double(ceData{stMap.dmi4});
+
+            dXDat_ret = dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
+            dYDat_ret = -dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
+            dXDat_waf = -dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
+            dYDat_waf = dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf);
+
+            pos(1, :) = dXDat_ret;
+            pos(2, :) = dYDat_ret;
+            pos(3, :) = dXDat_waf; 
+            pos(4, :) = dYDat_waf;
+            
+        end
+        
         % Returns {double 4xm} x and y position of reticle and wafer in nm
         % @param {ArrayList<SampleData> 1x1} samples - sample data
         % @return {double 4xm} - position data of reticle and wafer nm
@@ -655,6 +849,8 @@ classdef MfDriftMonitorVibration < mic.Base
             st.uiEditFreqMax = this.uiEditFreqMax.save();
             st.uiEditNumOfSamples = this.uiEditNumOfSamples.save();
             
+            st.uiListDir = this.uiListDir.save();
+            
         end
         
         function load(this, st)
@@ -698,6 +894,10 @@ classdef MfDriftMonitorVibration < mic.Base
             
             if isfield(st, 'uiEditNumOfSamples')
                 this.uiEditNumOfSamples.load(st.uiEditNumOfSamples)
+            end
+            
+            if isfield(st, 'uiListDir')
+                this.uiListDir.load(st.uiListDir)
             end
         end
 
@@ -748,22 +948,22 @@ classdef MfDriftMonitorVibration < mic.Base
             
             
                     
-            this.uiCheckboxZ1 = mic.ui.common.Checkbox('cLabel', 'z 5:30 (1)', 'lChecked', false);
-            this.uiCheckboxZ2 = mic.ui.common.Checkbox('cLabel', 'z 9:30 (2)', 'lChecked', false);
-            this.uiCheckboxZ3 = mic.ui.common.Checkbox('cLabel', 'z 1:30 (3)', 'lChecked', false);
-            this.uiCheckboxZ1Z2Z3Avg = mic.ui.common.Checkbox('cLabel', 'z avg (123)', 'lChecked', true);
-            this.uiCheckboxZ4 = mic.ui.common.Checkbox('cLabel', 'ang 0:30 (4)');
-            this.uiCheckboxZ5 = mic.ui.common.Checkbox('cLabel', 'ang 4:30 (5)');
-            this.uiCheckboxZ6 = mic.ui.common.Checkbox('cLabel', 'ang 8:30 (6)');
+            this.uiCheckboxZ1 = mic.ui.common.Checkbox('cLabel', 'z 5:30 (1)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ2 = mic.ui.common.Checkbox('cLabel', 'z 9:30 (2)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ3 = mic.ui.common.Checkbox('cLabel', 'z 1:30 (3)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ1Z2Z3Avg = mic.ui.common.Checkbox('cLabel', 'z avg (123)', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ4 = mic.ui.common.Checkbox('cLabel', 'ang 0:30 (4)', 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ5 = mic.ui.common.Checkbox('cLabel', 'ang 4:30 (5)', 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxZ6 = mic.ui.common.Checkbox('cLabel', 'ang 8:30 (6)', 'fhDirectCallback', @this.onUiCheckbox);
             
-            this.uiCheckboxXReticle = mic.ui.common.Checkbox('cLabel', 'x reticle', 'lChecked', true);
-            this.uiCheckboxYReticle = mic.ui.common.Checkbox('cLabel', 'y reticle', 'lChecked', true);
-            this.uiCheckboxXWafer = mic.ui.common.Checkbox('cLabel', 'x wafer', 'lChecked', true);
-            this.uiCheckboxYWafer = mic.ui.common.Checkbox('cLabel', 'y wafer', 'lChecked', true);
+            this.uiCheckboxXReticle = mic.ui.common.Checkbox('cLabel', 'x reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxYReticle = mic.ui.common.Checkbox('cLabel', 'y reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxXWafer = mic.ui.common.Checkbox('cLabel', 'x wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxYWafer = mic.ui.common.Checkbox('cLabel', 'y wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             
             this.uiTogglePlayPause = mic.ui.common.Toggle(...
                 'cTextTrue', 'Pause', ...
-                'cTextFalse', 'Play', ...
+                'cTextFalse', 'Acquire', ...
                 'lVal', true, ...
                 'fhDirectCallback', @this.onUiTogglePlayPause ...
             );
@@ -773,13 +973,18 @@ classdef MfDriftMonitorVibration < mic.Base
                 'fhDirectCallback', @this.onUiButtonSave ...
             );
         
+            this.uiButtonLoad = mic.ui.common.Button(...
+                'cText', 'Load', ...
+                'fhDirectCallback', @this.onUiButtonLoad ...
+            );
+        
             cDirThis = fileparts(mfilename('fullpath'));
 
             cPath = mic.Utils.path2canonical(fullfile(cDirThis, '..', '..', 'save', 'hs-dmi'));
             this.uiListDir = mic.ui.common.ListDir(...
                 'cDir', cPath, ...
                 'cFilter', '*.txt', ...
-                'lShowLabel', true, ...
+                'lShowLabel', false, ...
                 'lShowChooseDir', true, ...
                 'cLabel', 'Save / Load Directory' ...
             );
@@ -850,6 +1055,11 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.uiEditFreqMax.set(this.uiEditFreqMin.get())
             end
             
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes(this.dZ, this.dXY)
+            end
+            
             this.updateAxesLabels();
             
         end
@@ -866,6 +1076,10 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.uiEditFreqMin.set(this.uiEditFreqMax.get())
             end
             
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes(this.dZ, this.dXY)
+            end
             this.updateAxesLabels();
             
         end
@@ -928,6 +1142,11 @@ classdef MfDriftMonitorVibration < mic.Base
             end
             
         end
+        
+        function onUiButtonLoad(this, src, evt)
+            this.updateFromFile()
+        end
+        
         
         function onUiButtonSave(this, src, evt)
             
@@ -1021,6 +1240,13 @@ classdef MfDriftMonitorVibration < mic.Base
             end
             
             
+        end
+        
+        function onUiCheckbox(this, src, evt)
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                this.updateAxes(this.dZ, this.dXY)
+            end
         end
         
         
