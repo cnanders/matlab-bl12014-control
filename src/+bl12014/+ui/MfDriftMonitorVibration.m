@@ -380,12 +380,14 @@ classdef MfDriftMonitorVibration < mic.Base
                 % Time
                 plot(this.hAxesTime, t, pos - mean(pos))
                 hold(this.hAxesTime, 'on') % need to do after first loglog
+                grid(this.hAxesTime, 'on');
                 
                 % PSD
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
                 hold(this.hAxesPsd, 'on') % need to do after first loglog
+                grid(this.hAxesPsd, 'on');
 
 
                 % In-band CAS
@@ -393,6 +395,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
                 semilogx(this.hAxesCas, f, sqrt(powerc));
                 hold(this.hAxesCas, 'on')
+                grid(this.hAxesCas, 'on')
                 
                 cecLabels{end + 1} = cecLabelsZ{channel};
 
@@ -417,19 +420,21 @@ classdef MfDriftMonitorVibration < mic.Base
                 % Time
                 plot(this.hAxesTime, t, pos - mean(pos));
                 hold(this.hAxesTime, 'on')
+                grid(this.hAxesTime, 'on')
                 
                 % PSD
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
                 loglog(this.hAxesPsd, freq_psd, energy_psd);
                 hold(this.hAxesPsd, 'on') % need to do after first loglog
+                grid(this.hAxesPsd, 'on');
                 
                 % In-band CAS
                 [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
                 [f, powerc] = Psd.powerCumulative(f_band, energy_band);
                 semilogx(this.hAxesCas, f, sqrt(powerc));
                 hold(this.hAxesCas, 'on')
-                
+                grid(this.hAxesCas, 'on')
                 cecLabels{end + 1} = cecLabelsXY{channel};
 
             end
