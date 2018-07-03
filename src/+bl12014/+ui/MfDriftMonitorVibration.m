@@ -1150,10 +1150,14 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function onUiButtonSave(this, src, evt)
             
-            this.uiTogglePlayPause.set(false); % pause
+            lPlayingOnSave = this.uiTogglePlayPause.get();
+            
+            if lPlayingOnSave
+                this.uiTogglePlayPause.set(false); % pause
+            end
             % Allow the user to change the suggested filename
             
-            cNameSuggested = datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local')
+            cNameSuggested = datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local');
             cPrompt = { 'Save As (do not add .txt):' };
             cTitle = 'Save As:';
             u8Lines = [1 50];
@@ -1213,7 +1217,9 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.uiListDir.refresh();
             
-            this.uiTogglePlayPause.set(true); % pause
+            if lPlayingOnSave
+                this.uiTogglePlayPause.set(true); % resume acquisition
+            end
             
         end
         
