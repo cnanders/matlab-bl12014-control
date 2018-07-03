@@ -1150,7 +1150,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function onUiButtonSave(this, src, evt)
             
-            
+            this.uiTogglePlayPause.set(false); % pause
             % Allow the user to change the suggested filename
             
             cNameSuggested = datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local')
@@ -1192,6 +1192,9 @@ classdef MfDriftMonitorVibration < mic.Base
                 hsraw = samples.get(n).getHsData();
                 dmi = samples.get(n).getDmiData();
                 
+                hsraw = hsraw';
+                dmi = dmi';
+                
                 fprintf(...
                     u8FildId, ...
                     [...
@@ -1209,6 +1212,8 @@ classdef MfDriftMonitorVibration < mic.Base
             fclose(u8FildId); 
             
             this.uiListDir.refresh();
+            
+            this.uiTogglePlayPause.set(true); % pause
             
         end
         
