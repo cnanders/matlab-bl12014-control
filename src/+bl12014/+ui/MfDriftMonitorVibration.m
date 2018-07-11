@@ -9,7 +9,7 @@ classdef MfDriftMonitorVibration < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1650
+        dWidth = 1710
         dHeight = 980
         
         dHeightList = 150
@@ -21,7 +21,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         dHeightPadTop = 70
         dHeightPadTopAxes = 70;
-        dWidthPadLeftAxes = 55
+        dWidthPadLeftAxes = 70
         
         dHeightPadTopTabGroup = 50;
         
@@ -29,6 +29,8 @@ classdef MfDriftMonitorVibration < mic.Base
         dWidthUnit = 80
         dWidthVal = 75
         dWidthPadUnit = 25 % 280
+        
+        dWidthPadLeftCheckboxes = 20
         
         cName = 'mf-drift-monitor-vibration'
         
@@ -106,6 +108,64 @@ classdef MfDriftMonitorVibration < mic.Base
         uiCheckboxCh5B2
         uiCheckboxCh6T2
         uiCheckboxCh6B2
+        
+        
+        
+        uiTextCh1T1
+        uiTextCh1B1
+        uiTextCh2T1
+        uiTextCh2B1
+        uiTextCh3T1
+        uiTextCh3B1
+        uiTextCh4T1
+        uiTextCh4B1
+        uiTextCh5T1
+        uiTextCh5B1
+        uiTextCh6T1
+        uiTextCh6B1
+        
+        uiTextCh1T2
+        uiTextCh1B2
+        uiTextCh2T2
+        uiTextCh2B2
+        uiTextCh3T2
+        uiTextCh3B2
+        uiTextCh4T2
+        uiTextCh4B2
+        uiTextCh5T2
+        uiTextCh5B2
+        uiTextCh6T2
+        uiTextCh6B2
+        
+        uiTextSquareCh1T1
+        uiTextSquareCh1B1
+        uiTextSquareCh2T1
+        uiTextSquareCh2B1
+        uiTextSquareCh3T1
+        uiTextSquareCh3B1
+        uiTextSquareCh4T1
+        uiTextSquareCh4B1
+        uiTextSquareCh5T1
+        uiTextSquareCh5B1
+        uiTextSquareCh6T1
+        uiTextSquareCh6B1
+        
+        uiTextSquareCh1T2
+        uiTextSquareCh1B2
+        uiTextSquareCh2T2
+        uiTextSquareCh2B2
+        uiTextSquareCh3T2
+        uiTextSquareCh3B2
+        uiTextSquareCh4T2
+        uiTextSquareCh4B2
+        uiTextSquareCh5T2
+        uiTextSquareCh5B2
+        uiTextSquareCh6T2
+        uiTextSquareCh6B2
+        
+        uiTextLabelMeanCounts
+        uiTextLabelCap1
+        uiTextLabelCap2
         
 
         uiCheckboxUReticle
@@ -417,7 +477,7 @@ classdef MfDriftMonitorVibration < mic.Base
             % hold(this.hAxes, 'on');
             drawnow;
             
-            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + 10;
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes;
             dTop = this.dHeightPadTopTabGroup;
             dSep = 20;
             
@@ -506,86 +566,99 @@ classdef MfDriftMonitorVibration < mic.Base
             % hold(this.hAxes, 'on');
             drawnow;
             
-            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + 10;
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes;
             dTop = this.dHeightPadTopTabGroup;
             dSep = 20;
             
+            this.uiTextLabelCap1.build(hPanel, dLeft, dTop - 20, 100, 20);
+            this.uiTextLabelMeanCounts.build(hPanel, dLeft + 100, dTop - 20, 100, 20);
+            
             dWidth = 160;
+            dHeightPadChannel = 10;
+            dHeightPadGroup = 30; %cap1 vs. cap 2 vs dmi
             
-            this.uiCheckboxCh6T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh6B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
+            cecProps = this.getCheckboxRawHeightSensorProps();
+            dHeight = 20
+        
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
+               dTop = dTop + dSep;
+               
+               if mod(n, 2) == 0
+                   dTop = dTop + dHeightPadChannel;
+               end
+               if n == 12
+                   dTop = dTop + dHeightPadGroup;
+                   this.uiTextLabelCap2.build(hPanel, dLeft, dTop - dHeight, 100, dHeight);
+               end
+               
+               
+               
+            end
             
-            this.uiCheckboxCh5T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh5B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            
-            this.uiCheckboxCh4T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh4B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            
-            
-            this.uiCheckboxCh3T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh3B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            
-            this.uiCheckboxCh2T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh2B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            
-            this.uiCheckboxCh1T1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh1B1.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
             
             dTop = dTop + 30;
+
             
-            this.uiCheckboxCh6T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            this.uiCheckboxUReticle.build(hPanel, dLeft, dTop, dWidth, dHeight);
             dTop = dTop + dSep;
-            this.uiCheckboxCh6B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            this.uiCheckboxVReticle.build(hPanel, dLeft, dTop, dWidth, dHeight);
             dTop = dTop + dSep;
-            
-            this.uiCheckboxCh5T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            this.uiCheckboxUWafer.build(hPanel, dLeft, dTop, dWidth, dHeight);
             dTop = dTop + dSep;
-            this.uiCheckboxCh5B2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            
-            this.uiCheckboxCh4T2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh4B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            this.uiCheckboxVWafer.build(hPanel, dLeft, dTop, dWidth, dHeight);
             dTop = dTop + dSep;
             
             
-            this.uiCheckboxCh3T2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh3B2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
             
-            this.uiCheckboxCh2T2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh2B2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes + 100;
+            dTop = this.dHeightPadTopTabGroup;
+            dSep = 20;
+            dWidth = 50;
             
-            this.uiCheckboxCh1T2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxCh1B2.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
+            cecProps = this.getTextProps();
+        
+            % Additional offset
+            dTop = dTop + 6;
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
+               dTop = dTop + dSep;
+               
+               if mod(n, 2) == 0
+                   dTop = dTop + dHeightPadChannel;
+               end
+               
+               if n == 12
+                   dTop = dTop + dHeightPadGroup;
+               end
+            end
             
-            dTop = dTop + 30;
+            % mic.ui.Text used to get a square of a color
             
-            this.uiCheckboxUReticle.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxVReticle.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxUWafer.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxVWafer.build(hPanel, dLeft, dTop, dWidth, 24);
-            dTop = dTop + dSep;
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes + 100 + 55;
+            dTop = this.dHeightPadTopTabGroup;
+            dSep = 20;
+            dWidth = dHeight;
+            
+            cecProps = this.getTextSquareProps();
+        
+            % Additional offset
+            dTop = dTop + 3;
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
+               dTop = dTop + dSep;
+               if mod(n, 2) == 0
+                   dTop = dTop + dHeightPadChannel;
+               end
+               if n == 12
+                   dTop = dTop + dHeightPadGroup;
+               end
+            end
+            
+            
             
             
         end
@@ -622,9 +695,9 @@ classdef MfDriftMonitorVibration < mic.Base
             
             
             % Tab Group
-            dLeft = 280;
+            dLeft = 300;
             dTop = 20;
-            this.uiTabGroupAxes.build(this.hFigure, dLeft, 10, this.dWidth - 280, this.dHeight - 40);
+            this.uiTabGroupAxes.build(this.hFigure, dLeft, 10, this.dWidth - 320, this.dHeight - 40);
             this.buildTabCooked();
             this.buildTabRaw();
             
@@ -651,12 +724,6 @@ classdef MfDriftMonitorVibration < mic.Base
         function delete(this)
             
             this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
             % Clean up clock tasks
             if ~isempty(this.clock) && ...
@@ -666,12 +733,24 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.clock.remove(this.id());
             end
             
+                        
+            % Delete the figure
+            
+            if ishandle(this.hFigure)
+                delete(this.hFigure);
+            end
+            
+            
             
         end 
         
         
         
         function update(this)
+            
+            if ~ishghandle(this.hFigure)
+                return
+            end
             
             this.samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
             
@@ -683,10 +762,44 @@ classdef MfDriftMonitorVibration < mic.Base
                     
                     
             this.updateAxes();
+            this.updateTexts()
             
         end
         
+        
+        function updateTexts(this)
+            
+            switch this.uiTabGroupAxes.getSelectedTabName()
+                case "Cooked"
+                    
+                case "Raw"
+                    this.updateTextsRaw(this.dRawOfHeightSensor, this.dRawOfDmi);
+            end
+        end
+        
+        function updateTextsRaw(this, rawHs, rawDmi)
+            
+            cecListOfTexts = this.getTextProps();
+            cecListOfTextSquares = this.getTextSquareProps();
+            
+            dColors = 256;
+            cmap = jet(dColors);
+            for n = 1 : 24
+                dVal = mean(rawHs(n, :));
+                dIndexOfColor = round(dColors * dVal/2^20);
+                % Map dVal to a range of ints in
+                cVal = sprintf('%6.0f', dVal);
+                this.(cecListOfTexts{n}).set(cVal)
+                this.(cecListOfTextSquares{n}).setBackgroundColor(cmap(dIndexOfColor, :));
+            end
+            
+            
+        end
+        
+        
         function updateAxes(this)
+            
+            
             switch this.uiTabGroupAxes.getSelectedTabName()
                 case "Cooked"
                     this.updateAxesCooked(this.dZ, this.dXY);
@@ -741,9 +854,7 @@ classdef MfDriftMonitorVibration < mic.Base
             this.dRawOfDmi = this.getRawOfDmiFromFileData(ceData);
                     
             this.updateAxes();
-                 
-                   
-                        
+                                         
         end
         
         function l = areAxesRawAvailable(this)
@@ -904,13 +1015,14 @@ classdef MfDriftMonitorVibration < mic.Base
             if (~isequal(dChannelsHs, this.dChannelsHsPrevious) || ...
                 ~isequal(dChannelsDmi, this.dChannelsDmiPrevious) || ...
                 lForceNewLegend)
+            
                 legend(this.hAxesTime, cecLabels);
                 legend(this.hAxesPsd, cecLabels);
                 legend(this.hAxesCas, cecLabels);
             end
                
             if ~this.lLabelsOfCookedInitialized
-                this.updateAxesLabels()
+                this.updateAxesLabelsCooked()
                 this.lLabelsOfCookedInitialized = true;
 
             end
@@ -981,6 +1093,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 % PSD
                 [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
                 [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
+                
                 loglog(this.hAxesPsdRaw, freq_psd, energy_psd);
                 hold(this.hAxesPsdRaw, 'on') % need to do after first loglog
                 grid(this.hAxesPsdRaw, 'on');
@@ -1044,7 +1157,7 @@ classdef MfDriftMonitorVibration < mic.Base
             end
                
             if ~this.lLabelsOfRawInitialized
-                this.updateAxesLabels()
+                this.updateAxesLabelsRaw()
                 this.lLabelsOfRawInitialized = true;
 
             end
@@ -1060,7 +1173,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 return
             end
             
-            title(this.hAxesTimeRaw, 'Amplitude vs. Time');
+            title(this.hAxesTimeRaw, 'Amplitude - Mean vs. Time');
             xlabel(this.hAxesTimeRaw, 'Time (s)');
             ylabel(this.hAxesTimeRaw, 'Counts');
             
@@ -1538,54 +1651,45 @@ classdef MfDriftMonitorVibration < mic.Base
             this.updateAxes();
         end
         
-        function init(this)
-            this.msg('init()');
-            this.initUiCommMfDriftMonitor();
+        function initCheckboxesRaw(this)
             
-            % Axes tab group:
-            this.uiTabGroupAxes = mic.ui.common.Tabgroup(...
-                'fhDirectCallback', @this.onUiTabGroupAxes, ...
-                'ceTabNames',  {'Cooked', 'Raw'} ...
-            );
-                       
+            this.uiCheckboxCh6T1 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6B1 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh5T1 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5B1 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
             
-            this.uiCheckboxCh6T1 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh6B1 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4T1 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4B1 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh5T1 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh5B1 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            
-            this.uiCheckboxCh4T1 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh4B1 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3T1 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3B1 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh3T1 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh3B1 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2T1 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2B1 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh2T1 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh2B1 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-
-            this.uiCheckboxCh1T1 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh1B1 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1T1 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1B1 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
             
             
-            this.uiCheckboxCh1T2 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh1B2 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1T2 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1B2 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh2T2 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh2B2 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2T2 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2B2 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh3T2 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh3B2 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3T2 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3B2 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh4T2 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh4B2 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4T2 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4B2 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh5T2 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh5B2 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5T2 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5B2 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
-            this.uiCheckboxCh6T2 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
-            this.uiCheckboxCh6B2 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6T2 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6B2 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
             
             
@@ -1595,6 +1699,145 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCheckboxVWafer = mic.ui.common.Checkbox('cLabel', 'V wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             
             
+            
+        end
+        
+        function cec = getTextProps(this)
+            cec = {...
+                ... % 0 - 500 us
+                'uiTextCh6T1', ...
+                'uiTextCh6B1', ...
+                'uiTextCh5T1', ...
+                'uiTextCh5B1', ...
+                'uiTextCh4T1', ...
+                'uiTextCh4B1', ...
+                'uiTextCh3T1', ...
+                'uiTextCh3B1', ...
+                'uiTextCh2T1', ...
+                'uiTextCh2B1', ...
+                'uiTextCh1T1', ...
+                'uiTextCh1B1', ...
+                ... % 500 us - 1000 us
+                'uiTextCh6T2', ...
+                'uiTextCh6B2', ...
+                'uiTextCh5T2', ...
+                'uiTextCh5B2', ...
+                'uiTextCh4T2', ...
+                'uiTextCh4B2', ...
+                'uiTextCh3T2', ...
+                'uiTextCh3B2', ...
+                'uiTextCh2T2', ...
+                'uiTextCh2B2', ...
+                'uiTextCh1T2', ...
+                'uiTextCh1B2' ...
+            };
+        end
+        
+        function cec = getTextSquareProps(this)
+            cec = {...
+                ... % 0 - 500 us
+                'uiTextSquareCh6T1', ...
+                'uiTextSquareCh6B1', ...
+                'uiTextSquareCh5T1', ...
+                'uiTextSquareCh5B1', ...
+                'uiTextSquareCh4T1', ...
+                'uiTextSquareCh4B1', ...
+                'uiTextSquareCh3T1', ...
+                'uiTextSquareCh3B1', ...
+                'uiTextSquareCh2T1', ...
+                'uiTextSquareCh2B1', ...
+                'uiTextSquareCh1T1', ...
+                'uiTextSquareCh1B1', ...
+                ... % 500 us - 1000 us
+                'uiTextSquareCh6T2', ...
+                'uiTextSquareCh6B2', ...
+                'uiTextSquareCh5T2', ...
+                'uiTextSquareCh5B2', ...
+                'uiTextSquareCh4T2', ...
+                'uiTextSquareCh4B2', ...
+                'uiTextSquareCh3T2', ...
+                'uiTextSquareCh3B2', ...
+                'uiTextSquareCh2T2', ...
+                'uiTextSquareCh2B2', ...
+                'uiTextSquareCh1T2', ...
+                'uiTextSquareCh1B2' ...
+            };
+        end
+        
+        function cec = getCheckboxRawHeightSensorProps(this)
+            cec = {...
+                ... % 0 - 500 us
+                'uiCheckboxCh6T1', ...
+                'uiCheckboxCh6B1', ...
+                'uiCheckboxCh5T1', ...
+                'uiCheckboxCh5B1', ...
+                'uiCheckboxCh4T1', ...
+                'uiCheckboxCh4B1', ...
+                'uiCheckboxCh3T1', ...
+                'uiCheckboxCh3B1', ...
+                'uiCheckboxCh2T1', ...
+                'uiCheckboxCh2B1', ...
+                'uiCheckboxCh1T1', ...
+                'uiCheckboxCh1B1', ...
+                ... % 500 us - 1000 us
+                'uiCheckboxCh6T2', ...
+                'uiCheckboxCh6B2', ...
+                'uiCheckboxCh5T2', ...
+                'uiCheckboxCh5B2', ...
+                'uiCheckboxCh4T2', ...
+                'uiCheckboxCh4B2', ...
+                'uiCheckboxCh3T2', ...
+                'uiCheckboxCh3B2', ...
+                'uiCheckboxCh2T2', ...
+                'uiCheckboxCh2B2', ...
+                'uiCheckboxCh1T2', ...
+                'uiCheckboxCh1B2' ...
+            };
+        end
+        
+        function initTextsRaw(this)
+            
+            cecProps = this.getTextProps();
+        
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp) = mic.ui.common.Text('cVal', '...', 'cAlign', 'right');
+            end    
+            
+            
+        end
+        
+        function initTextSquaresRaw(this)
+            
+            cecProps = this.getTextSquareProps();
+        
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp) = mic.ui.common.Text('cVal', '', 'cAlign', 'right');
+            end    
+            
+
+            
+        end
+        
+        
+        function init(this)
+            this.msg('init()');
+            this.initUiCommMfDriftMonitor();
+            
+            % Axes tab group:
+            this.uiTabGroupAxes = mic.ui.common.Tabgroup(...
+                'fhDirectCallback', { @this.onUiTabGroupAxes, @this.onUiTabGroupAxes } , ...
+                'ceTabNames',  {'Cooked', 'Raw'} ...
+            );
+        
+            this.initCheckboxesRaw()
+            this.initTextsRaw()
+            this.initTextSquaresRaw();
+            
+            this.uiTextLabelMeanCounts = mic.ui.common.Text('cVal', 'Avg. Counts');
+            this.uiTextLabelCap1 = mic.ui.common.Text('cVal', '"Cap1" 0-500us');
+            this.uiTextLabelCap2 = mic.ui.common.Text('cVal', '"Cap2" 500-1000us');
             
                     
             this.uiCheckboxZ1 = mic.ui.common.Checkbox('cLabel', 'z 5:30 (1)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
