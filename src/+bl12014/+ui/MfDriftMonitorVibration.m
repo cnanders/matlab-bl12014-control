@@ -9,17 +9,21 @@ classdef MfDriftMonitorVibration < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1600
-        dHeight = 1000
+        dWidth = 1650
+        dHeight = 980
         
         dHeightList = 150
         
-        dWidthAxes = 1200
-        dHeightAxes = 240
+        dWidthAxes = 1100
+        dHeightAxes = 225
+        
+        dWidthPanel = 270
         
         dHeightPadTop = 70
         dHeightPadTopAxes = 70;
-        dWidthPadLeftAxes = 70
+        dWidthPadLeftAxes = 55
+        
+        dHeightPadTopTabGroup = 50;
         
         dWidthName = 70
         dWidthUnit = 80
@@ -44,8 +48,9 @@ classdef MfDriftMonitorVibration < mic.Base
         uiListDir
         
         hPanelCasSettings
+        hPanelSave
         
-        
+        uiTabGroupAxes
         
         
 
@@ -57,15 +62,58 @@ classdef MfDriftMonitorVibration < mic.Base
         clock
         
         hFigure
+        
+        % Cooked
         hAxesTime % amplitide vs. time
         hAxesPsd % power spectral density
         hAxesCas % cumulative amplitude spectrum
+        
+        
+        hAxesTimeRaw % amplitide vs. time
+        hAxesPsdRaw % power spectral density
+        hAxesCasRaw % cumulative amplitude spectrum
         
        
         
         % {< cxro.met5.device.mfdriftmonitorI}
         device 
 
+        % *1 = time 0 us - 500 us of acquisition widnow
+        % *2 = time 500 us - 1000 us of acquisition window
+        
+        uiCheckboxCh1T1
+        uiCheckboxCh1B1
+        uiCheckboxCh2T1
+        uiCheckboxCh2B1
+        uiCheckboxCh3T1
+        uiCheckboxCh3B1
+        uiCheckboxCh4T1
+        uiCheckboxCh4B1
+        uiCheckboxCh5T1
+        uiCheckboxCh5B1
+        uiCheckboxCh6T1
+        uiCheckboxCh6B1
+        
+        uiCheckboxCh1T2
+        uiCheckboxCh1B2
+        uiCheckboxCh2T2
+        uiCheckboxCh2B2
+        uiCheckboxCh3T2
+        uiCheckboxCh3B2
+        uiCheckboxCh4T2
+        uiCheckboxCh4B2
+        uiCheckboxCh5T2
+        uiCheckboxCh5B2
+        uiCheckboxCh6T2
+        uiCheckboxCh6B2
+        
+
+        uiCheckboxUReticle
+        uiCheckboxVReticle
+        uiCheckboxUWafer
+        uiCheckboxVWafer
+        
+        
         
         uiCheckboxZ1
         uiCheckboxZ2
@@ -88,17 +136,29 @@ classdef MfDriftMonitorVibration < mic.Base
         dChannelsHsPrevious = []
         dChannelsDmiPrevious = []
         
-        lLabelsOfPlotInitialized = false
+        dChannelsRawHsPrevious = []
+        dChannelsRawDmiPrevious = []
+        
+        lLabelsOfCookedInitialized = false
+        lLabelsOfRawInitialized = false
         
         % { < java.util.ArrayList<cxro.met5.device.mfdriftmonitor.SampleData>}
         % Store them so save can have access to frozen data set.
         samples
+        
+        
+        % Why do we need to store the values?  Because when paused (which
+        % happens after load), need to be able to select the checkboxes to
+        % change what is plotted.  Only way to update plot is if have full
+        % set of possible data that can be plotted
         
         % {double 7xm}
         dZ = zeros(7, 1)
         % {double 4xm}
         dXY = zeros(4, 1)
         
+        dRawOfHeightSensor = zeros(24, 1);
+        dRawOfDmi = zeros(4, 1);
         
         
     end
@@ -121,13 +181,18 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         
-        function buildAxesTime(this)
+        
+        
+        
+        
+        
+        function buildAxesTimeRaw(this)
             
             dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTop;
             
-            this.hAxesTime = axes(...
-                'Parent', this.hFigure, ...
+            this.hAxesTimeRaw = axes(...
+                'Parent', this.uiTabGroupAxes.getTabByName('Raw'), ...
                 'Units', 'pixels',...
                 'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
                 'HandleVisibility', 'on', ...
@@ -143,14 +208,14 @@ classdef MfDriftMonitorVibration < mic.Base
 
         end
         
-        function buildAxesPsd(this)
+        function buildAxesPsdRaw(this)
             
             dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTop + ...
                 this.dHeightAxes + this.dHeightPadTopAxes;
             
-            this.hAxesPsd = axes(...
-                'Parent', this.hFigure, ...
+            this.hAxesPsdRaw = axes(...
+                'Parent', this.uiTabGroupAxes.getTabByName('Raw'), ...
                 'Units', 'pixels',...
                 'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
                 'HandleVisibility', 'on', ...
@@ -166,7 +231,7 @@ classdef MfDriftMonitorVibration < mic.Base
 
         end
         
-        function buildAxesCas(this)
+        function buildAxesCasRaw(this)
             
             dLeft = this.dWidthPadLeftAxes;
             
@@ -174,8 +239,8 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.dHeightAxes + this.dHeightPadTopAxes + ...
                 this.dHeightAxes + this.dHeightPadTopAxes;
             
-            this.hAxesCas = axes(...
-                'Parent', this.hFigure, ...
+            this.hAxesCasRaw = axes(...
+                'Parent', this.uiTabGroupAxes.getTabByName('Raw'), ...
                 'Units', 'pixels',...
                 'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
                 'HandleVisibility', 'on', ...
@@ -231,12 +296,46 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        function buildPanelSaveLoad(this)
+            
+            dLeft = 10;
+            dTop = 170;
+            dHeight = 300;
+            
+            this.hPanelSave = uipanel(...
+                'Parent', this.hFigure,...
+                'Units', 'pixels',...
+                'Title', 'Save / Load',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidthPanel ...
+                dHeight], this.hFigure) ...
+            );
+        
+            dLeft = 10;
+            dTop = 20;
+            dSep = 30;
+            
+            % Save / Load
+            this.uiButtonSave.build(this.hPanelSave, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;            
+            
+            % List Dir
+            this.uiListDir.build(this.hPanelSave, dLeft, dTop, 240, this.dHeightList);
+            dTop = dTop + this.dHeightList + 10 + dSep;
+            
+            this.uiButtonLoad.build(this.hPanelSave, dLeft, dTop, 80, 24);
+            dTop = dTop + 50 + dSep;
+            
+        end
+        
         
         function buildPanelCasSettings(this)
             
-            dLeft = 100 + this.dWidthAxes;
-            dTop = 700;
-            dWidth = 200;
+            dLeft = 10;
+            dTop = 670;
             dHeight = 150;
             
             this.hPanelCasSettings = uipanel(...
@@ -247,7 +346,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
                 dTop ...
-                dWidth ...
+                this.dWidthPanel ...
                 dHeight], this.hFigure) ...
             );
             
@@ -263,7 +362,234 @@ classdef MfDriftMonitorVibration < mic.Base
                                     
         end
         
+        function buildTabCooked(this)
+            
+            hPanel = this.uiTabGroupAxes.getTabByName('Cooked');
+            
+            dLeft = this.dWidthPadLeftAxes;
+            dTop = this.dHeightPadTop + this.dHeightPadTopTabGroup;
+            
+            this.hAxesTime = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            
+            dTop = dTop + this.dHeightAxes + this.dHeightPadTopAxes;
+            
+            this.hAxesPsd = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            
+            dTop = dTop + this.dHeightAxes + this.dHeightPadTopAxes;
 
+            
+            this.hAxesCas = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            drawnow;
+            
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + 10;
+            dTop = this.dHeightPadTopTabGroup;
+            dSep = 20;
+            
+            this.uiCheckboxZ1.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ2.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ3.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ1Z2Z3Avg.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ4.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ5.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxZ6.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+
+            this.uiCheckboxXReticle.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxYReticle.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxXWafer.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxYWafer.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+
+            dTop = dTop + 20;
+            dSep = 40;
+            
+            
+        end
+        
+        function buildTabRaw(this)
+            
+            hPanel = this.uiTabGroupAxes.getTabByName('Raw');
+            
+            dLeft = this.dWidthPadLeftAxes;
+            dTop = this.dHeightPadTop + this.dHeightPadTopTabGroup;
+            
+            this.hAxesTimeRaw = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            
+            dTop = dTop + this.dHeightAxes + this.dHeightPadTopAxes;
+            
+            this.hAxesPsdRaw = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            
+            dTop = dTop + this.dHeightAxes + this.dHeightPadTopAxes;
+
+            
+            this.hAxesCasRaw = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            % hold(this.hAxes, 'on');
+            drawnow;
+            
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + 10;
+            dTop = this.dHeightPadTopTabGroup;
+            dSep = 20;
+            
+            dWidth = 160;
+            
+            this.uiCheckboxCh6T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh6B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh5T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh5B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh4T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh4B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            
+            this.uiCheckboxCh3T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh3B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh2T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh2B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh1T1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh1B1.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            dTop = dTop + 30;
+            
+            this.uiCheckboxCh6T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh6B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh5T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh5B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh4T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh4B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            
+            this.uiCheckboxCh3T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh3B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh2T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh2B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxCh1T2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxCh1B2.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            dTop = dTop + 30;
+            
+            this.uiCheckboxUReticle.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxVReticle.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxUWafer.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            this.uiCheckboxVWafer.build(hPanel, dLeft, dTop, dWidth, 24);
+            dTop = dTop + dSep;
+            
+            
+        end
+        
         function build(this) % , hParent, dLeft, dTop
                         
             if ishghandle(this.hFigure)
@@ -281,14 +607,8 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCommMfDriftMonitor.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 5 + dSep;
             
-            this.buildAxesTime();
-            this.buildAxesPsd();
-            this.buildAxesCas();
             
-            dTop = 20;
-            dLeft = 100 + this.dWidthAxes;
-            dSep = 30;
-            
+            dTop = dTop + 50;
             this.uiTogglePlayPause.build(this.hFigure, dLeft, dTop, 100, 24);
             % dTop = dTop + dSep;
             
@@ -296,53 +616,24 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiEditNumOfSamples.build(this.hFigure, dLeft, dTop - 10, 150, 24);
             dTop = dTop + dSep;
             
-            dLeft = 100 + this.dWidthAxes;
-            dTop = dTop + 20;
-            
-            % Save / Load
-            this.uiButtonSave.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;            
-            
-            dLeft = 100 + this.dWidthAxes;
-
-            % List Dir
-            this.uiListDir.build(this.hFigure, dLeft, dTop, 250, this.dHeightList);
-            dTop = dTop + this.dHeightList + 10 + dSep;
-            
-            this.uiButtonLoad.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + 50 + dSep;
-            
-            
-            dSep = 20;
-            this.uiCheckboxZ1.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ2.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ3.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ1Z2Z3Avg.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ4.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ5.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxZ6.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-
-            this.uiCheckboxXReticle.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxYReticle.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxXWafer.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-            this.uiCheckboxYWafer.build(this.hFigure, dLeft, dTop, 100, 24);
-            dTop = dTop + dSep;
-
-            dTop = dTop + 20;
-            dSep = 40;
-            
+            this.buildPanelSaveLoad();
             
             this.buildPanelCasSettings();
+            
+            
+            % Tab Group
+            dLeft = 280;
+            dTop = 20;
+            this.uiTabGroupAxes.build(this.hFigure, dLeft, 10, this.dWidth - 280, this.dHeight - 40);
+            this.buildTabCooked();
+            this.buildTabRaw();
+            
+            dTop = 20;
+            dLeft = 100 + this.dWidthAxes;
+            dSep = 30;
+            
+            
+            
             
             
             
@@ -379,15 +670,31 @@ classdef MfDriftMonitorVibration < mic.Base
         end 
         
         
+        
         function update(this)
             
             this.samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
+            
             this.dZ = this.getHeightSensorZFromSampleData(this.samples);
             this.dXY = this.getDmiPositionFromSampleData(this.samples);
-            
-            this.updateAxes(this.dZ, this.dXY)
+                    
+            this.dRawOfHeightSensor = this.getRawOfHeightSensorFromSampleData(this.samples);
+            this.dRawOfDmi = this.getRawOfDmiFromSampleData(this.samples);
+                    
+                    
+            this.updateAxes();
             
         end
+        
+        function updateAxes(this)
+            switch this.uiTabGroupAxes.getSelectedTabName()
+                case "Cooked"
+                    this.updateAxesCooked(this.dZ, this.dXY);
+                case "Raw"
+                    this.updateAxesRaw(this.dRawOfHeightSensor, this.dRawOfDmi);
+            end
+        end
+        
         
         function updateFromFile(this)
             
@@ -429,13 +736,43 @@ classdef MfDriftMonitorVibration < mic.Base
 
             this.dZ = this.getHeightSensorZFromFileData(ceData);
             this.dXY = this.getDmiPositionFromFileData(ceData);
+                    
+            this.dRawOfHeightSensor = this.getRawOfHeightSensorFromFileData(ceData);
+            this.dRawOfDmi = this.getRawOfDmiFromFileData(ceData);
+                    
+            this.updateAxes();
+                 
+                   
+                        
+        end
+        
+        function l = areAxesRawAvailable(this)
+            l = true;
+            if  isempty(this.hAxesPsdRaw) || ...
+                ~ishandle(this.hAxesPsdRaw)
+               
+                l = false;
+                return;
+            end
             
-            this.updateAxes(this.dZ, this.dXY);
+            if  isempty(this.hAxesCasRaw) || ...
+                ~ishandle(this.hAxesCasRaw)
+               
+                l = false;
+                return;
+            end
+            
+            if  isempty(this.hAxesTimeRaw) || ...
+                ~ishandle(this.hAxesTimeRaw)
+               
+                l = false;
+                return;
+            end
             
         end
         
-        function l = areAxesAvailable(this)
-            
+        
+        function l = areAxesCookedAvailable(this)
             l = true;
             if  isempty(this.hAxesPsd) || ...
                 ~ishandle(this.hAxesPsd)
@@ -457,11 +794,14 @@ classdef MfDriftMonitorVibration < mic.Base
                 l = false;
                 return;
             end
-            
-            
         end
         
-        function updateAxes(this, z, xy)
+        
+        function l = areAxesAvailable(this)
+            l = this.areAxesCookedAvailable() && this.areAxesRawAvailable();
+        end
+        
+        function updateAxesCooked(this, z, xy)
             
             
             if ~this.areAxesAvailable()
@@ -489,7 +829,7 @@ classdef MfDriftMonitorVibration < mic.Base
             };
             
             % z (nm) 
-            dChannelsHs = this.getHeightSensorChannels();
+            dChannelsHs = this.getChannelsHeightSensor();
             
             for n = dChannelsHs
     
@@ -529,7 +869,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 'Y wafer' ...
             };
             
-            dChannelsDmi = this.getDmiChannels();
+            dChannelsDmi = this.getChannelsDmi();
             
             for n = dChannelsDmi
     
@@ -560,6 +900,7 @@ classdef MfDriftMonitorVibration < mic.Base
 
             % Y
             lForceNewLegend = true;
+            
             if (~isequal(dChannelsHs, this.dChannelsHsPrevious) || ...
                 ~isequal(dChannelsDmi, this.dChannelsDmiPrevious) || ...
                 lForceNewLegend)
@@ -568,17 +909,179 @@ classdef MfDriftMonitorVibration < mic.Base
                 legend(this.hAxesCas, cecLabels);
             end
                
-            if ~this.lLabelsOfPlotInitialized
-                this.updateAxesLabels() 
+            if ~this.lLabelsOfCookedInitialized
+                this.updateAxesLabels()
+                this.lLabelsOfCookedInitialized = true;
+
             end
             
-            this.lLabelsOfPlotInitialized = true;
             this.dChannelsHsPrevious = dChannelsHs;
             this.dChannelsDmiPrevious = dChannelsDmi;
             
         end
         
-        function updateAxesLabels(this)
+        
+        function updateAxesRaw(this, rawHs, rawDmi)
+            
+            
+            if ~this.areAxesAvailable()
+                return
+            end
+            
+            %delete(this.hLinesPsd);
+            %delete(this.hLinesCas);
+            
+            cla(this.hAxesTimeRaw);
+            cla(this.hAxesPsdRaw);
+            cla(this.hAxesCasRaw);
+            
+            t = [0 : length(rawHs) - 1] * 1e-3;
+
+            cecLabels = {}; % Fill with plotted things
+            cecLabelsZ = {...
+                'ch6top1', ...
+                'ch6bot1', ...
+                'ch5top1', ...
+                'ch5bot1', ...
+                'ch4top1', ...
+                'ch4bot1', ...
+                'ch3top1', ...
+                'ch3bot1', ...
+                'ch2top1', ...
+                'ch2bot1', ...
+                'ch1top1', ...
+                'ch1bot1', ...
+                'ch6top2', ...
+                'ch6bot2', ...
+                'ch5top2', ...
+                'ch5bot2', ...
+                'ch4top2', ...
+                'ch4bot2', ...
+                'ch3top2', ...
+                'ch3bot2', ...
+                'ch2top2', ...
+                'ch2bot2', ...
+                'ch1top2', ...
+                'ch1bot2' ...
+            };
+            
+            % z (nm) 
+            dChannelsHs = this.getChannelsHeightSensorRaw();
+            
+            for n = dChannelsHs
+    
+                channel = n;
+                pos = rawHs(channel, :);
+                
+                % Time
+                plot(this.hAxesTimeRaw, t, pos - mean(pos))
+                hold(this.hAxesTimeRaw, 'on') % need to do after first loglog
+                grid(this.hAxesTimeRaw, 'on');
+                
+                % PSD
+                [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
+                [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
+                loglog(this.hAxesPsdRaw, freq_psd, energy_psd);
+                hold(this.hAxesPsdRaw, 'on') % need to do after first loglog
+                grid(this.hAxesPsdRaw, 'on');
+
+
+                % In-band CAS
+                [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
+                [f, powerc] = Psd.powerCumulative(f_band, energy_band);
+                semilogx(this.hAxesCasRaw, f, sqrt(powerc));
+                hold(this.hAxesCasRaw, 'on')
+                grid(this.hAxesCasRaw, 'on')
+                
+                cecLabels{end + 1} = cecLabelsZ{channel};
+
+            end
+
+            cecLabelsXY = {...
+                'U reticle', ...
+                'V reticle', ...
+                'U wafer', ...
+                'V wafer' ...
+            };
+            
+            dChannelsDmi = this.getChannelsDmiRaw();
+            
+            for n = dChannelsDmi
+    
+                channel = n;
+                pos = rawDmi(channel, :);
+
+                % Time
+                plot(this.hAxesTimeRaw, t, pos - mean(pos));
+                hold(this.hAxesTimeRaw, 'on')
+                grid(this.hAxesTimeRaw, 'on')
+                
+                % PSD
+                [freq_psd, energy_psd] = Psd.calc(t, pos - mean(pos));
+                [freq_psd, energy_psd] = Psd.fold(freq_psd, energy_psd);
+                loglog(this.hAxesPsdRaw, freq_psd, energy_psd);
+                hold(this.hAxesPsdRaw, 'on') % need to do after first loglog
+                grid(this.hAxesPsdRaw, 'on');
+                
+                % In-band CAS
+                [f_band, energy_band] = Psd.band(freq_psd, energy_psd, 1/this.uiEditFreqMin.get(), 1/this.uiEditFreqMax.get());
+                [f, powerc] = Psd.powerCumulative(f_band, energy_band);
+                semilogx(this.hAxesCasRaw, f, sqrt(powerc));
+                hold(this.hAxesCasRaw, 'on')
+                grid(this.hAxesCasRaw, 'on')
+                cecLabels{end + 1} = cecLabelsXY{channel};
+
+            end
+
+            % Y
+            lForceNewLegend = true;
+            if (~isequal(dChannelsHs, this.dChannelsRawHsPrevious) || ...
+                ~isequal(dChannelsDmi, this.dChannelsRawDmiPrevious) || ...
+                lForceNewLegend)
+                legend(this.hAxesTimeRaw, cecLabels);
+                legend(this.hAxesPsdRaw, cecLabels);
+                legend(this.hAxesCasRaw, cecLabels);
+            end
+               
+            if ~this.lLabelsOfRawInitialized
+                this.updateAxesLabels()
+                this.lLabelsOfRawInitialized = true;
+
+            end
+            
+            this.dChannelsRawHsPrevious = dChannelsHs;
+            this.dChannelsRawDmiPrevious = dChannelsDmi;
+            
+        end
+        
+        function updateAxesLabelsRaw(this)
+            
+            if ~this.areAxesAvailable()
+                return
+            end
+            
+            title(this.hAxesTimeRaw, 'Amplitude vs. Time');
+            xlabel(this.hAxesTimeRaw, 'Time (s)');
+            ylabel(this.hAxesTimeRaw, 'Counts');
+            
+            title(this.hAxesPsdRaw, 'PSD')
+            xlabel(this.hAxesPsdRaw, 'Freq (Hz)');
+            ylabel(this.hAxesPsdRaw, 'PSD (counts^2/Hz)');
+            xlim(this.hAxesPsdRaw, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
+
+            cTitle = sprintf(...
+                'Cumulative Amplitude Spectrum [%1.0fHz, %1.0fHz]', ...
+                this.uiEditFreqMin.get(), ...
+                this.uiEditFreqMax.get() ...
+            );
+            title(this.hAxesCasRaw, cTitle);
+            xlabel(this.hAxesCasRaw, 'Freq (Hz)');
+            ylabel(this.hAxesCasRaw, 'Cumulative Amplitude RMS (counts)');
+            xlim(this.hAxesCasRaw, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
+            
+        end
+        
+        function updateAxesLabelsCooked(this)
             
             if ~this.areAxesAvailable()
                 return
@@ -602,7 +1105,25 @@ classdef MfDriftMonitorVibration < mic.Base
             xlabel(this.hAxesCas, 'Freq (Hz)');
             ylabel(this.hAxesCas, 'Cumulative Amplitude RMS (nm)');
             xlim(this.hAxesCas, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
+            
+            
         end
+        
+        function updateAxesLabels(this)
+            this.updateAxesLabelsRaw();
+            this.updateAxesLabelsCooked();
+            
+        end
+        
+        function d = getRawOfHeightSensorFromFileData(this, ceData)
+            
+            d = zeros(24, length(ceData{28})); 
+            for n = 1 : 24
+                d(n, :) = ceData{n};
+            end
+            
+        end
+        
         
         % See getHeightSensorZFromSampleData
         function z = getHeightSensorZFromFileData(this, ceData)
@@ -669,6 +1190,27 @@ classdef MfDriftMonitorVibration < mic.Base
             % Ch "7" is average of three central
             z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
         end
+        
+        
+        
+        % Returns a {double 6xm} time series of height zensor z in nm of
+        % all six channels
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
+        % @return {double 24xm} - height sensor z (nm) of six channels at 1 kHz
+        
+        function d = getRawOfHeightSensorFromSampleData(this, samples)
+            
+            d = zeros(24, samples.size());
+            
+            % Samples.get() is zero-indexed since implementing java
+            % interface
+            for n = 0 : samples.size() - 1
+                d(:, n + 1) = samples.get(n).getHsData();
+            end
+                                                    
+        end
+        
+        
         
         % Returns a {double 6xm} time series of height zensor z in nm of
         % all six channels
@@ -752,6 +1294,22 @@ classdef MfDriftMonitorVibration < mic.Base
             z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
         end
         
+        function d = getRawOfDmiFromFileData(this, ceData)
+            
+            stMap = struct();
+            stMap.dmi1 = 25;
+            stMap.dmi2 = 26;
+            stMap.dmi3 = 27;
+            stMap.dmi4 = 28;
+                                 
+            d(1, :) = double(ceData{stMap.dmi1});
+            d(2, :) = double(ceData{stMap.dmi2});
+            d(3, :) = double(ceData{stMap.dmi3});
+            d(4, :) = double(ceData{stMap.dmi4});
+
+            
+            
+        end
         
         % See getDmiPositionFromSampleData
         function pos = getDmiPositionFromFileData(this, ceData)
@@ -829,76 +1387,110 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         
+        % Returns {double 4xm} x and y position of reticle and wafer in nm
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
+        % @return {double 4xm} - position data of reticle and wafer nm
+        % @return(1, :) {double 1xm} - uReticle
+        % @return(2, :) {double 1xm} - vReticle
+        % @return(3, :) {double 1xm} - uWafer
+        % @return(4, :) {double 1xm} - vWafer
+
+        function d = getRawOfDmiFromSampleData(this, samples)
+            
+            % Reshape to a 4xn matrix of doubles.  
+            
+            % Mirrors are mounted 45 degrees relative to x and y
+            % row1 = uReticle
+            % row2 = vReticle
+            % row3 = uWafer
+            % row4 = vWafer
+            
+            % samples is zero-indexed because uses Java interface
+            d = zeros(4, samples.size());
+            for n = 0 : samples.size() - 1
+                d(:, n + 1) = double(samples.get(n).getDmiData());
+            end
+                  
+           
+        end
+        
         function st = save(this)
+            
+            cecProps = this.getSaveLoadProps();
+            
             st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                st.(cProp) = this.(cProp).save();
+            end
             
-            st.uiCheckboxZ1 = this.uiCheckboxZ1.save();
-            st.uiCheckboxZ2 = this.uiCheckboxZ2.save();
-            st.uiCheckboxZ3 = this.uiCheckboxZ3.save();
-            st.uiCheckboxZ1Z2Z3Avg = this.uiCheckboxZ1Z2Z3Avg.save();
-            st.uiCheckboxZ4 = this.uiCheckboxZ4.save();
-            st.uiCheckboxZ5 = this.uiCheckboxZ5.save();
-            st.uiCheckboxZ6 = this.uiCheckboxZ6.save();
-
-            st.uiCheckboxXReticle = this.uiCheckboxXReticle.save();
-            st.uiCheckboxYReticle = this.uiCheckboxYReticle.save();
-            st.uiCheckboxXWafer = this.uiCheckboxXWafer.save();
-            st.uiCheckboxYWafer = this.uiCheckboxYWafer.save();
-
-            st.uiEditFreqMin = this.uiEditFreqMin.save();
-            st.uiEditFreqMax = this.uiEditFreqMax.save();
-            st.uiEditNumOfSamples = this.uiEditNumOfSamples.save();
-            
-            st.uiListDir = this.uiListDir.save();
             
         end
         
+        function cec = getSaveLoadProps(this)
+            cec = {...
+                ... % Cooked
+                'uiCheckboxZ1', ...
+                'uiCheckboxZ2', ...
+                'uiCheckboxZ3', ...
+                'uiCheckboxZ4', ...
+                'uiCheckboxZ5', ...
+                'uiCheckboxZ6', ...
+                'uiCheckboxZ1Z2Z3Avg', ...
+                'uiCheckboxXReticle', ...
+                'uiCheckboxYReticle', ...
+                'uiCheckboxXWafer', ...
+                'uiCheckboxYWafer', ...
+                ... % Raw
+                'uiCheckboxCh6T1', ...
+                'uiCheckboxCh6B1', ...
+                'uiCheckboxCh5T1', ...
+                'uiCheckboxCh5B1', ...
+                'uiCheckboxCh4T1', ...
+                'uiCheckboxCh4B1', ...
+                'uiCheckboxCh3T1', ...
+                'uiCheckboxCh3B1', ...
+                'uiCheckboxCh2T1', ...
+                'uiCheckboxCh2B1', ...
+                'uiCheckboxCh1T1', ...
+                'uiCheckboxCh1B1', ...
+                'uiCheckboxCh6T2', ...
+                'uiCheckboxCh6B2', ...
+                'uiCheckboxCh5T2', ...
+                'uiCheckboxCh5B2', ...
+                'uiCheckboxCh4T2', ...
+                'uiCheckboxCh4B2', ...
+                'uiCheckboxCh3T2', ...
+                'uiCheckboxCh3B2', ...
+                'uiCheckboxCh2T2', ...
+                'uiCheckboxCh2B2', ...
+                'uiCheckboxCh1T2', ...
+                'uiCheckboxCh1B2', ...
+                'uiCheckboxUReticle', ...
+                'uiCheckboxVReticle', ...
+                'uiCheckboxUWafer', ...
+                'uiCheckboxVWafer', ...
+                ... % Other
+                'uiEditFreqMin', ...
+                'uiEditFreqMax', ...
+                'uiEditNumOfSamples', ...
+                'uiListDir' ...
+            };
+            
+        end
+        
+        
+        
         function load(this, st)
             
-            
-            if isfield(st, 'uiCheckboxZ1')
-                this.uiCheckboxZ1.load(st.uiCheckboxZ1)
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+               if isfield(st, cProp)
+               	this.(cProp).load(st.(cProp))
+               end
             end
             
-            if isfield(st, 'uiCheckboxZ2')
-                this.uiCheckboxZ2.load(st.uiCheckboxZ2)
-            end
-            
-            if isfield(st, 'uiCheckboxZ3')
-                this.uiCheckboxZ3.load(st.uiCheckboxZ3)
-            end
-            
-            if isfield(st, 'uiCheckboxZ4')
-                this.uiCheckboxZ4.load(st.uiCheckboxZ4)
-            end
-            
-            if isfield(st, 'uiCheckboxZ5')
-                this.uiCheckboxZ5.load(st.uiCheckboxZ5)
-            end
-            
-            if isfield(st, 'uiCheckboxZ6')
-                this.uiCheckboxZ6.load(st.uiCheckboxZ6)
-            end
-            
-            if isfield(st, 'uiCheckboxZ1Z2Z3Avg')
-                this.uiCheckboxZ1Z2Z3Avg.load(st.uiCheckboxZ1Z2Z3Avg)
-            end
-            
-            if isfield(st, 'uiEditFreqMin')
-                this.uiEditFreqMin.load(st.uiEditFreqMin)
-            end
-            
-            if isfield(st, 'uiEditFreqMax')
-                this.uiEditFreqMax.load(st.uiEditFreqMax)
-            end
-            
-            if isfield(st, 'uiEditNumOfSamples')
-                this.uiEditNumOfSamples.load(st.uiEditNumOfSamples)
-            end
-            
-            if isfield(st, 'uiListDir')
-                this.uiListDir.load(st.uiListDir)
-            end
         end
 
         
@@ -942,9 +1534,66 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        function onUiTabGroupAxes(this, src, evt);
+            this.updateAxes();
+        end
+        
         function init(this)
             this.msg('init()');
             this.initUiCommMfDriftMonitor();
+            
+            % Axes tab group:
+            this.uiTabGroupAxes = mic.ui.common.Tabgroup(...
+                'fhDirectCallback', @this.onUiTabGroupAxes, ...
+                'ceTabNames',  {'Cooked', 'Raw'} ...
+            );
+                       
+            
+            this.uiCheckboxCh6T1 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6B1 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh5T1 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5B1 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            
+            this.uiCheckboxCh4T1 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4B1 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh3T1 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3B1 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh2T1 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2B1 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh1T1 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1B1 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z (0-500us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            
+            
+            this.uiCheckboxCh1T2 = mic.ui.common.Checkbox('cLabel', '1T 5:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1B2 = mic.ui.common.Checkbox('cLabel', '1B 5:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh2T2 = mic.ui.common.Checkbox('cLabel', '2T 9:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2B2 = mic.ui.common.Checkbox('cLabel', '2B 9:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh3T2 = mic.ui.common.Checkbox('cLabel', '3T 1:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3B2 = mic.ui.common.Checkbox('cLabel', '3B 1:30 z (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh4T2 = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4B2 = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh5T2 = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5B2 = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh6T2 = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6B2 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang (500-1000us)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            
+            
+            this.uiCheckboxUReticle = mic.ui.common.Checkbox('cLabel', 'U reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxVReticle = mic.ui.common.Checkbox('cLabel', 'V reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxUWafer = mic.ui.common.Checkbox('cLabel', 'U wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxVWafer = mic.ui.common.Checkbox('cLabel', 'V wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            
             
             
                     
@@ -1057,7 +1706,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
             if ~this.uiTogglePlayPause.get() % paused
                 % Need to update since CAS band has changed
-                this.updateAxes(this.dZ, this.dXY)
+                this.updateAxes()
             end
             
             this.updateAxesLabels();
@@ -1078,7 +1727,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
             if ~this.uiTogglePlayPause.get() % paused
                 % Need to update since CAS band has changed
-                this.updateAxes(this.dZ, this.dXY)
+                this.updateAxes()
             end
             this.updateAxesLabels();
             
@@ -1086,7 +1735,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         
         % Returns a list of z channels to plot based on checkboxes
-        function d = getHeightSensorChannels(this)
+        function d = getChannelsHeightSensor(this)
             d = [];
             
             % Put these in visual order so plot legend is same order as
@@ -1122,7 +1771,102 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
-        function d = getDmiChannels(this)
+        
+        % Returns a list of z channels to plot based on checkboxes
+        function d = getChannelsHeightSensorRaw(this)
+            d = [];
+            
+            % Put these in visual order so plot legend is same order as
+            % visual order
+            
+            %{
+             % time 0 us - 500 us use side "a" capacitor
+            stMap.ch6top1 = 1;
+            stMap.ch6bot1 = 2;
+            stMap.ch5top1 = 3;
+            stMap.ch5bot1 = 4;
+            stMap.ch4top1 = 5;
+            stMap.ch4bot1 = 6;
+            stMap.ch3top1 = 7;
+            stMap.ch3bot1 = 8;
+            stMap.ch2top1 = 9;
+            stMap.ch2bot1 = 10;
+            stMap.ch1top1 = 11;
+            stMap.ch1bot1 = 12;
+
+            % time 500 us - 1000 us use side "b" capacitor
+            stMap.ch6top2 = 13;
+            stMap.ch6bot2 = 14;
+            stMap.ch5top2 = 15;
+            stMap.ch5bot2 = 16;
+            stMap.ch4top2 = 17;
+            stMap.ch4bot2 = 18;
+            stMap.ch3top2 = 19;
+            stMap.ch3bot2 = 20;
+            stMap.ch2top2 = 21;
+            stMap.ch2bot2 = 22;
+            stMap.ch1top2 = 23;
+            stMap.ch1bot2 = 24;
+            %}
+            
+            lSelected = [...
+                ... % 0 us - 500 us
+                this.uiCheckboxCh6T1.get(), ...
+                this.uiCheckboxCh6B1.get(), ...
+                this.uiCheckboxCh5T1.get(), ...
+                this.uiCheckboxCh5B1.get(), ...
+                this.uiCheckboxCh4T1.get(), ...
+                this.uiCheckboxCh4B1.get(), ...
+                this.uiCheckboxCh3T1.get(), ...
+                this.uiCheckboxCh3B1.get(), ...
+                this.uiCheckboxCh2T1.get(), ...
+                this.uiCheckboxCh2B1.get(), ...
+                this.uiCheckboxCh1T1.get(), ...
+                this.uiCheckboxCh1B1.get(), ...
+                ... % 500 us - 1000 us
+                this.uiCheckboxCh6T2.get(), ...
+                this.uiCheckboxCh6B2.get(), ...
+                this.uiCheckboxCh5T2.get(), ...
+                this.uiCheckboxCh5B2.get(), ...
+                this.uiCheckboxCh4T2.get(), ...
+                this.uiCheckboxCh4B2.get(), ...
+                this.uiCheckboxCh3T2.get(), ...
+                this.uiCheckboxCh3B2.get(), ...
+                this.uiCheckboxCh2T2.get(), ...
+                this.uiCheckboxCh2B2.get(), ...
+                this.uiCheckboxCh1T2.get(), ...
+                this.uiCheckboxCh1B2.get() ...
+            ];
+            
+            dIndexes = 1 : 24;
+            d = dIndexes(lSelected);
+                        
+        end
+        
+        
+        
+        function d = getChannelsDmiRaw(this)
+            
+            d = [];
+            if this.uiCheckboxUReticle.get()
+                d(end + 1) = 1;
+            end
+            
+            if this.uiCheckboxVReticle.get()
+                d(end + 1) = 2;
+            end
+            
+            if this.uiCheckboxUWafer.get()
+                d(end + 1) = 3;
+            end
+            
+            if this.uiCheckboxVWafer.get()
+                d(end + 1) = 4;
+            end
+            
+        end
+        
+        function d = getChannelsDmi(this)
             
             d = [];
             if this.uiCheckboxXReticle.get()
@@ -1256,7 +2000,7 @@ classdef MfDriftMonitorVibration < mic.Base
         function onUiCheckbox(this, src, evt)
             
             if ~this.uiTogglePlayPause.get() % paused
-                this.updateAxes(this.dZ, this.dXY)
+                this.updateAxes()
             end
         end
         
