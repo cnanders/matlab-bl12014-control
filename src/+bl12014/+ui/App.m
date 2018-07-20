@@ -34,6 +34,7 @@ classdef App < mic.Base
         uiPOCurrent
         uiPowerPmacHydraMotMin
         uiMfDriftMonitorVibration
+        uiExitSlit
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -145,99 +146,56 @@ classdef App < mic.Base
                        
         end 
         
-        function st = save(this)
-             st = struct();
-             st.uiPrescriptionTool = this.uiPrescriptionTool.save();
-             st.uiScannerMA = this.uiScannerMA.save();
-             st.uiScannerM142 = this.uiScannerM142.save();
-             st.uiScan = this.uiScan.save();
-             
-             
-            %uiNetworkCommunication
-            %uiBeamline
-            %uiShutter
-            st.uiM141 = this.uiM141.save();
-            st.uiM142 = this.uiM142.save();
-            st.uiMADiagnostics = this.uiMADiagnostics.save();
-            st.uiPOCurrent = this.uiPOCurrent.save();
-            st.uiM143 = this.uiM143.save();
-            st.uiD141 = this.uiD141.save();
-            st.uiD142 = this.uiD142.save();
-            % uiVibrationIsolationSystem
-            st.uiReticle = this.uiReticle.save();
-            st.uiWafer = this.uiWafer.save();
-            st.uiScanResultPlot2x2 = this.uiScanResultPlot2x2.save()
-            st.uiMfDriftMonitorVibration = this.uiMfDriftMonitorVibration.save();
-            % uiPowerPmacStatus
-            % uiPrescriptionTool           
-            % uiScan
-            % uiTempSensors
+        function cec = getSaveLoadProps(this)
+           
+            cec = {...
+                'uiPrescriptionTool', ...
+                'uiScannerMA', ...
+                'uiScannerM142', ...
+                'uiScan', ...
+                ...%'uiNetworkCommunication', ...
+                ...%'uiBeamline', ...
+                ...%'uiShutter', ...
+                'uiM141', ...
+                'uiM142', ...
+                'uiMADiagnostics', ...
+                'uiPOCurrent', ...
+                'uiM143', ...
+                'uiD141', ...
+                'uiD142', ...
+                ...% 'uiVibrationIsolationSystem', ...
+                'uiReticle', ...
+                'uiWafer', ...
+                'uiScanResultPlot2x2', ...
+                'uiMfDriftMonitorVibration', ...
+                'uiExitSlit' ...
+             };
             
-            % uiLSIControl = {};
-            % uiLSIAnalyze = {};
+        end
+        
+        
+        function st = save(this)
+             cecProps = this.getSaveLoadProps();
+            
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                st.(cProp) = this.(cProp).save();
+            end
 
              
         end
         
         function load(this, st)
                         
-            if isfield(st, 'uiPrescriptionTool') 
-                this.uiPrescriptionTool.load(st.uiPrescriptionTool);
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+               if isfield(st, cProp)
+               	this.(cProp).load(st.(cProp))
+               end
             end
             
-            if isfield(st, 'uiScanResultPlot2x2') 
-                this.uiScanResultPlot2x2.load(st.uiScanResultPlot2x2);
-            end
-            
-            if isfield(st, 'uiScannerMA')
-                this.uiScannerMA.load(st.uiScannerMA);
-            end
-            if isfield(st, 'uiScannerM142')
-                this.uiScannerM142.load(st.uiScannerM142);
-            end
-            
-            if isfield(st, 'uiScan')
-                this.uiScan.load(st.uiScan)
-            end
-            
-            if isfield(st, 'uiM141')
-                this.uiM141.load(st.uiM141)
-            end
-            
-            if isfield(st, 'uiM142')
-                this.uiM142.load(st.uiM142)
-            end
-            
-            if isfield(st, 'uiMADiagnostics')
-                this.uiMADiagnostics.load(st.uiMADiagnostics)
-            end
-            
-            if isfield(st, 'uiMfDriftMonitorVibration')
-                this.uiMfDriftMonitorVibration.load(st.uiMfDriftMonitorVibration)
-            end
-            
-            if isfield(st, 'uiM143')
-                this.uiM143.load(st.uiM143)
-            end
-            
-            if isfield(st, 'uiPOCurrent')
-                this.uiPOCurrent.load(st.uiPOCurrent)
-            end 
-            if isfield(st, 'uiD141')
-                this.uiD141.load(st.uiD141)
-            end
-            
-            if isfield(st, 'uiD142')
-                this.uiD142.load(st.uiD142)
-            end
-            
-            if isfield(st, 'uiReticle')
-                this.uiReticle.load(st.uiReticle)
-            end
-            
-            if isfield(st, 'uiWafer')
-                this.uiWafer.load(st.uiWafer)
-            end
         end
         
         function saveStateToDisk(this)
@@ -290,6 +248,7 @@ classdef App < mic.Base
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiPowerPmacHydraMotMin = bl12014.ui.PowerPmacHydraMotMin('clock', this.clock);
             this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clock);
+            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.clock);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
             this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
             this.uiScannerM142 = bl12014.ui.Scanner(...
@@ -360,6 +319,12 @@ classdef App < mic.Base
                 'cLabel',  'Beamline', ...
                 'fhOnClick',  @() this.uiBeamline.build(), ...
                 'cTooltip',  'Beamline' ...
+            );
+        
+            stExitSlit = struct(...
+                'cLabel',  'Exit Slit', ...
+                'fhOnClick',  @() this.uiExitSlit.build(), ...
+                'cTooltip',  'Exit Slit' ...
             );
             
             stShutter = struct(...
@@ -510,6 +475,7 @@ classdef App < mic.Base
             stButtons = [
               stNetworkCommunication, ...
               stBeamline, ...
+              stExitSlit, ...
               stM141, ...
               stD141, ...
               stM142, ...
