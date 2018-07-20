@@ -70,7 +70,6 @@ classdef PowerPmacHydraMotMin < mic.Base
             
             import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
             
-            this.uiCommDeltaTauPowerPmac.set(true);
             
             device = GetSetNumberFromDeltaTauPowerPmac(...
                 comm, ...
@@ -114,7 +113,9 @@ classdef PowerPmacHydraMotMin < mic.Base
             this.ui5.turnOn();
             this.ui5.syncDestination();
             
-            
+            % Can't do this - results with calling the disconnect
+            % function again while it is in the middle of running
+            % this.uiCommDeltaTauPowerPmac.set(true);
           
         end
         
@@ -137,8 +138,9 @@ classdef PowerPmacHydraMotMin < mic.Base
             this.ui5.turnOff();
             this.ui5.setDevice([]);
             
-            
-            this.uiCommDeltaTauPowerPmac.set(false);
+            % Can't do this - results with calling the disconnect
+            % function again while it is in the middle of running
+            % this.uiCommDeltaTauPowerPmac.set(false);
 
             
         end

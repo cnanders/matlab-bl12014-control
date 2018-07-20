@@ -320,14 +320,14 @@ classdef MfDriftMonitorVibration < mic.Base
         % @param { < cxro.met5.device.mfdriftmonitorI 1x1}
         function connectMfDriftMonitor(this, comm)
             
-            this.uiCommMfDriftMonitor.set(true);
+            % this.uiCommMfDriftMonitor.set(true);
             this.device = comm;
             
         end
         
         
         function disconnectMfDriftMonitor(this)
-            this.uiCommMfDriftMonitor.set(false);
+            % this.uiCommMfDriftMonitor.set(false);
             this.device = bl12014.hardwareAssets.virtual.MFDriftMonitor();
         end
         
@@ -620,7 +620,7 @@ classdef MfDriftMonitorVibration < mic.Base
             cecProps = this.getTextProps();
         
             % Additional offset
-            dTop = dTop + 6;
+            dTop = dTop + 3;
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
@@ -645,7 +645,7 @@ classdef MfDriftMonitorVibration < mic.Base
             cecProps = this.getTextSquareProps();
         
             % Additional offset
-            dTop = dTop + 3;
+            dTop = dTop + 0;
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
@@ -786,7 +786,7 @@ classdef MfDriftMonitorVibration < mic.Base
             cmap = jet(dColors);
             for n = 1 : 24
                 dVal = mean(rawHs(n, :));
-                dIndexOfColor = round(dColors * dVal/2^20);
+                dIndexOfColor = round((dColors - 1) * dVal/2^20) + 1; % 0 to 255 + 1
                 % Map dVal to a range of ints in
                 cVal = sprintf('%6.0f', dVal);
                 this.(cecListOfTexts{n}).set(cVal)

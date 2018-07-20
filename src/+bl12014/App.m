@@ -207,6 +207,7 @@ classdef App < mic.Base
         
         function delete(this)
            
+            this.msg('bl12014.App.delete', this.u8_MSG_TYPE_INFO);
             this.destroyAndDisconnectAll();
             delete(this.uiApp)
             
@@ -246,10 +247,13 @@ classdef App < mic.Base
         
         function destroyAndDisconnectAll(this)
             
+            this.msg('destroyAndDisconnectAll', this.u8_MSG_TYPE_INFO);
+            
             this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
             this.destroyAndDisconnectDeltaTauPowerPmac();
+            
             this.destroyAndDisconnectKeithley6482Reticle();
             this.destroyAndDisconnectKeithley6482Wafer();
             this.destroyAndDisconnectMFDriftMonitor();
@@ -610,6 +614,11 @@ classdef App < mic.Base
         
         function destroyAndDisconnectDataTranslationMeasurPoint(this)
             
+            this.msg(...
+                'destroyAndDisconnectDataTranslationMeasurPoint', ...
+                this.u8_MSG_TYPE_INFO ...
+            );
+        
             return;
             
             if ~this.getDataTranslationMeasurPoint()
@@ -753,6 +762,8 @@ classdef App < mic.Base
         
         function destroyAndDisconnectDeltaTauPowerPmac(this)
 
+            this.msg('destroyAndDisconnectDeltaTauPowerPmac', this.u8_MSG_TYPE_INFO);
+            
             if ~this.getDeltaTauPowerPmac()
                 return
             end
@@ -765,9 +776,14 @@ classdef App < mic.Base
             % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
             this.disconnectCommDeltaTauPowerPmacFromUiDM(this.uiApp.uiDriftMonitor);
-                                    
-            this.commDeltaTauPowerPmac.delete();
-            this.commDeltaTauPowerPmac = [];
+               
+            try
+                this.commDeltaTauPowerPmac.delete();
+                this.commDeltaTauPowerPmac = [];
+            catch mE
+                cMsg = sprintf('destroyAndDisconnectDeltaTauPowerPmac() %s', mE.message);
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+            end
             
         end
         
@@ -984,6 +1000,7 @@ classdef App < mic.Base
         
         function destroyAndDisconnectCxroHeightSensor(this)
             
+            this.msg('destroyAndDisconnectCxroHeightSensor', this.u8_MSG_TYPE_INFO);
             if ~this.getCxroHeightSensor()
                 return
             end
@@ -1045,6 +1062,8 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectBL1201CorbaProxy(this)
+            
+            this.msg('destroyAndDisconnectBL1201CorbaProxy', this.u8_MSG_TYPE_INFO);
             
             if ~this.getBL1201CorbaProxy()
                 return
@@ -1286,6 +1305,11 @@ classdef App < mic.Base
         end
         
         function initAndConnectMFDriftMonitor(this)
+            
+            this.msg('initAndConnectMFDriftMonitor', ...
+                this.u8_MSG_TYPE_INFO ...
+            );
+        
             if this.getMFDriftMonitor()
                 return
             end
@@ -1312,6 +1336,14 @@ classdef App < mic.Base
         end
         
         function destroyAndDisconnectMFDriftMonitor(this)
+            
+            this.msg('destroyAndConnectMFDriftMonitor', ...
+                this.u8_MSG_TYPE_INFO ...
+            );
+        
+            if ~this.getMFDriftMonitor()
+                return
+            end
             
             this.uiApp.uiMfDriftMonitorVibration.disconnectMfDriftMonitor();
             
