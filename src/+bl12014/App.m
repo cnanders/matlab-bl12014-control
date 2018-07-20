@@ -3,7 +3,7 @@ classdef App < mic.Base
     properties (Constant)
         
         dWidth = 250
-        dHeight = 930
+        dHeight = 1030
         
         dWidthButton = 210
         
@@ -813,6 +813,7 @@ classdef App < mic.Base
             end
                         
             this.uiApp.uiBeamline.connectExitSlit(this.commExitSlit);
+            this.uiApp.uiExitSlit.connectExitSlit(this.commExitSlit);
                         
         end
         
@@ -824,6 +825,7 @@ classdef App < mic.Base
             
             
             this.uiApp.uiBeamline.disconnectExitSlit();
+            this.uiApp.uiExitSlit.disconnectExitSlit();
             
             % this.commExitSlit.delete();
             this.commExitSlit = [];
@@ -1852,6 +1854,9 @@ classdef App < mic.Base
             
             this.uiApp.uiBeamline.uiCommExitSlit.setDevice(gslcCommExitSlit);
             this.uiApp.uiBeamline.uiCommExitSlit.turnOn()
+            
+            this.uiApp.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
+            this.uiApp.uiExitSlit.uiCommExitSlit.turnOn()
             
             this.uiApp.uiBeamline.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             this.uiApp.uiBeamline.uiCommDataTranslationMeasurPoint.turnOn()

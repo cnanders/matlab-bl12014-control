@@ -139,6 +139,7 @@ classdef Wafer < mic.Base
         
         function connectDeltaTauPowerPmac(this, comm)
             
+            
             this.commDeltaTauPowerPmac = comm;
             
             if this.uiCommMFDriftMonitor.get()
@@ -158,18 +159,22 @@ classdef Wafer < mic.Base
             this.uiFineStage.connectDeltaTauPowerPmac(comm);
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
             
+            this.uiCommMFDriftMonitor.enable();
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.commDeltaTauPowerPmac = [];
+            this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            
             this.uiLsiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiWorkingMode.disconnectDeltaTauPowerPmac();
-            this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            
+            this.uiCommMFDriftMonitor.disable();
+            
             
         end
         
@@ -230,6 +235,7 @@ classdef Wafer < mic.Base
             
             this.uiCommMFDriftMonitor.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
+            this.uiCommMFDriftMonitor.disable();
             
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -288,6 +294,12 @@ classdef Wafer < mic.Base
         %% Destructor
         
         function delete(this)
+            
+            delete(this.uiCommMFDriftMonitor)
+            delete(this.uiCommKeithley6482)
+            delete(this.uiCommDeltaTauPowerPmac)
+            delete(this.uiCommCxroHeightSensor)
+            delete(this.uiCommDataTranslationMeasurPoint)
             
             % Clean up clock tasks
             
