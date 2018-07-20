@@ -25,6 +25,7 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
         cProp
         
         
+
         
     end
     
@@ -33,6 +34,7 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
         function this = GetSetNumberFromExitSlitObject(comm, cProp)
             this.comm = comm;
             this.cProp = cProp;
+
         end
         
         function d = get(this)

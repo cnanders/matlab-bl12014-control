@@ -24,6 +24,7 @@ classdef ExitSlit < mic.Base
         
         clock
         dWidth = 730
+
         dHeight = 230
         hFigure
         
@@ -32,6 +33,7 @@ classdef ExitSlit < mic.Base
         dHeightPanelMotors = 100
         
         dWidthName = 100
+
         dWidthVal = 40
         dWidthDest = 40
         dWidthPadName = 5
