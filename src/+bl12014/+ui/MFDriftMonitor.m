@@ -1271,7 +1271,7 @@ classdef MFDriftMonitor < mic.Base
                 );
             
             
-            this.uitgMode.build(this.hFigure, 10, 10, this.dWidth - 20, this.dHeight - 100)
+            this.uitgMode.build(this.hFigure, 10, 100, this.dWidth - 20, this.dHeight - 100)
             uitMonitor      = this.uitgMode.getTabByName('Monitor');
             uitWaferLevel   = this.uitgMode.getTabByName('Wafer-level');
             uitCalibrate    = this.uitgMode.getTabByName('Calibrate');
