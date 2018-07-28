@@ -109,6 +109,21 @@ classdef MfDriftMonitorVibration < mic.Base
         uiCheckboxCh6T2
         uiCheckboxCh6B2
         
+        uiCheckboxCh1T
+        uiCheckboxCh1B
+        uiCheckboxCh2T
+        uiCheckboxCh2B
+        uiCheckboxCh3T
+        uiCheckboxCh3B
+        uiCheckboxCh4T
+        uiCheckboxCh4B
+        uiCheckboxCh5T
+        uiCheckboxCh5B
+        uiCheckboxCh6T
+        uiCheckboxCh6B
+  
+        
+        
         
         
         uiTextCh1T1
@@ -137,6 +152,19 @@ classdef MfDriftMonitorVibration < mic.Base
         uiTextCh6T2
         uiTextCh6B2
         
+        uiTextCh1T
+        uiTextCh1B
+        uiTextCh2T
+        uiTextCh2B
+        uiTextCh3T
+        uiTextCh3B
+        uiTextCh4T
+        uiTextCh4B
+        uiTextCh5T
+        uiTextCh5B
+        uiTextCh6T
+        uiTextCh6B
+        
         uiTextSquareCh1T1
         uiTextSquareCh1B1
         uiTextSquareCh2T1
@@ -163,10 +191,23 @@ classdef MfDriftMonitorVibration < mic.Base
         uiTextSquareCh6T2
         uiTextSquareCh6B2
         
+        uiTextSquareCh1T
+        uiTextSquareCh1B
+        uiTextSquareCh2T
+        uiTextSquareCh2B
+        uiTextSquareCh3T
+        uiTextSquareCh3B
+        uiTextSquareCh4T
+        uiTextSquareCh4B
+        uiTextSquareCh5T
+        uiTextSquareCh5B
+        uiTextSquareCh6T
+        uiTextSquareCh6B
+        
         uiTextLabelMeanCounts
         uiTextLabelCap1
         uiTextLabelCap2
-        
+        uiTextLabelCap1Cap2Avg
 
         uiCheckboxUReticle
         uiCheckboxVReticle
@@ -574,12 +615,15 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiTextLabelMeanCounts.build(hPanel, dLeft + 100, dTop - 20, 100, 20);
             
             dWidth = 160;
-            dHeightPadChannel = 10;
-            dHeightPadGroup = 30; %cap1 vs. cap 2 vs dmi
+            dHeightPadChannel = 5;
+            dHeightPadGroup = 20; %cap1 vs. cap 2 vs dmi
             
             cecProps = this.getCheckboxRawHeightSensorProps();
-            dHeight = 20
+            dHeight = 15
+            dSep = 15;
         
+            % Building the checkboxes for raw 
+            
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
@@ -591,6 +635,10 @@ classdef MfDriftMonitorVibration < mic.Base
                if n == 12
                    dTop = dTop + dHeightPadGroup;
                    this.uiTextLabelCap2.build(hPanel, dLeft, dTop - dHeight, 100, dHeight);
+               end
+               if n == 24
+                   dTop = dTop + dHeightPadGroup;
+                   this.uiTextLabelCap1Cap2Avg.build(hPanel, dLeft, dTop - dHeight, 200, dHeight);
                end
                
                
@@ -614,13 +662,16 @@ classdef MfDriftMonitorVibration < mic.Base
             
             dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes + 100;
             dTop = this.dHeightPadTopTabGroup;
-            dSep = 20;
+            dSep = 15;
+            dHeight = 15;
             dWidth = 50;
+            
+            % Texts for avg counts
             
             cecProps = this.getTextProps();
         
             % Additional offset
-            dTop = dTop + 3;
+            dTop = dTop + 0;
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
@@ -633,17 +684,22 @@ classdef MfDriftMonitorVibration < mic.Base
                if n == 12
                    dTop = dTop + dHeightPadGroup;
                end
+               
+               if n == 24
+                   dTop = dTop + dHeightPadGroup;
+               end
             end
             
             % mic.ui.Text used to get a square of a color
             
             dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes + 100 + 55;
             dTop = this.dHeightPadTopTabGroup;
-            dSep = 20;
+            dSep = 15;
             dWidth = dHeight;
             
             cecProps = this.getTextSquareProps();
         
+            % Text "Squares" used for color status
             % Additional offset
             dTop = dTop + 0;
             for n = 1 : length(cecProps)
@@ -654,6 +710,10 @@ classdef MfDriftMonitorVibration < mic.Base
                    dTop = dTop + dHeightPadChannel;
                end
                if n == 12
+                   dTop = dTop + dHeightPadGroup;
+               end
+               
+               if n == 24
                    dTop = dTop + dHeightPadGroup;
                end
             end
@@ -777,6 +837,8 @@ classdef MfDriftMonitorVibration < mic.Base
             end
         end
         
+        % Updates the avg counts of raw data and the 
+        % color indicators
         function updateTextsRaw(this, rawHs, rawDmi)
             
             cecListOfTexts = this.getTextProps();
@@ -784,7 +846,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
             dColors = 256;
             cmap = jet(dColors);
-            for n = 1 : 24
+            for n = 1 : length(cecListOfTexts)
                 dVal = mean(rawHs(n, :));
                 dIndexOfColor = round((dColors - 1) * dVal/2^20) + 1; % 0 to 255 + 1
                 % Map dVal to a range of ints in
@@ -854,6 +916,7 @@ classdef MfDriftMonitorVibration < mic.Base
             this.dRawOfDmi = this.getRawOfDmiFromFileData(ceData);
                     
             this.updateAxes();
+            this.updateTexts();
                                          
         end
         
@@ -1074,7 +1137,19 @@ classdef MfDriftMonitorVibration < mic.Base
                 'ch2top2', ...
                 'ch2bot2', ...
                 'ch1top2', ...
-                'ch1bot2' ...
+                'ch1bot2', ...
+                'ch6top avg', ...
+                'ch6bot avg', ...
+                'ch5top avg', ...
+                'ch5bot avg', ...
+                'ch4top avg', ...
+                'ch4bot avg', ...
+                'ch3top avg', ...
+                'ch3bot avg', ...
+                'ch2top avg', ...
+                'ch2bot avg', ...
+                'ch1top avg', ...
+                'ch1bot avg' ...
             };
             
             % z (nm) 
@@ -1235,6 +1310,13 @@ classdef MfDriftMonitorVibration < mic.Base
                 d(n, :) = ceData{n};
             end
             
+            % Rows 25 - 36 contain average of "cap a" and "cap b" over 
+            % a 1000 us acquisition window
+            for n = 1 : 12
+                d(24 + n, :) = (d(n, :) + d(n + 12, :)) / 2;
+            end
+            
+            
         end
         
         
@@ -1313,12 +1395,18 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function d = getRawOfHeightSensorFromSampleData(this, samples)
             
-            d = zeros(24, samples.size());
+            d = zeros(36, samples.size());
             
             % Samples.get() is zero-indexed since implementing java
             % interface
             for n = 0 : samples.size() - 1
-                d(:, n + 1) = samples.get(n).getHsData();
+                d(1 : 24, n + 1) = samples.get(n).getHsData();
+            end
+            
+            % Rows 25 - 36 contain average of "cap a" and "cap b" over 
+            % a 1000 us acquisition window
+            for n = 1 : 12
+                d(24 + n, :) = (d(n, :) + d(n + 12, :)) / 2;
             end
                                                     
         end
@@ -1579,6 +1667,18 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiCheckboxCh2B2', ...
                 'uiCheckboxCh1T2', ...
                 'uiCheckboxCh1B2', ...
+                'uiCheckboxCh6T', ...
+                'uiCheckboxCh6B', ...
+                'uiCheckboxCh5T', ...
+                'uiCheckboxCh5B', ...
+                'uiCheckboxCh4T', ...
+                'uiCheckboxCh4B', ...
+                'uiCheckboxCh3T', ...
+                'uiCheckboxCh3B', ...
+                'uiCheckboxCh2T', ...
+                'uiCheckboxCh2B', ...
+                'uiCheckboxCh1T', ...
+                'uiCheckboxCh1B', ...
                 'uiCheckboxUReticle', ...
                 'uiCheckboxVReticle', ...
                 'uiCheckboxUWafer', ...
@@ -1692,6 +1792,25 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCheckboxCh6B2 = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
 
             
+            this.uiCheckboxCh1T = mic.ui.common.Checkbox('cLabel', '1T 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1B = mic.ui.common.Checkbox('cLabel', '1B 5:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh2T = mic.ui.common.Checkbox('cLabel', '2T 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2B = mic.ui.common.Checkbox('cLabel', '2B 9:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh3T = mic.ui.common.Checkbox('cLabel', '3T 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3B = mic.ui.common.Checkbox('cLabel', '3B 1:30 z', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh4T = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4B = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh5T = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5B = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh6T = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6B = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
+
+            
             
             this.uiCheckboxUReticle = mic.ui.common.Checkbox('cLabel', 'U reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             this.uiCheckboxVReticle = mic.ui.common.Checkbox('cLabel', 'V reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
@@ -1729,7 +1848,20 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiTextCh2T2', ...
                 'uiTextCh2B2', ...
                 'uiTextCh1T2', ...
-                'uiTextCh1B2' ...
+                'uiTextCh1B2', ...
+                ... % 0 us - 1000 us
+                'uiTextCh6T', ...
+                'uiTextCh6B', ...
+                'uiTextCh5T', ...
+                'uiTextCh5B', ...
+                'uiTextCh4T', ...
+                'uiTextCh4B', ...
+                'uiTextCh3T', ...
+                'uiTextCh3B', ...
+                'uiTextCh2T', ...
+                'uiTextCh2B', ...
+                'uiTextCh1T', ...
+                'uiTextCh1B' ...
             };
         end
         
@@ -1760,7 +1892,20 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiTextSquareCh2T2', ...
                 'uiTextSquareCh2B2', ...
                 'uiTextSquareCh1T2', ...
-                'uiTextSquareCh1B2' ...
+                'uiTextSquareCh1B2', ...
+                ... % 0 us - 1000 us
+                'uiTextSquareCh6T', ...
+                'uiTextSquareCh6B', ...
+                'uiTextSquareCh5T', ...
+                'uiTextSquareCh5B', ...
+                'uiTextSquareCh4T', ...
+                'uiTextSquareCh4B', ...
+                'uiTextSquareCh3T', ...
+                'uiTextSquareCh3B', ...
+                'uiTextSquareCh2T', ...
+                'uiTextSquareCh2B', ...
+                'uiTextSquareCh1T', ...
+                'uiTextSquareCh1B' ...
             };
         end
         
@@ -1791,7 +1936,20 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiCheckboxCh2T2', ...
                 'uiCheckboxCh2B2', ...
                 'uiCheckboxCh1T2', ...
-                'uiCheckboxCh1B2' ...
+                'uiCheckboxCh1B2', ...
+                ... % 0 us - 1000 us average
+                'uiCheckboxCh6T', ...
+                'uiCheckboxCh6B', ...
+                'uiCheckboxCh5T', ...
+                'uiCheckboxCh5B', ...
+                'uiCheckboxCh4T', ...
+                'uiCheckboxCh4B', ...
+                'uiCheckboxCh3T', ...
+                'uiCheckboxCh3B', ...
+                'uiCheckboxCh2T', ...
+                'uiCheckboxCh2B', ...
+                'uiCheckboxCh1T', ...
+                'uiCheckboxCh1B', ...
             };
         end
         
@@ -1838,7 +1996,8 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiTextLabelMeanCounts = mic.ui.common.Text('cVal', 'Avg. Counts');
             this.uiTextLabelCap1 = mic.ui.common.Text('cVal', '"Cap1" 0-500us');
             this.uiTextLabelCap2 = mic.ui.common.Text('cVal', '"Cap2" 500-1000us');
-            
+            this.uiTextLabelCap1Cap2Avg = mic.ui.common.Text('cVal', '"Cap1" + "Cap2" Avg 0-1000us');
+
                     
             this.uiCheckboxZ1 = mic.ui.common.Checkbox('cLabel', 'z 5:30 (1)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
             this.uiCheckboxZ2 = mic.ui.common.Checkbox('cLabel', 'z 9:30 (2)', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox);
@@ -2078,10 +2237,23 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.uiCheckboxCh2T2.get(), ...
                 this.uiCheckboxCh2B2.get(), ...
                 this.uiCheckboxCh1T2.get(), ...
-                this.uiCheckboxCh1B2.get() ...
+                this.uiCheckboxCh1B2.get(), ...
+                ... % 0 us - 1000 us
+                this.uiCheckboxCh6T.get(), ...
+                this.uiCheckboxCh6B.get(), ...
+                this.uiCheckboxCh5T.get(), ...
+                this.uiCheckboxCh5B.get(), ...
+                this.uiCheckboxCh4T.get(), ...
+                this.uiCheckboxCh4B.get(), ...
+                this.uiCheckboxCh3T.get(), ...
+                this.uiCheckboxCh3B.get(), ...
+                this.uiCheckboxCh2T.get(), ...
+                this.uiCheckboxCh2B.get(), ...
+                this.uiCheckboxCh1T.get(), ...
+                this.uiCheckboxCh1B.get() ...
             ];
             
-            dIndexes = 1 : 24;
+            dIndexes = 1 : 36;
             d = dIndexes(lSelected);
                         
         end
