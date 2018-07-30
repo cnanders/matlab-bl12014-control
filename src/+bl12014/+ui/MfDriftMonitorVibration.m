@@ -50,6 +50,7 @@ classdef MfDriftMonitorVibration < mic.Base
         uiListDir
         
         hPanelCasSettings
+        hPanelTimeSettings
         hPanelSave
         
         uiTabGroupAxes
@@ -231,6 +232,9 @@ classdef MfDriftMonitorVibration < mic.Base
         
         uiEditFreqMin
         uiEditFreqMax
+        
+        uiEditTimeMin
+        uiEditTimeMax
         
         uiEditNumOfSamples
         
@@ -432,6 +436,35 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        function buildPanelTimeSettings(this)
+            
+            dLeft = 10;
+            dTop = 500;
+            dHeight = 150;
+            
+            this.hPanelTimeSettings = uipanel(...
+                'Parent', this.hFigure,...
+                'Units', 'pixels',...
+                'Title', 'Time Settings',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidthPanel ...
+                dHeight], this.hFigure) ...
+            );
+            
+            dLeft = 10;
+            dTop = 20;
+            dSep = 40;
+            
+            this.uiEditTimeMin.build(this.hPanelTimeSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            this.uiEditTimeMax.build(this.hPanelTimeSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+        end
         
         function buildPanelCasSettings(this)
             
@@ -741,7 +774,7 @@ classdef MfDriftMonitorVibration < mic.Base
             dTop = dTop + 5 + dSep;
             
             
-            dTop = dTop + 50;
+            dTop = dTop + 30;
             this.uiTogglePlayPause.build(this.hFigure, dLeft, dTop, 100, 24);
             % dTop = dTop + dSep;
             
@@ -750,8 +783,8 @@ classdef MfDriftMonitorVibration < mic.Base
             dTop = dTop + dSep;
             
             this.buildPanelSaveLoad();
-            
             this.buildPanelCasSettings();
+            this.buildPanelTimeSettings();
             
             
             % Tab Group
@@ -1011,7 +1044,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 pos = z(channel, :);
                 
                 % Time
-                plot(this.hAxesTime, t, pos - mean(pos))
+                plot(this.hAxesTime, t, pos - mean(pos), '.-')
                 hold(this.hAxesTime, 'on') % need to do after first loglog
                 grid(this.hAxesTime, 'on');
                 
@@ -1051,7 +1084,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 pos = xy(channel, :);
 
                 % Time
-                plot(this.hAxesTime, t, pos - mean(pos));
+                plot(this.hAxesTime, t, pos - mean(pos), '.-');
                 hold(this.hAxesTime, 'on')
                 grid(this.hAxesTime, 'on')
                 
@@ -1161,7 +1194,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 pos = rawHs(channel, :);
                 
                 % Time
-                plot(this.hAxesTimeRaw, t, pos - mean(pos))
+                plot(this.hAxesTimeRaw, t, pos - mean(pos), '.-')
                 hold(this.hAxesTimeRaw, 'on') % need to do after first loglog
                 grid(this.hAxesTimeRaw, 'on');
                 
@@ -1200,7 +1233,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 pos = rawDmi(channel, :);
 
                 % Time
-                plot(this.hAxesTimeRaw, t, pos - mean(pos));
+                plot(this.hAxesTimeRaw, t, pos - mean(pos), '.-');
                 hold(this.hAxesTimeRaw, 'on')
                 grid(this.hAxesTimeRaw, 'on')
                 
@@ -1251,6 +1284,7 @@ classdef MfDriftMonitorVibration < mic.Base
             title(this.hAxesTimeRaw, 'Amplitude - Mean vs. Time');
             xlabel(this.hAxesTimeRaw, 'Time (s)');
             ylabel(this.hAxesTimeRaw, 'Counts');
+            xlim(this.hAxesTimeRaw, [this.uiEditTimeMin.get()/1e3, this.uiEditTimeMax.get()/1e3])
             
             title(this.hAxesPsdRaw, 'PSD')
             xlabel(this.hAxesPsdRaw, 'Freq (Hz)');
@@ -1278,6 +1312,7 @@ classdef MfDriftMonitorVibration < mic.Base
             title(this.hAxesTime, 'Amplitude vs. Time');
             xlabel(this.hAxesTime, 'Time (s)');
             ylabel(this.hAxesTime, 'Amp. (nm)');
+            xlim(this.hAxesTime, [this.uiEditTimeMin.get()/1e3, this.uiEditTimeMax.get()/1e3])
             
             title(this.hAxesPsd, 'PSD')
             xlabel(this.hAxesPsd, 'Freq (Hz)');
@@ -1684,6 +1719,8 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiCheckboxUWafer', ...
                 'uiCheckboxVWafer', ...
                 ... % Other
+                'uiEditTimeMin', ...
+                'uiEditTimeMax', ...
                 'uiEditFreqMin', ...
                 'uiEditFreqMax', ...
                 'uiEditNumOfSamples', ...
@@ -2042,9 +2079,41 @@ classdef MfDriftMonitorVibration < mic.Base
         
             this.initUiEditFreqMin();
             this.initUiEditFreqMax();
+            
+            this.initUiEditTimeMin();
+            this.initUiEditTimeMax();
             this.initUiEditNumOfSamples();
             
         end
+        
+        function initUiEditTimeMin(this)
+            
+             this.uiEditTimeMin = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditTimeMin, ...
+                'cLabel', 'Time. Min (ms) (min = 0)' ...
+            );
+        
+            this.uiEditFreqMin.setMin(0);
+            this.uiEditFreqMin.setMax(9999);
+            this.uiEditFreqMin.set(0);
+            
+        end
+        
+        function initUiEditTimeMax(this)
+            
+             this.uiEditTimeMax = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditTimeMax, ...
+                'cLabel', 'Time. Max (ms) (max = 10000)' ...
+            );
+            this.uiEditFreqMax.setMin(1)
+            this.uiEditFreqMax.setMax(10000);
+            this.uiEditFreqMax.set(1000);
+            
+        end
+        
+        
         
         function initUiEditFreqMin(this)
             
@@ -2091,9 +2160,52 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         function onUiEditNumOfSamples(this, src, evt)
-            
+            this.uiEditTimeMin.set(0);
+            this.uiEditTimeMax.set(this.uiEditNumOfSamples.get())
             
         end
+        
+        function onUiEditTimeMin(this, src, evt)
+            
+            if isempty(this.uiEditTimeMax)
+                return
+            end
+            
+            % Make sure max is not less than min
+            if this.uiEditTimeMax.get() <= this.uiEditTimeMin.get()
+                this.uiEditTimeMax.set(this.uiEditTimeMin.get() + 1)
+            end
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes()
+            end
+            
+            this.updateAxesLabels();
+            
+        end
+        
+        
+        function onUiEditTimeMax(this, src, evt)
+            
+            if isempty(this.uiEditTimeMin)
+                return
+            end
+            
+            
+            % Make sure min is not > max
+            if this.uiEditTimeMin.get() >= this.uiEditTimeMax.get()
+                this.uiEditTimeMin.set(this.uiEditTimeMax.get() - 1)
+            end
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes()
+            end
+            this.updateAxesLabels();
+            
+        end
+        
         
         function onUiEditFreqMin(this, src, evt)
             
