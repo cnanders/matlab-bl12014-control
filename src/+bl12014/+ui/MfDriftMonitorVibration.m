@@ -233,6 +233,10 @@ classdef MfDriftMonitorVibration < mic.Base
         uiEditFreqMin
         uiEditFreqMax
         
+        uiCheckboxAutoScaleYCas
+        uiEditYMaxCas
+        uiEditYMinCas
+        
         uiEditTimeMin
         uiEditTimeMax
         
@@ -470,7 +474,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
             dLeft = 10;
             dTop = 670;
-            dHeight = 150;
+            dHeight = 250;
             
             this.hPanelCasSettings = uipanel(...
                 'Parent', this.hFigure,...
@@ -493,6 +497,25 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.uiEditFreqMax.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
             dTop = dTop + dSep;
+            
+            dTop = dTop + 20;
+            this.uiCheckboxAutoScaleYCas.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep - 10;
+            
+            
+            this.uiEditYMaxCas.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            
+            this.uiEditYMinCas.build(this.hPanelCasSettings, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            
+            if this.uiCheckboxAutoScaleYCas.get()
+                this.uiEditYMinCas.hide()
+                this.uiEditYMaxCas.hide()
+            end
+            
                                     
         end
         
@@ -1290,6 +1313,8 @@ classdef MfDriftMonitorVibration < mic.Base
             xlabel(this.hAxesPsdRaw, 'Freq (Hz)');
             ylabel(this.hAxesPsdRaw, 'PSD (counts^2/Hz)');
             xlim(this.hAxesPsdRaw, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
+            
+            
 
             cTitle = sprintf(...
                 'Cumulative Amplitude Spectrum [%1.0fHz, %1.0fHz]', ...
@@ -1300,6 +1325,12 @@ classdef MfDriftMonitorVibration < mic.Base
             xlabel(this.hAxesCasRaw, 'Freq (Hz)');
             ylabel(this.hAxesCasRaw, 'Cumulative Amplitude RMS (counts)');
             xlim(this.hAxesCasRaw, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
+            
+            if ~this.uiCheckboxAutoScaleYCas.get()
+                ylim(this.hAxesCasRaw, [this.uiEditYMinCas.get() , this.uiEditYMaxCas.get()])
+            else
+                ylim(this.hAxesCasRaw, 'auto')
+            end
             
         end
         
@@ -1329,6 +1360,11 @@ classdef MfDriftMonitorVibration < mic.Base
             ylabel(this.hAxesCas, 'Cumulative Amplitude RMS (nm)');
             xlim(this.hAxesCas, [this.uiEditFreqMin.get(), this.uiEditFreqMax.get()])
             
+            if ~this.uiCheckboxAutoScaleYCas.get()
+                ylim(this.hAxesCas, [this.uiEditYMinCas.get() , this.uiEditYMaxCas.get()])
+            else
+                ylim(this.hAxesCas, 'auto')
+            end
             
         end
         
@@ -1723,6 +1759,9 @@ classdef MfDriftMonitorVibration < mic.Base
                 'uiEditTimeMax', ...
                 'uiEditFreqMin', ...
                 'uiEditFreqMax', ...
+                'uiEditYMinCas', ...
+                'uiEditYMaxCas', ...
+                'uiCheckboxAutoScaleYCas', ...
                 'uiEditNumOfSamples', ...
                 'uiListDir' ...
             };
@@ -2080,9 +2119,48 @@ classdef MfDriftMonitorVibration < mic.Base
             this.initUiEditFreqMin();
             this.initUiEditFreqMax();
             
+             
+            
+            this.initUiEditYMinCas();
+            this.initUiEditYMaxCas();
+            
             this.initUiEditTimeMin();
             this.initUiEditTimeMax();
             this.initUiEditNumOfSamples();
+            
+            this.uiCheckboxAutoScaleYCas = mic.ui.common.Checkbox(...
+                'cLabel', 'Auto Scale Y', ...
+                'lChecked', true, ...
+                'fhDirectCallback', @this.onUiCheckboxAutoScaleYCas ...
+            );
+               
+            
+        end
+        
+        function onUiCheckboxAutoScaleYCas(this, src, evt)
+            
+            if isempty(this.uiEditYMinCas)
+                return
+            end
+            
+            if isempty(this.uiEditYMaxCas)
+                return
+            end
+            
+            if this.uiCheckboxAutoScaleYCas.get()
+                this.uiEditYMinCas.hide()
+                this.uiEditYMaxCas.hide()
+            else
+                this.uiEditYMinCas.show()
+                this.uiEditYMaxCas.show()
+            end
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes()
+            end
+            this.updateAxesLabels();
+            
             
         end
         
@@ -2094,9 +2172,9 @@ classdef MfDriftMonitorVibration < mic.Base
                 'cLabel', 'Time. Min (ms) (min = 0)' ...
             );
         
-            this.uiEditFreqMin.setMin(0);
-            this.uiEditFreqMin.setMax(9999);
-            this.uiEditFreqMin.set(0);
+            this.uiEditTimeMin.setMin(0);
+            this.uiEditTimeMin.setMax(9999);
+            this.uiEditTimeMin.set(0);
             
         end
         
@@ -2107,12 +2185,39 @@ classdef MfDriftMonitorVibration < mic.Base
                 'fhDirectCallback', @this.onUiEditTimeMax, ...
                 'cLabel', 'Time. Max (ms) (max = 10000)' ...
             );
-            this.uiEditFreqMax.setMin(1)
-            this.uiEditFreqMax.setMax(10000);
-            this.uiEditFreqMax.set(1000);
+        
+            % Default value is zero, need to set to value larger than zero
+            % before calling setMin(1)
+            this.uiEditTimeMax.set(1000);
+            this.uiEditTimeMax.setMin(1)
+            this.uiEditTimeMax.setMax(10000);
             
         end
         
+        
+        function initUiEditYMinCas(this)
+            
+             this.uiEditYMinCas = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditYMinCas, ...
+                'cLabel', 'Y Min (nm) (min = 0)' ...
+            );
+            this.uiEditYMinCas.setMin(0)
+            this.uiEditYMinCas.set(0);
+            
+        end
+        
+        function initUiEditYMaxCas(this)
+            
+             this.uiEditYMaxCas = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditYMaxCas, ...
+                'cLabel', 'Y Max (nm)' ...
+            );
+            this.uiEditYMaxCas.setMin(0)
+            this.uiEditYMaxCas.set(50);
+            
+        end
         
         
         function initUiEditFreqMin(this)
@@ -2205,6 +2310,48 @@ classdef MfDriftMonitorVibration < mic.Base
             this.updateAxesLabels();
             
         end
+        
+        function onUiEditYMinCas(this, src, evt)
+            
+            if isempty(this.uiEditYMaxCas)
+               return 
+            end
+            
+            % Make sure max is not less than min
+            if this.uiEditYMaxCas.get() < this.uiEditYMinCas.get()
+                this.uiEditYMaxCas.set(this.uiEditYMinCas.get() + 1)
+            end
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes()
+            end
+            
+            this.updateAxesLabels();
+            
+            
+        end
+        
+        function onUiEditYMaxCas(this, src, evt)
+            
+            if isempty(this.uiEditYMinCas)
+                return
+            end
+            
+            
+            % Make sure min is not > max
+            if this.uiEditYMinCas.get() > this.uiEditYMaxCas.get()
+                this.uiEditYMinCas.set(this.uiEditYMaxCas.get() - 1)
+            end
+            
+            if ~this.uiTogglePlayPause.get() % paused
+                % Need to update since CAS band has changed
+                this.updateAxes()
+            end
+            this.updateAxesLabels();
+            
+        end
+        
         
         
         function onUiEditFreqMin(this, src, evt)
