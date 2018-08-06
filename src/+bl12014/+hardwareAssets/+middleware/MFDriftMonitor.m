@@ -204,17 +204,7 @@ classdef MFDriftMonitor < mic.Base
            
         end
         
-        function dVal = computeSimpleZ(this, dSamples)
-            dNumSamples = dSamples.size;
-            dHsPositions = zeros(24, dNumSamples);
-            
-            for k = 1:dNumSamples
-                dHsPositions(:,k) = double(dSamples.get(k).getHsData());
-            end
-            
-            i32HsData = int32(mean(dHsPositions, 2));
-            
-            
+        function dVal = computeSimpleZ(this, dSampleAve)
              % Uses CWCork slopes
             dSimpleHeights = this.javaAPI.hsGetPositions(dSampleAve);
             dVal = mean(dSimpleHeights(4:6))/10;
@@ -271,29 +261,17 @@ classdef MFDriftMonitor < mic.Base
 %             this.dACPower(idx);
         end
         
-        function i32HsData = getHsData(this, dSamples)
-            dNumSamples = dSamples.size;
-            dHsData = zeros(24, dNumSamples);
-            
-            for k = 1:dNumSamples
-                dHsData(:,k) = double(dSamples.get(k).getHsData());
-            end
-            
-            i32HsData = int32(mean(dHsData, 2));
-        end
-        
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
-            dSamples = this.javaAPI.getSampleData(this.dNumSampleAverage);
-            
-            i32HsData = this.getHsData(dSamples);
+            dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
+            dSampleAve.getHsData();
             
             % update simple Z:
-            this.dSimpleZPosition = this.computeSimpleZ(i32HsData);
+            this.dSimpleZPosition = this.computeSimpleZ(dSampleAve);
             
             % Set HS data
             % dSampleAve.getHsData()
-            dHSDiodeRaw = sum(reshape(i32HsData, 12, 2), 2);
+            dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
             lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 2, 6)'; % 6x2 logical
             
             dUpperDiode = dHSDiodeRaw(1:2:end);

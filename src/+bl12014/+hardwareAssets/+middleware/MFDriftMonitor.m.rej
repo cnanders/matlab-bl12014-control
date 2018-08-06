@@ -1,0 +1,35 @@
+diff a/src/+bl12014/+hardwareAssets/+middleware/MFDriftMonitor.m b/src/+bl12014/+hardwareAssets/+middleware/MFDriftMonitor.m	(rejected hunks)
+@@ -271,17 +271,29 @@
+ %             this.dACPower(idx);
+         end
+         
++        function i32HsData = getHsData(this, dSamples)
++            dNumSamples = dSamples.size;
++            dHsData = zeros(24, dNumSamples);
++            
++            for k = 1:dNumSamples
++                dHsData(:,k) = double(dSamples.get(k).getHsData());
++            end
++            
++            i32HsData = int32(mean(dHsData, 2));
++        end
++        
+         % Updates HS and DMI data from actual device
+         function updateChannelData(this)
+-            dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
+-            dSampleAve.getHsData();
++            dSamples = this.javaAPI.getSampleData(this.dNumSampleAverage);
++            
++            i32HsData = this.getHsData(dSamples);
+             
+             % update simple Z:
+-            this.dSimpleZPosition = this.computeSimpleZ(dSampleAve);
++            this.dSimpleZPosition = this.computeSimpleZ(i32HsData);
+             
+             % Set HS data
+             % dSampleAve.getHsData()
+-            dHSDiodeRaw = sum(reshape(dSampleAve.getHsData(), 12, 2), 2);
++            dHSDiodeRaw = sum(reshape(i32HsData, 12, 2), 2);
+             lOutOfRangeValues = reshape(dHSDiodeRaw < 3000, 2, 6)'; % 6x2 logical
+             
+             dUpperDiode = dHSDiodeRaw(1:2:end);
