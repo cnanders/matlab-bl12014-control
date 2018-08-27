@@ -70,7 +70,7 @@ classdef MFDriftMonitor < mic.Base
         
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-03-21_15.52.mat')
+            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-08-22_16.12.mat')
 %          cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
 %             '..', '..', '..', 'config', 'interpolants', ' cal-interp_2018-03-21_12.07.mat')
 
@@ -116,7 +116,7 @@ classdef MFDriftMonitor < mic.Base
          function delete(this)
 
            % Clean up clock tasks
-            if isvalid(this.clock) && ...
+            if ~isempty(this.clock) && ...
                this.clock.has(this.id())
                 this.clock.remove(this.id());
             end
@@ -193,10 +193,13 @@ classdef MFDriftMonitor < mic.Base
         % Standalone function that bypasses interpolant. Returns average HS
         % position in nm based on averaging last 3 channels.
         function dVal = getSimpleZ(this, dNumAverage)
+%             if nargin == 1
+%                 % Use stored value
+%                 dVal = this.dSimpleZPosition;
+%                 return
+%             end
             if nargin == 1
-                % Use stored value
-                dVal = this.dSimpleZPosition;
-                return
+                dNumAverage = 10;
             end
             
             dSampleAve = this.javaAPI.getSampleDataAvg(dNumAverage);
@@ -221,6 +224,10 @@ classdef MFDriftMonitor < mic.Base
                     fprintf('shouldnt get here, channel = %d\n', u8Channel);
                     dVal = 0;
             end
+        end
+        
+        function dVal = getHSValue(this, u8Channel)
+            dVal = this.dHSPositions(u8Channel);
         end
         
         function dVal = getDCPower(this, idx)
@@ -265,7 +272,7 @@ classdef MFDriftMonitor < mic.Base
         function updateChannelData(this)
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
             dSampleAve.getHsData();
-            
+              
             % update simple Z:
             this.dSimpleZPosition = this.computeSimpleZ(dSampleAve);
             

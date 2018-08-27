@@ -30,7 +30,17 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         dSetGoal
         
         % {double 1x1} desired tolerance in nm
-        dTolerance = 1.5;
+         % (RM: 8/24) relaxing tolerance level
+        dTolerance = 2.0; % Tolerance for hitting HS value
+        dToleranceWaferZ = 5; % Tolerance for a single Wafer Z move
+        
+        % Add some PID controls:
+        PID_P = .96
+        PID_I = 0
+        PID_D = 0
+        
+        % Set this when each time wafer z changes target
+        dCurrentZTarget_nm
         
         % {uint8 1x1 maximum number of moves of the wafer fine z}
         u8MovesMax = uint8(5);
@@ -43,9 +53,12 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         
         % {double 1x1} number of samples to average when getting a value
         % from the Height Sensor drift monitor
-        u8SampleAverage = 50
-        u8SampleAverageDuringControl = 200;
-        
+%         u8SampleAverage = 50
+%         u8SampleAverageDuringControl = 200;
+
+        % (RM: 8/24) halving values to prevent feedback instability
+        u8SampleAverage = 15
+        u8SampleAverageDuringControl = 50;
         % {logical 1x1} set to true to debug the scan
         lDebugScan = true
     end
@@ -185,20 +198,24 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
             end
             
             this.zHeightSensor.setSampleAverage(this.u8SampleAverageDuringControl);
+            
+            
             dZHeightSensor = this.zHeightSensor.get();
+            
             dError = this.dSetGoal - dZHeightSensor;
             this.zHeightSensor.setSampleAverage(this.u8SampleAverage);
             
             % Command the wafer to change value by to this position
             if (abs(dError) < this.dTolerance)
                 
-                if this.lDebugScan
+                if this.lDebugScan || true
                     cMsg = [...
                         'onScanSetState() ', ...
                         ' calling scan.stop()', ...
                         sprintf(' abs(error) = %1.3f nm', abs(dError)), ...
                         sprintf(' < tolerance of %1.3f nm', this.dTolerance) ...
                     ];
+                fprintf(cMsg);
                     this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                 end
                 
@@ -210,8 +227,11 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 mm2nm = 1e6;
                 nm2mm = 1e-6;
                 dZWaferNm = this.zWafer.get() * mm2nm;
-                dZWaferGoal = (dZWaferNm + dError) * nm2mm;
                 
+                dZWaferGoal = (dZWaferNm + dError) * nm2mm;
+                this.dCurrentZTarget_nm = dZWaferGoal * mm2nm;
+                
+                % Abort if new wafer z goal is out of range:
                 if (dZWaferGoal > 10000 * nm2mm || ...
                     dZWaferGoal < 0)
                 
@@ -268,7 +288,19 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         function l = onScanIsAtState(this, stUnit, stValue)
             
             l = this.zWafer.isReady();
+            % RM: isReady is always true.  We need to use info about the
+            % tolerance:
             
+            mm2nm = 1e6;
+            dZWaferNm = this.zWafer.get() * mm2nm;
+            
+            l = abs(dZWaferNm - this.dCurrentZTarget_nm) < this.dToleranceWaferZ;
+              
+            if (l)
+                fprintf('Wafer z is ready')
+            else
+                 fprintf('Wafer z is NOT ready: Commanded wafer value: %0.1f, Current Value: %0.1f\n', this.dCurrentZTarget_nm, dZWaferNm)
+            end
             if this.lDebugScan
                 cMsg = [
                     'onScanIsAtState()', ...
