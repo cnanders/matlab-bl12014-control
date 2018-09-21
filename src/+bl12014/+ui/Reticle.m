@@ -34,7 +34,7 @@ classdef Reticle < mic.Base
     
     properties (SetAccess = private)
     
-        cName = 'Reticle'
+        cName = 'Reticle Control'
     end
     
     properties (Access = private)
@@ -70,6 +70,9 @@ classdef Reticle < mic.Base
         
         
         function connectDataTranslationMeasurPoint(this, comm)
+            
+            % 2018.09.15 Mod3 Cap Sensors Now come From PPMAC
+
             return
             
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
@@ -91,6 +94,8 @@ classdef Reticle < mic.Base
         end
         
         function disconnectDataTranslationMeasurPoint(this)
+            
+            % 2018.09.15 Mod3 Cap Sensors Now come From PPMAC
             
             return
             this.uiMod3CapSensors.uiCap1.turnOff();
@@ -120,70 +125,17 @@ classdef Reticle < mic.Base
         
         function connectDeltaTauPowerPmac(this, comm)
             
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            import bl12014.device.GetNumberFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
-            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
-            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
-            
-             % Set Devices 
-            this.uiCoarseStage.uiX.setDevice(deviceCoarseX);
-            this.uiCoarseStage.uiY.setDevice(deviceCoarseY);
-            this.uiCoarseStage.uiZ.setDevice(deviceCoarseZ);
-            this.uiCoarseStage.uiTiltX.setDevice(deviceCoarseTiltX);
-            this.uiCoarseStage.uiTiltY.setDevice(deviceCoarseTiltY);
-            this.uiFineStage.uiX.setDevice(deviceFineX);
-            this.uiFineStage.uiY.setDevice(deviceFineY);
-            
-            % Turn on
-            this.uiCoarseStage.uiX.turnOn();
-            this.uiCoarseStage.uiY.turnOn();
-            this.uiCoarseStage.uiZ.turnOn();
-            this.uiCoarseStage.uiTiltX.turnOn();
-            this.uiCoarseStage.uiTiltY.turnOn();
-            this.uiFineStage.uiX.turnOn();
-            this.uiFineStage.uiY.turnOn();
-            
-            
-            this.uiCoarseStage.uiX.syncDestination();
-            this.uiCoarseStage.uiY.syncDestination();
-            this.uiCoarseStage.uiZ.syncDestination();
-            this.uiCoarseStage.uiTiltX.syncDestination();
-            this.uiCoarseStage.uiTiltY.syncDestination();
-            this.uiFineStage.uiX.syncDestination();
-            this.uiFineStage.uiY.syncDestination();
-            
-
+            this.uiFineStage.connectDeltaTauPowerPmac(comm);
+            this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
             this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
 
         end
         
         function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiCoarseStage.uiX.turnOff();
-            this.uiCoarseStage.uiY.turnOff();
-            this.uiCoarseStage.uiZ.turnOff();
-            this.uiCoarseStage.uiTiltX.turnOff();
-            this.uiCoarseStage.uiTiltY.turnOff();
-            this.uiFineStage.uiX.turnOff();
-            this.uiFineStage.uiY.turnOff();
-            
-            this.uiCoarseStage.uiX.setDevice([]);
-            this.uiCoarseStage.uiY.setDevice([]);
-            this.uiCoarseStage.uiZ.setDevice([]);
-            this.uiCoarseStage.uiTiltX.setDevice([]);
-            this.uiCoarseStage.uiTiltY.setDevice([]);
-            this.uiFineStage.uiX.setDevice([]);
-            this.uiFineStage.uiY.setDevice([]);
-            
+
+            this.uiFineStage.disconnectDeltaTauPowerPmac();
+            this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
             this.uiWorkingMode.disconnectDeltaTauPowerPmac();            
         end
@@ -238,8 +190,10 @@ classdef Reticle < mic.Base
             this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
+            
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
+            
             
             
             dTop = 10;
@@ -266,7 +220,9 @@ classdef Reticle < mic.Base
             dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
-                        
+                  
+            this.clock.add(@this.onClock, this.id(), this.dDelay);
+
             
         end
         
@@ -319,8 +275,21 @@ classdef Reticle < mic.Base
         
         function onClock(this)
             
+            if isempty(this.hFigure) || ...
+               ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+                
+            end
+            
             % Make sure the hggroup of the carriage is at the correct
             % location.  
+            
             
             
             dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
@@ -365,7 +334,6 @@ classdef Reticle < mic.Base
             this.initUiCommKeithley6482();
         
             addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);
-            this.clock.add(@this.onClock, this.id(), this.dDelay);
 
         end
         

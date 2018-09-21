@@ -69,6 +69,61 @@ classdef ReticleCoarseStage < mic.Base
         
         end
         
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            import bl12014.device.GetNumberFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
+            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
+            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
+            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
+            
+             % Set Devices 
+            this.uiX.setDevice(deviceCoarseX);
+            this.uiY.setDevice(deviceCoarseY);
+            this.uiZ.setDevice(deviceCoarseZ);
+            this.uiTiltX.setDevice(deviceCoarseTiltX);
+            this.uiTiltY.setDevice(deviceCoarseTiltY);
+            
+            % Turn on
+            this.uiX.turnOn();
+            this.uiY.turnOn();
+            this.uiZ.turnOn();
+            this.uiTiltX.turnOn();
+            this.uiTiltY.turnOn();
+            
+            
+            this.uiX.syncDestination();
+            this.uiY.syncDestination();
+            this.uiZ.syncDestination();
+            this.uiTiltX.syncDestination();
+            this.uiTiltY.syncDestination();
+            
+
+            
+        end
+        
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiX.turnOff();
+            this.uiY.turnOff();
+            this.uiZ.turnOff();
+            this.uiTiltX.turnOff();
+            this.uiTiltY.turnOff();
+            
+            this.uiX.setDevice([]);
+            this.uiY.setDevice([]);
+            this.uiZ.setDevice([]);
+            this.uiTiltX.setDevice([]);
+            this.uiTiltY.setDevice([]);
+                    
+        end
+        
         
         function turnOn(this)
             
@@ -94,7 +149,7 @@ classdef ReticleCoarseStage < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Reticle Coarse Stage',...
+                'Title', 'Reticle Coarse Stage (PPMAC)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -351,11 +406,13 @@ classdef ReticleCoarseStage < mic.Base
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
+            % Only need to issue move to dest on one since moving
+            % moves the entire coordinate system to its target
             this.uiX.moveToDest();
-            this.uiY.moveToDest();
-            this.uiZ.moveToDest();
-            this.uiTiltX.moveToDest();
-            this.uiTiltY.moveToDest();
+%             this.uiY.moveToDest();
+%             this.uiZ.moveToDest();
+%             this.uiTiltX.moveToDest();
+%             this.uiTiltY.moveToDest();
             
         end
         

@@ -41,13 +41,14 @@ classdef Wafer < mic.Base
     properties (SetAccess = private)
         
         hFigure
+        cName = 'Wafer Control'
         
     end
     
     properties (Access = private)
                       
         clock
-        dDelay = 0.15
+        dDelay = 0.5
         
     end
     
@@ -154,6 +155,7 @@ classdef Wafer < mic.Base
                 )
             end
             
+            this.uiPobCapSensors.connectDeltaTauPowerPmac(comm);
             this.uiLsiCoarseStage.connectDeltaTauPowerPmac(comm);
             this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
             this.uiFineStage.connectDeltaTauPowerPmac(comm);
@@ -168,6 +170,8 @@ classdef Wafer < mic.Base
             this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
             this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
             
+            
+            this.uiPobCapSensors.disconnectDeltaTauPowerPmac()
             this.uiLsiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiFineStage.disconnectDeltaTauPowerPmac();
@@ -285,6 +289,9 @@ classdef Wafer < mic.Base
             dTop = 10;
             this.uiAxes.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
+            
+            % this.hs     = HeightSensor(this.clock);
+            this.clock.add(@this.onClock, this.id(), this.dDelay);
            
             
         end
@@ -340,7 +347,19 @@ classdef Wafer < mic.Base
         function onClock(this)
             
             % Make sure the hggroup of the carriage is at the correct
-            % location.  
+            % location.
+            
+            if isempty(this.hFigure) || ...
+               ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+                
+            end
             
             dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
             dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
@@ -418,8 +437,7 @@ classdef Wafer < mic.Base
             );
             
                         
-            % this.hs     = HeightSensor(this.clock);
-            this.clock.add(@this.onClock, this.id(), this.dDelay);
+            
 
         end
         

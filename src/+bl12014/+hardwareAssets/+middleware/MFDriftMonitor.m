@@ -70,7 +70,7 @@ classdef MFDriftMonitor < mic.Base
         
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-08-22_16.12.mat')
+            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-09-20_08.52.mat')
 %          cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
 %             '..', '..', '..', 'config', 'interpolants', ' cal-interp_2018-03-21_12.07.mat')
 

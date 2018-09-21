@@ -7,7 +7,11 @@ classdef GetNumberFromDeltaTauPowerPmac < mic.interface.device.GetNumber
         cTYPE_RETICLE_CAP_2 = 'reticle-cap-2'
         cTYPE_RETICLE_CAP_3 = 'reticle-cap-3'
         cTYPE_RETICLE_CAP_4 = 'reticle-cap-4'
-
+        
+        cTYPE_WAFER_CAP_1 = 'wafer-cap-1'
+        cTYPE_WAFER_CAP_2 = 'wafer-cap-2'
+        cTYPE_WAFER_CAP_3 = 'wafer-cap-3'
+        cTYPE_WAFER_CAP_4 = 'wafer-cap-4'
     end
     
     properties (Access = private)
@@ -37,7 +41,14 @@ classdef GetNumberFromDeltaTauPowerPmac < mic.interface.device.GetNumber
                     d = this.comm.getReticleCap3V();
                 case this.cTYPE_RETICLE_CAP_4
                     d = this.comm.getReticleCap4V();
-                
+                case this.cTYPE_WAFER_CAP_1
+                    d = this.comm.getAcc28EADCValue(3,0);
+                case this.cTYPE_WAFER_CAP_2
+                    d = this.comm.getAcc28EADCValue(3,1);
+                case this.cTYPE_WAFER_CAP_3
+                    d = this.comm.getAcc28EADCValue(3,2);
+                case this.cTYPE_WAFER_CAP_4
+                    d = this.comm.getAcc28EADCValue(3,3);
             end
             
         end

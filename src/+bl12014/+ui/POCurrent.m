@@ -32,6 +32,8 @@ classdef POCurrent < mic.Base
         dtTimes = NaT(0, 0)
         
         uiButtonClear
+        
+        dPeriod = 500/1000;
                        
     end
     
@@ -105,6 +107,10 @@ classdef POCurrent < mic.Base
         
             this.buildAxes();
             
+            if ~isempty(this.clock)
+                this.clock.add(@this.onClock, this.id(), this.dPeriod);
+            end
+            
         end
                
         function delete(this)
@@ -156,10 +162,30 @@ classdef POCurrent < mic.Base
         
         function onClock(this)
             
-            this.dValues(end + 1) = this.uiCurrent.getValCal('A');
-            this.dtTimes(end + 1) = datetime;
+            if isempty(this.hFigure) || ...
+               ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+                
+            end
+             
+            try
+                this.dValues(end + 1) = this.uiCurrent.getValCal('A');
+                this.dtTimes(end + 1) = datetime;
+
+                if ~ishghandle(this.hFigure)
+                    return
+                end
+
+                this.updateAxes(this.dtTimes, this.dValues);
+            catch
+            end
             
-            this.updateAxes(this.dtTimes, this.dValues);
         end
         
          function onFigureCloseRequest(this, src, evt)
@@ -258,9 +284,7 @@ classdef POCurrent < mic.Base
             this.initUiCommKeithley6482();
             this.initUiButtonClear();
             
-            if ~isempty(this.clock)
-                this.clock.add(@this.onClock, this.id(), 400/1000);
-            end
+            
         end
         
         function initUiButtonClear(this)

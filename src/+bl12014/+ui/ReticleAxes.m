@@ -21,11 +21,13 @@ classdef ReticleAxes < mic.Base
         
         cName = 'ReticleAxes'
         
-        dXDiode = 97.93/1000
-        dYDiode = 4.18/1000
+        
         
         dXYag = 97.93/1000
         dYYag = -3.32/1000
+        
+        dXDiode = 97.93/1000
+        dYDiode = -3.32/1000 - 7.5/1000 % 7.5 mm center to center
     
     end
     
@@ -35,6 +37,12 @@ classdef ReticleAxes < mic.Base
         hCarriage
         hIllum
 
+        hCrosshairCam1
+        hCrosshairCam2
+        hCrosshairCap1
+        hCrosshairCap2
+        hCrosshairCap3
+        hCrosshairCap4
         hCrosshairChiefRay
         hCrosshairZero
         hCrosshairLoadLock
@@ -49,11 +57,7 @@ classdef ReticleAxes < mic.Base
         dFieldY
         
         % {double 1x1} height of crosshair at center of wafer
-        dSizeCrosshairWafer = 100e-3;
-        dSizeCrosshairChiefRay = 20e-3;
         
-        dSizeCrosshairDiode = 10e-3;
-        dSizeCrosshairYag = 10e-3;
         
         hClockTimes
         
@@ -67,9 +71,11 @@ classdef ReticleAxes < mic.Base
                 
         dAlphaCrosshairWafer = 1;
         dColorCrosshairWafer = [0 1 0];
+        dSizeCrosshairWafer = 100e-3;
         
         dAlphaCrosshairChiefRay = 1;
         dColorCrosshairChiefRay = [1 0 1];
+        dSizeCrosshairChiefRay = 20e-3;
         
         dAlphaCrosshairZero = 1;
         dColorCrosshairZero = [1 1 1];
@@ -80,10 +86,37 @@ classdef ReticleAxes < mic.Base
         
         dAlphaCrosshairDiode = 1;
         dColorCrosshairDiode = [1 1 0];
-        
+        dSizeCrosshairDiode = 10e-3;
+
         dAlphaCrosshairYag = 1;
         dColorCrosshairYag = [1 1 0];
+        dSizeCrosshairYag = 10e-3;
         
+        
+        dAlphaCrosshairCap1 = 1;
+        dColorCrosshairCap1 = [1 1 0];
+        dSizeCrosshairCap1 = 10e-3;
+        
+        dAlphaCrosshairCap2 = 1;
+        dColorCrosshairCap2 = [1 1 0];
+        dSizeCrosshairCap2 = 10e-3;
+        
+        dAlphaCrosshairCap3 = 1;
+        dColorCrosshairCap3 = [1 1 0];
+        dSizeCrosshairCap3 = 10e-3;
+        
+        dAlphaCrosshairCap4 = 1;
+        dColorCrosshairCap4 = [1 1 0];
+        dSizeCrosshairCap4 = 10e-3;
+        
+        
+        dAlphaCrosshairCam1 = 1;
+        dColorCrosshairCam1 = [1 1 0];
+        dSizeCrosshairCam1 = 10e-3;
+        
+        dAlphaCrosshairCam2 = 1;
+        dColorCrosshairCam2 = [1 1 0];
+        dSizeCrosshairCam2 = 10e-3;
         
         dXZero = 0
         dYZero = 0
@@ -95,8 +128,28 @@ classdef ReticleAxes < mic.Base
     
     properties (SetAccess = private)
         
-        dXChiefRay = -42.17/1000
-        dYChiefRay = 3.39/1000
+        dXChiefRay = -44.17/1000
+        dYChiefRay = -4.1/1000
+        
+        % These get set relative to dX/YChiefRay in constructor
+        dXCap1 = 0
+        dYCap1 = 0
+        
+        dXCap2 = 0
+        dYCap2 = 0
+        
+        dXCap3 = 0
+        dYCap3 = 0
+        
+        dXCap4 = 0
+        dYCap4 = 0
+        
+        dXCam1 = 0;
+        dYCam1 = 0;
+        
+        dXCam2 = 0;
+        dYCam2 = 0;
+        
         
     end
     
@@ -122,6 +175,28 @@ classdef ReticleAxes < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            % Values foound in this Google Drive Document 
+            % https://drive.google.com/drive/u/1/folders/1u3exI3KsOyzyBwwFe0cZU5mPFVUcB_w9
+            
+            this.dXCap4 = this.dXChiefRay - 34.075 / 1000;
+            this.dYCap4 = this.dYChiefRay;
+
+            this.dXCap3 = this.dXChiefRay + 34.075 / 1000;
+            this.dYCap3 = this.dYChiefRay;
+
+            this.dXCap1 = this.dXCap4;
+            this.dYCap1 = this.dYChiefRay - 27.833 / 1000;
+
+            this.dXCap2 = this.dXCap3;
+            this.dYCap2 = this.dYCap1;
+            
+            this.dXCam1 = this.dXChiefRay - 68 / 1000;
+            this.dYCam1 = this.dYChiefRay;
+            
+            this.dXCam2 = this.dXChiefRay + 68 / 1000;
+            this.dYCam2 = this.dYChiefRay;
+        
             this.init();
             
         end
@@ -176,6 +251,24 @@ classdef ReticleAxes < mic.Base
             );
             this.drawIllum();
             
+            
+            this.hCrosshairCam1 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCam1();
+            
+            this.hCrosshairCam2 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCam2();
+            
+            this.hCrosshairCap1 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCap1();
+            
+            this.hCrosshairCap2 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCap2();
+            
+            this.hCrosshairCap3 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCap3();
+            
+            this.hCrosshairCap4 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawCrosshairCap4();
             
             this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawCrosshairChiefRay();
@@ -266,6 +359,26 @@ classdef ReticleAxes < mic.Base
                 
                 this.deleteCrosshairChiefRay();
                 this.drawCrosshairChiefRay();
+                
+                
+                this.deleteCrosshairCam1();
+                this.drawCrosshairCam1();
+                
+                this.deleteCrosshairCam2();
+                this.drawCrosshairCam2();
+                
+                
+                this.deleteCrosshairCap1();
+                this.drawCrosshairCap1();
+                
+                this.deleteCrosshairCap2();
+                this.drawCrosshairCap2();
+                
+                this.deleteCrosshairCap3();
+                this.drawCrosshairCap3();
+                
+                this.deleteCrosshairCap4();
+                this.drawCrosshairCap4();
                 
                 this.deleteCrosshairZero();
                 this.drawCrosshairZero();
@@ -667,6 +780,324 @@ classdef ReticleAxes < mic.Base
         end
         
         
+        function drawCrosshairCam1(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCam1;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCam1;
+            dT = this.dSizeCrosshairCam1/2 + this.dYCam1;
+            dB = -this.dSizeCrosshairCam1/2 + this.dYCam1;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCam1, ...
+                'Parent', this.hCrosshairCam1, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCam1 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCam1/2 + this.dXCam1;
+            dR = this.dSizeCrosshairCam1/2 + this.dXCam1;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCam1;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCam1;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCam1, ...
+                'Parent', this.hCrosshairCam1, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCam1 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCam1 + dShiftX, this.dYCam1 + dShiftY, 'Cam 1', ...
+                'Parent', this.hCrosshairCam1, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCam1 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairCam2(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCam2;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCam2;
+            dT = this.dSizeCrosshairCam2/2 + this.dYCam2;
+            dB = -this.dSizeCrosshairCam2/2 + this.dYCam2;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCam2, ...
+                'Parent', this.hCrosshairCam2, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCam2 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCam2/2 + this.dXCam2;
+            dR = this.dSizeCrosshairCam2/2 + this.dXCam2;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCam2;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCam2;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCam2, ...
+                'Parent', this.hCrosshairCam2, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCam2 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCam2 + dShiftX, this.dYCam2 + dShiftY, 'Cam 2', ...
+                'Parent', this.hCrosshairCam2, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCam2 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairCap1(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCap1;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCap1;
+            dT = this.dSizeCrosshairCap1/2 + this.dYCap1;
+            dB = -this.dSizeCrosshairCap1/2 + this.dYCap1;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap1, ...
+                'Parent', this.hCrosshairCap1, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap1 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCap1/2 + this.dXCap1;
+            dR = this.dSizeCrosshairCap1/2 + this.dXCap1;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCap1;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCap1;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap1, ...
+                'Parent', this.hCrosshairCap1, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap1 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCap1 + dShiftX, this.dYCap1 + dShiftY, 'Cap 1', ...
+                'Parent', this.hCrosshairCap1, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCap1 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairCap2(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCap2;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCap2;
+            dT = this.dSizeCrosshairCap2/2 + this.dYCap2;
+            dB = -this.dSizeCrosshairCap2/2 + this.dYCap2;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap2, ...
+                'Parent', this.hCrosshairCap2, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap2 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCap2/2 + this.dXCap2;
+            dR = this.dSizeCrosshairCap2/2 + this.dXCap2;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCap2;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCap2;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap2, ...
+                'Parent', this.hCrosshairCap2, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap2 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCap2 + dShiftX, this.dYCap2 + dShiftY, 'Cap 2', ...
+                'Parent', this.hCrosshairCap2, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCap2 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairCap3(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCap3;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCap3;
+            dT = this.dSizeCrosshairCap3/2 + this.dYCap3;
+            dB = -this.dSizeCrosshairCap3/2 + this.dYCap3;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap3, ...
+                'Parent', this.hCrosshairCap3, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap3 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCap3/2 + this.dXCap3;
+            dR = this.dSizeCrosshairCap3/2 + this.dXCap3;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCap3;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCap3;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap3, ...
+                'Parent', this.hCrosshairCap3, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap3 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCap3 + dShiftX, this.dYCap3 + dShiftY, 'Cap 3', ...
+                'Parent', this.hCrosshairCap3, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCap3 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
+        function drawCrosshairCap4(this)
+            
+            % Vertical Line
+            
+                       
+            dL = -this.dThicknessOfCrosshair/2 + this.dXCap4;
+            dR = this.dThicknessOfCrosshair/2 + this.dXCap4;
+            dT = this.dSizeCrosshairCap4/2 + this.dYCap4;
+            dB = -this.dSizeCrosshairCap4/2 + this.dYCap4;
+
+            
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap4, ...
+                'Parent', this.hCrosshairCap4, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap4 ...
+            );
+        
+            % uistack(hPatch, 'top');
+            
+            % Horizontal Line
+            
+            dL = -this.dSizeCrosshairCap4/2 + this.dXCap4;
+            dR = this.dSizeCrosshairCap4/2 + this.dXCap4;
+            dT = this.dThicknessOfCrosshair/2 + this.dYCap4;
+            dB = -this.dThicknessOfCrosshair/2 + this.dYCap4;
+
+            hPatch = patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                this.dColorCrosshairCap4, ...
+                'Parent', this.hCrosshairCap4, ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', this.dAlphaCrosshairCap4 ...
+            );
+        
+            [dShiftX, dShiftY] = this.getShiftOfCrosshairLabel();
+            text( ...
+                this.dXCap4 + dShiftX, this.dYCap4 + dShiftY, 'Cap 4', ...
+                'Parent', this.hCrosshairCap4, ...
+                ...%'HorizontalAlignment', 'center', ...
+                'Color', this.dColorCrosshairCap4 ... 
+            ); 
+        
+            % uistack(hPatch, 'top');
+            
+            
+            
+        end
+        
+        
         function drawCrosshairZero(this)
             
             % Vertical Line
@@ -886,6 +1317,29 @@ classdef ReticleAxes < mic.Base
         end 
         
         
+        function deleteCrosshairCam1(this)
+            this.deleteChildren(this.hCrosshairCam1)
+        end
+        
+        function deleteCrosshairCam2(this)
+            this.deleteChildren(this.hCrosshairCam2)
+        end
+        
+        function deleteCrosshairCap1(this)
+            this.deleteChildren(this.hCrosshairCap1)
+        end
+        
+        function deleteCrosshairCap2(this)
+            this.deleteChildren(this.hCrosshairCap2)
+        end
+        
+        function deleteCrosshairCap3(this)
+            this.deleteChildren(this.hCrosshairCap3)
+        end
+        
+        function deleteCrosshairCap4(this)
+            this.deleteChildren(this.hCrosshairCap4)
+        end
         
         function deleteCrosshairChiefRay(this)
             this.deleteChildren(this.hCrosshairChiefRay)

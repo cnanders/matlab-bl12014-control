@@ -2,24 +2,11 @@ classdef ReticleFineStage < mic.Base
     
     properties
 
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceX
-        
-        % {< mic.interface.device.GetSetNumber}
-        deviceY
-        
-
-        
         % {mic.ui.device.GetSetNumber 1x1}}
         uiX
         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiY
-        
-        
-        
-        
         
     end
     
@@ -64,6 +51,43 @@ classdef ReticleFineStage < mic.Base
         end
         
         
+        function connectDeltaTauPowerPmac(this, comm)
+            
+            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
+            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
+            import bl12014.device.GetNumberFromDeltaTauPowerPmac
+            
+            % Devices
+            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
+            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
+            
+             % Set Devices 
+            this.uiX.setDevice(deviceFineX);
+            this.uiY.setDevice(deviceFineY);
+            
+            % Turn on
+            this.uiX.turnOn();
+            this.uiY.turnOn();
+            
+            this.uiX.syncDestination();
+            this.uiY.syncDestination();
+            
+
+
+        end
+        
+        function disconnectDeltaTauPowerPmac(this)
+            
+            this.uiX.turnOff();
+            this.uiY.turnOff();
+          
+            this.uiX.setDevice([]);
+            this.uiY.setDevice([]);
+            
+                 
+        end
+        
+        
         function turnOn(this)
             
             this.uiX.turnOn();
@@ -84,7 +108,7 @@ classdef ReticleFineStage < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Reticle Fine Stage',...
+                'Title', 'Reticle Fine Stage (PPMAC)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...

@@ -1,0 +1,36 @@
+{
+ 	
+ 	"delay": 1,
+    "stores": [
+        {
+            "name": "Undefined (0)",
+            "val": "0"
+        },
+        {
+            "name": "Activate (1)",
+            "val": "1"
+        },
+        {
+            "name": "Shutdown (2)",
+            "val": "2"
+        },
+        {
+            "name": "Run Setup (3)",
+            "val": "3"
+        },
+        {
+            "name": "Run Exposure (4)",
+            "val": "4"
+        },
+        {
+            "name": "Run (5)",
+            "val": "5"
+        },
+        {
+            "name": "LSI Run (6)",
+            "val": "6"
+        }
+    ]
+}	
+	
+	

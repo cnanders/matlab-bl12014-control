@@ -126,7 +126,7 @@ classdef WaferCoarseStage < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Coarse Stage',...
+                'Title', 'Wafer Coarse Stage (PPMAC)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -361,11 +361,14 @@ classdef WaferCoarseStage < mic.Base
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
+            % Only need to issue move on one since moving sets entire
+            % coordinat system to its dest values
+            
             this.uiX.moveToDest();
-            this.uiY.moveToDest();
-            this.uiZ.moveToDest();
-            this.uiTiltX.moveToDest();
-            this.uiTiltY.moveToDest();
+%             this.uiY.moveToDest();
+%             this.uiZ.moveToDest();
+%             this.uiTiltX.moveToDest();
+%             this.uiTiltY.moveToDest();
             
         end
         

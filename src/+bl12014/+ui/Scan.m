@@ -876,6 +876,7 @@ classdef Scan < mic.Base
                       
                     case 'waferZ'
                         
+                       
                         % this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(
                         this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
                         this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();

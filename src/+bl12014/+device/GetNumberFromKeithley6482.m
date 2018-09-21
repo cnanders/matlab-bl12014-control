@@ -20,7 +20,14 @@ classdef GetNumberFromKeithley6482 < mic.interface.device.GetNumber
         end
         
         function d = get(this)
-            d = this.comm.read(this.u8Channel);
+            dNAve = 1;
+            dS = zeros(1,dNAve);
+            for k = 1:dNAve
+                dS(k) = this.comm.read(this.u8Channel);
+                
+            end
+            d = mean(dS);
+%             d = this.comm.read(this.u8Channel);
         end
                 
         function l = isReady(this)
