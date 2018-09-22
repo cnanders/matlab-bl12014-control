@@ -55,6 +55,10 @@ classdef Scan < mic.Base
         
         uiListPrescriptions            
         uiListActive
+        
+        uiButtonClearPrescriptions
+        uiButtonClearWafer
+        
         uibNewWafer
         uibAddToWafer
         uibPrint
@@ -325,12 +329,27 @@ classdef Scan < mic.Base
            dTop = 70;
            dLeft = this.dWidthPadFigure;
            
-           this.uibNewWafer.build(this.hPanelAdded, ...
+%            this.uibNewWafer.build(this.hPanelAdded, ...
+%                 dLeft, ...
+%                 dTop, ...
+%                 this.dWidthButton, ...
+%                 this.dHeightButton);
+%             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearPrescriptions.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthButton, ...
                 this.dHeightButton);
             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearWafer.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthButton, ...
+                this.dHeightButton);
+            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
             
             this.uibPrint.build(this.hPanelAdded, ...
                 dLeft, ...
@@ -486,11 +505,23 @@ classdef Scan < mic.Base
             this.uiListPrescriptions.setRefreshFcn(@this.refreshFcn);
             this.uiListPrescriptions.refresh();
             
+            this.uiButtonClearPrescriptions = mic.ui.common.Button(...
+                'cText', 'Clear Prescriptions', ...
+                'fhOnClick', @this.onUiButtonClearPrescriptions ...
+            );
+        
+            this.uiButtonClearWafer = mic.ui.common.Button(...
+                'cText', 'Clear Wafer', ...
+                'fhOnClick', @this.onUiButtonClearWafer ...
+            );
+        
             this.uibNewWafer = mic.ui.common.Button('cText', 'New');
             this.uibAddToWafer = mic.ui.common.Button('cText', 'Add To Wafer');
             this.uibPrint = mic.ui.common.Button('cText', 'Print');
             
-            addlistener(this.uibNewWafer, 'eChange', @this.onNewWafer);
+            
+            
+            addlistener(this.uibNewWafer, 'eChange', @this.onUiButtonNewWafer);
             addlistener(this.uibAddToWafer, 'eChange', @this.onAddToWafer);
             addlistener(this.uibPrint, 'eChange', @this.onPrint);
             
@@ -695,11 +726,25 @@ classdef Scan < mic.Base
             
         end
         
-        function onNewWafer(this, src, evt)
+        function onUiButtonNewWafer(this, src, evt)
             
             % Purge all items from uiListActive
             this.uiListActive.setOptions(cell(1,0));
             this.uiWafer.uiAxes.purgeExposures();
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+        end
+        
+        function onUiButtonClearWafer(this, src, evt)
+            
+            this.uiWafer.uiAxes.purgeExposures();
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+        end
+        
+        function onUiButtonClearPrescriptions(this, src, evt)
+            
+            this.uiListActive.setOptions(cell(1,0));
             this.uiWafer.uiAxes.deleteFemPreviewScan();
             
         end

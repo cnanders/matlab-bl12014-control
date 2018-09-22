@@ -52,6 +52,10 @@ classdef ReticleCoarseStage < mic.Base
         configStageY
         configMeasPointVolts
         
+        % CHEATING HACK
+        commDeltaTauPowerPmac
+
+        
     end
     
     methods
@@ -103,6 +107,19 @@ classdef ReticleCoarseStage < mic.Base
             this.uiTiltX.syncDestination();
             this.uiTiltY.syncDestination();
             
+            % CHEATING HACK
+            % store a reference to comm so it can be used when loading
+            % from stores
+            % Is it a cheating hack?
+            % If you think hard, you realize that a device is created,
+            % The device has a reference to the comm
+            % The then passed in to the UI. The UI has a reference to the
+            % the device, which has a refernce to the he comm, so this
+            % class, which has a reference to the ui, can access the comm
+            % at this.uiX.getDevice().comm  Although, technically most
+            % devices are supposed to make comm a private property
+            
+            this.commDeltaTauPowerPmac = comm;
 
             
         end
@@ -369,8 +386,8 @@ classdef ReticleCoarseStage < mic.Base
                 'cName', [this.cName, '-position-recaller'], ...
                 'cTitleOfPanel', 'Position Stores', ...
                 'lShowLabelOfList', false, ...
-                'hGetCallback', @this.getValues, ...
-                'hSetCallback', @this.setValues ...
+                'hGetCallback', @this.onUiPositionRecallerGet, ...
+                'hSetCallback', @this.onUiPositionRecallerSet ...
             );
         end
         
@@ -387,7 +404,7 @@ classdef ReticleCoarseStage < mic.Base
         end
         
         % Return list of values from your app
-        function dValues = getValues(this)
+        function dValues = onUiPositionRecallerGet(this)
             dValues = [...
                 this.uiX.getValRaw(), ...
                 this.uiY.getValRaw(), ...
@@ -398,21 +415,26 @@ classdef ReticleCoarseStage < mic.Base
         end
         
         % Set recalled values into your app
-        function setValues(this, dValues)
+        function onUiPositionRecallerSet(this, dValues)
             
+            % This is a cheat / hack of the MIC
+            
+            % Update the UI destinations
             this.uiX.setDestRaw(dValues(1));
             this.uiY.setDestRaw(dValues(2));
             this.uiZ.setDestRaw(dValues(3));
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
-            % Only need to issue move to dest on one since moving
-            % moves the entire coordinate system to its target
-            this.uiX.moveToDest();
-%             this.uiY.moveToDest();
-%             this.uiZ.moveToDest();
-%             this.uiTiltX.moveToDest();
-%             this.uiTiltY.moveToDest();
+            % Update the destinations of CS1 on the PPMAC
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS2X=%1.6f;', dValues(1)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS2Y=%1.6f;', dValues(2)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS2Z=%1.6f;', dValues(3)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS2A=%1.6f;', dValues(4)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS2B=%1.6f;', dValues(5)));
+            
+            % Command PPMAC to have CS1 go to all destinations
+            this.commDeltaTauPowerPmac.command('CommandCode=24');
             
         end
         

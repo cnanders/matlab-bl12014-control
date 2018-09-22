@@ -308,8 +308,8 @@ classdef PobCapSensors < mic.Base
         
         function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
             
-            dTiltX = 0
-            dTiltY = 0
+            dTiltX = 0;
+            dTiltY = 0;
 
                 dOffsetX = 34.075 * 1e-3; % m
                 dOffsetY = 27.833 * 1e-3; % m

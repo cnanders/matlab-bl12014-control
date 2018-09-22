@@ -16,9 +16,9 @@ classdef Wafer < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDeltaTauPowerPmac
-        uiCommCxroHeightSensor
+        % uiCommCxroHeightSensor
         uiCommKeithley6482
-        uiCommDataTranslationMeasurPoint
+        % uiCommDataTranslationMeasurPoint
         uiCommMFDriftMonitor
         
                 
@@ -78,7 +78,7 @@ classdef Wafer < mic.Base
             
         end
         
-        
+        %{
         function connectDataTranslationMeasurPoint(this, comm)
             deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
             deviceCap2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
@@ -109,34 +109,10 @@ classdef Wafer < mic.Base
             this.uiPobCapSensors.uiCap4.setDevice([]);
                 
         end
+        %}
         
         
-        
-        function connectKeithley6482(this, comm)
-           % Wafer
-            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 2);
-            this.uiDiode.uiCurrent.setDevice(deviceCh1);
-            this.uiDiode.uiCurrent.turnOn();
-                        
-            % Wafer Focus Sensor
-            %{
-            deviceCh2 = bl12014.device.GetNumberFromKeithley6482(comm, 2);
-            this.uiApp.uiWaferFocusSensor.uiCurrent.setDevice(deviceCh2);
-            this.uiApp.uiWaferFocusSensor.uiCurrent.turnOn();
-            %} 
-            
-        end
-        
-        function disconnectKeithely6482(this)
-            this.uiDiode.uiCurrent.turnOff()
-            this.uiDiode.uiCurrent.setDevice([]);
-            
-            %{
-            this.uiApp.uiWaferFocusSensor.uiDiode.turnOff()
-            this.uiApp.uiWaferFocusSensor.ui.uiDiode.setDevice([]);
-            %} 
-            
-        end
+       
         
         function connectDeltaTauPowerPmac(this, comm)
             
@@ -241,9 +217,10 @@ classdef Wafer < mic.Base
             dTop = dTop + dSep;
             this.uiCommMFDriftMonitor.disable();
             
+            %{
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
+            %}
             
             % this.hs.build(this.hFigure, dPad, dTop);
             
@@ -305,8 +282,8 @@ classdef Wafer < mic.Base
             delete(this.uiCommMFDriftMonitor)
             delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
-            delete(this.uiCommCxroHeightSensor)
-            delete(this.uiCommDataTranslationMeasurPoint)
+           %  delete(this.uiCommCxroHeightSensor)
+            % delete(this.uiCommDataTranslationMeasurPoint)
             
             % Clean up clock tasks
             
@@ -450,6 +427,7 @@ classdef Wafer < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
+        %{
             this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
@@ -460,6 +438,7 @@ classdef Wafer < mic.Base
                 'cName', 'data-translation-measur-point-wafer', ...
                 'cLabel', 'DataTrans MeasurPoint' ...
             );
+            %}
         
         end
         

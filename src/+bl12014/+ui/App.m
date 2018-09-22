@@ -57,6 +57,8 @@ classdef App < mic.Base
         cDirSave
         uiButtonList
         hHardware
+        dDelay = 1
+        dColorOn = [0 0.9 0]
     end
     
         
@@ -100,9 +102,245 @@ classdef App < mic.Base
         
         function build(this, hParent, dLeft, dTop)
             this.uiButtonList.build(hParent, dLeft, dTop);
+            
+            if ~isempty(this.clock) && ...
+                ~this.clock.has(this.id())
+                this.clock.add(@this.onClock, this.id(), this.dDelay);
+            end
         end
         
-                        
+        function setColorOfBeamline(this)
+            if (...
+                this.uiBeamline.uiCommExitSlit.get() ||...
+                this.uiBeamline.uiCommBL1201CorbaProxy.get() || ...
+                this.uiBeamline.uiCommDctCorbaProxy.get() || ...
+                this.uiBeamline.uiCommRigolDG1000Z.get() || ...
+                this.uiBeamline.uiCommDataTranslationMeasurPoint.get() || ...
+                this.uiBeamline.uiCommGalilD142.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(2, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(2, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfExitSlit(this)
+
+            if (...
+                this.uiExitSlit.uiCommExitSlit.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(3, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(3, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfM141(this)
+            if (...
+                this.uiM141.uiCommSmarActMcsM141.get() ||...
+                this.uiM141.uiCommDataTranslationMeasurPoint.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(4, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(4, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfD141(this)
+            if (...
+                this.uiD141.uiCommDataTranslationMeasurPoint.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(4, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(4, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfM142(this)
+            if (...
+                this.uiM142.uiCommNewFocusModel8742.get() ||...
+                this.uiM142.uiCommMicronixMmc103.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(5, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(5, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfScannerM142(this)
+            if (...
+                this.uiScannerM142.uiCommNPointLC400.get() ... 
+            ) 
+                this.uiButtonList.setButtonColorBackground(6, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(6, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfD142(this)
+            if (...
+                this.uiD142.uiCommGalil.get() ||...
+                this.uiD142.uiCommDataTranslationMeasurPoint.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(7, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(7, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfM143(this)
+            if (...
+                this.uiM143.uiCommGalil.get() ||...
+                this.uiM143.uiCommDataTranslationMeasurPoint.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(9, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(9, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfVibrationIsolationSystem(this)
+
+            if (...
+                this.uiVibrationIsolationSystem.uiCommGalil.get() ||...
+                this.uiVibrationIsolationSystem.uiCommDataTranslation.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(10, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(10, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfMADiagnostics(this)
+            if (...
+                this.uiMADiagnostics.uiCommNewFocusModel8742.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(11, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(11, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfScannerMA(this)
+            if (...
+                this.uiScannerMA.uiCommNPointLC400.get() ... 
+            ) 
+                this.uiButtonList.setButtonColorBackground(12, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(12, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfReticle(this)
+
+             if (...
+                this.uiReticle.uiCommDeltaTauPowerPmac.get() ||...
+                this.uiReticle.uiCommKeithley6482.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(13, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(13, [0.9 0.9 0.9]);
+             end
+        end
+        function setColorOfWafer(this)
+             if (...
+                this.uiWafer.uiCommDeltaTauPowerPmac.get() ||...
+                this.uiWafer.uiCommMFDriftMonitor.get() || ...
+                this.uiWafer.uiCommKeithley6482.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(14, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(14, [0.9 0.9 0.9]);
+             end
+        end
+        function setColorOfMfDriftMonitorVibration(this)
+
+             if (...
+                this.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(15, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(15, [0.9 0.9 0.9]);
+             end
+        end
+        function setColorOfPoCurrent(this)
+             if (...
+                this.uiPOCurrent.uiCommKeithley6482.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(16, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(16, [0.9 0.9 0.9]);
+             end
+             
+        end
+        function setColorOfPpmacStatus(this)
+              if (...
+                this.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(17, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(17, [0.9 0.9 0.9]);
+              end
+        end
+        function setColorOfPpmacHydraMotMin(this)
+            if (...
+                this.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(18, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(18, [0.9 0.9 0.9]);
+            end
+        end
+        function setColorOfShutter(this)
+
+             if (...
+                this.uiShutter.uiCommRigol.get() ...
+            ) 
+                this.uiButtonList.setButtonColorBackground(29, this.dColorOn);
+            else 
+                this.uiButtonList.setButtonColorBackground(29, [0.9 0.9 0.9]);
+             end
+        end
+        function onClock(this)
+            
+            
+             if isempty(this.hFigure) || ...
+               ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+                
+             end
+            
+            % Update the color of the buttons
+            %{
+            stButtons = [
+              
+              stTempSensors, ...
+              stFocusSensor, ...
+              stDriftMonitor, ...
+              stLSIControl, ...
+              stLSIAnalyze, ...
+              stHeightSensorLEDs, ...
+              stCameraLEDs, ...
+              stScanResultPlot2x2, ...
+              stShutter ...
+           ];
+            %}
+            
+            this.setColorOfBeamline();
+            this.setColorOfExitSlit()
+            this.setColorOfM141();
+            this.setColorOfD141()
+            this.setColorOfM142();
+            this.setColorOfScannerM142();
+            this.setColorOfD142();
+            this.setColorOfM143();
+            this.setColorOfVibrationIsolationSystem();
+            this.setColorOfMADiagnostics();
+            this.setColorOfScannerMA()
+            this.setColorOfReticle()
+            this.setColorOfWafer()
+            this.setColorOfMfDriftMonitorVibration()
+            this.setColorOfPoCurrent()
+            this.setColorOfPpmacStatus()
+            this.setColorOfPpmacHydraMotMin()
+            this.setColorOfShutter()  
+            
+        end
         
         %% Destructor
         
@@ -326,7 +564,7 @@ classdef App < mic.Base
             );
         
             stExitSlit = struct(...
-                'cLabel',  'Exit Slit', ...
+                'cLabel',  'Exit Slit (All 4 Blades)', ...
                 'fhOnClick',  @() this.uiExitSlit.build(), ...
                 'cTooltip',  'Exit Slit' ...
             );
