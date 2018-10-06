@@ -59,6 +59,9 @@ classdef TempSensors < mic.Base
         
         function connectDataTranslationMeasurPoint(this, comm)
             
+            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
+
+                        
             deviceReticleCam1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 1);
             deviceReticleCam2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 2);
             deviceFiducialCam1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_TEMP_RTD, 3);

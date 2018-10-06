@@ -50,7 +50,7 @@ classdef ReticleDiode < mic.Base
         
         function connectKeithley6482(this, comm)
             
-            device = bl12014.device.GetNumberFromKeithley6482(comm, 2);
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
             this.uiCurrent.setDevice(device);
             this.uiCurrent.turnOn()
             

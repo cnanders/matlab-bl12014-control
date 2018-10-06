@@ -57,12 +57,16 @@ classdef MFDriftMonitor < mic.Base
     properties
         cAppPath        = fileparts(mfilename('fullpath'))
         cPRConfigPath     = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config', 'position-recaller');
+        cInterpConfigPath     = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config', 'interpolant-config');
 
         
         
     end
     
     properties (SetAccess = private)
+        
+        dGraphUpdatePeriod = 0.5
+        
         % Channels to display, set these variables to a subset of this list
         % to show less channels
         dHeightSensorDisplayChannels = 1:10
@@ -85,6 +89,10 @@ classdef MFDriftMonitor < mic.Base
         
         % UI Connect
         uicConnectDriftMonitor
+        
+        % Plot status
+        uicPlotOn
+        lIsPlotting = false
         
         % UI:Monitor
         
@@ -208,13 +216,13 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
-        function lVal = isAPIOn(this)
-            lVal = ~isempty(this.apiDriftMonitor) && this.apiDriftMonitor.isConnected() && this.apiDriftMonitor.isReady() && ...
-                ~isempty(this.hardware.commMFDriftMonitor);
-        end
+
         
         function init(this)
             
+            % Instantiate drift monitor immediately, although don't connect
+            % yet
+            this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
             
             
             % Init DriftMonitor Hardware comm (connect button)
@@ -227,13 +235,31 @@ classdef MFDriftMonitor < mic.Base
                 'cName', 'mf-drift-monitor', ...
                 'cLabel', 'MFDrift Monitor',...
                 'lUseFunctionCallbacks', true, ...
-                'fhGet', @()this.isAPIOn,...
+                'fhGet', @()this.apiDriftMonitor.isConnected(), ...
                 'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
                                    @this.connectDriftMonitor, ...
                                    @this.disconnectDriftMontior...
                                 ),...
                 'fhIsInitialized', @()true,... 
                 'fhIsVirtual', @false ...
+                );
+            
+            this.uicPlotOn = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'mf-drift-monitor', ...
+                'cLabel', 'Plot traces',...
+                'lUseFunctionCallbacks', true, ...
+                'fhGet', @()this.getIsPlotting(), ...
+                'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
+                                   @()this.setIsPlotting(true), ...
+                                   @()this.setIsPlotting(false)...
+                                ),...
+                'fhIsInitialized', @()true,... 
+                'fhIsVirtual', @()false ...
                 );
             
             this.uitCalibrationText = mic.ui.common.Text(...
@@ -550,7 +576,9 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
-        %% Accessor:
+        
+        
+        %% Accessor/modifiers
         
         % Gets X and Y reticle values separately from normal update loop
         function dVal = getReticleDMIValues(this)
@@ -563,6 +591,19 @@ classdef MFDriftMonitor < mic.Base
              dVal = [this.apiDriftMonitor.getHeightSensorValue(7); this.apiDriftMonitor.getHeightSensorValue(8);  this.apiDriftMonitor.getHeightSensorValue(9)];
         end
         
+        % Sets plotting status:
+        function setIsPlotting(this, lVal)
+            if lVal
+                if ~isempty(this.clock)&& ~this.clock.has(this.id())
+                    this.clock.add(@this.onClock, this.id(), this.dGraphUpdatePeriod);
+                end
+            end
+            this.lIsPlotting = lVal;
+        end
+        function lVal = getIsPlotting(this)
+            lVal = this.lIsPlotting;
+        end
+        
         %% Calibration S/L handlers:
         function setCalibration(this, dVal)
             this.cLastCalibrationPath = dVal;
@@ -572,8 +613,12 @@ classdef MFDriftMonitor < mic.Base
             load(dVal);
             
             this.apiDriftMonitor.setInterpolant(stCalibrationData);
-            this.stActiveInterpolant = stCalibrationData;
-            msgbox(sprintf('Set calibration interpolant to: %s', p));
+%             this.stActiveInterpolant = stCalibrationData;
+            (fprintf('(MFDriftMonitor process): Set calibration interpolant to: %s\n', p));
+            
+            % Need to store that this is the interpolant we will be using:
+            cActiveInterpolant = dVal;
+            save([this.cInterpConfigPath, '/', 'active-interpolant.mat'], 'cActiveInterpolant');
         end
         
         function dVal = getCalibration(this)
@@ -597,36 +642,38 @@ classdef MFDriftMonitor < mic.Base
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)
-            if ~this.isAPIOn()
-                this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
+            if ~this.apiDriftMonitor.isConnected()
+                this.apiDriftMonitor.connect();
             end
-            if ~isempty(this.clock)&&~this.clock.has(this.id())
-                this.clock.add(@this.onClock, this.id(), 1);
-                this.uieUpdateInterval.disable();
+            if ~isempty(this.clock)&& ~this.clock.has(this.id())
+                this.clock.add(@this.onClock, this.id(), this.dGraphUpdatePeriod);
             end
             
             % Init interpolant:
-            this.setCalibration(this.cDefaultInterpolantPath);
-            this.apiDriftMonitor.start();
-            this.apiDriftMonitor.setDMIZero();
+            % No longer setting this, now happens in middleware layer
+%             this.setCalibration(this.cDefaultInterpolantPath);
+
+            % Show correct calibration interpolant text:
+            load([this.cInterpConfigPath, '/', 'active-interpolant.mat'])
             
+            [~, p, e] = fileparts(cActiveInterpolant);
+            this.uitCalibrationText.set(sprintf('Height sensor calibration interpolant: %s', [p, e]));
+       
         end
         
 
         function disconnectDriftMontior(this)
-            this.hardware.deleteMFDriftMonitor();
-            this.apiDriftMonitor = [];
-            this.disconnectMiddleware();
-            this.uieUpdateInterval.enable();
+            if this.apiDriftMonitor.isConnected()
+                this.apiDriftMonitor.disconnect();
+            end
+
             
-            
-        end
-        
-        function disconnectMiddleware(this)
+            % Remove UI update process
             if isvalid(this.clock) &&  this.clock.has(this.id())
                 this.clock.remove(this.id());
             end
         end
+        
         
          % Builds hexapod java api, connecting getSetNumber UI elements
         % to the appropriate API hooks.  Device is already connected
@@ -696,10 +743,13 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function onClock(this)
+            this.updatePlots();
+        end
+        
+        function updatePlots(this)
             try
             
-                if ~this.isAPIOn()
-                    this.disconnectMiddleware();
+                if ~this.apiDriftMonitor.isConnected() || ~this.lIsPlotting
                     return
                 end
                 %DMI Scanning
@@ -1285,6 +1335,7 @@ classdef MFDriftMonitor < mic.Base
             
             % Connect button above tabs:
             this.uicConnectDriftMonitor.build(this.hFigure, dLeft, dTop);
+            this.uicPlotOn.build(this.hFigure, dLeft, dTop + 30);
             
             this.uitCalibrationText.build(this.hFigure, dLeft + 320, dTop + 5, 400, 30);
             
@@ -1424,7 +1475,7 @@ classdef MFDriftMonitor < mic.Base
                      );
                  
                  
-            this.uiSLCalibration.build(uitCalibrate, 850, 30, 340, 250);
+            this.uiSLCalibration.build(uitCalibrate, 850, 500, 340, 250);
             
             
             this.uiTextStatus.build(hScanProgress, 10, 10, 100, 30);
@@ -1446,11 +1497,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function onCloseRequest(this, src, evt)
-            
-            this.clock.stop();
-            delete(this.clock);
-            
-            
+
             if ishandle(this.hFigure)
                 delete(this.hFigure);
             end

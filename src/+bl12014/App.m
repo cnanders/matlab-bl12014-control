@@ -567,9 +567,7 @@ classdef App < mic.Base
             
             
             import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-            
-            return;
-            
+                        
             if this.getDataTranslationMeasurPoint()
                 return
             end
@@ -604,10 +602,10 @@ classdef App < mic.Base
             this.uiApp.uiD142.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             this.uiApp.uiBeamline.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             this.uiApp.uiM143.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            
+            %this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            %this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            %this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             
         end
         
@@ -618,9 +616,7 @@ classdef App < mic.Base
                 'destroyAndDisconnectDataTranslationMeasurPoint', ...
                 this.u8_MSG_TYPE_INFO ...
             );
-        
-            return;
-            
+                    
             if ~this.getDataTranslationMeasurPoint()
                 return
             end
@@ -630,9 +626,9 @@ classdef App < mic.Base
             this.uiApp.uiD141.disconnectDataTranslationMeasurPoint();
             this.uiApp.uiD142.disconnectDataTranslationMeasurPoint();
             this.uiApp.uiM143.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
                         
             this.commDataTranslationMeasurPoint.delete();
             this.commDataTranslationMeasurPoint = [];
@@ -1883,8 +1879,6 @@ classdef App < mic.Base
             this.uiApp.uiScannerM142.uiCommNPointLC400.setDevice(gslcCommNPointLC400M142);
             this.uiApp.uiScannerM142.uiCommNPointLC400.turnOn();
             
-            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn()
             
             % D141
             
@@ -1919,21 +1913,25 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
             % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
+
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
             this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
-            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
            
             this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiPOCurrent.uiCommKeithley6482.turnOn();
             
             % Wafer
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
-            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
+
+            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
+
+            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
+
+            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
             % Power PMAC Status
@@ -1976,9 +1974,10 @@ classdef App < mic.Base
             this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.turnOn();
         
             
-            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
+
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.turnOn()
             
             

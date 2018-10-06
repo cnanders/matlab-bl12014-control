@@ -233,10 +233,13 @@ classdef Beamline < mic.Base
         end
         
         function connectDataTranslationMeasurPoint(this, comm)
+            
+           import bl12014.device.GetNumberFromDataTranslationMeasurPoint
+
            device = GetNumberFromDataTranslationMeasurPoint(...
                 comm, ...
                 GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                34 ...
+                34 ... % D142
             );
             this.uiD141Current.setDevice(device);
             this.uiD141Current.turnOn();     
@@ -833,7 +836,7 @@ classdef Beamline < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-shutter.json' ...
+                'config-shutter-rigol.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -1677,9 +1680,14 @@ classdef Beamline < mic.Base
             
             switch stTask.type
                 case this.ScanAcquireTypeD141Current
+                    
+                    %{
                     % Open the shutter
-                    this.uiShutter.setDestCal(10000, 'ms (1x)');
+                    this.uiShutter.setDestCal(10000, 'ms');
                     this.uiShutter.moveToDest();
+                    
+                    %}
+                    
                     % Pause
                     pause(stTask.pause);
                     
@@ -1694,8 +1702,11 @@ classdef Beamline < mic.Base
                     % Overwrite goal value of param with measured value
                     % this.dScanDataParam(this.scan.u8Index) = stValue.(this.uiPopupDeviceName.get().cValue)
                     
+                    %{
                     % Close the shutter
                     this.uiShutter.stop();
+                    %}
+                    
                     % Update the contract lIssued
                     this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = true;
                 otherwise 

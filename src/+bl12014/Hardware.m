@@ -45,6 +45,8 @@ classdef Hardware < mic.Base
     end
     
 	properties
+        clock
+        
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
         cDirMet5InstrumentsConfig = ...
@@ -104,6 +106,11 @@ classdef Hardware < mic.Base
         function delete(this)
         end
         
+        % Setters
+        function setClock(this, clock)
+            this.clock = clock;
+        end
+        
         
         %% Getters
         function comm = getjMet5Instruments(this)
@@ -126,37 +133,41 @@ classdef Hardware < mic.Base
             comm = this.commKeithley6482Wafer;
         end
         
-        % DRIFT MONITOR
+        % DRIFT MONITOR (%requires a clock)
         function comm = getMFDriftMonitor(this)
             if isempty(this.jMet5Instruments)
                 this.getjMet5Instruments();
             end
+            % If first time, establish link with Drift Monitor middleware
             if isempty(this.commMFDriftMonitor)
-                CWCDriftMonitorAPI  = this.jMet5Instruments.getMfDriftMonitor();
-                % Drift monitor bridge, not usually necessary
+                % Set up drift monitor bridge
                 this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                'javaAPI', CWCDriftMonitorAPI);
+                                'jMet5Instruments', this.jMet5Instruments, ...
+                                 'clock', this.clock);
             end
+            
             comm = this.commMFDriftMonitor;
         end
+        
+        
         function comm = getMFDriftMonitorVirtual(~)
             comm = bl12014.hardwareAssets.virtual.VirtualMFDriftMonitor();
         end
         
         % LSI HEXAPOD
-        function comm = getLSIHexapod(this)
-            if isempty(this.jMet5Instruments)
-                this.getjMet5Instruments();
-            end
-            if isempty(this.commMFDriftMonitor)
-                CWCHexapod  = this.jMet5Instruments.getLsiHexapod();
-                % Hexapod bridge, not usually necessary
-                this.commLSIHexapod 	=  bl12014.hardwareAssets.middleware.CXROJavaStageAPI(...
-                                        'jStage', CWCHexapod);
-            end
-            comm = this.commLSIHexapod;
-        end
-        
+%         function comm = getLSIHexapod(this)
+%             if isempty(this.jMet5Instruments)
+%                 this.getjMet5Instruments();
+%             end
+%             if isempty(this.commMFDriftMonitor)
+%                 CWCHexapod  = this.jMet5Instruments.getLsiHexapod();
+%                 % Hexapod bridge, not usually necessary
+%                 this.commLSIHexapod 	=  bl12014.hardwareAssets.middleware.CXROJavaStageAPI(...
+%                                         'jStage', CWCHexapod);
+%             end
+%             comm = this.commLSIHexapod;
+%         end
+%         
         
         
         
@@ -168,7 +179,6 @@ classdef Hardware < mic.Base
             
         function deleteMFDriftMonitor(this)
             this.commMFDriftMonitor.disconnect();
-            this.commMFDriftMonitor = [];
         end
         
         function deleteLSIHexapod(this)
@@ -198,6 +208,7 @@ classdef Hardware < mic.Base
         end
         
   
+        
         
   
         
