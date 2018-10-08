@@ -37,6 +37,10 @@ classdef Beamline < mic.Base
         dSizeMarker = 8
         
         
+        cNameOutputM141Diode = 'output-m141-diode'
+        cNameOutputD141Diode = 'output-d141-diode'
+        cNameOutputD142Diode = 'output-d142-diode'
+        
         cNameDeviceExitSlit = 'exit_slit'
         cNameDeviceUndulatorGap = 'undulator_gap'
         cNameDeviceShutter = 'shutter'
@@ -91,6 +95,8 @@ classdef Beamline < mic.Base
         
         % {mic.ui.device.GetNumber 1x1}
         uiD141Current
+        uiM141Current
+        uiD142Current
         
         
     end
@@ -139,6 +145,7 @@ classdef Beamline < mic.Base
         uiEditRecipeStop
         uiEditRecipeSteps
         uiTextRecipeUnit
+        uiPopupRecipeOutput
         
         % {mic.ui.Scan 1x1}
         uiScan
@@ -689,6 +696,18 @@ classdef Beamline < mic.Base
             dLeft = dLeft + this.dWidthRecipeEdit + this.dWidthPadH;
             
             this.uiScan.build(this.hPanelScan, dLeft, 12);
+            
+            dTop = 60; 
+            dLeft = 20;
+            this.uiPopupRecipeOutput.build( ...
+                this.hPanelScan, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthRecipePopup, ...
+                this.dHeightUi ...
+            );
+        
+        
             this.onPopupRecipeDevice();
         
         end
@@ -915,15 +934,50 @@ classdef Beamline < mic.Base
                 '...' ...
             );
         
+        
+        
+            stOutputTypeM141Diode = struct( ...
+                'cLabel', 'M141 Diode', ...
+                'cValue', this.cNameOutputM141Diode ...
+            );
+            stOutputTypeD141Diode = struct( ...
+                'cLabel', 'D141 Diode', ...
+                'cValue', this.cNameOutputD141Diode ...
+            ); 
+            stOutputTypeD142Diode = struct( ...
+                'cLabel', 'D142 Diode', ...
+                'cValue', this.cNameOutputD142Diode ...
+            ); 
+            ceOptions = { ...
+                stOutputTypeM141Diode, ...
+                stOutputTypeD141Diode, ...
+                stOutputTypeD142Diode ...
+            };
+        
+            this.uiPopupRecipeOutput = mic.ui.common.PopupStruct(...
+                'ceOptions', ceOptions, ...
+                'cField', 'cLabel', ...
+                'cLabel', 'Output' ...
+            );
+        
+        
+            
+        
             addlistener(this.uiPopupRecipeDevice, 'eChange', @this.onPopupRecipeDevice);
             addlistener(this.uiEditRecipeStart, 'eChange', @this.onEditRecipeStart);
             addlistener(this.uiEditRecipeStop, 'eChange', @this.onEditRecipeStop);
             addlistener(this.uiEditRecipeSteps, 'eChange', @this.onEditRecipeSteps);
+            addlistener(this.uiPopupRecipeOutput, 'eChange', @this.onPopupRecipeOutput);
+
+            
         end
         
         function onPopupRecipeDevice(this, ~, ~)
             
             this.msg('onPopupRecipeDevice()')
+            
+            % Update values of the edit boxes based on their previous value
+            % this recipe device was active
             
             stStore = this.stUiRecipeStore.(this.uiPopupRecipeDevice.get().cValue);
             this.uiEditRecipeStart.setWithoutNotify(stStore.start);
@@ -935,6 +989,13 @@ classdef Beamline < mic.Base
             this.updateRecipeUnit();
             
         end
+        
+        function onPopupRecipeOutput(this, ~, ~)
+            
+            this.msg('onPopupRecipeOutput')
+        end
+        
+        
         
         function onEditRecipeStart(this, src, ~)
             this.stUiRecipeStore.(this.uiPopupRecipeDevice.get().cValue).start = src.get();
