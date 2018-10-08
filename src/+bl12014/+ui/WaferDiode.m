@@ -48,20 +48,29 @@ classdef WaferDiode < mic.Base
         
         end
         
+        function connectKeithley6482(this, comm)
+            
+            device = bl12014.device.GetNumberFromKeithley6482(comm, 2);
+            this.uiCurrent.setDevice(device);
+            this.uiCurrent.turnOn()
+            
+        end
         
+        
+        function disconnectKeithley6482(this, comm)
+            this.uiCurrent.turnOff();
+            this.uiCurrent.setDevice([]);
+            
+        end
+        
+        
+            
         function turnOn(this)
-            
             this.uiCurrent.turnOn();
-            this.uiY.turnOn();
-            
-            
         end
         
         function turnOff(this)
             this.uiCurrent.turnOff();
-            this.uiY.turnOff();
-           
-            
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -69,7 +78,7 @@ classdef WaferDiode < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Diode (Unknown Hardware)',...
+                'Title', 'Wafer Diode (Keithley 6482)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...

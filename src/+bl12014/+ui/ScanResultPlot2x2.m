@@ -184,8 +184,15 @@ classdef ScanResultPlot2x2 < mic.Base
         end
         
         function build(this)
-            this.buildFigure();
             
+            if ishghandle(this.hFigure)
+                % Bring to front
+                figure(this.hFigure);
+                return
+            end
+
+            
+            this.buildFigure();
             this.buildAxes1();
             this.buildAxes2();
             this.buildAxes3();
@@ -716,13 +723,7 @@ classdef ScanResultPlot2x2 < mic.Base
         
         
         function buildFigure(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-
+           
             dScreenSize = get(0, 'ScreenSize');
             this.hFigure = figure( ...
                 'NumberTitle', 'off', ...

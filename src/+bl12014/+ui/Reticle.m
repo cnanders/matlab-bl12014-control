@@ -16,13 +16,10 @@ classdef Reticle < mic.Base
         uiCommDeltaTauPowerPmac
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommCxroHeightSensor
-        
-        % {mic.ui.device.GetSetLogical 1x1}
         uiCommKeithley6482
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDataTranslationMeasurPoint
+        % uiCommDataTranslationMeasurPoint
         
         uiCoarseStage
         uiFineStage
@@ -68,7 +65,7 @@ classdef Reticle < mic.Base
             
         end
         
-        
+        %{
         function connectDataTranslationMeasurPoint(this, comm)
             
             % 2018.09.15 Mod3 Cap Sensors Now come From PPMAC
@@ -109,8 +106,9 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.uiCap4.setDevice([]);
         end
         
+        %}
         
-        
+        %{
         function connectKeithley6482(this, comm)
             deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
             this.uiDiode.uiCurrent.setDevice(deviceCh1);
@@ -121,6 +119,7 @@ classdef Reticle < mic.Base
             this.uiDiode.uiCurrent.turnOff()
             this.uiDiode.uiCurrent.setDevice([]);
         end
+        %}
         
         
         function connectDeltaTauPowerPmac(this, comm)
@@ -190,10 +189,10 @@ classdef Reticle < mic.Base
             this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            
+            %{
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
+            %}
             
             
             dTop = 10;
@@ -355,6 +354,7 @@ classdef Reticle < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
+            %{
             this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
@@ -365,6 +365,7 @@ classdef Reticle < mic.Base
                 'cName', 'data-translation-measur-point-reticle', ...
                 'cLabel', 'DataTrans MeasurPoint' ...
             );
+            %}
         
         end
         

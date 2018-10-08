@@ -62,29 +62,24 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
         u8SampleAverageDuringControl = 50;
         % {logical 1x1} set to true to debug the scan
         lDebugScan = true
+        
+        %UI handles for updating goals
+        uiZCoarse   = []
+        uiZFine     = []
     end
     
     methods
         
-        function this = HeightSensorZClosedLoop(clock, zWafer, zWaferCoarse, zHeightSensor, varargin)
+        function this = HeightSensorZClosedLoop(clock, zWafer, zWaferCoarse, zHeightSensor, uiZCoarse, uiZFine, varargin)
             
-            % Input validation and parsing
-            
-            p = inputParser;
-            addRequired(p, 'clock', @(x) isa(x, 'mic.Clock'))
-            addRequired(p, 'zWafer', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
-            addRequired(p, 'zWaferCoarse', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
-            addRequired(p, 'zHeightSensor', @(x) isa(x, 'mic.interface.device.GetNumber')) % also has method setSampleAverage
-            addParameter(p, 'dTolerance', this.dTolerance, @(x) isscalar(x) && isnumeric(x) && x > 0)
-            addParameter(p, 'u8MovesMax', this.u8MovesMax, @(x) isscalar(x) && isinteger(x) && x > 0)
-            addParameter(p, 'cName', this.cName, @(x) ischar(x));
-            
-            parse(p, clock, zWafer, zWaferCoarse, zHeightSensor, varargin{:});
 
-            this.clock = p.Results.clock;
-            this.zWafer = p.Results.zWafer;
-            this.zWaferCoarse = p.Results.zWaferCoarse;
-            this.zHeightSensor = p.Results.zHeightSensor;
+            this.clock = clock;
+            this.zWafer = zWafer;
+            this.zWaferCoarse = zWaferCoarse;
+            this.zHeightSensor = zHeightSensor;
+            
+            this.uiZCoarse = uiZCoarse;
+            this.uiZFine = uiZFine;
             
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
@@ -147,13 +142,16 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 dZWaferCoarse       = this.zWaferCoarse.get();
                 dZWaferCoarseGoal   = (dZWaferCoarse * mm2nm + dCoarseError) * nm2mm;
                 
-                this.zWaferCoarse.set(dZWaferCoarseGoal);
+%                 this.zWaferCoarse.set(dZWaferCoarseGoal);
+                this.uiZCoarse.setDestCal(dZWaferCoarseGoal, 'mm');
+                this.uiZCoarse.moveToDest();
                 
                 if (~this.waitForStage(this.zWaferCoarse))
                     this.msg('Z Coarse Stage timed out\n', this.u8_MSG_TYPE_SCAN);
                     this.lReady = true;
                     return
                 end
+                this.msg('Z Coarse Stage finished moving out\n', this.u8_MSG_TYPE_SCAN);
             end
             
             % Now move fine stage:
@@ -165,7 +163,10 @@ classdef HeightSensorZClosedLoop < mic.interface.device.GetSetNumber
                 dZWaferGoal             = (dZWaferNm + dError) * nm2mm;
                 this.dCurrentZTarget_nm = dZWaferGoal * mm2nm;
                 
-                this.zWafer.set(dZWaferGoal);
+%                 this.zWafer.set(dZWaferGoal);
+                this.uiZFine.setDestCal(dZWaferGoal*mm2nm, 'nm');
+                this.uiZFine.moveToDest();
+                
                 if (~this.waitForStage(this.zWafer))
                     this.msg('Z Fine Stage timed out\n', this.u8_MSG_TYPE_SCAN);
                     this.lReady = true;

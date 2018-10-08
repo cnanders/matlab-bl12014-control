@@ -179,7 +179,51 @@ classdef Mod3CapSensors < mic.Base
             end
             
             
-        end    
+        end 
+        
+        
+        function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
+            
+            dOffsetX = 34.075 * 1e-3; % m
+            dOffsetY = 27.833 * 1e-3; % m
+            
+            % four points in the plane, one from each sensor
+            % 4         3
+            % 1         2
+            %
+            dPoint4 = [-dOffsetX 0 this.uiCap4.getValCal('um')*1e-6];
+            dPoint3 = [dOffsetX 0 this.uiCap3.getValCal('um')*1e-6];
+            dPoint2 = [dOffsetX -dOffsetY this.uiCap2.getValCal('um')*1e-6];
+            dPoint1 = [-dOffsetX -dOffsetY this.uiCap1.getValCal('um')*1e-6];
+            
+            % Compute vectors in the plane
+            dV43 = dPoint4 - dPoint3;
+            dV42 = dPoint4 - dPoint2;
+            dV41 = dPoint4 - dPoint1;
+            
+            % Compute cross to get vector normal to the plane, then
+            % make it unit magnitude
+            dN4342 = cross(dV43, dV42); % vector normal to plane
+            dN4342 = dN4342./(sqrt(sum(dN4342.^2))); % unit magnitude vector normal to plane
+            
+            
+            dN4341 = cross(dV43, dV41); % vector normal to plane
+            dN4341 = dN4341./(sqrt(sum(dN4341.^2))); % unit magnitude vector normal to plane
+            
+            [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342);
+            [dTiltX2, dTiltY2] = this.getTiltXAndTiltYFromNormalVector(dN4341);
+            
+%             fprintf('tiltX = %1.1f, %1.1f\n', ...
+%                 dTiltX * pi / 180 * 1e6, ...
+%                 dTiltX2 * pi / 180 * 1e6 ...
+%             );
+%         
+%             fprintf('tiltY = %1.1f, %1.1f\n', ...
+%                 dTiltY * pi / 180 * 1e6, ...
+%                 dTiltY2 * pi / 180 * 1e6 ...
+%             );
+            
+        end
         
         
     end
@@ -305,48 +349,7 @@ classdef Mod3CapSensors < mic.Base
             
         end
         
-        function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
-            
-            dOffsetX = 34.075 * 1e-3; % m
-            dOffsetY = 27.833 * 1e-3; % m
-            
-            % four points in the plane, one from each sensor
-            % 4         3
-            % 1         2
-            %
-            dPoint4 = [-dOffsetX 0 this.uiCap4.getValCal('um')*1e-6];
-            dPoint3 = [dOffsetX 0 this.uiCap3.getValCal('um')*1e-6];
-            dPoint2 = [dOffsetX -dOffsetY this.uiCap2.getValCal('um')*1e-6];
-            dPoint1 = [-dOffsetX -dOffsetY this.uiCap1.getValCal('um')*1e-6];
-            
-            % Compute vectors in the plane
-            dV43 = dPoint4 - dPoint3;
-            dV42 = dPoint4 - dPoint2;
-            dV41 = dPoint4 - dPoint1;
-            
-            % Compute cross to get vector normal to the plane, then
-            % make it unit magnitude
-            dN4342 = cross(dV43, dV42); % vector normal to plane
-            dN4342 = dN4342./(sqrt(sum(dN4342.^2))); % unit magnitude vector normal to plane
-            
-            
-            dN4341 = cross(dV43, dV41); % vector normal to plane
-            dN4341 = dN4341./(sqrt(sum(dN4341.^2))); % unit magnitude vector normal to plane
-            
-            [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342);
-            [dTiltX2, dTiltY2] = this.getTiltXAndTiltYFromNormalVector(dN4341);
-            
-%             fprintf('tiltX = %1.1f, %1.1f\n', ...
-%                 dTiltX * pi / 180 * 1e6, ...
-%                 dTiltX2 * pi / 180 * 1e6 ...
-%             );
-%         
-%             fprintf('tiltY = %1.1f, %1.1f\n', ...
-%                 dTiltY * pi / 180 * 1e6, ...
-%                 dTiltY2 * pi / 180 * 1e6 ...
-%             );
-            
-        end
+        
         
         % @param {double 1x3} dN - normal vector
         function [dTiltX, dTiltY] = getTiltXAndTiltYFromNormalVector(this, dN)

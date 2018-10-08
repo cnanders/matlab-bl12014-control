@@ -33,7 +33,9 @@ classdef MFDriftMonitor < mic.Base
         cInterpolantConfigDir     = ...
             fullfile(fileparts(mfilename('fullpath')),...
             '..', '..', '..', 'config', 'interpolants');
-
+        cActiveInterpolantConfig     = ...
+            fullfile(fileparts(mfilename('fullpath')),...
+            '..', '..', '..', 'config', 'interpolant-config', 'active-interpolant.mat');
         clock
         lHasOwnClock = false
         
@@ -42,6 +44,9 @@ classdef MFDriftMonitor < mic.Base
         
         % Handle to the MFDriftMonitor java interface
         javaAPI
+        
+        % Handle to met5instruments
+        jMet5Instruments
 
         % Number of samples to average
         dNumSampleAverage = 25
@@ -71,8 +76,6 @@ classdef MFDriftMonitor < mic.Base
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
             '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-09-20_08.52.mat')
-%          cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-%             '..', '..', '..', 'config', 'interpolants', ' cal-interp_2018-03-21_12.07.mat')
 
         
         u8FitModel
@@ -97,11 +100,31 @@ classdef MFDriftMonitor < mic.Base
             %this.u8FitModel = this.u8FITMODEL_LINEAR_FIT;
             this.u8HSModel  = this.u8HSMODEL_CALIBRATION;
             
-           
+           % try loading active interpolant:
+           try
+               load(this.cActiveInterpolantConfig)
+               load(cActiveInterpolant);
+               this.setInterpolant(stCalibrationData);
+               fprintf('(MFDriftMonitor process): Set calibration interpolant to: %s\n', cActiveInterpolant)
+           catch
+               fprintf('(MFDriftMonitor process): Calibration set failed, loading default: %s\n', this.cDefaultData)
+               load(cDefaultData)
+               this.setInterpolant(stCalibrationData);
+           end
             
         end
         
-        function start(this)
+        
+        
+        function connect(this)
+            if isempty(this.javaAPI)
+                this.javaAPI = this.jMet5Instruments.getMfDriftMonitor();
+            end
+            if ~this.isConnected()
+                this.javaAPI.connect();
+            end
+            
+            this.setDMIZero();
             
             % If there is no clock then make one:
             if isempty(this.clock)
@@ -113,11 +136,10 @@ classdef MFDriftMonitor < mic.Base
             this.clock.add(@this.onClock, this.id(), 1);
         end
         
-         function delete(this)
-
-           % Clean up clock tasks
+        function disconnect(this)
+            % Clean up clock tasks
             if ~isempty(this.clock) && ...
-               this.clock.has(this.id())
+                    this.clock.has(this.id())
                 this.clock.remove(this.id());
             end
             
@@ -127,21 +149,11 @@ classdef MFDriftMonitor < mic.Base
                 fprintf('Deleting MFDriftMonitorClock');
             end
             
-
-            
-        end
-        
-        
-        function connect(this)
-            if ~this.isConnected()
-                this.javaAPI.connect();
-            end
-        end
-        
-        function disconnect(this)
             if this.isConnected()
                 this.javaAPI.disconnect();
             end
+            
+            this.javaAPI = [];
         end
         
         function setDMIZero(this)
@@ -149,6 +161,11 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function lVal = isConnected(this)
+            if (isempty(this.javaAPI))
+                lVal = false;
+                return
+            end
+            
             lVal = this.javaAPI.isConnected();
         end
         
@@ -180,6 +197,11 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function dVal = getHeightSensorValue(this, u8Channel)
+            if ~this.isConnected()
+                dVal = 0;
+                return
+            end
+            
             switch u8Channel
                 case {1, 2, 3, 4, 5, 6}
                     dVal = this.dHSChannelData(u8Channel);
@@ -193,11 +215,10 @@ classdef MFDriftMonitor < mic.Base
         % Standalone function that bypasses interpolant. Returns average HS
         % position in nm based on averaging last 3 channels.
         function dVal = getSimpleZ(this, dNumAverage)
-%             if nargin == 1
-%                 % Use stored value
-%                 dVal = this.dSimpleZPosition;
-%                 return
-%             end
+            if ~this.isConnected()
+                dVal = 0;
+                return
+            end
             if nargin == 1
                 dNumAverage = 10;
             end
@@ -214,6 +235,11 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function dVal = getDMIValue(this, u8Channel)
+            if ~this.isConnected()
+                dVal = 0;
+                return
+            end
+            
             switch u8Channel
                 case {1, 2}
                     dVal = this.dDMIData(1, u8Channel);
@@ -226,7 +252,13 @@ classdef MFDriftMonitor < mic.Base
             end
         end
         
+        % Gets HS positions
         function dVal = getHSValue(this, u8Channel)
+            if ~this.isConnected()
+                dVal = 0;
+                return
+            end
+            
             dVal = this.dHSPositions(u8Channel);
         end
         
@@ -253,6 +285,10 @@ classdef MFDriftMonitor < mic.Base
     methods (Access = protected)
         
         function onClock(this)
+            if (isempty(this.javaAPI))
+               this.disconnect();
+               return
+            end
             % First update Channel data:
             this.updateChannelData();
             
@@ -270,6 +306,10 @@ classdef MFDriftMonitor < mic.Base
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
+             if (isempty(this.javaAPI))
+               this.disconnect();
+               return
+            end
             dSampleAve = this.javaAPI.getSampleDataAvg(this.dNumSampleAverage);
             dSampleAve.getHsData();
               

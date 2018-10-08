@@ -33,6 +33,11 @@ classdef WaferCoarseStage < mic.Base
         lShowRange = true
         lShowStores = false
         
+        % This is a cheat / hack since the PPMAC treats multiple
+        % axes as a single coordinate system and the underlying MIC
+        % framework does not support that
+        commDeltaTauPowerPmac
+        
     end
     
     properties (Access = private)
@@ -89,13 +94,17 @@ classdef WaferCoarseStage < mic.Base
             this.uiTiltX.turnOn();
             this.uiTiltY.turnOn();
             
-            
             this.uiX.syncDestination();
             this.uiY.syncDestination();
             this.uiZ.syncDestination();
             this.uiTiltX.syncDestination();
             this.uiTiltY.syncDestination();
             
+            % CHEATING HACK
+            % store a reference to comm so it can be used when loading
+            % from stores
+            
+            this.commDeltaTauPowerPmac = comm;
 
             
         end
@@ -108,8 +117,6 @@ classdef WaferCoarseStage < mic.Base
             this.uiZ.turnOff();
             this.uiTiltX.turnOff();
             this.uiTiltY.turnOff();
-
-            
                         
             this.uiX.setDevice([]);
             this.uiY.setDevice([]);
@@ -342,7 +349,7 @@ classdef WaferCoarseStage < mic.Base
         end
         
         % Return list of values from your app
-        function dValues = getValues(this)
+        function dValues = onUiPositionRecallerGet(this)
             dValues = [...
                 this.uiX.getValRaw(), ...
                 this.uiY.getValRaw(), ...
@@ -353,22 +360,26 @@ classdef WaferCoarseStage < mic.Base
         end
         
         % Set recalled values into your app
-        function setValues(this, dValues)
+        function onUiPositionRecallerSet(this, dValues)
             
+            % This is a cheat / hack of the MIC
+            
+            % Update the UI destinations
             this.uiX.setDestRaw(dValues(1));
             this.uiY.setDestRaw(dValues(2));
             this.uiZ.setDestRaw(dValues(3));
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
-            % Only need to issue move on one since moving sets entire
-            % coordinat system to its dest values
+            % Update the destinations of CS1 on the PPMAC
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS1X=%1.6f;', dValues(1)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS1Y=%1.6f;', dValues(2)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS1Z=%1.6f;', dValues(3)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS1A=%1.6f;', dValues(4)));
+            this.commDeltaTauPowerPmac.command(sprintf('DestCS1B=%1.6f;', dValues(5)));
             
-            this.uiX.moveToDest();
-%             this.uiY.moveToDest();
-%             this.uiZ.moveToDest();
-%             this.uiTiltX.moveToDest();
-%             this.uiTiltY.moveToDest();
+            % Command PPMAC to have CS1 go to all destinations
+            this.commDeltaTauPowerPmac.command('CommandCode=14');
             
         end
         
@@ -381,8 +392,8 @@ classdef WaferCoarseStage < mic.Base
                 'cName', [this.cName, '-position-recaller'], ...
                 'cTitleOfPanel', 'Position Stores', ...
                 'lShowLabelOfList', false, ...
-                'hGetCallback', @this.getValues, ...
-                'hSetCallback', @this.setValues ...
+                'hGetCallback', @this.onUiPositionRecallerGet, ...
+                'hSetCallback', @this.onUiPositionRecallerSet ...
             );
         end
         

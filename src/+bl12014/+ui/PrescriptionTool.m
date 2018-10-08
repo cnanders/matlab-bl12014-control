@@ -257,6 +257,63 @@ classdef PrescriptionTool < mic.Base
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
+            
+            %%  Index shot
+            
+            mMid = ceil(length(this.uiFemTool.dDose)/2);
+            nMid = ceil(length(this.uiFemTool.dFocus)/2);
+            
+            stValue = struct();
+            stValue.workingModeStart = '5'; 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+
+            % x position on wafer you want the exposure to be
+            stValue = struct();
+            stValue.waferX = -this.uiFemTool.dX(1); 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % y position on wafer you want exposure to be
+            dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+            stValue = struct();
+            stValue.waferY = -(this.uiFemTool.dY(1) - dYStep) % STEP FIX ME; 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            % Val you want HS to read during exposure
+            stValue = struct();
+            stValue.waferZ = this.uiFemTool.dFocus(nMid);
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+            stValue = struct();
+            stValue.workingModeEnd = '4'; 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            % State
+            stValue = struct();
+            stValue.type = 'exposure';
+
+            % Exposure task this info is used to color the exposures
+            stTask = struct();
+            stTask.dose = this.uiFemTool.dDose(mMid);
+            stTask.femCols = length(this.uiFemTool.dDose);
+            stTask.femCol = mMid;
+            stTask.femRows = length(this.uiFemTool.dFocus);
+            stTask.femRow = nMid;
+            stTask.pausePreExpose = 1; % FIX ME
+
+            stValue.task = stTask;
+
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+                
+            % FEM for each dose (m), do each focus (n)
+            
             for m = 1 : length(this.uiFemTool.dDose)
                 
                 

@@ -567,9 +567,7 @@ classdef App < mic.Base
             
             
             import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-            
-            return;
-            
+                        
             if this.getDataTranslationMeasurPoint()
                 return
             end
@@ -604,10 +602,10 @@ classdef App < mic.Base
             this.uiApp.uiD142.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             this.uiApp.uiBeamline.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             this.uiApp.uiM143.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            
+            %this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            %this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            %this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             
         end
         
@@ -618,9 +616,7 @@ classdef App < mic.Base
                 'destroyAndDisconnectDataTranslationMeasurPoint', ...
                 this.u8_MSG_TYPE_INFO ...
             );
-        
-            return;
-            
+                    
             if ~this.getDataTranslationMeasurPoint()
                 return
             end
@@ -630,9 +626,9 @@ classdef App < mic.Base
             this.uiApp.uiD141.disconnectDataTranslationMeasurPoint();
             this.uiApp.uiD142.disconnectDataTranslationMeasurPoint();
             this.uiApp.uiM143.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
-            this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
+            %this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
                         
             this.commDataTranslationMeasurPoint.delete();
             this.commDataTranslationMeasurPoint = [];
@@ -854,10 +850,10 @@ classdef App < mic.Base
                 this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
-            this.uiApp.uiBeamline.connectKeithley6482(this.commKeithley6482Wafer);
-            % this.uiApp.uiWafer.connectKeithley6482(this.commKeithley6482Wafer);
-            this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer);
-            this.uiApp.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer);
+            % this.uiApp.uiBeamline.connectKeithley6482(this.commKeithley6482Wafer);
+            this.uiApp.uiWafer.uiDiode.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
+            this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
+            this.uiApp.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer); % uses ch1
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
@@ -867,8 +863,8 @@ classdef App < mic.Base
             end
             
             
-            this.uiApp.uiBeamline.disconnectKeithley6482();
-            % this.uiApp.uiWafer.disconnectKeithley6482()
+            % this.uiApp.uiBeamline.disconnectKeithley6482();
+            this.uiApp.uiWafer.uiDiode.disconnectKeithley6482()
             this.uiApp.uiLSIControl.disconnectKeithley6482();
             this.uiApp.uiPOCurrent.disconnectKeithley6482();
             
@@ -946,7 +942,7 @@ classdef App < mic.Base
                 return
             end
                         
-            this.uiApp.uiReticle.connectKeithley6482(this.commKeithley6482Reticle);
+            this.uiApp.uiReticle.uiDiode.connectKeithley6482(this.commKeithley6482Reticle);
                         
         end
         
@@ -976,7 +972,7 @@ classdef App < mic.Base
                 return
             end
                             
-            this.uiApp.uiReticle.disconnectKeithley6482();
+            this.uiApp.uiReticle.uiDiode.disconnectKeithley6482();
             
             this.commKeithley6482Reticle.delete();
             this.commKeithley6482Reticle = [];
@@ -1452,6 +1448,7 @@ classdef App < mic.Base
                     'u16Port', u16Port ...
                 );
                 this.commRigolDG1000Z.idn()
+                this.uiApp.uiBeamline.connectRigolDG1000Z(this.commRigolDG1000Z);
                 this.uiApp.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                                 
             catch mE
@@ -1467,6 +1464,7 @@ classdef App < mic.Base
         
         function destroyAndDisconnectRigolDG1000Z(this)
             
+            this.uiApp.uiBeamline.disconnectRigolDG1000Z();
             this.uiApp.uiShutter.disconnectRigolDG1000Z();
             this.commRigolDG1000Z = [];
             
@@ -1881,8 +1879,6 @@ classdef App < mic.Base
             this.uiApp.uiScannerM142.uiCommNPointLC400.setDevice(gslcCommNPointLC400M142);
             this.uiApp.uiScannerM142.uiCommNPointLC400.turnOn();
             
-            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            % this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn()
             
             % D141
             
@@ -1916,22 +1912,26 @@ classdef App < mic.Base
             % Reticle
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
-            this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
+
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
             this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
-            this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
            
             this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiPOCurrent.uiCommKeithley6482.turnOn();
             
             % Wafer
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
-            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
-            this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
+
+            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
+            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
+
+            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
+
+            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
             % Power PMAC Status
@@ -1974,9 +1974,10 @@ classdef App < mic.Base
             this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.turnOn();
         
             
-            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
+            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
+
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.turnOn()
             
             
@@ -1993,6 +1994,9 @@ classdef App < mic.Base
             
             this.uiApp.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiShutter.uiCommRigol.turnOn();
+            
+            this.uiApp.uiBeamline.uiCommRigolDG1000Z.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiBeamline.uiCommRigolDG1000Z.turnOn();
             
             % Camera LEDs
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);

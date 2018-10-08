@@ -1,0 +1,14 @@
+{
+	"delay": 0.5,
+	"units": [
+				{
+					"name": "urad",
+					"slope": 1,
+					"offset": 0,
+					"precision": 1
+				}
+	],
+	"step": 1,
+    "min": -5000,
+    "max": 5000
+}

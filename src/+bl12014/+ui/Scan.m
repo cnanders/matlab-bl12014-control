@@ -55,6 +55,10 @@ classdef Scan < mic.Base
         
         uiListPrescriptions            
         uiListActive
+        
+        uiButtonClearPrescriptions
+        uiButtonClearWafer
+        
         uibNewWafer
         uibAddToWafer
         uibPrint
@@ -325,12 +329,27 @@ classdef Scan < mic.Base
            dTop = 70;
            dLeft = this.dWidthPadFigure;
            
-           this.uibNewWafer.build(this.hPanelAdded, ...
+%            this.uibNewWafer.build(this.hPanelAdded, ...
+%                 dLeft, ...
+%                 dTop, ...
+%                 this.dWidthButton, ...
+%                 this.dHeightButton);
+%             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearPrescriptions.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthButton, ...
                 this.dHeightButton);
             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearWafer.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthButton, ...
+                this.dHeightButton);
+            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
             
             this.uibPrint.build(this.hPanelAdded, ...
                 dLeft, ...
@@ -486,11 +505,23 @@ classdef Scan < mic.Base
             this.uiListPrescriptions.setRefreshFcn(@this.refreshFcn);
             this.uiListPrescriptions.refresh();
             
+            this.uiButtonClearPrescriptions = mic.ui.common.Button(...
+                'cText', 'Clear Prescriptions', ...
+                'fhOnClick', @this.onUiButtonClearPrescriptions ...
+            );
+        
+            this.uiButtonClearWafer = mic.ui.common.Button(...
+                'cText', 'Clear Wafer', ...
+                'fhOnClick', @this.onUiButtonClearWafer ...
+            );
+        
             this.uibNewWafer = mic.ui.common.Button('cText', 'New');
             this.uibAddToWafer = mic.ui.common.Button('cText', 'Add To Wafer');
             this.uibPrint = mic.ui.common.Button('cText', 'Print');
             
-            addlistener(this.uibNewWafer, 'eChange', @this.onNewWafer);
+            
+            
+            addlistener(this.uibNewWafer, 'eChange', @this.onUiButtonNewWafer);
             addlistener(this.uibAddToWafer, 'eChange', @this.onAddToWafer);
             addlistener(this.uibPrint, 'eChange', @this.onPrint);
             
@@ -695,11 +726,25 @@ classdef Scan < mic.Base
             
         end
         
-        function onNewWafer(this, src, evt)
+        function onUiButtonNewWafer(this, src, evt)
             
             % Purge all items from uiListActive
             this.uiListActive.setOptions(cell(1,0));
             this.uiWafer.uiAxes.purgeExposures();
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+        end
+        
+        function onUiButtonClearWafer(this, src, evt)
+            
+            this.uiWafer.uiAxes.purgeExposures();
+            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+        end
+        
+        function onUiButtonClearPrescriptions(this, src, evt)
+            
+            this.uiListActive.setOptions(cell(1,0));
             this.uiWafer.uiAxes.deleteFemPreviewScan();
             
         end
@@ -1111,6 +1156,10 @@ classdef Scan < mic.Base
                 return
             end
             
+             % Update the UI of wafer to show exposing
+            this.uiWafer.uiAxes.setExposing(true);
+            
+            
             % Should eventually have a "type" property associated with the
             % task that can be switched on.  "type", "data" which is a
             % struct.  
@@ -1146,9 +1195,7 @@ classdef Scan < mic.Base
                         
             
             
-            % Update the UI of wafer to show exposing
-            this.uiWafer.uiAxes.setExposing(true);
-            
+           
             this.stScanAcquireContract.shutter.lIssued = true;
             
             
@@ -1823,6 +1870,19 @@ classdef Scan < mic.Base
             st.tilt_x_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltX.getValCal('urad');
             st.tilt_y_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltY.getValCal('urad');
             
+            [dTiltX, dTiltY] =  this.uiReticle.uiMod3CapSensors.getTiltXAndTiltY(); % returns deg
+            st.tilt_x_reticle_cap_urad = dTiltX * pi / 180 * 1e6;
+            st.tilt_y_reticle_cap_urad = dTiltY * pi / 180 * 1e6;
+            st.cap_1_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap1.getValCal('V');
+            st.cap_2_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap2.getValCal('V');
+            st.cap_3_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap3.getValCal('V');
+            st.cap_4_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap4.getValCal('V');
+            
+            st.cap_1_reticle_um = this.uiReticle.uiMod3CapSensors.uiCap1.getValCal('um');
+            st.cap_2_reticle_um = this.uiReticle.uiMod3CapSensors.uiCap2.getValCal('um');
+            st.cap_3_reticle_um = this.uiReticle.uiMod3CapSensors.uiCap3.getValCal('um');
+            st.cap_4_reticle_um = this.uiReticle.uiMod3CapSensors.uiCap4.getValCal('um');
+
             st.x_reticle_fine_nm = this.uiReticle.uiFineStage.uiX.getValCal('nm');
             st.y_reticle_fine_nm = this.uiReticle.uiFineStage.uiY.getValCal('nm');
             
@@ -1831,10 +1891,26 @@ classdef Scan < mic.Base
             st.z_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiZ.getValCal('mm');
             st.tilt_x_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltX.getValCal('urad');
             st.tilt_y_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltY.getValCal('urad');
+            st.tilt_x_wafer_height_sensor_urad = this.uiWafer.uiHeightSensorRxClosedLoop.uiRxHeightSensor.getValCal('urad');
+            st.tilt_y_wafer_height_sensor_urad = this.uiWafer.uiHeightSensorRyClosedLoop.uiRyHeightSensor.getValCal('urad');
+            
+            [dTiltX, dTiltY] =  this.uiWafer.uiPobCapSensors.getTiltXAndTiltYWithoutSensor4(); % returns deg
+            st.tilt_x_wafer_cap_urad = dTiltX * pi / 180 * 1e6;
+            st.tilt_y_wafer_cap_urad = dTiltY * pi / 180 * 1e6;
+            
+            st.cap_1_wafer_V = this.uiWafer.uiPobCapSensors.uiCap1.getValCal('V');
+            st.cap_2_wafer_V = this.uiWafer.uiPobCapSensors.uiCap2.getValCal('V');
+            st.cap_3_wafer_V = this.uiWafer.uiPobCapSensors.uiCap3.getValCal('V');
+            st.cap_4_wafer_V = this.uiWafer.uiPobCapSensors.uiCap4.getValCal('V');
+            
+            st.cap_1_wafer_um = this.uiWafer.uiPobCapSensors.uiCap1.getValCal('um');
+            st.cap_2_wafer_um = this.uiWafer.uiPobCapSensors.uiCap2.getValCal('um');
+            st.cap_3_wafer_um = this.uiWafer.uiPobCapSensors.uiCap3.getValCal('um');
+            st.cap_4_wafer_um = this.uiWafer.uiPobCapSensors.uiCap4.getValCal('um');
             
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
-            %st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
-            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
+            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
+            % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');

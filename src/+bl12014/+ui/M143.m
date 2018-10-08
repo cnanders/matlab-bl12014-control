@@ -52,6 +52,9 @@ classdef M143 < mic.Base
         end
         
         function connectDataTranslationMeasurPoint(this, comm)
+            
+           import bl12014.device.GetNumberFromDataTranslationMeasurPoint
+
            device = GetNumberFromDataTranslationMeasurPoint(...
                 comm, ...
                 GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...

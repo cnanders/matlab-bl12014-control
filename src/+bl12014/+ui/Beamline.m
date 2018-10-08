@@ -69,7 +69,11 @@ classdef Beamline < mic.Base
         uiCommBL1201CorbaProxy
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDctCorbaProxy
+        uiCommDctCorbaProxy % Previous DCT shutter driver
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        
+        uiCommRigolDG1000Z
         
         % {mic.ui.device.GetSetLogical 1x1} % D142 Diode Current
         uiCommDataTranslationMeasurPoint
@@ -194,6 +198,7 @@ classdef Beamline < mic.Base
         
         end
         
+        %{
         function connectKeithley6482(this, comm)
             % Temporary Hack using Keithley to get D141 photo current
             % Need to click "connect" button from Wafer Module since
@@ -207,6 +212,7 @@ classdef Beamline < mic.Base
             this.uiD141Current.turnOff()
             this.uiD141Current.setDevice([]);
         end
+        %}
         
         function connectGalil(this, comm)
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
@@ -234,10 +240,13 @@ classdef Beamline < mic.Base
         end
         
         function connectDataTranslationMeasurPoint(this, comm)
+            
+           import bl12014.device.GetNumberFromDataTranslationMeasurPoint
+
            device = GetNumberFromDataTranslationMeasurPoint(...
                 comm, ...
                 GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                34 ...
+                34 ... % D142
             );
             this.uiD141Current.setDevice(device);
             this.uiD141Current.turnOn();     
@@ -263,6 +272,21 @@ classdef Beamline < mic.Base
         function disconnectDctCorbaProxy(this)
             this.uiShutter.turnOff()
             this.uiShutter.setDevice([])
+        end
+        
+        function connectRigolDG1000Z(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
+            this.uiShutter.setDevice(device);
+            this.uiShutter.turnOn();
+                      
+        end
+        
+        function disconnectRigolDG1000Z(this)
+            
+            this.uiShutter.turnOff();
+            this.uiShutter.setDevice([]);
+   
         end
         
         
@@ -538,7 +562,12 @@ classdef Beamline < mic.Base
             this.uiCommExitSlit.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
+            %{
             this.uiCommDctCorbaProxy.build(this.hFigure, dLeft, dTop);
+            dTop = dTop + dSep;
+            %}
+            
+            this.uiCommRigolDG1000Z.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiCommBL1201CorbaProxy.build(this.hFigure, dLeft, dTop);
@@ -826,7 +855,7 @@ classdef Beamline < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-shutter.json' ...
+                'config-shutter-rigol.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
@@ -1022,6 +1051,7 @@ classdef Beamline < mic.Base
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDctCorbaProxy();
             this.initUiCommBL1201CorbaProxy();
+            this.initUiCommRigolDG1000Z();
             
             this.initUiDeviceExitSlit();
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
@@ -1711,9 +1741,14 @@ classdef Beamline < mic.Base
             
             switch stTask.type
                 case this.ScanAcquireTypeD141Current
+                    
+                    %{
                     % Open the shutter
-                    this.uiShutter.setDestCal(10000, 'ms (1x)');
+                    this.uiShutter.setDestCal(10000, 'ms');
                     this.uiShutter.moveToDest();
+                    
+                    %}
+                    
                     % Pause
                     pause(stTask.pause);
                     
@@ -1728,8 +1763,11 @@ classdef Beamline < mic.Base
                     % Overwrite goal value of param with measured value
                     % this.dScanDataParam(this.scan.u8Index) = stValue.(this.uiPopupDeviceName.get().cValue)
                     
+                    %{
                     % Close the shutter
                     this.uiShutter.stop();
+                    %}
+                    
                     % Update the contract lIssued
                     this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = true;
                 otherwise 
@@ -2039,6 +2077,27 @@ classdef Beamline < mic.Base
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-galil-d142', this.cName), ...
                 'cLabel', 'Galil (D142 Stage Y)' ...
+            );
+        
+        end
+        
+        function initUiCommRigolDG1000Z(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiCommRigolDG1000Z = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+               'dWidthName', this.dWidthNameComm, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'rigol-dg1000z', ...
+                'cLabel', 'Rigol DG1000Z (Shutter Signal)' ...
             );
         
         end
