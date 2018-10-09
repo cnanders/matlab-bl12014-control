@@ -3,35 +3,21 @@
 	"units": [
 		{
 			"name": "A",
-			"slope": 1,
+			"slope": "1/1000",
 			"offset": 0,
 			"precision": 3
 		},
 		{
 			"name": "mA",
-			"slope": 1e3,
+			"slope": 1,
 			"offset": 0,
 			"precision": 3
 		},
 		{
 			"name": "uA",
-			"slope": 1e6,
-			"offset": 0,
-			"precision": 3
-		},
-		{
-			"name": "nA",
-			"slope": 1e9,
-			"offset": 0,
-			"precision": 3
-		},
-		{
-			"name": "pA",
-			"slope": 1e12,
+			"slope": 1000,
 			"offset": 0,
 			"precision": 3
 		}
 	]
 }	
-	
-	

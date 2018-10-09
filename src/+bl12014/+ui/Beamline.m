@@ -3,22 +3,22 @@ classdef Beamline < mic.Base
     
     properties (Constant, Access = private)
         
-        dWidth = 670
+        dWidth = 1500
         % dHeight = 740 % Calculated in buildFigure()
         
         dWidthPadName = 29
         
-        dWidthNameComm = 240
+        dWidthNameComm = 140
         dHeightPanelComm = 145
         
-        dWidthPanelRecipe = 650
-        dHeightPanelRecipe = 120
+        dWidthPanelRecipe = 800
+        dHeightPanelRecipe = 210
         
-        dWidthPanelData = 650
+        dWidthPanelData = 800
         dHeightPanelData = 340
         
         dWidthPanelDevices = 650
-        dHeightPanelDevices = 225
+        dHeightPanelDevices = 550
         
         dWidthRecipeEdit = 40
         dWidthRecipeButton = 60
@@ -46,14 +46,20 @@ classdef Beamline < mic.Base
         cNameDeviceShutter = 'shutter'
         cNameDeviceGratingTiltX = 'grating_tilt_x'
         cNameDeviceD142StageY = 'd142_stage_y'
-        cNameDeviceD141Current = 'measur_point_d142'
+        cNameDeviceD141Current = 'measur_point_d141'
+        cNameDeviceM141Current = 'measur_point_m141'
+        cNameDeviceD142Current = 'measur_point_d142'
         
-        ScanAcquireTypeD141Current = 'scan_acquire_type_d141_current'
+        
+        cScanAcquireTypeM141Current = 'scan_acquire_type_m141_current'
+        cScanAcquireTypeD141Current = 'scan_acquire_type_d141_current'
+        cScanAcquireTypeD142Current = 'scan_acquire_type_d142_current'
+
         
         dColorFigure = [200 200 200]./255
         dColorPanelData = [1 1 1]
         
-        lDebugScan = false
+        lDebugScan = true
     end
     
     properties
@@ -102,6 +108,9 @@ classdef Beamline < mic.Base
         uiM141Current
         uiD142Current
         
+            % {mic.ui.common.PositionRecaller 1x1}
+        uiPositionRecaller 
+        
         
     end
     
@@ -132,7 +141,6 @@ classdef Beamline < mic.Base
         hFigure
         hPanelDevices
         hPanelScan
-        hPanelScanPlot
         hPanelData
         hAxes
         % storage for handles returned by plot()
@@ -150,6 +158,9 @@ classdef Beamline < mic.Base
         uiEditRecipeSteps
         uiTextRecipeUnit
         uiPopupRecipeOutput
+        
+        uiTextPlotX
+        uiTextPlotY
         
         % {mic.ui.Scan 1x1}
         uiScan
@@ -243,19 +254,49 @@ classdef Beamline < mic.Base
             
            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
 
+           %{
+           Ch 32: M141
+Ch 33: D141
+Ch 34: D142
+           %}
+           device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                32 ... % M141
+            );
+            this.uiM141Current.setDevice(device);
+            this.uiM141Current.turnOn();  
+            
+            
+            device = GetNumberFromDataTranslationMeasurPoint(...
+                comm, ...
+                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
+                33 ... % M141
+            );
+            this.uiD141Current.setDevice(device);
+            this.uiD141Current.turnOn();  
+           
+           
            device = GetNumberFromDataTranslationMeasurPoint(...
                 comm, ...
                 GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
                 34 ... % D142
             );
-            this.uiD141Current.setDevice(device);
-            this.uiD141Current.turnOn();     
+            this.uiD142Current.setDevice(device);
+            this.uiD142Current.turnOn();     
 
         end
         
         function disconnectDataTranslationMeasurPoint(this)
+            
+            this.uiM141Current.turnOff();
+            this.uiM141Current.setDevice([]);
+            
             this.uiD141Current.turnOff();
             this.uiD141Current.setDevice([]);
+            
+            this.uiD142Current.turnOff();
+            this.uiD142Current.setDevice([]);
         end
         
         
@@ -321,28 +362,7 @@ classdef Beamline < mic.Base
         
         
         
-        function turnOn(this)
-            
-            this.uiExitSlit.turnOn();
-            this.uiUndulatorGap.turnOn();
-            this.uiShutter.turnOn();
-            this.uiGratingTiltX.turnOn();
-            this.uiTiltY.turnOn();
-            this.uiD142StageY.turnOn();
-            this.uiD141Current.turnOn();
-            
-        end
         
-        function turnOff(this)
-            this.uiExitSlit.turnOff();
-            this.uiUndulatorGap.turnOff();
-            this.uiShutter.turnOff();
-            this.uiGratingTiltX.turnOff();
-            this.uiTiltY.turnOff();
-            this.uiD142StageY.turnOff();
-            this.uiD141Current.turnOff();
-            
-        end
         
         
         
@@ -356,9 +376,7 @@ classdef Beamline < mic.Base
             
             
             this.buildPanelDevices();
-            this.buildUiDevices()
             this.buildPanelRecipe();
-            this.buildUiRecipe()
             %this.buildUiScan();
             this.buildPanelData();
             this.buildAxes();
@@ -412,6 +430,8 @@ classdef Beamline < mic.Base
             delete(this.uiGratingTiltX)
             delete(this.uiD142StageY)
             delete(this.uiD141Current)
+            delete(this.uiM141Current)
+            delete(this.uiD142Current)
         
             % Delete the figure
             
@@ -449,11 +469,6 @@ classdef Beamline < mic.Base
             
                 
                 dHeight = this.dHeightFigurePad + ...
-                    this.dHeightPanelComm + ...
-                    this.dHeightFigurePad + ...
-                    this.dHeightPanelRecipe + ...
-                    this.dHeightPanelData + ...
-                    this.dHeightFigurePad + ...
                     this.dHeightPanelDevices + ...
                     this.dHeightFigurePad;
                 
@@ -472,6 +487,7 @@ classdef Beamline < mic.Base
                      ],... % left bottom width height
                     'Resize', 'off', ... 
                     'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
+                    'WindowButtonDownFcn', @this.onFigureWindowButtonDown, ... % doesn't work if datacursormode is on!
                     'HandleVisibility', 'on', ... % lets close all close the figure
                     'Visible', 'on' ...
                 );
@@ -479,7 +495,7 @@ classdef Beamline < mic.Base
                 % pan(this.hFigure);
                 % zoom(this.hFigure);
                 % set(this.hFigure, 'toolbar', 'figure');
-                datacursormode(this.hFigure, 'on');
+                % datacursormode(this.hFigure, 'on');
             end
             
         end
@@ -488,8 +504,8 @@ classdef Beamline < mic.Base
         function buildPanelData(this)
             
             dLeft = this.dWidthFigurePad;
-            dTop = this.dHeightFigurePad + ...
-                this.dHeightPanelComm + ...
+            dTop = this.dHeightFigurePad  + ...
+                ...% this.dHeightPanelComm + ...
                 this.dHeightPanelRecipe; % No vertical pad between scan and data panels
             
             this.hPanelData = uipanel(...
@@ -508,7 +524,14 @@ classdef Beamline < mic.Base
                 ) ...
             );
         
-			drawnow; 
+			drawnow;
+            
+            this.uiTextPlotX.build(this.hPanelData, this.dWidthPanelData - 200, 0, 100, 14);
+            this.uiTextPlotY.build(this.hPanelData, this.dWidthPanelData - 100, 0, 100, 14);
+            
+            this.uiTextPlotX.setBackgroundColor([1 1 1]);
+            this.uiTextPlotY.setBackgroundColor([1 1 1]);
+            
             
         end
         
@@ -534,8 +557,8 @@ classdef Beamline < mic.Base
                 'YMinorGrid','on', ...
                 'XGrid','on', ...
                 'YGrid','on', ... 
-                'NextPlot', 'add', ... % Important.  Look this up in help makes it so 
-                'ButtonDownFcn', @this.onAxesButtonDown ...
+                'NextPlot', 'add' ... % Important.  Look this up in help makes it so 
+                ...% 'ButtonDownFcn', @this.onAxesButtonDown ...
             );
             hold(this.hAxes, 'on');
             this.updatePlot()
@@ -548,6 +571,8 @@ classdef Beamline < mic.Base
         
         
         function buildCommUi(this)
+            
+            return
          
             dTop = 10;
             dLeft = 10;
@@ -578,18 +603,24 @@ classdef Beamline < mic.Base
         
         function buildPanelDevices(this)
             
-            dLeft = this.dWidthFigurePad;
+            dLeft = this.dWidthFigurePad + ...
+                this.dWidthPanelRecipe + ...
+                this.dWidthFigurePad;
+            dTop = this.dWidthFigurePad;
+            
+            %{
             dTop = this.dHeightFigurePad + ...
                 this.dHeightPanelComm + ...
                 this.dHeightFigurePad + ...
                 this.dHeightPanelRecipe + ...
                 this.dHeightPanelData + ...
                 this.dHeightFigurePad;
+           %}
             
             this.hPanelDevices = uipanel(...
                 'Parent', this.hFigure,...
                 'Units', 'pixels',...
-                'Title', 'Devices',...
+                'Title', 'Hardware',...
                 'BorderWidth', this.dWidthPanelBorder, ...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
@@ -602,45 +633,71 @@ classdef Beamline < mic.Base
             );
         
 			drawnow; 
-            
-        end
-        
-        function buildUiDevices(this)
-
-            dTop = 20;
+                        
             dLeft = 10;
             dSep = 30;
+            dSepGroup = 20;
+            dTop = 20;
+                                    
             
+            this.uiCommBL1201CorbaProxy.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
+                        
             this.uiGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop  + 15 + dSep;
+            dTop = dTop + dSep;
             
             this.uiUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
+            dTop = dTop + dSepGroup;
             
+                        
+            this.uiCommExitSlit.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
+                        
             this.uiExitSlit.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
+            dTop = dTop + dSepGroup;
             
+            this.uiCommGalilD142.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;            
             this.uiD142StageY.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
+            dTop = dTop + dSepGroup;
             
-            this.uiShutter.build(this.hPanelDevices, dLeft, dTop);
+            this.uiCommRigolDG1000Z.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
+            %{
+            this.uiCommDctCorbaProxy.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
+            %}
+                        
+            this.uiShutter.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
+            dTop = dTop + dSepGroup;
             
+             
+            this.uiCommDataTranslationMeasurPoint.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
             
+            this.uiM141Current.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
             
             this.uiD141Current.build(this.hPanelDevices, dLeft, dTop);
             dTop = dTop + dSep;
             
+            this.uiD142Current.build(this.hPanelDevices, dLeft, dTop);
+            dTop = dTop + dSep;
+            dTop = dTop + dSepGroup;
             
         end
         
         function buildPanelRecipe(this)
             
             dLeft = this.dWidthFigurePad;
-            dTop = this.dHeightFigurePad + ...
-                this.dHeightPanelComm + ...
-                this.dHeightFigurePad;
+            dTop = this.dHeightFigurePad; % + ...
+                % this.dHeightPanelComm + ...
+                % this.dHeightFigurePad;
                         
             this.hPanelScan = uipanel(...
                 'Parent', this.hFigure,...
@@ -659,22 +716,7 @@ classdef Beamline < mic.Base
         
             drawnow;
             
-        end
         
-        %{
-        function buildUiScan(this)
-            dLeft = this.dWidthFigurePad + ...
-                this.dWidthPanelRecipe + ...
-                this.dWidthFigurePad;
-            
-            dLeft = this.dWidthFigurePad + ...
-                this.dWidthPanelRecipe;
-            
-            
-        end
-        %}
-        
-        function buildUiRecipe(this)
             
             dTop = 20;
             dLeft = 20;
@@ -724,10 +766,21 @@ classdef Beamline < mic.Base
             );
             dLeft = dLeft + this.dWidthRecipeEdit + this.dWidthPadH;
             
-            this.uiScan.build(this.hPanelScan, dLeft, 12);
+            
+            dTop = 20;
+            dLeft = dLeft + 50;
+            this.uiPositionRecaller.build(this.hPanelScan, dLeft, dTop, 360, 170);
+            
+            
+            
+            dLeft = 20 + this.dWidthRecipePopup + this.dWidthPadH;
+            dTop = 60;
+            this.uiScan.build(this.hPanelScan, dLeft, dTop);
             
             dTop = 60; 
             dLeft = 20;
+            
+            
             this.uiPopupRecipeOutput.build( ...
                 this.hPanelScan, ...
                 dLeft, ...
@@ -783,7 +836,7 @@ classdef Beamline < mic.Base
         
             this.uiD141Current = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
-                'cName', 'beamline-measur-point-d142-diode', ...
+                'cName', 'beamline-measur-point-d141-diode', ...
                 'config', uiConfig, ...
                 'dWidthPadName', this.dWidthPadName, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -795,6 +848,65 @@ classdef Beamline < mic.Base
         
             addlistener(this.uiD141Current, 'eUnitChange', @this.onUnitChange);
         end 
+        
+        
+        
+        function initUiDeviceM141Current(this)
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-number', ...
+                'config-m141-current.json' ...
+            );
+        
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+        
+            this.uiM141Current = mic.ui.device.GetNumber(...
+                'clock', this.clock, ...
+                'cName', 'beamline-measur-point-m141-diode', ...
+                'config', uiConfig, ...
+                'dWidthPadName', this.dWidthPadName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
+                'cLabel', 'M141 Current', ...
+                'dWidthPadUnit', 277, ...
+                'lShowLabels', false ...
+            );
+        
+            addlistener(this.uiM141Current, 'eUnitChange', @this.onUnitChange);
+        end 
+        
+        
+        function initUiDeviceD142Current(this)
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-number', ...
+                'config-d142-current.json' ...
+            );
+        
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+        
+            this.uiD142Current = mic.ui.device.GetNumber(...
+                'clock', this.clock, ...
+                'cName', 'beamline-measur-point-d142-diode', ...
+                'config', uiConfig, ...
+                'dWidthPadName', this.dWidthPadName, ...
+                'dWidthName', this.dWidthUiDeviceName, ...
+                'dWidthUnit', this.dWidthUiDeviceUnit, ...
+                'cLabel', 'D142 Current', ...
+                'dWidthPadUnit', 277, ...
+                'lShowLabels', false ...
+            );
+        
+            addlistener(this.uiD142Current, 'eUnitChange', @this.onUnitChange);
+        end 
+        
+        
          
         function initUiDeviceExitSlit(this)
             
@@ -892,7 +1004,7 @@ classdef Beamline < mic.Base
             
             this.uiGratingTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
-                'lShowLabels', true, ...
+                'lShowLabels', false, ...
                 'lShowInitButton', true, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
                 'dWidthUnit', this.dWidthUiDeviceUnit, ...
@@ -934,7 +1046,6 @@ classdef Beamline < mic.Base
                 stDeviceTypeD142StageY ...
             };
         
-            
         
             this.uiPopupRecipeDevice = mic.ui.common.PopupStruct(...
                 'ceOptions', ceOptions, ...
@@ -1022,6 +1133,9 @@ classdef Beamline < mic.Base
         function onPopupRecipeOutput(this, ~, ~)
             
             this.msg('onPopupRecipeOutput')
+            
+            this.resetScanData();
+            this.updatePlotLabels();
         end
         
         
@@ -1057,8 +1171,13 @@ classdef Beamline < mic.Base
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
             this.initUiDeviceShutter(); % DCT Corba Proxy
             this.initUiDeviceGratingTiltX(); % BL1201 Corba Proxy
-            this.initUiDeviceD142StageY()
+            this.initUiDeviceD142StageY();
+            
             this.initUiDeviceD141Current();
+            this.initUiDeviceM141Current();
+            this.initUiDeviceD142Current();
+            
+            this.initUiPositionRecaller();
             
             this.initUiRecipe();
             this.initUiScan()
@@ -1066,6 +1185,9 @@ classdef Beamline < mic.Base
             
             this.initScanAcquireContract();
             this.initScanSetContract();
+            
+            this.initUiTextPlotX();
+            this.initUiTextPlotY();
         end
          
         function onFigureCloseRequest(this, src, evt)
@@ -1081,10 +1203,17 @@ classdef Beamline < mic.Base
             
         end
         
+        function onFigureWindowButtonDown(this, src, evt)
+            
+            this.showSetAsZeroIfAxesIsClicked();
+            
+        end
+        
+        
         function onFigureWindowMouseMotion(this, src, evt)
            
-           % this.msg('onWindowMouseMotion()');
-           % this.updateAxesCrosshair();
+           this.msg('onWindowMouseMotion()');
+           this.updateAxesCrosshair();
         end 
         
         function onUiScanStart(this, src, evt)
@@ -1294,7 +1423,8 @@ classdef Beamline < mic.Base
             xlabel(this.hAxes, cLabelX);
             
             cLabelY = sprintf(...
-                'D141 Current (%s)', ...
+                '%s Current (%s)', ...
+                this.uiPopupRecipeOutput.get().cLabel, ...
                 this.uiD141Current.getUnit().name ...
             );
             ylabel(this.hAxes, cLabelY);
@@ -1391,7 +1521,16 @@ classdef Beamline < mic.Base
                 stValue.(this.uiPopupRecipeDevice.get().cValue) = dParam;
                 
                 stTask = struct();
-                stTask.type = this.ScanAcquireTypeD141Current;
+                
+                switch this.uiPopupRecipeOutput.get().cValue
+                    case this.cNameOutputM141Diode
+                        stTask.type = this.cScanAcquireTypeM141Current;
+                    case this.cNameOutputD141Diode
+                        stTask.type = this.cScanAcquireTypeD141Current;
+                    case this.cNameOutputD142Diode
+                        stTask.type = this.cScanAcquireTypeD142Current;
+                end
+                
                 stTask.pause = 0.1;
                 
                 stValue.task = stTask;
@@ -1412,6 +1551,7 @@ classdef Beamline < mic.Base
             st.start = this.uiEditRecipeStart.get();
             st.stop = this.uiEditRecipeStop.get();
             st.steps = this.uiEditRecipeSteps.get();
+            st.output = this.uiPopupRecipeOutput.get().cValue;
             
         end
         
@@ -1423,6 +1563,8 @@ classdef Beamline < mic.Base
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getUnit().name;
             st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getUnit().name;
             st.(this.cNameDeviceD141Current) = this.uiD141Current.getUnit().name;
+            st.(this.cNameDeviceM141Current) = this.uiM141Current.getUnit().name;
+            st.(this.cNameDeviceD142Current) = this.uiD142Current.getUnit().name;
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1468,8 +1610,11 @@ classdef Beamline < mic.Base
         
         function initScanAcquireContract(this)
             
+            % All possible things that could be acquired
             ceFields = {...
-                this.cNameDeviceD141Current
+                this.cNameDeviceD141Current, ...
+                this.cNameDeviceM141Current, ...
+                this.cNameDeviceD142Current ...
             };
 
             for n = 1 : length(ceFields)
@@ -1623,7 +1768,7 @@ classdef Beamline < mic.Base
                 
                 this.stScanSetContract.(ceFields{n}).lIssued = true;
                 cMsg = sprintf('onScanSetState() %s issued move', ceFields{n});
-                this.msg(cMsg)
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN)
                 
             end
                         
@@ -1681,19 +1826,19 @@ classdef Beamline < mic.Base
 
                         if lReady
                             if this.lDebugScan
-                                this.msg(sprintf('onScanIsAtState() %s required, issued, complete', cField));
+                                this.msg(sprintf('onScanIsAtState() %s required, issued, complete', cField), this.u8_MSG_TYPE_SCAN);
                             end
 
                         else
                             if this.lDebugScan
-                                this.msg(sprintf('onScanIsAtState() %s required, issued, incomplete', cField));
+                                this.msg(sprintf('onScanIsAtState() %s required, issued, incomplete', cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
                         end
                     else
                         if this.lDebugScan
-                            this.msg(sprintf('onScanIsAtState() %s required, not issued.', cField));
+                            this.msg(sprintf('onScanIsAtState() %s required, not issued.', cField), this.u8_MSG_TYPE_SCAN);
                         end
 
                         lOut = false;
@@ -1702,7 +1847,7 @@ classdef Beamline < mic.Base
                 else
 
                     if this.lDebugScan
-                        this.msg(sprintf('onScanIsAtState() %s not required', cField));
+                        this.msg(sprintf('onScanIsAtState() %s not required', cField), this.u8_MSG_TYPE_SCAN);
                     end
                 end
             end
@@ -1726,21 +1871,40 @@ classdef Beamline < mic.Base
             
             % Update the contract
             switch stTask.type
-                case this.ScanAcquireTypeD141Current
+                case this.cScanAcquireTypeD141Current
                     this.stScanAcquireContract.(this.cNameDeviceD141Current).lRequired = true;
                     this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = false;
+                case this.cScanAcquireTypeM141Current
+                    this.stScanAcquireContract.(this.cNameDeviceM141Current).lRequired = true;
+                    this.stScanAcquireContract.(this.cNameDeviceM141Current).lIssued = false;
+                case this.cScanAcquireTypeD142Current
+                    this.stScanAcquireContract.(this.cNameDeviceD142Current).lRequired = true;
+                    this.stScanAcquireContract.(this.cNameDeviceD142Current).lIssued = false;
+                
                 otherwise
                     % Do nothing
             end
             
-            % Execute
-            % Move to new state.   Setting the state programatically does
-            % exactly what would happen if the user were to do it manually
-            % with the UI. I.E., we programatically update the UI and
-            % programatically "click" UI buttons.
+            % Execute the acquisition
             
             switch stTask.type
-                case this.ScanAcquireTypeD141Current
+                
+                case this.cScanAcquireTypeM141Current
+                    
+                    % Pause
+                    pause(stTask.pause);
+                    
+                    % Get the state of the system
+                    stValue = this.getState(stUnit);
+                    this.ceValues{this.scan.u8Index} = stValue;
+            
+                    % Update the plot data with MeasurPoint value
+                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceM141Current);
+                                        
+                    % Update the contract lIssued
+                    this.stScanAcquireContract.(this.cNameDeviceM141Current).lIssued = true;
+                    
+                case this.cScanAcquireTypeD141Current
                     
                     %{
                     % Open the shutter
@@ -1770,6 +1934,23 @@ classdef Beamline < mic.Base
                     
                     % Update the contract lIssued
                     this.stScanAcquireContract.(this.cNameDeviceD141Current).lIssued = true;
+                    
+                case this.cScanAcquireTypeD142Current
+                    
+                    % Pause
+                    pause(stTask.pause);
+                    
+                    % Get the state of the system
+                    stValue = this.getState(stUnit);
+                    this.ceValues{this.scan.u8Index} = stValue;
+            
+                    % Update the plot data with MeasurPoint value
+                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceD142Current);
+                                        
+                    % Update the contract lIssued
+                    this.stScanAcquireContract.(this.cNameDeviceD142Current).lIssued = true;
+                    
+                
                 otherwise 
                     % do nothing
             end
@@ -1809,19 +1990,19 @@ classdef Beamline < mic.Base
 
                         if lReady
                             if this.lDebugScan
-                                this.msg(sprintf('onScanIsAcquired() %s required, issued, complete', cField));
+                                this.msg(sprintf('onScanIsAcquired() %s required, issued, complete', cField), this.u8_MSG_TYPE_SCAN);
                             end
 
                         else
                             if this.lDebugScan
-                                this.msg(sprintf('onScanIsAcquired() %s required, issued, incomplete', cField));
+                                this.msg(sprintf('onScanIsAcquired() %s required, issued, incomplete', cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
                         end
                     else
                         if this.lDebugScan
-                            this.msg(sprintf('onScanIsAcquired() %s required, not issued.', cField));
+                            this.msg(sprintf('onScanIsAcquired() %s required, not issued.', cField), this.u8_MSG_TYPE_SCAN);
                         end
 
                         lOut = false;
@@ -1830,7 +2011,7 @@ classdef Beamline < mic.Base
                 else
 
                     if this.lDebugScan
-                        this.msg(sprintf('onScanIsAcquired() %s not required', cField));
+                        this.msg(sprintf('onScanIsAcquired() %s not required', cField), this.u8_MSG_TYPE_SCAN);
                     end
                 end
             end
@@ -1963,7 +2144,9 @@ classdef Beamline < mic.Base
         function st = getState(this, stUnit)
             
         	st = struct();
+            st.(this.cNameDeviceM141Current) = this.uiM141Current.getValCal(stUnit.(this.cNameDeviceM141Current));
             st.(this.cNameDeviceD141Current) = this.uiD141Current.getValCal(stUnit.(this.cNameDeviceD141Current));
+            st.(this.cNameDeviceD142Current) = this.uiD142Current.getValCal(stUnit.(this.cNameDeviceD142Current));
             st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
             st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
@@ -1989,7 +2172,7 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%-dct-corba-proxy', this.cName), ...
-                'cLabel', 'DCT Corba Proxy (Shutter)' ...
+                'cLabel', 'DCT Corba Proxy' ...
             );
         
         end
@@ -2011,7 +2194,7 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-bl1201-corba-proxy', this.cName), ...
-                'cLabel', 'BL1201 Corba Proxy (Undulator, Grating Tilt)' ...
+                'cLabel', 'BL1201 Corba Proxy' ...
             );
         
         end
@@ -2055,7 +2238,7 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-data-translation-measur-point', this.cName), ...
-                'cLabel', 'DataTrans MeasurPoint (D141 Diode Current)' ...
+                'cLabel', 'DataTrans MeasurPoint' ...
             );
         
         end
@@ -2076,7 +2259,7 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-galil-d142', this.cName), ...
-                'cLabel', 'Galil (D142 Stage Y)' ...
+                'cLabel', 'Galil' ...
             );
         
         end
@@ -2097,14 +2280,201 @@ classdef Beamline < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', 'rigol-dg1000z', ...
-                'cLabel', 'Rigol DG1000Z (Shutter Signal)' ...
+                'cLabel', 'Rigol DG1000Z' ...
             );
         
         end
         
-   
         
+        function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', [this.cName, '-position-recaller'], ...
+                'cTitleOfPanel', 'Stored Scans', ...
+                'lShowLabelOfList', false, ...
+                'hGetCallback', @this.onUiPositionRecallerGet, ...
+                'hSetCallback', @this.onUiPositionRecallerSet ...
+            );
+        end
+        
+        
+        % Return list of values from your app
+        function dValues = onUiPositionRecallerGet(this)
+            dValues = [...
+                this.uiPopupRecipeDevice.getSelectedIndex(), ...
+                this.uiEditRecipeStart.get(), ...
+                this.uiEditRecipeStop.get(), ...
+                this.uiEditRecipeSteps.get(), ...
+                this.uiPopupRecipeOutput.getSelectedIndex() ...
+            ];
+        
+            % Cast as double for storage
+            dValues = double(dValues);
+        end
+        
+        % Set recalled values into your app
+        function onUiPositionRecallerSet(this, dValues)
+            
+            % Have to cast from double to correct type
+            this.uiPopupRecipeDevice.setSelectedIndex(uint8(dValues(1)))
+            this.uiEditRecipeStart.set(dValues(2))
+            this.uiEditRecipeStop.set(dValues(3))
+            this.uiEditRecipeSteps.set(uint16(dValues(4)))
+            this.uiPopupRecipeOutput.setSelectedIndex(uint8(dValues(5)))
+                        
+        end
+        
+        
+        function showSetAsZeroIfAxesIsClicked(this)
+            
+            % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hFigure)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+          
+           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1) + dPositionPanel(1);
+           dAxesBottom =    dAxes(2) + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                
+                cePrompt = {'Original Calibrated Value:', 'New Calibrated Value:'};
+                cTitle = 'Set Clicked Position As Zero?';
+                dLines = 1;
+                ceDefaultAns = {...
+                    sprintf('%1.3f', dPoint(1, 1)), ...
+                    '0' ...
+                };
+                stOptions = struct(...
+                    'Resize', 'on' ...
+                );
+                ceAnswer = inputdlg(...
+                    cePrompt,...
+                    cTitle,...
+                    dLines,...
+                    ceDefaultAns, ...
+                    stOptions ...
+                );
 
+                if isempty(ceAnswer)
+                    return
+                end
+                
+                this.uiGratingTiltX.setValToNewVal(...
+                    str2double(ceAnswer{1}), ...
+                    str2double(ceAnswer{2}) ...
+                );
+
+   
+           
+           end
+            
+        end
+        
+        
+        function updateAxesCrosshair(this)
+            
+           % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hFigure)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+          
+           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1) + dPositionPanel(1);
+           dAxesBottom =    dAxes(2) + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                if strcmp(get(this.hFigure, 'Pointer'), 'arrow')
+                    set(this.hFigure, 'Pointer', 'crosshair')
+                end
+                
+                this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
+                this.uiTextPlotY.set(sprintf('y: %1.3e', dPoint(1, 2)));
+           else
+                if ~strcmp(get(this.hFigure, 'Pointer'), 'arrow')
+                    set(this.hFigure, 'Pointer', 'arrow')
+                end
+                this.uiTextPlotX.set('x: [hover]');
+                this.uiTextPlotY.set('y: [hover]');
+           end
+        end
+        
+        function initUiTextPlotX(this)
+            
+            this.uiTextPlotX = mic.ui.common.Text(...
+                'cLabel', 'x: ' ...
+            );
+            
+            
+        end
+        
+        
+        function initUiTextPlotY(this)
+            this.uiTextPlotY = mic.ui.common.Text(...
+                'cLabel', 'y: ' ...
+            );
+        end
         
     end
     
