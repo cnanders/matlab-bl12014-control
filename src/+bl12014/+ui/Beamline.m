@@ -1538,6 +1538,13 @@ Ch 34: D142
                 u8Count = u8Count + 1;
             end
             
+            
+            % Add one additional state to set the scanned parameter back to
+            % its default value
+            stValue = struct();
+            stValue.(this.uiPopupRecipeDevice.get().cValue) = this.getValueOfSelectedDevice();
+            ceValues{end + 1} = stValue;
+            
             stRecipe = struct();
             stRecipe.meta = this.getRecipeMeta();
             stRecipe.unit = this.getDeviceUnits();
@@ -2139,6 +2146,26 @@ Ch 34: D142
             % Close the file
             fclose(fid);
 
+        end
+        
+        % Returns the value of whatever device is selected from the list of
+        % devices in the scan panel.  This is used to set the scanned
+        % device to its pre-scan value at the end of the scan
+        function d = getValueOfSelectedDevice(this)
+            
+            switch this.uiPopupRecipeDevice.get().cValue
+                case this.cNameDeviceExitSlit
+                    d = this.uiExitSlit.getValCalDisplay();
+                case this.cNameDeviceUndulatorGap
+                    d = this.uiUndulatorGap.getValCalDisplay();
+                case this.cNameDeviceGratingTiltX 
+                    d = this.uiGratingTiltX.getValCalDisplay();
+                case this.cNameDeviceD142StageY
+                    d = this.uiD142StageY.getValCalDisplay();
+                otherwise
+                    % do nothing
+            end
+            
         end
         
         function st = getState(this, stUnit)
