@@ -4,7 +4,7 @@ classdef D141 < mic.Base
         
         
         % {mic.ui.device.GetSetLogical 1x1}
-        uiWago
+        uiCommWago
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDataTranslationMeasurPoint
@@ -43,6 +43,22 @@ classdef D141 < mic.Base
             this.init();
         
         end
+        
+        function connectWago(this, comm)
+            
+            import bl12014.device.GetSetLogicalFromWagoIO750
+            device = GetSetLogicalFromWagoIO750(comm, 1);
+            this.uiStageY.setDevice(device);
+            this.uiStageY.turnOn();
+            
+        end
+        
+        function disconnectWago(this)
+            this.uiStageY.turnOff();
+            this.uiStageY.setDevice([])
+        end
+            
+           
         
         function connectDataTranslationMeasurPoint(this, comm)
             
@@ -100,7 +116,7 @@ classdef D141 < mic.Base
             dLeft = 10;
             dSep = 30;
             
-            this.uiWago.build(this.hFigure, dLeft, dTop);
+            this.uiCommWago.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
@@ -149,23 +165,25 @@ classdef D141 < mic.Base
         
          function initUiStageY(this)
             
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-set-number', ...
-                'config-d141-stage-y.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-            
-            this.uiStageY = mic.ui.device.GetSetNumber(...
+             
+             
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Remove', ...
+                'cTextFalse', 'Insert' ...
+            };
+
+            this.uiStageY = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
                 'cName', 'd141-stage-y', ...
-                'config', uiConfig, ...
-                'lShowInitButton', true, ...
                 'cLabel', 'Stage Y' ...
             );
+        
         end
         
         
@@ -194,6 +212,7 @@ classdef D141 < mic.Base
         end
         
         
+        
         function initUiCommDataTranslationMeasurPoint(this)
             
             
@@ -216,7 +235,7 @@ classdef D141 < mic.Base
         
         end
         
-        function initUiWago(this)
+        function initUiCommWago(this)
             
              % Configure the mic.ui.common.Toggle instance
             ceVararginCommandToggle = {...
@@ -224,7 +243,7 @@ classdef D141 < mic.Base
                 'cTextFalse', 'Connect' ...
             };
         
-            this.uiWago = mic.ui.device.GetSetLogical(...
+            this.uiCommWago = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', 130, ...
@@ -242,7 +261,7 @@ classdef D141 < mic.Base
             this.msg('init()');
             this.initUiStageY();
             this.initUiCurrent();
-            this.initUiWago();
+            this.initUiCommWago();
             this.initUiCommDataTranslationMeasurPoint();
         end
         

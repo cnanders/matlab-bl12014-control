@@ -14,6 +14,7 @@ classdef App < mic.Base
         cTcpipNewFocus = '192.168.10.23'
         cTcpipGalilD142 = '192.168.10.24'
         cTcpipGalilM143 = '192.168.10.25'
+        cTcpipWago = '192.168.10.26'
         
         % Endstation 1 Subnet
         cTcpipLc400MA = '192.168.20.20'
@@ -49,6 +50,9 @@ classdef App < mic.Base
         
         % {rigol.DG1000Z 1x1}
         commRigolDG1000Z
+        
+        % {modbus 1x1}
+        commWago
         
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsM141
@@ -275,6 +279,10 @@ classdef App < mic.Base
         
         % Getters return logical if the COMM class exists.  Used by
         % GetSetLogicalConnect instances
+        
+        function l = getWago(this)
+            l = ~isempty(this.commWago)
+        end
         
         function l = getExitSlit(this)
             l = ~isempty(this.commExitSlit);
@@ -562,6 +570,31 @@ classdef App < mic.Base
             this.commPIMTECamera = [];
         end
         
+        function initAndConnectWago(this)
+            
+            if this.getWago()
+                return
+            end
+                        
+            try
+                % Requires instrument control toolbox
+                cTransport = 'tcpip';
+                this.commWago = modbus(cTransport, this.cTcpipWago, ...
+                    'Timeout', 5 ...
+                );
+                
+            catch mE
+                this.commWago = [];
+                cMsg = sprintf('initAndConnectWago() %s', mE.message);
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
+                
+                return
+            end
+            
+            this.uiApp.uiD141.connectWago(this.commWago);
+            
+        end
+        
         
         function initAndConnectDataTranslationMeasurPoint(this)
             
@@ -606,6 +639,21 @@ classdef App < mic.Base
             %this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             %this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
             %this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
+            
+        end
+        
+        function destroyAndDisconnectWago(this)
+            
+            this.msg(...
+                'destroyAndDisconnectWago', ...
+                this.u8_MSG_TYPE_INFO ...
+            );
+                    
+            if ~this.getWago()
+                return
+            end
+            
+            this.uiApp.uiD141.disconnectWago();
             
         end
         
@@ -1676,7 +1724,11 @@ classdef App < mic.Base
         
         function initGetSetLogicalConnects(this)
             
-            
+            gslcCommWago = bl12014.device.GetSetLogicalConnect(...
+                'fhGet', @this.getWago, ...
+                'fhSetTrue', @this.initAndConnectWago, ...
+                'fhSetFalse', @this.destroyAndDisconnectWago ...
+            );
             gslcCommExitSlit = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getExitSlit, ...
                 'fhSetTrue', @this.initAndConnectExitSlit, ...
@@ -1869,6 +1921,7 @@ classdef App < mic.Base
             this.uiApp.uiM141.uiCommDataTranslationMeasurPoint.turnOn();
             
             
+            
             % M142
             this.uiApp.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
             this.uiApp.uiM142.uiCommMicronixMmc103.turnOn();
@@ -1881,9 +1934,11 @@ classdef App < mic.Base
             
             
             % D141
-            
             this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.turnOn()
+            this.uiApp.uiD141.uiCommWago.setDevice(gslcCommWago);
+            this.uiApp.uiD141.uiCOmmWago.turnOn();
+            
             
             % D142
             this.uiApp.uiD142.uiCommGalil.setDevice(gslcCommGalilD142);
