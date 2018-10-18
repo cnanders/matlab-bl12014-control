@@ -35,6 +35,9 @@ classdef MFDriftMonitor < mic.Base
         u8DMI_CHANNEL_WAFX = 3;
         u8DMI_CHANNEL_WAFY = 4;
         
+        u8WAFER_LEVEL = 0
+        u8HS_CALIBRATION = 1
+        
         ceHSChannelNames = {'HS-Channel-6', 'HS-Channel-5', 'HS-Channel-4', 'HS-Channel-3', ...
             'HS-Channel-2', 'HS-Channel-1', 'HS-Rx', 'HS-Ry', 'HS-Z', 'HS-Simple-Z'}
 %         ceHSChannelNames = {'HS-6: ang 8:30', 'HS-5: ang 4:30', 'HS-4: ang 0:30', 'HS-3: Z 1:30', ...
@@ -46,9 +49,12 @@ classdef MFDriftMonitor < mic.Base
         
         ceScanAxisLabels = {'Hexapod-Z', 'Hexapod-Rx', 'Hexapod-Ry', 'Wafer-Z', 'Wafer-Rx', 'Wafer-Ry'}
         ceScanOutputLabels = {'Height sensor channels'};
+        ceScanWaferAxisLabels = {'Wafer-X', 'Wafer-Y'};
+        ceScanWaferOutputLabels = {'Simple Z'};
         
         cHexapodAxisLabels = { 'Z', 'Rx', 'Ry'};
         cWaferLabels = { 'Waf-Z', 'Waf-Rx', 'Waf-Ry'};
+        cWaferLabelsXY = { 'Waf-X', 'Waf-Y'};
                      
         
         
@@ -120,12 +126,15 @@ classdef MFDriftMonitor < mic.Base
         % UI:Wafer-level
         
         haLevelMonitors
+        haWaferLevel
         uieZTarget
         uieRxTarget
         uieRyTarget
         uibLevel
         uiSLLevelCoordinateLoader
         uibClearLevelPlots
+        
+        uiSSWaferLevelScan
         
         % UI:Calibrate
         uicConnectHexapod
@@ -143,6 +152,7 @@ classdef MFDriftMonitor < mic.Base
         dZIdx
         dRxIdx
         dRyIdx
+        dSimpleZScan
         haScanMonitors = {}
         hpScanMonitor
         
@@ -168,11 +178,13 @@ classdef MFDriftMonitor < mic.Base
         oHexapodBridges
         uiDeviceArrayHexapod
         uiDeviceArrayWafer
+        uiDeviceArrayWaferXY
         
         
         % Configuration
         uicHexapodConfigs
         uicWaferConfigs
+        uicWaferConfigsXY
         
         
         % Calibration text:
@@ -344,6 +356,26 @@ classdef MFDriftMonitor < mic.Base
                     );
             end
             
+            ceWaferConfigNames = {
+                'config-wafer-coarse-stage-x-dm.json', ...
+                'config-wafer-coarse-stage-y-dm.json'};
+            for k = 1:length(this.cWaferLabelsXY)
+                
+                this.uicWaferConfigsXY{k} = mic.config.GetSetNumber(...
+                    'cPath', fullfile(cWaferConfigPath, ceWaferConfigNames{k})...
+                    );
+                
+                this.uiDeviceArrayWaferXY{k} = mic.ui.device.GetSetNumber( ...
+                    'cName', [this.cWaferLabelsXY{k} , '-dm'], ...
+                    'clock', this.clock, ...
+                    'cLabel', this.cWaferLabelsXY{k}, ...
+                    'lShowLabels', false, ...
+                    'lShowStores', false, ...
+                    'lValidateByConfigRange', true, ...
+                    'config', this.uicWaferConfigsXY{k} ...
+                    );
+            end
+            
            
                 
             
@@ -506,6 +538,22 @@ classdef MFDriftMonitor < mic.Base
             this.uieZTarget.set(350);
             this.uieRxTarget.set(-3);
             this.uieRyTarget.set(-1);
+            
+            this.uiSSWaferLevelScan = mic.ui.common.ScanSetup( ...
+                'cLabel', 'Wafer level scans', ...
+                'ceOutputOptions', this.ceScanWaferOutputLabels, ...
+                'ceScanAxisLabels', this.ceScanWaferAxisLabels, ...
+                'dScanAxes', 2, ...
+                'cName', '2D-wafer-level', ...
+                'u8selectedDefaults', uint8([1, 2]),...
+                'cConfigPath', this.cPRConfigPath, ...
+                'fhOnScanChangeParams', @(ceScanStates, u8ScanAxisIdx, lUseDeltas, cAxisNames)...
+                this.updateScanMonitor(ceScanStates, u8ScanAxisIdx, lUseDeltas, cAxisNames, 0), ...
+                'fhOnStopScan', @()this.stopScan, ...
+                'fhOnScan', ...
+                @(ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames)...
+                this.onScanWL(this.ssCalibration, ceScanStates, u8ScanAxisIdx, lUseDeltas, u8ScanOutputDeviceIdx, cAxisNames) ...
+                );
             
             % UI:Calibrate:
             
@@ -736,10 +784,20 @@ classdef MFDriftMonitor < mic.Base
             this.uiDeviceArrayWafer{index}.syncDestination();
         end
         
+        function setWaferAxisDeviceXY(this, device, index)
+            this.uiDeviceArrayWaferXY{index}.setDevice(device);
+            this.uiDeviceArrayWaferXY{index}.turnOn();
+            this.uiDeviceArrayWaferXY{index}.syncDestination();
+        end
+        
         
         function disconnectWaferAxisDevice(this, index)
             this.uiDeviceArrayWafer{index}.turnOff();
             this.uiDeviceArrayWafer{index}.setDevice([]);
+        end
+        function disconnectWaferAxisDeviceXY(this, index)
+            this.uiDeviceArrayWaferXY{index}.turnOff();
+            this.uiDeviceArrayWaferXY{index}.setDevice([]);
         end
         
         function onClock(this)
@@ -841,53 +899,53 @@ classdef MFDriftMonitor < mic.Base
                 end
                 
                 % Plot on wafer level if tab is active
-                if strcmp(this.uitgMode.getSelectedTabName(), 'Wafer-level')
-                    plot(this.haLevelMonitors{1}, this.dHSScanningTime, dZVals, 'k');
-                    plot(this.haLevelMonitors{2}, this.dHSScanningTime, dRxVals, 'k');
-                    plot(this.haLevelMonitors{3}, this.dHSScanningTime, dRyVals, 'k');
-                    
-                    this.haLevelMonitors{1}.NextPlot = 'add';
-                    this.haLevelMonitors{2}.NextPlot = 'add';
-                    this.haLevelMonitors{3}.NextPlot = 'add';
-                    
-                    % Show targets:
-                    dZTarget = this.uieZTarget.get();
-                    dRxTarget = this.uieRxTarget.get();
-                    dRyTarget = this.uieRyTarget.get();
-                    
-                    dZH = dZTarget + this.dHS_ZTOL/2;
-                    dZL = dZTarget - this.dHS_ZTOL/2;
-                    dRxH = dRxTarget + this.dHS_RTOL/2;
-                    dRxL = dRxTarget - this.dHS_RTOL/2;
-                    dRyH = dRyTarget + this.dHS_RTOL/2;
-                    dRyL = dRyTarget - this.dHS_RTOL/2;
-                    
-                    dFirstIdx = this.dHSScanningTime(1);
-                    dLastIdx = this.dHSScanningTime(end);
-                    
-                    % Plot centerline
-                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZTarget*[1, 1], 'g');
-                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxTarget*[1, 1], 'g');
-                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyTarget*[1, 1], 'g');
-                    
-                    
-                    % Plot H/L tol
-                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZH*[1, 1], 'm');
-                    plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZL*[1, 1], 'm');
-                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxH*[1, 1], 'm');
-                    plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxL*[1, 1], 'm');
-                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyH*[1, 1], 'm');
-                    plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyL*[1, 1], 'm');
-                    
-                    this.haLevelMonitors{1}.Title.String = sprintf('Z');
-                    this.haLevelMonitors{2}.Title.String = sprintf('Rx');
-                    this.haLevelMonitors{3}.Title.String = sprintf('Ry');
-                    
-                    this.haLevelMonitors{1}.NextPlot = 'replace';
-                    this.haLevelMonitors{2}.NextPlot = 'replace';
-                    this.haLevelMonitors{3}.NextPlot = 'replace';
-                    
-                end
+%                 if strcmp(this.uitgMode.getSelectedTabName(), 'Wafer-level')
+%                     plot(this.haLevelMonitors{1}, this.dHSScanningTime, dZVals, 'k');
+%                     plot(this.haLevelMonitors{2}, this.dHSScanningTime, dRxVals, 'k');
+%                     plot(this.haLevelMonitors{3}, this.dHSScanningTime, dRyVals, 'k');
+%                     
+%                     this.haLevelMonitors{1}.NextPlot = 'add';
+%                     this.haLevelMonitors{2}.NextPlot = 'add';
+%                     this.haLevelMonitors{3}.NextPlot = 'add';
+%                     
+%                     % Show targets:
+%                     dZTarget = this.uieZTarget.get();
+%                     dRxTarget = this.uieRxTarget.get();
+%                     dRyTarget = this.uieRyTarget.get();
+%                     
+%                     dZH = dZTarget + this.dHS_ZTOL/2;
+%                     dZL = dZTarget - this.dHS_ZTOL/2;
+%                     dRxH = dRxTarget + this.dHS_RTOL/2;
+%                     dRxL = dRxTarget - this.dHS_RTOL/2;
+%                     dRyH = dRyTarget + this.dHS_RTOL/2;
+%                     dRyL = dRyTarget - this.dHS_RTOL/2;
+%                     
+%                     dFirstIdx = this.dHSScanningTime(1);
+%                     dLastIdx = this.dHSScanningTime(end);
+%                     
+%                     % Plot centerline
+%                     plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZTarget*[1, 1], 'g');
+%                     plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxTarget*[1, 1], 'g');
+%                     plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyTarget*[1, 1], 'g');
+%                     
+%                     
+%                     % Plot H/L tol
+%                     plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZH*[1, 1], 'm');
+%                     plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZL*[1, 1], 'm');
+%                     plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxH*[1, 1], 'm');
+%                     plot(this.haLevelMonitors{2}, [dFirstIdx, dLastIdx], dRxL*[1, 1], 'm');
+%                     plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyH*[1, 1], 'm');
+%                     plot(this.haLevelMonitors{3}, [dFirstIdx, dLastIdx], dRyL*[1, 1], 'm');
+%                     
+%                     this.haLevelMonitors{1}.Title.String = sprintf('Z');
+%                     this.haLevelMonitors{2}.Title.String = sprintf('Rx');
+%                     this.haLevelMonitors{3}.Title.String = sprintf('Ry');
+%                     
+%                     this.haLevelMonitors{1}.NextPlot = 'replace';
+%                     this.haLevelMonitors{2}.NextPlot = 'replace';
+%                     this.haLevelMonitors{3}.NextPlot = 'replace';
+%                     
+%                 end
                 
                 
             catch mE
@@ -929,7 +987,9 @@ classdef MFDriftMonitor < mic.Base
         
         
         %% CALIBRATION SCAN HANDLERS
-        function dInitialState = getInitialState(this, u8ScanAxisIdx)
+        function dInitialState = getInitialState(this, u8ScanAxisIdx, u8ScanState)
+           
+            
             % grab initial state of values:
             dInitialState = struct;
             dInitialState.values = [];
@@ -940,13 +1000,21 @@ classdef MFDriftMonitor < mic.Base
                 dAxis = double(u8ScanAxisIdx(k));
                 switch dAxis
                     case {1, 2, 3} % Hexapod
-                        if isempty(this.apiHexapod)
-                            dInitialState.values(k) = 0;
-                            continue
-                        end
                         
-                        dUnit =  this.uiDeviceArrayHexapod{dAxis}.getUnit().name;
-                        dInitialState.values(k) = this.uiDeviceArrayHexapod{dAxis}.getValCal(dUnit);
+                        switch u8ScanState
+                            case this.u8HS_CALIBRATION
+                                if isempty(this.apiHexapod)
+                                    dInitialState.values(k) = 0;
+                                    continue
+                                end
+
+                                dUnit =  this.uiDeviceArrayHexapod{dAxis}.getUnit().name;
+                                dInitialState.values(k) = this.uiDeviceArrayHexapod{dAxis}.getValCal(dUnit);
+
+                            case this.u8WAFER_LEVEL
+                                dUnit =  this.uiDeviceArrayWaferXY{dAxis}.getUnit().name;
+                                dInitialState.values(k) = this.uiDeviceArrayWaferXY{dAxis}.getValCal(dUnit);
+                        end
                         
                     case {4, 5, 6} % wafer
                        
@@ -959,6 +1027,83 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+
+        
+        function onScanWL(this, ssScanSetup, stateList, u8ScanAxisIdx, lUseDeltas, u8OutputIdx, cAxisNames)
+            
+            % If already scanning, then stop:
+            if(this.lIsScanning)
+                return
+            end
+            
+            dInitialState = this.getInitialState(u8ScanAxisIdx, this.u8WAFER_LEVEL);
+            
+            
+            % If using deltas, modify state to center around current
+            % values:
+            for m = 1:length(u8ScanAxisIdx)
+                if lUseDeltas(m)
+                    for k = 1:length(stateList)
+                        stateList{k}.values(m) = stateList{k}.values(m) + dInitialState.values(m);
+                    end
+                end
+            end
+            
+            % validate output conditions
+            switch u8OutputIdx
+                case 1 % HS channels
+                    dNStates = length(stateList);
+                    
+                    this.dSimpleZScan = zeros(dNStates, 1);
+        
+                    if ~(this.apiDriftMonitor.isConnected())
+                        msgbox('Drift monitor is not connected')
+                        return
+                    end
+            end
+                        
+            
+            % Build "scan recipe" from scan states
+            stRecipe.values = stateList; % enumerable list of states that can be read by setState
+            stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
+            
+            fhSetState      = @(stUnit, stState) ...
+                this.setScanAxisDevicesToState(stState, this.u8WAFER_LEVEL);
+            
+            fhIsAtState     = @(stUnit, stState) ...
+                this.areScanAxisDevicesAtState(stState, this.u8WAFER_LEVEL);
+            
+            fhAcquire       = @(stUnit, stState)...
+                this.scanAcquire(u8OutputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, this.u8WAFER_LEVEL);
+            
+            fhIsAcquired    = @(stUnit, stState) ...
+                this.scanIsAcquired(stState, u8OutputIdx, this.u8WAFER_LEVEL);
+            
+            fhOnComplete    = @(stUnit, stState) ...
+                this.onScanComplete(dInitialState, fhSetState, this.u8WAFER_LEVEL);
+            
+            fhOnAbort       = @(stUnit, stState) ...
+                this.onScanAbort(dInitialState, fhSetState, fhIsAtState, this.u8WAFER_LEVEL);
+            
+            dDelay          = 0.2;
+            % Create a new scan:
+            this.scanHandler = mic.Scan('mf-drift-monitor-waferlevel', ...
+                this.clock, ...
+                stRecipe, ...
+                fhSetState, ...
+                fhIsAtState, ...
+                fhAcquire, ...
+                fhIsAcquired, ...
+                fhOnComplete, ...
+                fhOnAbort, ...
+                dDelay...
+                );
+            
+            % Start scanning
+            this.lIsScanning = true;
+            this.scanHandler.start();
+        end
+        
         function onScan(this, ssScanSetup, stateList, u8ScanAxisIdx, lUseDeltas, u8OutputIdx, cAxisNames)
             
             % If already scanning, then stop:
@@ -966,7 +1111,7 @@ classdef MFDriftMonitor < mic.Base
                 return
             end
             
-            dInitialState = this.getInitialState(u8ScanAxisIdx);
+            dInitialState = this.getInitialState(u8ScanAxisIdx, this.u8HS_CALIBRATION);
             
             
             % If using deltas, modify state to center around current
@@ -999,12 +1144,24 @@ classdef MFDriftMonitor < mic.Base
             stRecipe.values = stateList; % enumerable list of states that can be read by setState
             stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
             
-            fhSetState      = @(stUnit, stState) this.setScanAxisDevicesToState(stState);
-            fhIsAtState     = @(stUnit, stState) this.areScanAxisDevicesAtState(stState);
-            fhAcquire       = @(stUnit, stState) this.scanAcquire(u8OutputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames);
-            fhIsAcquired    = @(stUnit, stState) this.scanIsAcquired(stState, u8OutputIdx);
-            fhOnComplete    = @(stUnit, stState) this.onScanComplete(dInitialState, fhSetState);
-            fhOnAbort       = @(stUnit, stState) this.onScanAbort(dInitialState, fhSetState, fhIsAtState);
+            fhSetState      = @(stUnit, stState) ...
+                this.setScanAxisDevicesToState(stState, this.u8HS_CALIBRATION);
+            
+            fhIsAtState     = @(stUnit, stState) ...
+                this.areScanAxisDevicesAtState(stState, this.u8HS_CALIBRATION);
+            
+            fhAcquire       = @(stUnit, stState)...
+                this.scanAcquire(u8OutputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, this.u8HS_CALIBRATION);
+            
+            fhIsAcquired    = @(stUnit, stState) ...
+                this.scanIsAcquired(stState, u8OutputIdx, this.u8HS_CALIBRATION);
+            
+            fhOnComplete    = @(stUnit, stState) ...
+                this.onScanComplete(dInitialState, fhSetState, this.u8HS_CALIBRATION);
+            
+            fhOnAbort       = @(stUnit, stState) ...
+                this.onScanAbort(dInitialState, fhSetState, fhIsAtState, this.u8HS_CALIBRATION);
+            
             dDelay          = 0.2;
             % Create a new scan:
             this.scanHandler = mic.Scan('mf-drift-monitor-calibration', ...
@@ -1041,11 +1198,28 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
-       
+       function lSuccess = waitForStageReady(~, uiStageArray)
+            dNWaitCycles = 30;
+            for k = 1:dNWaitCycles
+                
+                lReady = true;
+                for m = 1:length(uiStageArray)
+                    lReady = lReady & uiStageArray{m}.isActive();
+                end
+                if lReady
+                    fprintf('**Stage is ready!!\n');
+                    lSuccess = true;
+                    return
+                end
+                fprintf('Stage is NOT ready\n');
+                pause(0.2);
+            end
+             lSuccess = true;
+        end  
         
         
         % Sets device to enumerated state
-        function setScanAxisDevicesToState(this, stState)
+        function setScanAxisDevicesToState(this, stState, u8ScanIndex)
             dAxes = stState.axes;
             dVals = stState.values;
             
@@ -1058,7 +1232,9 @@ classdef MFDriftMonitor < mic.Base
             for k = 1:length(dAxes)
                 switch dAxes(k)
                     case {1, 2, 3} % Hexapod
-                        lDeferredHexapodMove = true;
+                        if u8ScanIndex == this.u8HS_CALIBRATION
+                            lDeferredHexapodMove = true;
+                        end
                 end
             end
             
@@ -1075,8 +1251,15 @@ classdef MFDriftMonitor < mic.Base
                 dAxis = dAxes(k);
                 switch dAxis
                     case {1, 2, 3} % Hexapod: generate deferred move
-                        this.uiDeviceArrayHexapod{dAxis}.setDestCal(dVal);
-                        dPosHexRaw(dAxis + 2) = this.uiDeviceArrayHexapod{dAxis}.getDestRaw();
+                        switch u8ScanIndex
+                            case this.u8HS_CALIBRATION
+                                this.uiDeviceArrayHexapod{dAxis}.setDestCal(dVal);
+                                dPosHexRaw(dAxis + 2) = this.uiDeviceArrayHexapod{dAxis}.getDestRaw();
+                            case this.u8WAFER_LEVEL
+                                this.uiDeviceArrayWaferXY{dAxis}.setDestCal(dVal);
+                                this.waitForStageReady(this.uiDeviceArrayWaferXY);
+                                this.uiDeviceArrayWaferXY{dAxis}.moveToDest();
+                        end
                    
                     case {4, 5, 6} % wafer: move now
                         this.uiDeviceArrayWafer{dAxis - 3}.setDestCal(dVal);
@@ -1092,7 +1275,7 @@ classdef MFDriftMonitor < mic.Base
         
         % For isAtState, we assume that if the device is ready then it is
         % at state, since closed loop control is performed in device
-        function isAtState = areScanAxisDevicesAtState(this, stState)
+        function isAtState = areScanAxisDevicesAtState(this, stState, u8ScanIndex)
             
             dAxes = stState.axes;
             
@@ -1100,9 +1283,33 @@ classdef MFDriftMonitor < mic.Base
                 dAxis = dAxes(k);
                 switch dAxis
                     case {1, 2, 3} % Hexapod
-                        if ~this.apiHexapod.isReady()
-                            isAtState = false;
-                            return
+                        switch u8ScanIndex
+                            case this.u8HS_CALIBRATION
+                                if ~this.apiHexapod.isReady()
+                                    isAtState = false;
+                                    return
+                                end
+                            case this.u8WAFER_LEVEL
+                                if ~this.uiDeviceArrayWaferXY{dAxis}.getDevice().isReady()
+                                    isAtState = false;
+                                    return
+                                end
+
+                                dUnit =  this.uiDeviceArrayWaferXY{dAxis}.getUnit().name;
+                                dCommandedDest = this.uiDeviceArrayWaferXY{dAxis}.getDestCal(dUnit);
+                                dAxisPosition = this.uiDeviceArrayWaferXY{dAxis}.getValCal(dUnit);
+                                dEps = abs(dCommandedDest - dAxisPosition);
+                                fprintf('Commanded destination: %0.3f, Actual pos: %0.3f, eps: %0.4f\n', ...
+                                    dCommandedDest, dAxisPosition, dEps);
+                                dTolerance = 0.01;
+                                
+                                if dEps > dTolerance
+                                    fprintf('Wafer is not within tolerance\n');
+                                    isAtState = false;
+                                    return
+                                end
+                                isAtState = true;
+                                
                         end
                     case {4, 5, 6} % wafer
                         if ~this.uiDeviceArrayWafer{dAxis - 3}.getDevice().isReady()
@@ -1131,39 +1338,46 @@ classdef MFDriftMonitor < mic.Base
             isAtState = true;
         end
         
-        function scanAcquire(this, outputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames)
-             
-            % Notify scan progress that we are at state idx: u8Idx:
+        function scanAcquire(this, outputIdx, stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, u8ScanIndex)
+            
             u8Idx = this.scanHandler.getCurrentStateIndex();
-            this.updateScanMonitor(stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, u8Idx);
-            
-            % Notify progress monitor
-            this.updateScanProgress();
-            
-            
-            
-            % outputIdx: {'Image capture', 'Image intensity', 'Line Contrast', 'Line Pitch', 'Pause 2s'}
-            switch outputIdx
-                case 1
-                    % Read off HS channel values and store
-                    % Update HS:
-                    this.apiDriftMonitor.forceUpdate();
+            switch u8ScanIndex
+                case this.u8HS_CALIBRATION
+                    % Notify scan progress that we are at state idx: u8Idx:
                     
-                    dHSValues = zeros(6,1);
-                    for k = 1:6
-                        dHSValues(k) = this.apiDriftMonitor.getHeightSensorValue(k);
+                    this.updateScanMonitor(stateList, u8ScanAxisIdx, lUseDeltas, cAxisNames, u8Idx);
+
+                    % Notify progress monitor
+                    this.updateScanProgress();
+
+
+
+                    % outputIdx: {'Image capture', 'Image intensity', 'Line Contrast', 'Line Pitch', 'Pause 2s'}
+                    switch outputIdx
+                        case 1
+                            % Read off HS channel values and store
+                            % Update HS:
+                            this.apiDriftMonitor.forceUpdate();
+
+                            dHSValues = zeros(6,1);
+                            for k = 1:6
+                                dHSValues(k) = this.apiDriftMonitor.getHeightSensorValue(k);
+                            end
+                            this.dCalibrationData(u8Idx, 1:6) = dHSValues';
+                            this.dZIdx(u8Idx) = stateList{u8Idx}.values(1);
+                            this.dRxIdx(u8Idx) =  stateList{u8Idx}.values(2);
+                            this.dRyIdx(u8Idx) =  stateList{u8Idx}.values(3);
+
                     end
-                    this.dCalibrationData(u8Idx, 1:6) = dHSValues';
-                    this.dZIdx(u8Idx) = stateList{u8Idx}.values(1);
-                    this.dRxIdx(u8Idx) =  stateList{u8Idx}.values(2);
-                    this.dRyIdx(u8Idx) =  stateList{u8Idx}.values(3);
-                    
+                case this.u8WAFER_LEVEL
+                    pause(0.2);
+                    this.dSimpleZScan(u8Idx) = this.apiDriftMonitor.getSimpleZ(200);
+                    this.updateWaferLevelAxis();
             end
-            
             
         end
         
-        function lAcquisitionFinished = scanIsAcquired(this, stState, outputIdx)
+        function lAcquisitionFinished = scanIsAcquired(this, stState, outputIdx, u8ScanIndex)
             % outputIdx: {'Image capture', 'Image intensity', 'Line Contrast', 'Line Pitch'}
             
             % Each output should have a value to plot
@@ -1179,32 +1393,40 @@ classdef MFDriftMonitor < mic.Base
             lAcquisitionFinished = true;
         end
         
-        function onScanComplete(this, dInitialState, fhSetState)
+        function onScanComplete(this, dInitialState, fhSetState, u8ScanIndex)
             this.lIsScanning = false;
             % Reset to initial state on complete
             fhSetState([], dInitialState);
             
-            scanRanges = this.ssCalibration.getScanRanges();
             
+            switch u8ScanIndex
+                case this.u8HS_CALIBRATION 
+                    scanRanges = this.ssCalibration.getScanRanges();
 
-            cInterpolantsPath = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config', 'interpolants');
-            cInterpolantName = sprintf('cal-interp_%s', datestr(now, 'yyyy-mm-dd_HH.MM'));
-            % Build interpolant structure:
-            stCalibrationData = struct;
-            stCalibrationData.dChannelReadings = this.dCalibrationData;
-            stCalibrationData.zIdx = scanRanges{1} + dInitialState.values(1);
-            stCalibrationData.RxIdx = scanRanges{2} + dInitialState.values(2);
-            stCalibrationData.RyIdx = scanRanges{3} + dInitialState.values(3);
-            
-            cCalibrationPath = [cInterpolantsPath, filesep, cInterpolantName, '.mat'];
-            save(cCalibrationPath, 'stCalibrationData')
-            % add this to save list
-            
-            this.cLastCalibrationPath = cCalibrationPath;
-            this.uiSLCalibration.programmaticSave(cInterpolantName);
+
+                    cInterpolantsPath = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'config', 'interpolants');
+                    cInterpolantName = sprintf('cal-interp_%s', datestr(now, 'yyyy-mm-dd_HH.MM'));
+                    % Build interpolant structure:
+                    stCalibrationData = struct;
+                    stCalibrationData.dChannelReadings = this.dCalibrationData;
+                    stCalibrationData.zIdx = scanRanges{1} + dInitialState.values(1);
+                    stCalibrationData.RxIdx = scanRanges{2} + dInitialState.values(2);
+                    stCalibrationData.RyIdx = scanRanges{3} + dInitialState.values(3);
+
+                    cCalibrationPath = [cInterpolantsPath, filesep, cInterpolantName, '.mat'];
+                    save(cCalibrationPath, 'stCalibrationData')
+                    % add this to save list
+
+                    this.cLastCalibrationPath = cCalibrationPath;
+                    this.uiSLCalibration.programmaticSave(cInterpolantName);
+                    
+                case this.u8WAFER_LEVEL
+                    2
+                    
+            end
         end
         
-        function onScanAbort(this, dInitialState, fhSetState, fhIsAtState)
+        function onScanAbort(this, dInitialState, fhSetState, fhIsAtState, u8ScanIndex)
             this.lIsScanning = false;
             % Reset to inital state on abort, but wait for scan to complete
             % current move before resetting:
@@ -1221,6 +1443,12 @@ classdef MFDriftMonitor < mic.Base
         end
         
       
+        % update the wafer level axis
+        function updateWaferLevelAxis(this)
+            
+            
+        end
+        
         
         % This will be called anytime scan parameters or the scan tab is
         % changed
@@ -1230,7 +1458,7 @@ classdef MFDriftMonitor < mic.Base
             shiftedStateList = stateList;
             if (u8Idx == 0) % We haven't started scanning yet so make a proper prieview of relative scan WRT initial state
                 if (any(lUseDeltas))
-                    dInitialState = this.getInitialState(u8ScanAxisIdx);
+                    dInitialState = this.getInitialState(u8ScanAxisIdx, this.u8HS_CALIBRATION);
                 else
                     dInitialState = [];
                 end
@@ -1322,7 +1550,7 @@ classdef MFDriftMonitor < mic.Base
                 );
             
             
-            this.uitgMode.build(this.hFigure, 10, 100, this.dWidth - 20, this.dHeight - 100)
+            this.uitgMode.build(this.hFigure, 10, 100, this.dWidth - 20, this.dHeight - 150)
             uitMonitor      = this.uitgMode.getTabByName('Monitor');
             uitWaferLevel   = this.uitgMode.getTabByName('Wafer-level');
             uitCalibrate    = this.uitgMode.getTabByName('Calibrate');
@@ -1330,12 +1558,13 @@ classdef MFDriftMonitor < mic.Base
             
             
             
-            dTop = 20;
+            dTop = 5;
             dLeft = 10;
             
             % Connect button above tabs:
             this.uicConnectDriftMonitor.build(this.hFigure, dLeft, dTop);
             this.uicPlotOn.build(this.hFigure, dLeft, dTop + 30);
+            this.uicConnectWafer.build(this.hFigure, dLeft, dTop + 60)
             
             this.uitCalibrationText.build(this.hFigure, dLeft + 320, dTop + 5, 400, 30);
             
@@ -1421,13 +1650,26 @@ classdef MFDriftMonitor < mic.Base
             
             
             % Wafer level tab
-            for k = 1:3
-                this.haLevelMonitors{k} = axes('Parent',  uitWaferLevel, ...
-                                         'Units', 'pixels', ...
-                                         'Position', [50 + 450*(k-1), 350, 370, 370], ...
-                                         'XTick', [], 'YTick', []);
+%             for k = 1:3
+%                 this.haLevelMonitors{k} = axes('Parent',  uitWaferLevel, ...
+%                                          'Units', 'pixels', ...
+%                                          'Position', [50 + 450*(k-1), 350, 370, 370], ...
+%                                          'XTick', [], 'YTick', []);
+%             end
+%             
+            dTop = 10;
+            dSep = 45;
+            dTop = dTop + 40;
+           
+            for k = 1:length(this.uiDeviceArrayWaferXY)
+                this.uiDeviceArrayWaferXY{k}.build(uitWaferLevel, ...
+                    dLeft, dTop);
+                dTop = dTop + dSep;
             end
             
+            this.uiSSWaferLevelScan.build(uitWaferLevel, dLeft, 300, 850, 270);
+            
+
             this.uiSLLevelCoordinateLoader.build(uitWaferLevel, 500, 500, 370, 250);
             this.uieZTarget.build(uitWaferLevel, 50, 500, 110, 20);
             this.uieRxTarget.build(uitWaferLevel, 50, 550, 110, 20);
@@ -1442,7 +1684,7 @@ classdef MFDriftMonitor < mic.Base
             
             this.uicConnectHexapod.build(uitCalibrate, dLeft, dTop)
             dTop = dTop + dSep;
-            this.uicConnectWafer.build(uitCalibrate, dLeft, dTop)
+%             this.uicConnectWafer.build(uitCalibrate, dLeft, dTop)
             
             this.ssCalibration.build(uitCalibrate, 10, 20, 850, 270);
             
@@ -1492,7 +1734,13 @@ classdef MFDriftMonitor < mic.Base
         end
        
         function delete(this, src, evt)
-           1
+            
+            % Clean up clock tasks
+            if isvalid(this.clock) && ...
+                    this.clock.has(this.id())
+                % this.msg('Axis.delete() removing clock task');
+                this.clock.remove(this.id());
+            end
            
         end
         

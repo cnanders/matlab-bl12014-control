@@ -730,14 +730,20 @@ classdef App < mic.Base
             import bl12014.device.GetSetTextFromDeltaTauPowerPmac
             
             % Devices
+            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
+            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
+
             deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
             deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
             deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
 
-            % Set LSI reticle axis control
+            % Set dm
             ui.setWaferAxisDevice(deviceCoarseZ, 1);
             ui.setWaferAxisDevice(deviceCoarseTiltX, 2);
             ui.setWaferAxisDevice(deviceCoarseTiltY, 3);
+            
+            ui.setWaferAxisDeviceXY(deviceCoarseX, 1);
+            ui.setWaferAxisDeviceXY(deviceCoarseY, 2);
             
          end
         
@@ -800,6 +806,9 @@ classdef App < mic.Base
         function disconnectCommDeltaTauPowerPmacFromUiDM(this, ui)
             for k = 1:3
                 ui.disconnectWaferAxisDevice(k);
+            end
+            for k = 1:2
+                ui.disconnectWaferAxisDeviceXY(k);
             end
         end
 

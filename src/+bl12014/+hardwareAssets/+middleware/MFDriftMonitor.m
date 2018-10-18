@@ -559,9 +559,21 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+        function delete(this)
+            
+            % Clean up clock tasks
+            if isvalid(this.clock) && ...
+                    this.clock.has(this.id())
+                % this.msg('Axis.delete() removing clock task');
+                this.clock.remove(this.id());
+            end
+        end
+        
         
        
     end
+    
+
     
     
      
