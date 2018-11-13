@@ -44,7 +44,7 @@ classdef MeasurPointLogPlotter < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth              = 1800;
+        dWidth              = 1500;
         dHeight             = 960;
        
     
@@ -61,6 +61,9 @@ classdef MeasurPointLogPlotter < mic.Base
         uiButtonRefresh
         uiButtonFile
         uiTextFile
+        
+        uiTextPlotX
+        uiTextPlotY
         
         % storage for handles returned by plot()
         hLines
@@ -234,7 +237,7 @@ classdef MeasurPointLogPlotter < mic.Base
             );
         
             dTop = 80;
-            dLeft = 1620;
+            dLeft = this.dWidth - 180;
             for n = 1 : length(this.uiCheckboxes)
                 this.uiCheckboxes(n).build(...
                     this.hFigure, ...
@@ -244,6 +247,14 @@ classdef MeasurPointLogPlotter < mic.Base
                     24 ...
                 );
             end
+            
+            dLeft = 100;
+            dTop = 80;
+            dWidth = 150;
+            dHeight = 14;
+            this.uiTextPlotX.build(this.hFigure, dLeft, dTop, dWidth, dHeight);
+            this.uiTextPlotY.build(this.hFigure, dLeft + dWidth, dTop, dWidth, dHeight);
+            
             
             this.plotData();
                 
@@ -348,6 +359,11 @@ classdef MeasurPointLogPlotter < mic.Base
             % column of data
             
             dChannelsToPlot = this.getChannelsToPlot();
+            
+            if length(dChannelsToPlot) == 0
+                return
+            end
+            
             plot(this.hAxes, ...
                 datetime(this.dData(:, 1) + this.dDaysBetweenMatlabAndExcel, 'ConvertFrom', 'datenum'), ... % x
                 this.dData(:, dChannelsToPlot + 2) ... % y
@@ -410,6 +426,8 @@ classdef MeasurPointLogPlotter < mic.Base
             );
         
             this.initUiCheckboxes();
+            this.initUiTextPlotX();
+            this.initUiTextPlotY();
             
         end
         
@@ -429,8 +447,10 @@ classdef MeasurPointLogPlotter < mic.Base
                     this.dHeight ...
                  ],... % left bottom width height
                 'Resize', 'off', ... 
+                'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
+                'WindowButtonDownFcn', @this.onFigureWindowButtonDown, ... % doesn't work if datacursormode is on!
                 'HandleVisibility', 'on', ... % lets close all close the figure
-                'Toolbar', 'figure', ...
+                'Toolbar', 'figure', ... % zoom and all of that stuff
                 'Visible', 'on' ...
             );
         
@@ -481,6 +501,98 @@ classdef MeasurPointLogPlotter < mic.Base
             this.hFigure = [];
             
          end
+         
+         
+         function onFigureWindowButtonDown(this, src, evt)
+            
+            % this.showSetAsZeroIfAxesIsClicked();
+            
+        end
+        
+        
+        function onFigureWindowMouseMotion(this, src, evt)
+           
+           this.msg('onWindowMouseMotion()');
+           this.setTextPlotXPlotYBasedOnAxesCurrentPoint();
+        end
+        
+        
+        function setTextPlotXPlotYBasedOnAxesCurrentPoint(this)
+            
+           % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hFigure)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+          
+           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           % dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1); %  + dPositionPanel(1);
+           dAxesBottom =    dAxes(2); %  + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                if strcmp(get(this.hFigure, 'Pointer'), 'arrow')
+                    set(this.hFigure, 'Pointer', 'crosshair')
+                end
+                
+                % this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
+                
+                % https://www.mathworks.com/matlabcentral/answers/370074-gca-currentpoint-with-the-datetime-ticks-on-the-x-axis
+                t = num2ruler(dPoint(1, 1), this.hAxes.XAxis);
+                this.uiTextPlotX.set(datestr(t, 0)); % second arg of datestr is format identifier
+                this.uiTextPlotY.set(sprintf('y: %1.3f', dPoint(1, 2)));
+           else
+                if ~strcmp(get(this.hFigure, 'Pointer'), 'arrow')
+                    set(this.hFigure, 'Pointer', 'arrow')
+                end
+                this.uiTextPlotX.set('x: [hover]');
+                this.uiTextPlotY.set('y: [hover]');
+           end
+        end
+        
+        
+        function initUiTextPlotX(this)
+            
+            this.uiTextPlotX = mic.ui.common.Text(...
+                'cLabel', 'x: ' ...
+            );
+            
+            
+        end
+        
+        
+        function initUiTextPlotY(this)
+            this.uiTextPlotY = mic.ui.common.Text(...
+                'cLabel', 'y: ' ...
+            );
+        end
         
 
         
