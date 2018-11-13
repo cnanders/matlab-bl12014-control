@@ -423,8 +423,8 @@ classdef MeasurPointLogPlotter < mic.Base
         
         function buildAxes(this)
             
-            dLeft = 100
-            dTop = 100
+            dLeft = 100;
+            dTop = 100;
             
             this.hAxes = axes(...
                 'Parent', this.hFigure, ...
