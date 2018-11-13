@@ -450,7 +450,15 @@ classdef ScanResultPlot2x2 < mic.Base
                                 'Format', 'yyyy-MM-dd HH:mm:ss' ...
                             );
                         otherwise
-                            stOut.(cField)(1, idxValue) = stValue.(cField);
+                            % RM: 11/10/2018 Catching case where value is null but not
+                            % expected to be:
+                            if (isempty(stValue.(cField)))
+                                stOut.(cField)(1, idxValue) = 0;
+                            else
+                                stOut.(cField)(1, idxValue) = stValue.(cField);
+                            end
+                
+                            
                     end
                 end
             end

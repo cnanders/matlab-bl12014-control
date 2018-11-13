@@ -281,7 +281,7 @@ classdef App < mic.Base
         % GetSetLogicalConnect instances
         
         function l = getWago(this)
-            l = ~isempty(this.commWago)
+            l = ~isempty(this.commWago);
         end
         
         function l = getExitSlit(this)
@@ -1946,7 +1946,7 @@ classdef App < mic.Base
             this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             this.uiApp.uiD141.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiD141.uiCommWago.setDevice(gslcCommWago);
-            this.uiApp.uiD141.uiCOmmWago.turnOn();
+            this.uiApp.uiD141.uiCommWago.turnOn();
             
             
             % D142
