@@ -7,7 +7,7 @@ t = timer;
 t.StartFcn = @startLoggingTimer;
 t.TimerFcn = @(a, b)appendValuesToLogFile(mp, cPath);
 t.StopFcn = @cleanupLoggingTimer;
-t.Period = 30;
+t.Period = 60 * 5; % 5 min
 t.ExecutionMode = 'fixedSpacing'; % means period seconds of rest between timer function finish and next call of timerFunction
 
 end

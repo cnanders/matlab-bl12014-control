@@ -25,15 +25,42 @@ function  appendValuesToLogFile(mp, cPath )
     fprintf(fid, '%1.8f,', now - 693960);
     fprintf('%1.8f,', now - 693960);
     
-    channel_list = 0 : 47; % channels are zero-indexed, 48 channels
-    [readings, channel_map] = mp.measure_multi(channel_list);
-     
-    for n = 1 : length(readings)
-        fprintf(fid, '%1.8f,', readings(n));
-        fprintf('%1.8f,', readings(n));
+    
+    readings = [];
+    try
+        
+        channels = 0 : 7;
+        readings = [readings mp.measure_temperature_tc(channels, 'J')];
+        
+        channels = 8 : 15;
+        readings = [readings mp.measure_temperature_rtd(channels, 'PT1000')];
+        
+        channels = 16 : 19;
+        readings = [readings mp.measure_temperature_rtd(channels, 'PT100')];
+        
+        channels = 20 : 23;
+        readings = [readings mp.measure_temperature_rtd(channels, 'PT1000')];
+        
+        channels = 24: 31;
+        readings = [readings mp.measure_temperature_rtd(channels, 'PT100')];
+        
+        % Cannot use this original code because it assumes the default
+        % sensor type, which cannot be stored on hardware, afaik
+        
+        % channel_list = 0 : 47; % channels are zero-indexed, 48 channels
+        % [readings, channel_map] = mp.measure_multi(channel_list);
+
+        for n = 1 : length(readings)
+            fprintf(fid, '%1.8f,', readings(n));
+            fprintf('%1.8f,', readings(n));
+        end
+        fprintf(fid, '\n');
+        fprintf('\n');
+        
+        
+    catch mE
+        disp('appendValuesToLogFile had an error');
     end
-    fprintf(fid, '\n');
-    fprintf('\n');
     
     % close
     fclose(fid);

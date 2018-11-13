@@ -25,16 +25,6 @@ fprintf('RTD  sensor channels = %s\n',num2str(rtd,'%1.0f '))
 fprintf('Volt sensor channels = %s\n',num2str(volt,'%1.0f '))
 
 
-%% Get all sensor types (can set each hardware type to various sensors)
-fprintf('Sensor type of each channel:\n');
-mp.getSensorType()
-
-%% Measure all channels
-
-%% Measure on mixed channels
-channel_list = 0 : 47;
-[readings, channel_map] = mp.measure_multi(channel_list);
-
 cDir = 'C:\Users\metmatlab\Documents\Logs\DataTranslation';
 cName = 'log.csv';
 cPath = fullfile(cDir, cName);

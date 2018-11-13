@@ -44,10 +44,11 @@ classdef D141 < mic.Base
         
         end
         
-        function connectWago(this, comm)
+        % @param {modbus 1x1}
+        function connectWago(this, m)
             
             import bl12014.device.GetSetLogicalFromWagoIO750
-            device = GetSetLogicalFromWagoIO750(comm, 1);
+            device = GetSetLogicalFromWagoIO750(m, 'd141');
             this.uiStageY.setDevice(device);
             this.uiStageY.turnOn();
             

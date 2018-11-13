@@ -343,6 +343,12 @@ classdef App < mic.Base
             
             this.saveStateToDisk();
 
+            % remove clock task
+            
+            if isvalid(this.clock) && ...
+               this.clock.has(this.id())
+                this.clock.remove(this.id());
+            end
             
             % Delete the figure
             if ishandle(this.hFigure)

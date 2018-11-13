@@ -15,8 +15,7 @@ m = modbus(cTransport, cAddress, ...
     'Timeout', 5 ...
 );
    
-device = bl12014.device.GetSetLogicalFromWagoIO750(m, 1);
-
+device = bl12014.device.GetSetLogicalFromWagoIO750(m, 'd141');
 device.get()
 % device.set(false);
 

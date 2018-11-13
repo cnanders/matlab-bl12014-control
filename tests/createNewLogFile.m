@@ -21,15 +21,49 @@ function  createNewLogFile( mp, cPath )
         % write column headers
         fprintf(fid, '# serialdate,');
         % write channel names
+        
         channels = 0 : 47;
         for n = 1 : length(channels)
-            fprintf(fid, '%1.0f,', channels(n));
+            fprintf(fid, 'ch %1.0f,', channels(n));
         end
         fprintf(fid, '\n');
+        
         % write sensor types
+        fprintf(fid, '# sensor type ,');
+        channels = 0 : 7;
+        for n = channels
+            fprintf(fid, 'J,');
+        end
+        
+        channels = 8 : 15;
+        for n = channels
+            fprintf(fid, 'PT1000,');
+        end
+        
+        channels = 16 : 19;
+        for n = channels
+            fprintf(fid, 'PT100,');
+        end
+        
+        channels = 20 : 23;
+        for n = channels
+            fprintf(fid, 'PT1000,');
+        end
+        
+        channels = 24 : 31;
+        for n = channels
+            fprintf(fid, 'PT100,');
+        end
+        fprintf(fid, '\n');
+ 
+ 
+ 
+        %{
+        % write sensor types OLD
         fprintf(fid, '# ,');
         fprintf(fid, strjoin(mp.getSensorType(), ','));
         fprintf(fid, '\n');
+        %}
 
         % close
         fclose(fid);

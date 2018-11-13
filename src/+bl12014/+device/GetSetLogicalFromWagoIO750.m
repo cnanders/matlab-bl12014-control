@@ -11,8 +11,8 @@ classdef GetSetLogicalFromWagoIO750 < mic.interface.device.GetSetLogical
         % {modbus 1x1}
         modbus
         
-        % {uint8 1x1}
-        u8Channel
+        % {cell 1xm}
+        cDevice
         
     end
     
@@ -20,19 +20,25 @@ classdef GetSetLogicalFromWagoIO750 < mic.interface.device.GetSetLogical
         
         % @param {modbus 1x1}
         % @param {uint8 1x1}
-        function this = GetSetLogicalFromWagoIO750(m, u8Channel)
+        function this = GetSetLogicalFromWagoIO750(m, cDevice)
             this.modbus = m;
-            this.u8Channel = u8Channel;
+            this.cDevice = cDevice;
         end
         
         function l = get(this)
-            l = read(this.modbus, 'coils', this.u8Channel, 1);
+            switch this.cDevice
+                case 'd141'
+                    l = read(this.modbus, 'coils', 3); % when in, coil 3 is true when out coil 1 is true
+            end
         end
         
         function set(this, lVal)
             % Need to cast logical to double which is what 
             % the write method needs
-            write(this.modbus, 'coils', this.u8Channel, double(lVal))
+            switch this.cDevice
+                case 'd141'
+                    write(this.modbus, 'coils', 1, double(lVal))
+            end
         end
         
         
