@@ -186,7 +186,7 @@ classdef Wafer < mic.Base
             this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
         end
         
-        function disconnectMfDriftMontiorMiddleware(this)
+        function disconnectMfDriftMonitorMiddleware(this)
             
             this.disconnectClosedLoop();
             this.commMfDriftMonitorMiddleware = [];

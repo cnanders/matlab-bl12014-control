@@ -25,6 +25,11 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-ge
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
 
+addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-control')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-analyze')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'ryan_toolbox')));
+
+
 hardware = bl12014.Hardware();
 
 ui = bl12014.ui.App(...

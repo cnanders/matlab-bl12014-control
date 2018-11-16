@@ -857,6 +857,7 @@ classdef Scan < mic.Base
         function onScanSetState(this, stUnit, stValue)
             
             cFn = 'onScanSetState';
+            lDebug = true;
             this.resetScanSetContract();
             
             % Update the stScanSetContract properties listed in stValue 
@@ -890,6 +891,7 @@ classdef Scan < mic.Base
                         this.stScanSetContract.workingModeStart.lIssued = true;
             
                     case 'workingModeEnd'
+                        
                         
                         this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeEnd)
                         this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
@@ -988,8 +990,12 @@ classdef Scan < mic.Base
                     otherwise
                         % do nothing
                         
-                end                
-            end
+                end % switch cField 
+                
+                if lDebug
+                    this.msg(sprintf('%s setting %s', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                end
+            end % loop through fields
         end
         
         
@@ -1339,14 +1345,14 @@ classdef Scan < mic.Base
         function saveDmiHeightSensorDataFromExposure(this, stValue)
             
             try
-            dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
-            dSamples = round(dSec * 1000);
-
-            cPath = fullfile(...
-                this.cDirScan, ... 
-                this.getNameOfDmiHeightSensorLogFile(stValue) ...
-            );
-            this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
+                dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+                dSamples = round(dSec * 1000);
+                
+                cPath = fullfile(...
+                    this.cDirScan, ... 
+                    this.getNameOfDmiHeightSensorLogFile(stValue) ...
+                );
+                this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
             
             catch mE
                 fprintf('saveDmiHeightSensorDataFromExposure error');
@@ -1857,7 +1863,21 @@ classdef Scan < mic.Base
         % @param {struct} stValue - state value structure 
         function c = getNameOfDmiHeightSensorLogFile(this, stValue)
             
-            c = sprintf('%s-1kHz-DMI-HS-data.txt', ...
+            % num of rows per col * current col = elapsed colums
+            % then add current row
+            dShot =  stValue.task.femRows * (stValue.task.femCol - 1) + stValue.task.femRow;
+                
+            c = sprintf(...
+                [...
+                    '%03d-', ...
+                    'dose%02d-', ...
+                    'focus%02d-', ...
+                    '1kHz-DMI-HS-data-', ...
+                    '%s.txt' ...
+                ], ...
+                dShot, ...
+                stValue.task.femCol, ...
+                stValue.task.femRow, ...
                 datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local') ...
             );
         end
