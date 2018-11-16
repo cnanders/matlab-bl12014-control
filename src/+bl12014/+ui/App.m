@@ -1,6 +1,9 @@
 classdef App < mic.Base
         
     properties (Constant)
+        
+        dWidth = 750
+        dHeight = 550
                        
     end
     
@@ -38,11 +41,11 @@ classdef App < mic.Base
         uiMfDriftMonitorVibration
         uiExitSlit
         
+        
         % Eventually make private.
         % Exposing for troubleshooting
         clock
 
-        
     end
     
     properties (SetAccess = private)
@@ -57,6 +60,8 @@ classdef App < mic.Base
         hFigure
         cDirThis
         cDirSave
+        uiButtonListBranchLine
+        uiButtonListEndStation
         uiButtonList
         hHardware
         dDelay = 1
@@ -103,9 +108,45 @@ classdef App < mic.Base
             this.msg('Hi!');
         end
         
-        function build(this, hParent, dLeft, dTop)
+        function buildFigure(this)
             
-            this.uiButtonList.build(hParent, dLeft, dTop);
+            if ishghandle(this.hFigure)
+                % Bring to front
+                figure(this.hFigure);
+                return
+            else 
+            
+                
+                % Figure
+                this.hFigure = figure( ...
+                    'NumberTitle', 'off', ...
+                    'MenuBar', 'none', ...
+                    'Name', 'MET5', ...
+                    'Position', [50 50 this.dWidth this.dHeight], ... % left bottom width height
+                    'Resize', 'off', ...
+                    'HandleVisibility', 'on', ... % lets close all close the figure
+                    'CloseRequestFcn', @this.onFigureCloseRequest, ...
+                    'Visible', 'on'...
+                );
+                % 'CloseRequestFcn', @this.onCloseRequestFcn ...
+
+                drawnow;                
+            end
+            
+        end
+        
+        function onFigureCloseRequest(this, src, evt)
+            this.msg('App.closeRequestFcn()');
+            delete(this.hFigure);
+            this.hFigure = [];
+         end
+        
+        function build(this)
+            
+            this.buildFigure();
+            this.uiButtonListBranchLine.build(this.hFigure, 10, 10);
+            this.uiButtonListEndStation.build(this.hFigure, 250, 10);
+            this.uiButtonList.build(this.hFigure, 500, 10);
             
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
@@ -122,9 +163,9 @@ classdef App < mic.Base
                 this.uiBeamline.uiCommDataTranslationMeasurPoint.get() || ...
                 this.uiBeamline.uiCommGalilD142.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(2, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(1, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(2, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(1, this.dColorOff);
             end
         end
         function setColorOfExitSlit(this)
@@ -132,9 +173,9 @@ classdef App < mic.Base
             if (...
                 this.uiExitSlit.uiCommExitSlit.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(3, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(2, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(3, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(2, this.dColorOff);
             end
         end
         function setColorOfM141(this)
@@ -142,18 +183,18 @@ classdef App < mic.Base
                 this.uiM141.uiCommSmarActMcsM141.get() ||...
                 this.uiM141.uiCommDataTranslationMeasurPoint.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(4, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(4, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(4, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(4, this.dColorOff);
             end
         end
         function setColorOfD141(this)
             if (...
                 this.uiD141.uiCommDataTranslationMeasurPoint.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(4, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(5, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(4, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(5, this.dColorOff);
             end
         end
         function setColorOfM142(this)
@@ -161,18 +202,18 @@ classdef App < mic.Base
                 this.uiM142.uiCommNewFocusModel8742.get() ||...
                 this.uiM142.uiCommMicronixMmc103.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(5, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(6, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(5, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(6, this.dColorOff);
             end
         end
         function setColorOfScannerM142(this)
             if (...
                 this.uiScannerM142.uiCommNPointLC400.get() ... 
             ) 
-                this.uiButtonList.setButtonColorBackground(6, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(7, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(6, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(7, this.dColorOff);
             end
         end
         function setColorOfD142(this)
@@ -180,9 +221,9 @@ classdef App < mic.Base
                 this.uiD142.uiCommGalil.get() ||...
                 this.uiD142.uiCommDataTranslationMeasurPoint.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(7, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(8, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(7, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(8, this.dColorOff);
             end
         end
         function setColorOfM143(this)
@@ -190,38 +231,41 @@ classdef App < mic.Base
                 this.uiM143.uiCommGalil.get() ||...
                 this.uiM143.uiCommDataTranslationMeasurPoint.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(9, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(9, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(9, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(9, this.dColorOff);
             end
         end
-        function setColorOfVibrationIsolationSystem(this)
-
-            if (...
-                this.uiVibrationIsolationSystem.uiCommGalil.get() ||...
-                this.uiVibrationIsolationSystem.uiCommDataTranslation.get() ...
-            ) 
-                this.uiButtonList.setButtonColorBackground(10, this.dColorOn);
-            else 
-                this.uiButtonList.setButtonColorBackground(10, this.dColorOff);
-            end
-        end
+        
         function setColorOfMADiagnostics(this)
             if (...
                 this.uiMADiagnostics.uiCommNewFocusModel8742.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(11, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(10, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(11, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(10, this.dColorOff);
             end
         end
         function setColorOfScannerMA(this)
             if (...
                 this.uiScannerMA.uiCommNPointLC400.get() ... 
             ) 
-                this.uiButtonList.setButtonColorBackground(12, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(11, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(12, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(11, this.dColorOff);
+            end
+        end
+        
+        
+        function setColorOfVibrationIsolationSystem(this)
+
+            if (...
+                this.uiVibrationIsolationSystem.uiCommGalil.get() ||...
+                this.uiVibrationIsolationSystem.uiCommDataTranslation.get() ...
+            ) 
+                this.uiButtonListEndStation.setButtonColorBackground(1, this.dColorOn);
+            else 
+                this.uiButtonListEndStation.setButtonColorBackground(1, this.dColorOff);
             end
         end
         function setColorOfReticle(this)
@@ -230,20 +274,20 @@ classdef App < mic.Base
                 this.uiReticle.uiCommDeltaTauPowerPmac.get() ||...
                 this.uiReticle.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(13, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(2, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(13, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(2, this.dColorOff);
              end
         end
         function setColorOfWafer(this)
              if (...
                 this.uiWafer.uiCommDeltaTauPowerPmac.get() ||...
-                this.uiWafer.uiCommMFDriftMonitor.get() || ...
+                this.uiWafer.uiCommMfDriftMonitor.get() || ...
                 this.uiWafer.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(14, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(3, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(14, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(3, this.dColorOff);
              end
         end
         function setColorOfMfDriftMonitorVibration(this)
@@ -251,18 +295,18 @@ classdef App < mic.Base
              if (...
                 this.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(15, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(5, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(15, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(5, this.dColorOff);
              end
         end
         function setColorOfPoCurrent(this)
              if (...
                 this.uiPOCurrent.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(16, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(10, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(16, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(10, this.dColorOff);
              end
              
         end
@@ -270,18 +314,18 @@ classdef App < mic.Base
               if (...
                 this.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(17, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(7, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(17, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(7, this.dColorOff);
               end
         end
         function setColorOfPpmacHydraMotMin(this)
             if (...
                 this.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(18, this.dColorOn);
+                this.uiButtonListEndStation.setButtonColorBackground(8, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(18, this.dColorOff);
+                this.uiButtonListEndStation.setButtonColorBackground(8, this.dColorOff);
             end
         end
         function setColorOfShutter(this)
@@ -289,9 +333,9 @@ classdef App < mic.Base
              if (...
                 this.uiShutter.uiCommRigol.get() ...
             ) 
-                this.uiButtonList.setButtonColorBackground(29, this.dColorOn);
+                this.uiButtonListBranchLine.setButtonColorBackground(3, this.dColorOn);
             else 
-                this.uiButtonList.setButtonColorBackground(29, this.dColorOff);
+                this.uiButtonListBranchLine.setButtonColorBackground(3, this.dColorOff);
              end
         end
         function onClock(this)
@@ -490,7 +534,7 @@ classdef App < mic.Base
             this.uiM142 = bl12014.ui.M142('clock', this.clock);
             this.uiM143 = bl12014.ui.M143('clock', this.clock);
             this.uiReticle = bl12014.ui.Reticle('clock', this.clock);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'hardware', this.hHardware);
+            this.uiWafer = bl12014.ui.Wafer('clock', this.clock);
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiPowerPmacHydraMotMin = bl12014.ui.PowerPmacHydraMotMin('clock', this.clock);
             this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clock);
@@ -523,6 +567,7 @@ classdef App < mic.Base
                 'uiShutter', this.uiShutter, ...
                 'uiReticle', this.uiReticle, ...
                 'uiWafer', this.uiWafer, ...
+                'uiMfDriftMonitorVibration', this.uiMfDriftMonitorVibration, ...
                 'uiBeamline', this.uiBeamline ...
             );
         
@@ -560,7 +605,7 @@ classdef App < mic.Base
             );
         
             stBeamline = struct(...
-                'cLabel',  'Beamline', ...
+                'cLabel',  'Grating Scan / Calibrate', ...
                 'fhOnClick',  @() this.uiBeamline.build(), ...
                 'cTooltip',  'Beamline' ...
             );
@@ -622,7 +667,7 @@ classdef App < mic.Base
             'fhOnClick',  @() this.uiWafer.build(), ...
             'cTooltip',  'Beamline');
         
-       stPOCurrent = struct(...
+            stPOCurrent = struct(...
             'cLabel',  'PO Current (MDM)', ...
             'fhOnClick',  @() this.uiPOCurrent.build(), ...
             'cTooltip',  'PO Current (MDM)');
@@ -720,46 +765,71 @@ classdef App < mic.Base
                 'cTooltip',  'LSI Analysis GUI'...
             );
         
+            
+            stListClockTasks =  struct(...
+                'cLabel',  'List Clock Tasks', ...
+                'fhOnClick',  @this.onListClockTasks, ...
+                'cTooltip',  ''...
+            );
         
         
             % stFieldScanner, ...
 
             stButtons = [
-              stNetworkCommunication, ...
               stBeamline, ...
               stExitSlit, ...
+              stShutter, ...
               stM141, ...
               stD141, ...
               stM142, ...
               stScannerM142, ...
               stD142, ...
-              stM143, ...
-              stVibrationIsolationSystem, ...
+              stM143, ...  
               stMADiagnostics, ...
-              stScannerMA, ...
+              stScannerMA ...
+            ];
+        
+            this.uiButtonListBranchLine = mic.ui.common.ButtonList(...
+                'stButtonDefinitions', stButtons, ...
+                'cTitle', 'Branch Line', ...
+                'dWidthButton', this.dWidthButtonButtonList ...
+            );
+        
+            stButtons = [
+              stVibrationIsolationSystem, ...
               stReticle, ...
               stWafer, ...
+              stHeightSensorLEDs, ...
               stMfDriftMonitorVibration, ...
-              stPOCurrent, ...
+              stDriftMonitor, ...
               stPowerPmacStatus, ...
               stPowerPmacHydraMotMin, ...
               stPrescriptionTool, ...
+              stPOCurrent, ...
               stExptControl, ...
               stTempSensors, ...
               stFocusSensor, ...
-              stDriftMonitor, ...
               stLSIControl, ...
               stLSIAnalyze, ...
-              stHeightSensorLEDs, ...
-              stCameraLEDs, ...
+              stCameraLEDs, ...  
+            ];
+        
+            this.uiButtonListEndStation = mic.ui.common.ButtonList(...
+                'stButtonDefinitions', stButtons, ...
+                'cTitle', 'End Station', ...
+                'dWidthButton', this.dWidthButtonButtonList ...
+            );
+        
+            stButtons = [
+              stNetworkCommunication, ...
               stScanResultPlot2x2, ...
               stMeasurPointLogPlotter, ...
-              stShutter ...
+              stListClockTasks ...
            ];
             
             this.uiButtonList = mic.ui.common.ButtonList(...
                 'stButtonDefinitions', stButtons, ...
-                'cTitle', this.cTitleButtonList, ...
+                'cTitle', 'Other', ...
                 'dWidthButton', this.dWidthButtonButtonList ...
             );
         
@@ -767,6 +837,9 @@ classdef App < mic.Base
 
         end
         
+        function onListClockTasks(this, src, evt)
+            this.clock.listTasks();
+        end
         
         function onCloseRequestFcn(this, src, evt)
             this.msg('closeRequestFcn()');

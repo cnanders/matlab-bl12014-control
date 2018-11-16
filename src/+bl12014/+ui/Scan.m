@@ -70,6 +70,7 @@ classdef Scan < mic.Base
         uiTextDir
         
         shutter
+        uiMfDriftMonitorVibration
         uiWafer
         uiReticle
         uiPupilFill
@@ -1029,7 +1030,7 @@ classdef Scan < mic.Base
             
             
             cFn = 'onScanIsAtState';
-            lDebug = false;           
+            lDebug = true;           
             lOut = true;
                         
             ceFields= fieldnames(stValue);
@@ -1327,10 +1328,33 @@ classdef Scan < mic.Base
                 % Overwrite the results file
                 
                 this.saveScanResults(stUnit);
+                
+                % 2018.11.15  
+                this.saveDmiHeightSensorDataFromExposure(stValue)
+                
             end
         end
 
+        % Save 1 kHz DMI data collected during the shutter is open
+        function saveDmiHeightSensorDataFromExposure(this, stValue)
+            
+            try
+            dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+            dSamples = round(dSec * 1000);
 
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                this.getNameOfDmiHeightSensorLogFile(stValue) ...
+            );
+            this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
+            
+            catch mE
+                fprintf('saveDmiHeightSensorDataFromExposure error');
+            end
+            
+
+        end
+        
         function onScanAbort(this, stUnit)
              this.saveScanResults(stUnit, true);
              this.abort();
@@ -1418,7 +1442,7 @@ classdef Scan < mic.Base
                     @this.onScanIsAcquired, ...
                     @this.onScanComplete, ...
                     @this.onScanAbort, ...
-                    0.2 ... % Callbacks every 500 ms
+                    0.25 ... % Need larger than the PPMAC cache period of 0.2 s
                 );
                 
                 this.scan.start();
@@ -1828,6 +1852,14 @@ classdef Scan < mic.Base
             % Close the file
             fclose(fid);
 
+        end
+        
+        % @param {struct} stValue - state value structure 
+        function c = getNameOfDmiHeightSensorLogFile(this, stValue)
+            
+            c = sprintf('%s-1kHz-DMI-HS-data.txt', ...
+                datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local') ...
+            );
         end
         
         function c = getDirScan(this)

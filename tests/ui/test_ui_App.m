@@ -1,3 +1,8 @@
+try
+    purge;
+end
+
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
@@ -20,16 +25,12 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-ge
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
 
-purge
+hardware = bl12014.Hardware();
 
 ui = bl12014.ui.App(...
-    'cTitleButtonList', 'UI', ...
-    'dWidthButtonButtonList', 200 ...
+   'hHardware', hardware ...
 );
-h = figure(...
-    'Position', [50 50 245 760] ... % left bottom width height
-);
-ui.build(h, 10, 10);
+ui.build();
 
 %{
 cb = @(src, evt) (fprintf('x %1.3f, y %1.3f \n', evt.stData.dX, evt.stData.dY));

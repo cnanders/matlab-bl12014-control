@@ -114,6 +114,9 @@ classdef MFDriftMonitor < mic.Base
             
         end
         
+        function out = getJavaApi(this)
+            out = this.javaApi;
+        end
         
         
         function connect(this)

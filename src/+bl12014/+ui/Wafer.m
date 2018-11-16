@@ -19,7 +19,7 @@ classdef Wafer < mic.Base
         % uiCommCxroHeightSensor
         uiCommKeithley6482
         % uiCommDataTranslationMeasurPoint
-        uiCommMFDriftMonitor
+        uiCommMfDriftMonitor
         
                 
         uiCoarseStage
@@ -37,6 +37,8 @@ classdef Wafer < mic.Base
        
         
         commDeltaTauPowerPmac = []
+        commMfDriftMonitorMiddleware = []
+        
         hardware % needed for MFDriftMonitor integration
     end
     
@@ -117,31 +119,10 @@ classdef Wafer < mic.Base
        
         
         function connectDeltaTauPowerPmac(this, comm)
-            
-            
+                            
             this.commDeltaTauPowerPmac = comm;
             
-            if this.uiCommMFDriftMonitor.get()
-                this.uiHeightSensorZClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    this.hardware.getMFDriftMonitor() ...
-                )
-            
-                this.uiHeightSensorRxClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    this.hardware.getMFDriftMonitor() ...
-                    )
-
-                this.uiHeightSensorRyClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    this.hardware.getMFDriftMonitor() ...
-                    )
-            
-                this.uiHeightSensorZClosedLoopCoarse.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    this.hardware.getMFDriftMonitor() ...
-                )
-            end
+            this.connectClosedLoop();
             
             this.uiPobCapSensors.connectDeltaTauPowerPmac(comm);
             this.uiLsiCoarseStage.connectDeltaTauPowerPmac(comm);
@@ -149,17 +130,12 @@ classdef Wafer < mic.Base
             this.uiFineStage.connectDeltaTauPowerPmac(comm);
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
             
-            this.uiCommMFDriftMonitor.enable();
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorRxClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorRyClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            
+            this.disconnectClosedLoop();
             
             this.uiPobCapSensors.disconnectDeltaTauPowerPmac()
             this.uiLsiCoarseStage.disconnectDeltaTauPowerPmac();
@@ -167,9 +143,53 @@ classdef Wafer < mic.Base
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiWorkingMode.disconnectDeltaTauPowerPmac();
             
-            this.uiCommMFDriftMonitor.disable();
+            this.commDeltaTauPowerPmac = [];
+                        
+        end
+        
+        function connectMfDriftMonitorMiddleware(this, comm)
             
+            this.commMfDriftMonitorMiddleware = comm;
+            this.connectClosedLoop();
+           
+        end
+        
+        function connectClosedLoop(this)
             
+            if ~isempty(this.commDeltaTauPowerPmac) && ...
+               ~isempty(this.commMfDriftMonitorMiddleware)
+                
+                this.uiHeightSensorZClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
+                    this.commDeltaTauPowerPmac, ...
+                    this.commMfDriftMonitorMiddleware ...
+                )
+                this.uiHeightSensorRxClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
+                    this.commDeltaTauPowerPmac, ...
+                    this.commMfDriftMonitorMiddleware ...
+                )
+                this.uiHeightSensorRyClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
+                    this.commDeltaTauPowerPmac, ...
+                    this.commMfDriftMonitorMiddleware ...
+                )
+                this.uiHeightSensorZClosedLoopCoarse.connectDeltaTauPowerPmacAndDriftMonitor(...
+                    this.commDeltaTauPowerPmac, ...
+                    this.commMfDriftMonitorMiddleware ...
+                )
+            end
+        end
+        
+        function disconnectClosedLoop(this)
+            
+            this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            this.uiHeightSensorRxClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            this.uiHeightSensorRyClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
+            this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
+        end
+        
+        function disconnectMfDriftMontiorMiddleware(this)
+            
+            this.disconnectClosedLoop();
+            this.commMfDriftMonitorMiddleware = [];
         end
         
         
@@ -227,9 +247,9 @@ classdef Wafer < mic.Base
             this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommMFDriftMonitor.build(this.hFigure, dLeft, dTop);
+            this.uiCommMfDriftMonitor.build(this.hFigure, dLeft, dTop);
             dTop = dTop + dSep;
-            this.uiCommMFDriftMonitor.disable();
+            
             
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
@@ -299,7 +319,7 @@ classdef Wafer < mic.Base
         
         function delete(this)
             
-            delete(this.uiCommMFDriftMonitor)
+            delete(this.uiCommMfDriftMonitor)
             delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
            %  delete(this.uiCommCxroHeightSensor)
@@ -367,6 +387,8 @@ classdef Wafer < mic.Base
             this.uiAxes.setXLsi(dXLsi);
                         
         end
+        
+        
         
     end
     
@@ -441,7 +463,7 @@ classdef Wafer < mic.Base
             this.initUiCommDeltaTauPowerPmac();
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommKeithley6482();
-            this.initUiCommMFDriftMonitor();
+            this.initUiCommMfDriftMonitor();
         
             dHeight = this.dHeight - 20;
             this.uiAxes = bl12014.ui.WaferAxes( ...
@@ -499,14 +521,14 @@ classdef Wafer < mic.Base
         
         end
         
-        function initUiCommMFDriftMonitor(this)
+        function initUiCommMfDriftMonitor(this)
             
            ceVararginCommandToggle = {...
                 'cTextTrue', 'Disconnect', ...
                 'cTextFalse', 'Connect' ...
             };
         
-           this.uiCommMFDriftMonitor = mic.ui.device.GetSetLogical(...
+           this.uiCommMfDriftMonitor = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'dWidthName', 130, ...
                 'lShowLabels', false, ...
@@ -514,7 +536,10 @@ classdef Wafer < mic.Base
                 'lShowInitButton', false, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'cName', 'mf-drift-monitor-connect-wafer-ui-module', ...
-                'cLabel', 'MFDrift Monitor',...
+                'cLabel', 'MFDrift Monitor'...
+           ); 
+                
+                %{
                 'lUseFunctionCallbacks', true, ...
                 'fhGet', @()(this.hardware.commMFDriftMonitor.isConnected()),...
                 'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
@@ -523,7 +548,8 @@ classdef Wafer < mic.Base
                                 ),...
                 'fhIsInitialized', @()true,...
                 'fhIsVirtual', @false ...% Never virtualize the connection to real hardware
-                ); 
+                %}
+            
             
         end
         
@@ -580,42 +606,7 @@ classdef Wafer < mic.Base
             
         end
         
-        function connectDriftMonitor(this)
-            
-            if ~isempty(this.commDeltaTauPowerPmac)
-                commDriftMonitor = this.hardware.getMFDriftMonitor();
-                
-                this.uiHeightSensorZClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    commDriftMonitor ...
-                    )
-                this.uiHeightSensorRxClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    commDriftMonitor ...
-                    )
-                this.uiHeightSensorRyClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    commDriftMonitor ...
-                    )
-                
-                this.uiHeightSensorZClosedLoopCoarse.connectDeltaTauPowerPmacAndDriftMonitor(...
-                    this.commDeltaTauPowerPmac, ...
-                    commDriftMonitor ...
-                    )
-                commDriftMonitor.connect();
-            end
-            
-           
-        end
         
-        function disconnectDriftMontior(this)
-            this.hardware.deleteMFDriftMonitor();
-            this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorRxClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorRyClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
-            %this.apiMFDriftMonitor = [];
-        end
         
         
     end % private

@@ -37,7 +37,7 @@ classdef MfDriftMonitorVibration < mic.Base
         f_min = 10;
         f_max = 500;
         
-        dDelay = 0.2;
+        dDelay = 1;
         
                    
         hLinesPsd = []
@@ -821,15 +821,7 @@ classdef MfDriftMonitorVibration < mic.Base
             dLeft = 100 + this.dWidthAxes;
             dSep = 30;
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
+           
             
             if ~isempty(this.clock)
                 this.clock.add(@this.onClock, this.id(), this.dDelay);
@@ -857,7 +849,6 @@ classdef MfDriftMonitorVibration < mic.Base
             end
             
             
-            
         end 
         
         
@@ -882,6 +873,9 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        function saveLastNSamplesToFile(this, numSamples, cPath)
+            this.saveSamplesToFile(this.device.getSampleData(numSamples), cPath);
+        end
         
         function updateTexts(this)
             
@@ -1790,9 +1784,20 @@ classdef MfDriftMonitorVibration < mic.Base
                 
          
         function onCloseRequest(this, src, evt)
+           
+            
+             % Clean up clock tasks
+            if ~isempty(this.clock) && ...
+                isvalid(this.clock) && ...
+                this.clock.has(this.id())
+                this.msg('delete() removing clock task', this.u8_MSG_TYPE_INFO); 
+                this.clock.remove(this.id());
+            end
+            
             this.msg('HeightSensorLEDs.closeRequestFcn()');
             delete(this.hFigure);
             this.hFigure = [];
+            
         end
                 
         function initUiCommMfDriftMonitor(this)
@@ -2566,6 +2571,51 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         
+        % @param {} samples - see this.samples
+        % @param {char 1 x m} cPath - full path to file to save 
+        function saveSamplesToFile(this, samples, cPath)
+            
+            % Open a file for writing
+            u8FildId = fopen(cPath, 'w');
+            
+            % Write header
+            fprintf(...
+                u8FildId, ...
+                [...
+                    '6T1,6B1,5T1,5B1,4T1,4B1,3T1,3B1,2T1,2B1,1T1,1B1,', ...
+                    '6T2,6B2,5T2,5B2,4T2,4B2,3T2,3B2,2T2,2B2,1T2,1B2,', ...
+                    'DMI1,DMI2,DMI3,DMI4', ...
+                    '\n' ...
+                ] ...
+            );
+            
+            % Samples.get() is zero-indexed since implementing java
+            % ArrayList interface
+            for n = 0 : samples.size() - 1
+                hsraw = samples.get(n).getHsData();
+                dmi = samples.get(n).getDmiData();
+                
+                hsraw = hsraw';
+                dmi = dmi';
+                
+                fprintf(...
+                    u8FildId, ...
+                    [...
+                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
+                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
+                        '%i,%i,%i,%i' ...
+                    ], ...
+                    [hsraw dmi] ...
+                ); 
+                if n < samples.size() - 1
+                    fprintf(u8FildId, '\n');
+                end
+            end
+            
+            fclose(u8FildId);
+            
+        end
+        
         function onUiButtonSave(this, src, evt)
             
             lPlayingOnSave = this.uiTogglePlayPause.get();
@@ -2599,40 +2649,8 @@ classdef MfDriftMonitorVibration < mic.Base
             
             cNameOfFile = [ceAnswer{1}, '.txt']; 
             cPath = fullfile(cPathOfDir, cNameOfFile);
-            
-            samples = this.samples;
-                        
-            % Open a file for writing
-            u8FildId = fopen(cPath, 'w');
-            
-            % Write header
-            fprintf(u8FildId, '6T1,6B1,5T1,5B1,4T1,4B1,3T1,3B1,2T1,2B1,1T1,1B1,6T2,6B2,5T2,5B2,4T2,4B2,3T2,3B2,2T2,2B2,1T2,1B2,DMI1,DMI2,DMI3,DMI4\n');
-            
-            % Samples.get() is zero-indexed since implementing java
-            % ArrayList interface
-            for n = 0 : samples.size() - 1
-                hsraw = samples.get(n).getHsData();
-                dmi = samples.get(n).getDmiData();
-                
-                hsraw = hsraw';
-                dmi = dmi';
-                
-                fprintf(...
-                    u8FildId, ...
-                    [...
-                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
-                        '%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,', ...
-                        '%i,%i,%i,%i' ...
-                    ], ...
-                    [hsraw dmi] ...
-                ); 
-                if n < samples.size() - 1
-                    fprintf(u8FildId, '\n');
-                end
-            end
-            
-            fclose(u8FildId); 
-            
+                                    
+            this.saveSamplesToFile(this.samples, cPath); 
             this.uiListDir.refresh();
             
             if lPlayingOnSave

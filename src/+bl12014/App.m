@@ -2,8 +2,7 @@ classdef App < mic.Base
         
     properties (Constant)
         
-        dWidth = 250
-        dHeight = 1030
+        
         
         dWidthButton = 210
         
@@ -74,6 +73,7 @@ classdef App < mic.Base
         
         % {MFDriftMonitor}
         commMFDriftMonitor
+        commMfDriftMonitorMiddleware % created by hardware.getMFDriftMonitor()
         
         % {dataTranslation.MeasurPoint 1x1}
         commDataTranslationMeasurPoint
@@ -155,7 +155,6 @@ classdef App < mic.Base
         cPathDllMightex
         cPathHeaderMightex
         
-        hFigure
         
         
         % {bl12014.Comm 1x1}
@@ -201,10 +200,7 @@ classdef App < mic.Base
         
                 
         function build(this)
-            
-            this.buildFigure();
-            this.uiApp.build(this.hFigure, 10, 10);
-            % this.uiComm.build(this.hFigure, 210, 10);
+            this.uiApp.build();
         end
         
         %% Destructor
@@ -1370,9 +1366,20 @@ classdef App < mic.Base
             end
             
             try
+                
+                % The high-speed analysis tool CA built uses the direct
+                % Java class that Met5Instruments exposes
+                
                 this.initAndConnectMet5Instruments();
                 this.commMFDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
                 this.commMFDriftMonitor.connect();
+                
+                % Create an instance of Ryan's Drift Monitor Middleware and
+                % connect it.  The closed loop stuff in the wafer UI needs
+                % it
+                
+                this.commMfDriftMonitorMiddleware = this.hardware.getMFDriftMonitor();
+                this.commMfDriftMonitorMiddleware.connect();
          
             catch mE
                 this.commMFDriftMonitor = [];
@@ -1381,8 +1388,10 @@ classdef App < mic.Base
                 return;
             end
             
-            
+     
             this.uiApp.uiMfDriftMonitorVibration.connectMfDriftMonitor(this.commMFDriftMonitor);
+            this.uiApp.uiWafer.connectMfDriftMonitorMiddleware(this.commMfDriftMonitorMiddleware);
+            
             % Here connect any UIs that use this
             
 %             this.uiApp.uiMFDriftMonitor.setDevice(this.commMFDriftMonitor);
@@ -1401,9 +1410,13 @@ classdef App < mic.Base
             end
             
             this.uiApp.uiMfDriftMonitorVibration.disconnectMfDriftMonitor();
+            this.uiApp.uiWafer.disconnectMfDriftMonitorMiddleware();
             
             this.commMFDriftMonitor.disconnect();
             this.commMFDriftMonitor = [];
+            
+            this.commMfDriftMonitorMiddleware.disconnect();
+            this.commMfDriftMonitorMiddleware = [];
         end
         
         
@@ -1585,31 +1598,7 @@ classdef App < mic.Base
         end
         
         
-        function buildFigure(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            else 
-            
-                
-                % Figure
-                this.hFigure = figure( ...
-                    'NumberTitle', 'off', ...
-                    'MenuBar', 'none', ...
-                    'Name', 'MET5', ...
-                    'Position', [50 50 this.dWidth this.dHeight], ... % left bottom width height
-                    'Resize', 'off', ...
-                    'HandleVisibility', 'on', ... % lets close all close the figure
-                    'Visible', 'on'...
-                );
-                % 'CloseRequestFcn', @this.onCloseRequestFcn ...
-
-                drawnow;                
-            end
-            
-        end
+        
         
         %{
         function initUiComm(this)
@@ -1994,6 +1983,9 @@ classdef App < mic.Base
 
             this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
+            
+            this.uiApp.uiWafer.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
+            this.uiApp.uiWafer.uiCommMfDriftMonitor.turnOn();
 
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()

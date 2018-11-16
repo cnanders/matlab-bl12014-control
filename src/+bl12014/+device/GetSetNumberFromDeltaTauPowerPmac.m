@@ -54,15 +54,15 @@
             
             switch this.cAxis
                 case this.cWCX_MOT_MIN
-                    d = this.comm.queryDouble('Hydra1UMotMinNorm1');
+                    d = this.comm.getWaferCoarseXMotMin();
                 case this.cWCY_MOT_MIN
-                    d = this.comm.queryDouble('Hydra1UMotMinNorm2');
+                    d = this.comm.getWaferCoarseYMotMin();
                 case this.cRCX_MOT_MIN
-                    d = this.comm.queryDouble('Hydra2UMotMinNorm1');
+                    d = this.comm.getReticleCoarseXMotMin();
                 case this.cRCY_MOT_MIN
-                    d = this.comm.queryDouble('Hydra2UMotMinNorm2');  
+                    d = this.comm.getReticleCoarseYMotMin();  
                 case this.cLSICX_MOT_MIN
-                    d = this.comm.queryDouble('Hydra3UMotMinNorm1');     
+                    d = this.comm.getLsiCoarseXMotMin();     
                 case this.cAXIS_WAFER_COARSE_X
                     d = this.comm.getWaferCoarseX();
                 case this.cAXIS_WAFER_COARSE_Y

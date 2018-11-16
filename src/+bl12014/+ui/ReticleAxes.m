@@ -62,6 +62,9 @@ classdef ReticleAxes < mic.Base
         hClockTimes
         
         % 2018.04.18 PROBABLY DEPRECATE
+        % offset of the center of the reticle relative to the center of the
+        % RCX, RCY stage.  Nomally 0. Each time we load, this will change a
+        % bit. 
         dXReticleCenter = 0e-3
         dYReticleCenter = 0e-3
         
@@ -128,8 +131,11 @@ classdef ReticleAxes < mic.Base
     
     properties (SetAccess = private)
         
-        dXChiefRay = -44.17/1000
-        dYChiefRay = -4.1/1000
+        % location of EUV beam relative to 0, 0 coordinate of RCXY stages
+        % can determine this experimentally 
+        
+        dXChiefRay = -42/1000
+        dYChiefRay = 3.42/1000
         
         % These get set relative to dX/YChiefRay in constructor
         dXCap1 = 0

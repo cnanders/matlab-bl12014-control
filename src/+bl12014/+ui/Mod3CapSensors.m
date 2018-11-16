@@ -156,7 +156,7 @@ classdef Mod3CapSensors < mic.Base
             
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
-                this.clock.add(@this.onClock, this.id(), 1);
+                this.clock.add(@this.onClock, sprintf('%s-calc-tiltx-tilty', this.id()), 1);
             end
                         
         end

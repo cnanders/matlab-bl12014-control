@@ -30,7 +30,37 @@
 			"slope": "1e12",
 			"offset": 0,
 			"precision": 3
-        }
+		},
+		{
+			"name": "W",
+			"slope": 7.9365,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "mW",
+			"slope": "7.9365e3",
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "uW",
+			"slope": "7.9365e6",
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "nW",
+			"slope": "7.9365e9",
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "pW",
+			"slope": "7.9365e12",
+			"offset": 0,
+			"precision": 3
+		}
 	]
 }	
 	
