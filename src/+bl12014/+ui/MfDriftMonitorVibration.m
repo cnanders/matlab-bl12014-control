@@ -229,6 +229,8 @@ classdef MfDriftMonitorVibration < mic.Base
         uiCheckboxYReticle
         uiCheckboxXWafer
         uiCheckboxYWafer
+        uiCheckboxDriftX
+        uiCheckboxDriftY
         
         uiEditFreqMin
         uiEditFreqMax
@@ -427,7 +429,7 @@ classdef MfDriftMonitorVibration < mic.Base
             dTop = 20;
             dSep = 30;
             
-            % Save / Load
+            % Save 
             this.uiButtonSave.build(this.hPanelSave, dLeft, dTop, 100, 24);
             dTop = dTop + dSep;            
             
@@ -435,8 +437,11 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiListDir.build(this.hPanelSave, dLeft, dTop, 240, this.dHeightList);
             dTop = dTop + this.dHeightList + 10 + dSep;
             
+            % Load 
+            %{
             this.uiButtonLoad.build(this.hPanelSave, dLeft, dTop, 80, 24);
             dTop = dTop + 50 + dSep;
+            %}
             
         end
         
@@ -600,6 +605,12 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCheckboxXWafer.build(hPanel, dLeft, dTop, 100, 24);
             dTop = dTop + dSep;
             this.uiCheckboxYWafer.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxDriftX.build(hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + dSep;
+            
+            this.uiCheckboxDriftY.build(hPanel, dLeft, dTop, 100, 24);
             dTop = dTop + dSep;
 
             dTop = dTop + 20;
@@ -921,7 +932,7 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         
-        function updateFromFile(this)
+        function updateFromFileSelectedInList(this)
             
             this.uiTogglePlayPause.set(false); % pause so it shows "play"
             
@@ -1090,7 +1101,9 @@ classdef MfDriftMonitorVibration < mic.Base
                 'X reticle', ...
                 'Y reticle', ...
                 'X wafer', ...
-                'Y wafer' ...
+                'Y wafer', ...
+                'Drift X', ...
+                'Drift Y' ...
             };
             
             dChannelsDmi = this.getChannelsDmi();
@@ -1605,6 +1618,11 @@ classdef MfDriftMonitorVibration < mic.Base
             pos(3, :) = dXDat_waf; 
             pos(4, :) = dYDat_waf;
             
+            % Drift
+            pos(5, :) = 5 * pos(3, :) + pos(1, :); % drift x
+            pos(6, :) = -5 * pos(4, :) + pos(2, :); % drift y
+            
+            
         end
         
         % Returns {double 4xm} x and y position of reticle and wafer in nm
@@ -1644,10 +1662,25 @@ classdef MfDriftMonitorVibration < mic.Base
             
             pos = zeros(4, samples.size());
 
-            pos(1, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret);
-            pos(2, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret);
-            pos(3, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf);
-            pos(4, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf);
+            pos(1, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret); % x ret
+            pos(2, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret); % y ret
+            pos(3, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf); % x wafer
+            pos(4, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf); % y wafer
+            
+            % Compute drift
+            pos(5, :) = 5 * pos(3, :) + pos(1, :); % drift x
+            pos(6, :) = -5 * pos(4, :) + pos(2, :); % drift y
+            
+            
+            %{ 
+            From Java code
+            double errX =  5 * xWafer + xReticle;
+            double errY = -5 * yWafer + yReticle;
+            %}
+            
+            
+    
+            
 
             
         end
@@ -2093,6 +2126,10 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiCheckboxXWafer = mic.ui.common.Checkbox('cLabel', 'x wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             this.uiCheckboxYWafer = mic.ui.common.Checkbox('cLabel', 'y wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             
+            
+            this.uiCheckboxDriftX = mic.ui.common.Checkbox('cLabel', 'drift x', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxDriftY = mic.ui.common.Checkbox('cLabel', 'drift y', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            
             this.uiTogglePlayPause = mic.ui.common.Toggle(...
                 'cTextTrue', 'Pause', ...
                 'cTextFalse', 'Acquire', ...
@@ -2118,6 +2155,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 'cFilter', '*.txt', ...
                 'lShowLabel', false, ...
                 'lShowChooseDir', true, ...
+                'fhOnChange', @this.onUiListChange, ...
                 'cLabel', 'Save / Load Directory' ...
             );
         
@@ -2564,10 +2602,22 @@ classdef MfDriftMonitorVibration < mic.Base
                 d(end + 1) = 4;
             end
             
+            if this.uiCheckboxDriftX.get()
+                d(end + 1) = 5;
+            end
+            
+            if this.uiCheckboxDriftY.get()
+                d(end + 1) = 6;
+            end
+            
+        end
+        
+        function onUiListChange(this, src, evt)
+            this.updateFromFileSelectedInList()
         end
         
         function onUiButtonLoad(this, src, evt)
-            this.updateFromFile()
+            this.updateFromFileSelectedInList()
         end
         
         
