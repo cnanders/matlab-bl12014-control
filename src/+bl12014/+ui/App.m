@@ -9,7 +9,7 @@ classdef App < mic.Base
     
 	properties
         
-        cName = 'App (UI)'
+        cName = 'ui.App'
         uiNetworkCommunication
         uiBeamline
         uiShutter
@@ -69,9 +69,11 @@ classdef App < mic.Base
         uiButtonListOther
         
         hHardware
-        dDelay = 1
+        dDelay = 0.5
         dColorOn = [0 0.9 0]
         dColorOff = [0.9 0.9 0.9]
+        
+        uiTextDurationOfTimerExecution
     end
     
         
@@ -157,17 +159,26 @@ classdef App < mic.Base
             this.uiButtonListHsDmi.build(this.hFigure, 250, 200);
             this.uiButtonListFemScan.build(this.hFigure, 250, 350);
             
-            
             this.uiButtonListOther.build(this.hFigure, 500, 10);
             this.uiButtonListInterferometry.build(this.hFigure, 500, 300);
             
+            this.uiTextDurationOfTimerExecution.build(...
+                this.hFigure, ...
+                10, ... % left
+                480, ... % top
+                200, ... % width
+                24 ...
+            );
+        
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
                 this.clock.add(@this.onClock, this.id(), this.dDelay);
             end
+            
+            
         end
         
-        %{
+        
         function setColorOfBeamline(this)
             if (...
                 this.uiBeamline.uiCommExitSlit.get() ||...
@@ -277,9 +288,9 @@ classdef App < mic.Base
                 this.uiVibrationIsolationSystem.uiCommGalil.get() ||...
                 this.uiVibrationIsolationSystem.uiCommDataTranslation.get() ...
             ) 
-                this.uiButtonListEndStation.setButtonColorBackground(1, this.dColorOn);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(1, this.dColorOn);
             else 
-                this.uiButtonListEndStation.setButtonColorBackground(1, this.dColorOff);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(1, this.dColorOff);
             end
         end
         function setColorOfReticle(this)
@@ -288,9 +299,9 @@ classdef App < mic.Base
                 this.uiReticle.uiCommDeltaTauPowerPmac.get() ||...
                 this.uiReticle.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonListEndStation.setButtonColorBackground(2, this.dColorOn);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(2, this.dColorOn);
             else 
-                this.uiButtonListEndStation.setButtonColorBackground(2, this.dColorOff);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(2, this.dColorOff);
              end
         end
         function setColorOfWafer(this)
@@ -299,49 +310,55 @@ classdef App < mic.Base
                 this.uiWafer.uiCommMfDriftMonitor.get() || ...
                 this.uiWafer.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonListEndStation.setButtonColorBackground(3, this.dColorOn);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(3, this.dColorOn);
             else 
-                this.uiButtonListEndStation.setButtonColorBackground(3, this.dColorOff);
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(3, this.dColorOff);
              end
         end
+        
+        function setColorOfPpmacStatus(this)
+              if (...
+                this.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.get() ...
+            ) 
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(4, this.dColorOn);
+            else 
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(4, this.dColorOff);
+              end
+        end
+        
+        function setColorOfPpmacHydraMotMin(this)
+            if (...
+                this.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.get() ...
+            ) 
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(5, this.dColorOn);
+            else 
+                this.uiButtonListVisAndPpmac.setButtonColorBackground(5, this.dColorOff);
+            end
+        end
+        
+        
         function setColorOfMfDriftMonitorVibration(this)
 
              if (...
                 this.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.get() ...
             ) 
-                this.uiButtonListEndStation.setButtonColorBackground(5, this.dColorOn);
+                this.uiButtonListHsDmi.setButtonColorBackground(2, this.dColorOn);
             else 
-                this.uiButtonListEndStation.setButtonColorBackground(5, this.dColorOff);
+                this.uiButtonListHsDmi.setButtonColorBackground(2, this.dColorOff);
              end
         end
         function setColorOfPoCurrent(this)
              if (...
                 this.uiPOCurrent.uiCommKeithley6482.get() ...
             ) 
-                this.uiButtonListEndStation.setButtonColorBackground(10, this.dColorOn);
+                this.uiButtonListFemScan.setButtonColorBackground(3, this.dColorOn);
             else 
-                this.uiButtonListEndStation.setButtonColorBackground(10, this.dColorOff);
+                this.uiButtonListFemScan.setButtonColorBackground(3, this.dColorOff);
              end
              
         end
-        function setColorOfPpmacStatus(this)
-              if (...
-                this.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.get() ...
-            ) 
-                this.uiButtonListEndStation.setButtonColorBackground(7, this.dColorOn);
-            else 
-                this.uiButtonListEndStation.setButtonColorBackground(7, this.dColorOff);
-              end
-        end
-        function setColorOfPpmacHydraMotMin(this)
-            if (...
-                this.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.get() ...
-            ) 
-                this.uiButtonListEndStation.setButtonColorBackground(8, this.dColorOn);
-            else 
-                this.uiButtonListEndStation.setButtonColorBackground(8, this.dColorOff);
-            end
-        end
+        
+        
         function setColorOfShutter(this)
 
              if (...
@@ -352,7 +369,7 @@ classdef App < mic.Base
                 this.uiButtonListBeamline.setButtonColorBackground(3, this.dColorOff);
              end
         end
-        %}
+        
         
         
         function onClock(this)
@@ -375,7 +392,7 @@ classdef App < mic.Base
            ];
             %}
             
-            %{
+            
             this.setColorOfBeamline();
             this.setColorOfExitSlit()
             this.setColorOfM141();
@@ -394,7 +411,10 @@ classdef App < mic.Base
             this.setColorOfPpmacStatus()
             this.setColorOfPpmacHydraMotMin()
             this.setColorOfShutter() 
-            %}
+            
+            cVal = sprintf('%1.1f', this.clock.getDurationOfLastTimerExecution() * 1000);
+            this.uiTextDurationOfTimerExecution.set(cVal);
+            
             
         end
         
@@ -912,6 +932,11 @@ classdef App < mic.Base
             this.initFemScan();
             this.initOther();
            
+        
+            this.uiTextDurationOfTimerExecution = mic.ui.common.Text(...
+                'lShowLabel', true, ...
+                'cLabel', 'Duration of last timer execution (ms)' ...
+            );
         
             this.loadStateFromDisk();
 
