@@ -1618,9 +1618,9 @@ classdef MfDriftMonitorVibration < mic.Base
             pos(3, :) = dXDat_waf; 
             pos(4, :) = dYDat_waf;
             
-            % Drift
-            pos(5, :) = 5 * pos(3, :) + pos(1, :); % drift x
-            pos(6, :) = -5 * pos(4, :) + pos(2, :); % drift y
+            % see getDmiPositionFromSampleData
+            pos(5, :) = (5 * pos(3, :) + pos(1, :)) / 5; % drift x
+            pos(6, :) = (-5 * pos(4, :) + pos(2, :)) / 5; % drift y
             
             
         end
@@ -1667,9 +1667,11 @@ classdef MfDriftMonitorVibration < mic.Base
             pos(3, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf); % x wafer
             pos(4, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf); % y wafer
             
-            % Compute drift
-            pos(5, :) = 5 * pos(3, :) + pos(1, :); % drift x
-            pos(6, :) = -5 * pos(4, :) + pos(2, :); % drift y
+            % Drift signal of aerial image is the 
+            % drift signal we use for reticle correction divided by
+            % the magnification 
+            pos(5, :) = (5 * pos(3, :) + pos(1, :)) / 5; % drift x
+            pos(6, :) = (-5 * pos(4, :) + pos(2, :)) / 5; % drift y
             
             
             %{ 
