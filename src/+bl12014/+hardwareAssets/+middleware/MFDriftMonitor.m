@@ -160,6 +160,9 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function setDMIZero(this)
+            if ~this.isConnected()
+                return
+            end
             this.javaAPI.monitorStart();
         end
         

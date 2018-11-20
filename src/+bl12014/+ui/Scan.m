@@ -70,6 +70,7 @@ classdef Scan < mic.Base
         uiTextDir
         
         shutter
+        uiMFDriftMonitor
         uiMfDriftMonitorVibration
         uiWafer
         uiReticle
@@ -1516,6 +1517,9 @@ classdef Scan < mic.Base
                 lReturn = false;
                 return;
             end
+            
+            % Verify that DMIs are zeroed:
+            this.uiMFDriftMonitor.apiDriftMonitor.setDMIZero();
             
             
             % Make sure the shutter is not open (this happens when it is
