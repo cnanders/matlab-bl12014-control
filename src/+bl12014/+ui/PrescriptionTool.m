@@ -314,7 +314,7 @@ classdef PrescriptionTool < mic.Base
                 
             % FEM for each dose (m), do each focus (n)
             
-            for m = 1 : length(this.uiFemTool.dDose)
+            for m = 1 : length(this.uiFemTool.dDose) % cols
                 
                 
                 % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
@@ -330,8 +330,22 @@ classdef PrescriptionTool < mic.Base
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1; 
                 
-                for n = 1 : length(this.uiFemTool.dFocus)
+                for n = 1 : length(this.uiFemTool.dFocus) % rows
 
+                    % For even numbered columns, expose the row in reverse
+                    % order so there are never large wafer z changes during
+                    % the FEM and never any large wafer y changes during
+                    % FEM
+                    
+                    dY = -this.uiFemTool.dY;
+                    dFocus = flip(this.uiFemTool.dFocus);
+                        
+                    
+                    if mod(m, 2) == 0
+                        dY = flip(dY);
+                        dFocus = flip(dFocus);
+                    end
+                                           
                     % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue = struct();
                     stValue.workingModeStart = '5'; 
@@ -349,13 +363,13 @@ classdef PrescriptionTool < mic.Base
                     
                     % y position on wafer you want exposure to be
                     stValue = struct();
-                    stValue.waferY = -this.uiFemTool.dY(n); 
+                    stValue.waferY = dY(n); 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
                     % Val you want HS to read during exposure
                     stValue = struct();
-                    stValue.waferZ = this.uiFemTool.dFocus(n);
+                    stValue.waferZ = dFocus(n);
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
@@ -370,13 +384,20 @@ classdef PrescriptionTool < mic.Base
                     stValue = struct();
                     stValue.type = 'exposure';
                     
-                    % Exposure task
+                    % Exposure task 
+                    
                     stTask = struct();
                     stTask.dose = this.uiFemTool.dDose(m);
                     stTask.femCols = length(this.uiFemTool.dDose);
                     stTask.femCol = m;
                     stTask.femRows = length(this.uiFemTool.dFocus);
-                    stTask.femRow = n;
+                    
+                    if mod(n, 2) == 0
+                        % even cols go backwards through rows
+                        stTask.femRow = length(this.uiFemTool.dFocus) + 1 - n;
+                    else
+                        stTask.femRow = n;
+                    end
                     stTask.pausePreExpose = 1; % FIX ME
                     
                     stValue.task = stTask;
