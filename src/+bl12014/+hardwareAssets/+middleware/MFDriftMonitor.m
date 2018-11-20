@@ -108,7 +108,7 @@ classdef MFDriftMonitor < mic.Base
                fprintf('(MFDriftMonitor process): Set calibration interpolant to: %s\n', cActiveInterpolant)
            catch
                fprintf('(MFDriftMonitor process): Calibration set failed, loading default: %s\n', this.cDefaultData)
-               load(cDefaultData)
+               load(this.cDefaultData)
                this.setInterpolant(stCalibrationData);
            end
             
@@ -160,6 +160,9 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function setDMIZero(this)
+            if ~this.isConnected()
+                return
+            end
             this.javaAPI.monitorStart();
         end
         
