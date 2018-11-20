@@ -392,8 +392,10 @@ classdef PrescriptionTool < mic.Base
                     stTask.femCol = m;
                     stTask.femRows = length(this.uiFemTool.dFocus);
                     
-                    if mod(n, 2) == 0
+                    if mod(m, 2) == 0
                         % even cols go backwards through rows
+                        % n = row index
+                        % m = col index
                         stTask.femRow = length(this.uiFemTool.dFocus) + 1 - n;
                     else
                         stTask.femRow = n;
