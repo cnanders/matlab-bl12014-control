@@ -84,6 +84,8 @@ classdef VibrationIsolationSystem < mic.Base
         
         end
         
+        % Returns degrees 
+        
         function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
             
             dTiltX = 0;
@@ -125,7 +127,7 @@ classdef VibrationIsolationSystem < mic.Base
                 dN4341 = cross(dV43, dV41); % vector normal to plane
                 dN4341 = dN4341./(sqrt(sum(dN4341.^2))); % unit magnitude vector normal to plane
 
-                [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342);
+                [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342); % degrees
                 % [dTiltX2, dTiltY2] = this.getTiltXAndTiltYFromNormalVector(dN4341);
 
             catch mE
@@ -469,7 +471,10 @@ classdef VibrationIsolationSystem < mic.Base
     
     methods (Access = private)
         
+        % Returns the tiltX and tiltY in degrees of the plane defined by
+        % the provided normal vector
         % @param {double 1x3} dN - normal vector
+        % @return degrees
         function [dTiltX, dTiltY] = getTiltXAndTiltYFromNormalVector(this, dN)
             
             % Normal vector.  Assumes rotation about the x axis by dThetaX, then in

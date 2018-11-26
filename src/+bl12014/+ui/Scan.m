@@ -1967,10 +1967,20 @@ classdef Scan < mic.Base
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
             st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
             
-            st.
             
-            
-            
+            % VIS
+            st.z_encoder_1_vis_V = this.uiVibrationIsolationSystem.uiEncoder1.getValCal('Volts');
+            st.z_encoder_2_vis_V = this.uiVibrationIsolationSystem.uiEncoder2.getValCal('Volts');
+            st.z_encoder_3_vis_V = this.uiVibrationIsolationSystem.uiEncoder3.getValCal('Volts');
+            st.z_encoder_4_vis_V = this.uiVibrationIsolationSystem.uiEncoder4.getValCal('Volts');
+            st.z_encoder_1_vis_um = this.uiVibrationIsolationSystem.uiEncoder1.getValCal('um');
+            st.z_encoder_2_vis_um = this.uiVibrationIsolationSystem.uiEncoder2.getValCal('um');
+            st.z_encoder_3_vis_um = this.uiVibrationIsolationSystem.uiEncoder3.getValCal('um');
+            st.z_encoder_4_vis_um = this.uiVibrationIsolationSystem.uiEncoder4.getValCal('um');
+            [dTiltX, dTiltY] = this.uiVibrationIsolationSystem.getTiltXAndTiltY(); % returns deg
+            st.tilt_x_vis_urad = dTiltX * pi / 180 * 1e6;
+            st.tilt_y_vis_urad = dTiltY * pi / 180 * 1e6;
+                        
             
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
