@@ -6,6 +6,12 @@
 			"slope": "1",
 			"offset": 6.35,
 			"precision": 3
+		},
+        {
+			"name": "um",
+			"slope": "-2630",
+			"offset": 6.35,
+			"precision": 3
 		}
 	]
 }	

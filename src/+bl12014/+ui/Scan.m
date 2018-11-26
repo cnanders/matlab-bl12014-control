@@ -72,6 +72,7 @@ classdef Scan < mic.Base
         shutter
         uiMFDriftMonitor
         uiMfDriftMonitorVibration
+        uiVibrationIsolationSystem
         uiWafer
         uiReticle
         uiPupilFill
@@ -1333,7 +1334,6 @@ classdef Scan < mic.Base
                 this.uiWafer.uiAxes.setExposing(false);
                 
                 % Overwrite the results file
-                
                 this.saveScanResults(stUnit);
                 
                 % 2018.11.15  
@@ -1966,6 +1966,12 @@ classdef Scan < mic.Base
             
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
             st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
+            
+            st.
+            
+            
+            
+            
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
