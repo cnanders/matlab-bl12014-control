@@ -118,7 +118,9 @@ classdef HeightSensorCalClosedLoop < mic.interface.device.GetSetNumber
         
         function set(this, dVal)
             this.lReady = false;
-
+             this.msg('\n****setting ready to false\n', this.u8_MSG_TYPE_SCAN);
+             
+             
             dUradToMrad = 1/1000;
             dMradToUrad = 1000;
             % Now move fine stage:
@@ -144,7 +146,7 @@ classdef HeightSensorCalClosedLoop < mic.interface.device.GetSetNumber
                 dError                  = dVal - this.readHS();
                 this.msg(sprintf('\nClosed loop error is %0.1f nm\n', dError), this.u8_MSG_TYPE_SCAN);
                 if (abs(dError) <= this.dTolerance)
-                    this.msg('\n**** within tolerance\n', this.u8_MSG_TYPE_SCAN);
+                    this.msg('\n**** within tolerance, setting ready to true\n', this.u8_MSG_TYPE_SCAN);
                     this.lReady = true;
                     return
                 end
