@@ -907,7 +907,7 @@ classdef App < mic.Base
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
                 'clock', this.clock ...
             );
-            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2();
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clock);
             this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clock);
             this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clock);
             

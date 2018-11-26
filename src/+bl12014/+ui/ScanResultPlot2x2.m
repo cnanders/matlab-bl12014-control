@@ -31,6 +31,9 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (Access = private)
          
+        
+        clock
+        
         hFigure
         hAxes1
         hAxes2
@@ -86,7 +89,15 @@ classdef ScanResultPlot2x2 < mic.Base
     methods
         
         
-        function this = ScanResultPlot2x2()
+        function this = ScanResultPlot2x2(varargin)
+            
+            for k = 1 : 2: length(varargin)
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
             
             this.init();
             
@@ -323,6 +334,11 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
             );
+        
+            if ~isempty(this.clock) && ...
+                ~this.clock.has(this.id())
+                this.clock.add(@this.onClock, this.id(), 1);
+            end
                 
             
         end
@@ -351,6 +367,22 @@ classdef ScanResultPlot2x2 < mic.Base
     
     
     methods (Access = private)
+        
+        function onClock(this)
+            
+            if ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+            end
+            
+            this.refresh();
+            
+        end
         
         function onButtonRefresh(this, src, evt)
             this.refresh();
