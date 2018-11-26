@@ -22,7 +22,8 @@ classdef VibrationIsolationSystem < mic.Base
         uiEncoder3
         uiEncoder4
         
-        % {mic.ui.device.GetNumber 1x1}}
+        % {mic.ui.device.GetNumber 1x1}
+        % Temp sensors are on the motors
         uiTemp1
         uiTemp2
         uiTemp3
@@ -34,6 +35,9 @@ classdef VibrationIsolationSystem < mic.Base
         uiButtonStop
         
         uiPositionRecaller
+        
+        uiTextTiltX
+        uiTextTiltY
         
     end
     
@@ -57,6 +61,7 @@ classdef VibrationIsolationSystem < mic.Base
         dWidthUnitTemp = 100
                 
         dWidthButton = 55
+
     end
     
     properties (SetAccess = private)
@@ -79,6 +84,57 @@ classdef VibrationIsolationSystem < mic.Base
         
         end
         
+        function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
+            
+            dTiltX = 0;
+            dTiltY = 0;
+
+            % [x y z]  SI units
+            % Sensor number increases clockwise from 12 o'clock use wafer
+            % coordinate system for x y
+            % +x = 09:00
+            % +y = 06:00
+            
+            % -------------------- neg Y -------------------
+            % -------------------- 00:00 -------------------
+            % ---4 (10:30)----------------------1 (01:30)---
+            % 09:00 ---------------------------------- 03:00 (neg X)
+            % ---3 (07:30)----------------------2 (04:30)---
+            % -------------------- 06:00 -------------------
+            % -------------------- pos Y -------------------
+            
+            dOffset = 0.601; % m
+            dPoint1 = [-dOffset -dOffset this.uiEncoder1.getValCal('um')*1e-6];
+            dPoint2 = [-dOffset dOffset this.uiEncoder2.getValCal('um')*1e-6];
+            dPoint3 = [dOffset dOffset this.uiEncoder3.getValCal('um')*1e-6];
+            dPoint4 = [dOffset -dOffset this.uiEncoder4.getValCal('um')*1e-6];
+
+
+            try
+                % Compute vectors in the plane
+                dV43 = dPoint4 - dPoint3;
+                dV42 = dPoint4 - dPoint2;
+                dV41 = dPoint4 - dPoint1;
+
+                % Compute cross to get vector normal to the plane, then
+                % make it unit magnitude
+                dN4342 = cross(dV43, dV42); % vector normal to plane
+                dN4342 = dN4342./(sqrt(sum(dN4342.^2))); % unit magnitude vector normal to plane
+
+
+                dN4341 = cross(dV43, dV41); % vector normal to plane
+                dN4341 = dN4341./(sqrt(sum(dN4341.^2))); % unit magnitude vector normal to plane
+
+                [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342);
+                % [dTiltX2, dTiltY2] = this.getTiltXAndTiltYFromNormalVector(dN4341);
+
+            catch mE
+
+            end
+            
+        end
+        
+            
         function st = save(this)
             st = struct();
             st.uiStage1 = this.uiStage1.save();
@@ -377,7 +433,20 @@ classdef VibrationIsolationSystem < mic.Base
             dTop = 10
             this.uiPositionRecaller.build(this.hFigure, dLeft, dTop, 380, 250);
             
+            dTop = 10;
+            dLeft = 350;
+            this.uiTextTiltX.build(this.hFigure, dLeft, dTop, 100, 24);
+            
+            dTop = dTop + dSep + 10;
+            this.uiTextTiltY.build(this.hFigure, dLeft, dTop, 100, 24);
+            
 
+            if ~isempty(this.clock) && ...
+                ~this.clock.has(this.id())
+                this.clock.add(@this.onClock, this.id(), 1);
+            end
+            
+            
             
         end
         
@@ -399,6 +468,22 @@ classdef VibrationIsolationSystem < mic.Base
     end
     
     methods (Access = private)
+        
+        % @param {double 1x3} dN - normal vector
+        function [dTiltX, dTiltY] = getTiltXAndTiltYFromNormalVector(this, dN)
+            
+            % Normal vector.  Assumes rotation about the x axis by dThetaX, then in
+            % this new coordinate system, rotate about the y axis by dTiltY
+            % This is must have stole this from wikipedia?
+            % See ~/Documents/Matlab/Code/met5-height-sensor/get_tip_tilt_and_eqn_of_plane_from_three_points
+
+            % dN = [sin(dTiltY) -cos(dTiltY)*sin(dThetaX) cos(dTiltY)*cos(dThetaX)]
+            
+            dTiltY = asin(dN(1)) * 180 / pi;
+            dTiltX = asin(- dN(2) / cos(dTiltY * pi / 180)) * 180 / pi;
+
+        end
+        
         
          function onFigureCloseRequest(this, src, evt)
             this.msg('M141Control.closeRequestFcn()');
@@ -770,6 +855,10 @@ classdef VibrationIsolationSystem < mic.Base
             this.initUiTemp4();
             
             this.initUiPositionRecaller();
+            
+            this.initUiTextTiltX();
+            this.initUiTextTiltY();
+            
         end
         
         function initUiTemp1(this)
@@ -906,6 +995,45 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiStage3.setDestRaw(dValues(3));
             this.uiStage4.setDestRaw(dValues(4));
         end
+        
+        function initUiTextTiltX(this)
+            
+            this.uiTextTiltX = mic.ui.common.Text(...
+                'cLabel', 'TiltX (urad)', ...
+                'lShowLabel', true ...
+            );
+            
+        end
+        
+        function initUiTextTiltY(this)
+            
+            this.uiTextTiltY = mic.ui.common.Text(...
+                'cLabel', 'TiltY (urad)', ...
+                'lShowLabel', true ...
+            );
+            
+        end
+        
+        
+        function onClock(this)
+            
+            if ~ishghandle(this.hFigure)
+                this.msg('onClock() returning since not built', this.u8_MSG_TYPE_INFO);
+                
+                % Remove task
+                if isvalid(this.clock) && ...
+                   this.clock.has(this.id())
+                    this.clock.remove(this.id());
+                end
+            end
+            
+            [dTiltX, dTiltY] = this.getTiltXAndTiltY();
+            this.uiTextTiltX.set(sprintf('%1.1f', dTiltX * pi / 180 * 1e6))
+            this.uiTextTiltY.set(sprintf('%1.1f', dTiltY * pi / 180 * 1e6))
+            
+        end
+        
+        
         
         
         
