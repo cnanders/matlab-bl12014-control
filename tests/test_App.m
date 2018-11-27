@@ -71,6 +71,7 @@ app = bl12014.App(...
 );
 app.build();
 
+% Start the logger
 test_MeasurPointLogger
  
 

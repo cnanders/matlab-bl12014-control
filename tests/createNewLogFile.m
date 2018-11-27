@@ -1,4 +1,4 @@
-function  createNewLogFile( mp, cPath )
+    function  createNewLogFile( mp, cPath )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % @param {< datatranslation.MeasurPoint 1x1}
