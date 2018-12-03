@@ -831,6 +831,13 @@ classdef VibrationIsolationSystem < mic.Base
             this.uiStage2.stop();
             this.uiStage3.stop();
             this.uiStage4.stop();
+            
+            % Reset destinations to current values
+            this.uiStage1.setDestCalDisplay(this.uiStage1.getValCalDisplay());
+            this.uiStage2.setDestCalDisplay(this.uiStage2.getValCalDisplay());
+            this.uiStage3.setDestCalDisplay(this.uiStage3.getValCalDisplay());
+            this.uiStage4.setDestCalDisplay(this.uiStage4.getValCalDisplay());
+
         end
         
 
