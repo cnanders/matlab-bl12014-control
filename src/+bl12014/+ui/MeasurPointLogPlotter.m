@@ -369,7 +369,9 @@ classdef MeasurPointLogPlotter < mic.Base
                 datetime(this.dData(:, 1) + this.dDaysBetweenMatlabAndExcel, 'ConvertFrom', 'datenum'), ... % x
                 this.dData(:, dChannelsToPlot + 2) ... % y
             );
-            legend(this.hAxes, this.cecChannelNames(dChannelsToPlot + 1));
+            legend(this.hAxes, this.cecChannelNames(dChannelsToPlot + 1), ...
+                'Location','northwest' ...
+            );
             
         end
         
