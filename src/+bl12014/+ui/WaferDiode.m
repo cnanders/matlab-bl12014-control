@@ -9,7 +9,7 @@ classdef WaferDiode < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 350
+        dWidth = 450
         dHeight = 70
         
         cName = 'WaferDiode'
@@ -23,10 +23,10 @@ classdef WaferDiode < mic.Base
         hPanel
         
         dWidthName = 70
-        dWidthUnit = 80
+        dWidthUnit = 180
         dWidthVal = 75
         dWidthPadUnit = 25 %277
-        
+
         
         configStageY
         configMeasPointVolts
