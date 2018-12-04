@@ -64,6 +64,8 @@ classdef PowerPmacHydraMotMin < mic.Base
         
         end
         
+       
+        
         
         
         function connectDeltaTauPowerPmac(this, comm)
