@@ -372,14 +372,28 @@ classdef WaferCoarseStage < mic.Base
             this.uiTiltY.setDestRaw(dValues(5));
             
             % Update the destinations of CS1 on the PPMAC
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS1X=%1.6f;', dValues(1)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS1Y=%1.6f;', dValues(2)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS1Z=%1.6f;', dValues(3)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS1A=%1.6f;', dValues(4)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS1B=%1.6f;', dValues(5)));
             
-            % Command PPMAC to have CS1 go to all destinations
-            this.commDeltaTauPowerPmac.command('CommandCode=14');
+            cCmd = [...
+               sprintf('DestCS1X=%1.6f;', dValues(1)), ...
+               sprintf('DestCS1Y=%1.6f;', dValues(2)), ...
+               sprintf('DestCS1Z=%1.6f;', dValues(3)), ...
+               sprintf('DestCS1A=%1.6f;', dValues(4)), ...
+               sprintf('DestCS1B=%1.6f;', dValues(5)), ...
+               'CommandCode=14' ...
+            ];
+        
+               this.commDeltaTauPowerPmac.command(strjoin(cCmd, ';'));
+               
+               
+               
+%             this.commDeltaTauPowerPmac.command(sprintf('DestCS1X=%1.6f;', dValues(1)));
+%             this.commDeltaTauPowerPmac.command(sprintf('DestCS1Y=%1.6f;', dValues(2)));
+%             this.commDeltaTauPowerPmac.command(sprintf('DestCS1Z=%1.6f;', dValues(3)));
+%             this.commDeltaTauPowerPmac.command(sprintf('DestCS1A=%1.6f;', dValues(4)));
+%             this.commDeltaTauPowerPmac.command(sprintf('DestCS1B=%1.6f;', dValues(5)));
+%             
+%             % Command PPMAC to have CS1 go to all destinations
+%             this.commDeltaTauPowerPmac.command('CommandCode=14');
             
         end
         
