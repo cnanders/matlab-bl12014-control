@@ -44,7 +44,7 @@ classdef MeasurPointLogPlotter < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth              = 1500;
+        dWidth              = 1600;
         dHeight             = 960;
        
     
@@ -57,6 +57,9 @@ classdef MeasurPointLogPlotter < mic.Base
         
          % {mic.ui.common.Checkbox 1xm}
         uiCheckboxes
+        
+        % {mic.ui.common.Text 1xm}
+        uiTextValues
         
         uiButtonRefresh
         uiButtonFile
@@ -237,7 +240,7 @@ classdef MeasurPointLogPlotter < mic.Base
             );
         
             dTop = 80;
-            dLeft = this.dWidth - 230;
+            dLeft = this.dWidth - 280;
             dWidth = 200;
             for n = 1 : length(this.uiCheckboxes)
                 this.uiCheckboxes(n).build(...
@@ -245,6 +248,14 @@ classdef MeasurPointLogPlotter < mic.Base
                     dLeft, ...
                     dTop + n * 20 , ...
                     dWidth, ...
+                    24 ...
+                );
+            
+                this.uiTextValues(n).build(...
+                    this.hFigure, ...
+                    dLeft + 180, ...
+                    dTop + n * 20 , ...
+                    100, ...
                     24 ...
                 );
             end
@@ -354,12 +365,23 @@ classdef MeasurPointLogPlotter < mic.Base
                 return
             end
             
+            
+            % Update text values
+            % First column is the serial date, so skip it
+            for n = 1 : length(this.uiTextValues)
+                cVal = sprintf('%1.2f', this.dData(end, n + 1));
+                this.uiTextValues(n).set(cVal);
+            end
+            
                 
             % Channels on hardware.  Need to offset by two to 
             % get index of data. Recall that date is added as first 
             % column of data
             
             dChannelsToPlot = this.getChannelsToPlot();
+            
+            
+            
             
             if length(dChannelsToPlot) == 0
                 return
@@ -372,6 +394,8 @@ classdef MeasurPointLogPlotter < mic.Base
             legend(this.hAxes, this.cecChannelNames(dChannelsToPlot + 1), ...
                 'Location','northwest' ...
             );
+        
+        
             
         end
         
@@ -411,6 +435,16 @@ classdef MeasurPointLogPlotter < mic.Base
             end
             
         end
+        
+        function initUiTextValues(this)
+            
+            this.uiTextValues = mic.ui.common.Text();
+        
+            for n = 2 : length(this.cecChannelNames)
+                this.uiTextValues(n) = mic.ui.common.Text();
+            end
+            
+        end
             
         function init(this)
             
@@ -429,6 +463,7 @@ classdef MeasurPointLogPlotter < mic.Base
             );
         
             this.initUiCheckboxes();
+            this.initUiTextValues();
             this.initUiTextPlotX();
             this.initUiTextPlotY();
             
@@ -471,7 +506,7 @@ classdef MeasurPointLogPlotter < mic.Base
             this.hAxes = axes(...
                 'Parent', this.hFigure, ...
                 'Units', 'pixels',...
-                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidth - 350, this.dHeight - 200], this.hFigure),...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidth - 400, this.dHeight - 200], this.hFigure),...
                 'HandleVisibility', 'on', ...
                 'XMinorTick','on', ...
                 'YMinorTick','on', ...
