@@ -928,9 +928,16 @@ classdef Scan < mic.Base
                         
                        
                         % this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(
-                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
-                        this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
+%                         this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
+%                         this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.moveToDest();
+%                         
+                        
+                        % Changed RM 12/2018 to new CL architecture:
+                        this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
+                        this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.moveToDest();
                         this.stScanSetContract.waferZ.lIssued = true;
+                        
+                        
                         
                     case 'reticleX'
                         
