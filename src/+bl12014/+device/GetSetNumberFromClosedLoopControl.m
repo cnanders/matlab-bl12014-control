@@ -96,7 +96,7 @@ classdef GetSetNumberFromClosedLoopControl < mic.interface.device.GetSetNumber
         
         % @return {double 1x1} the value of the height sensor in nm
         function d = get(this)
-            d = this.calHeightSensor.get();                        
+            d = this.fhGetSensor.get();                        
         end
         
         
@@ -177,7 +177,7 @@ classdef GetSetNumberFromClosedLoopControl < mic.interface.device.GetSetNumber
                     lSuccess = true;
                     return
                 end
-                this.msg('Stage is NOT ready\n');, this.u8_MSG_TYPE_SCAN);
+                this.msg('Stage is NOT ready\n', this.u8_MSG_TYPE_SCAN);
                 pause(this.dStageCheckPeriod);
             end
             lSuccess = false;

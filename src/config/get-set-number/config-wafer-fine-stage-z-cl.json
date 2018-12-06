@@ -1,0 +1,17 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "nm",
+			"slope": "10^6",
+			"offset": 0,
+			"precision": 1
+		}
+
+	],
+    "step": 0.1,
+    "min": 0,
+    "max": 0.01
+}	
+	
+	

@@ -19,6 +19,10 @@ classdef WaferTTZClosedLoop < mic.Base
         
         % {mic.ui.device.GetSetNumber 1x1}
         uiFineZ  
+        
+        uiCLTiltX
+        uiCLTiltY
+        uiCLZ
             
         dTiltXTol = 50; %urad
         dTiltYTol = 50; %urad
@@ -28,11 +32,11 @@ classdef WaferTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1030
-        dHeight = 205        
+        dWidth = 630
+        dHeight = 150        
         cName = 'wafer-coarse-stage-ttz-closed-loop'
-        lShowRange = true
-        lShowStores = false
+        lShowRange = false
+        lShowStores = true
         
         commDeltaTauPowerPmac
         
@@ -103,7 +107,7 @@ classdef WaferTTZClosedLoop < mic.Base
             dCENTER_RANGE = (this.dFINE_Z_HIGH_LIMIT + this.dFINE_Z_LOW_LIMIT)/2;
             
             if dMotorDest >= this.dFINE_Z_HIGH_LIMIT
-                dCoarseZCorrection = -dMotorDest - this.dFINE_Z_HIGH_LIMIT) * nm2mm - dCENTER_RANGE;
+                dCoarseZCorrection = -(dMotorDest - this.dFINE_Z_HIGH_LIMIT) * nm2mm - dCENTER_RANGE;
             elseif dMotorDest <= this.dFINE_Z_HIGH_LIMIT
                 dCoarseZCorrection = -(dMotorDest - this.dFINE_Z_LOW_LIMIT) * nm2mm + dCENTER_RANGE;
             end
@@ -169,27 +173,27 @@ classdef WaferTTZClosedLoop < mic.Base
             deviceCLRy = this.createCLRydevice(this, commPPMAC, commDriftMonitor);
             
             % Set Devices
-            this.uiZ.setDevice(deviceCLZ);
-            this.uiTiltX.setDevice(deviceCLRx);
-            this.uiTiltY.setDevice(deviceCLRy);
+            this.uiCLZ.setDevice(deviceCLZ);
+            this.uiCLTiltX.setDevice(deviceCLRx);
+            this.uiCLTiltY.setDevice(deviceCLRy);
             
             % Turn on
-            this.uiZ.turnOn();
-            this.uiTiltX.turnOn();
-            this.uiTiltY.turnOn();
+            this.uiCLZ.turnOn();
+            this.uiCLTiltX.turnOn();
+            this.uiCLTiltY.turnOn();
             
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.uiZ.turnOff();
-            this.uiTiltX.turnOff();
-            this.uiTiltY.turnOff();
+            this.uiCLZ.turnOff();
+            this.uiCLTiltX.turnOff();
+            this.uiCLTiltY.turnOff();
                         
-            this.uiZ.setDevice([]);
-            this.uiTiltX.setDevice([]);
-            this.uiTiltY.setDevice([]);
+            this.uiCLZ.setDevice([]);
+            this.uiCLTiltX.setDevice([]);
+            this.uiCLTiltY.setDevice([]);
 
             
         end
@@ -200,7 +204,7 @@ classdef WaferTTZClosedLoop < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Coarse Stage (PPMAC)',...
+                'Title', 'Wafer Z/T/T Closed Loop Control: Z -> HS simple Z (4 nm tol), [Rx,Ry] -> HS Calibrated tilt (20 urad tol)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -217,22 +221,16 @@ classdef WaferTTZClosedLoop < mic.Base
             
 
             
-            this.uiZ.build(this.hPanel, dLeft, dTop);
+            this.uiCLZ.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiTiltX.build(this.hPanel, dLeft, dTop);
+            this.uiCLTiltX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiTiltY.build(this.hPanel, dLeft, dTop);
+            this.uiCLTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 630;
-            dTop = 20;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 380, 170);
-            
-            
-            
-
+           
             
         end
         
@@ -251,9 +249,9 @@ classdef WaferTTZClosedLoop < mic.Base
         
         function st = save(this)
             st = struct();
-            st.uiZ = this.uiZ.save();
-            st.uiTiltX = this.uiTiltX.save();
-            st.uiTiltY = this.uiTiltY.save();
+            st.uiCLZ = this.uiCLZ.save();
+            st.uiCLTiltX = this.uiCLTiltX.save();
+            st.uiCLTiltX = this.uiCLTiltX.save();
         end
         
         function load(this, st)
@@ -273,17 +271,19 @@ classdef WaferTTZClosedLoop < mic.Base
         
         function initUiZ(this)
             
-            cPathConfig = fullfile(...
+
+        
+         cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-wafer-coarse-stage-z.json' ...
+                'config-wafer-fine-stage-z-cl.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiZ = mic.ui.device.GetSetNumber(...
+            this.uiCLZ = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
@@ -291,8 +291,10 @@ classdef WaferTTZClosedLoop < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
-                'cLabel', 'Z' ...
+                'cLabel', 'HS Simple Z' ...
             );
+        
+        
         end
         
         
@@ -301,22 +303,22 @@ classdef WaferTTZClosedLoop < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-wafer-coarse-stage-tilt-x.json' ...
+                'config-wafer-coarse-stage-rx-hs-cl.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiTiltX = mic.ui.device.GetSetNumber(...
+            this.uiCLTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
-                'cName', sprintf('%s-tilt-x', this.cName), ...
+                'cName', sprintf('%s-tilt-x-cl', this.cName), ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
-                'cLabel', 'Tilt X' ...
+                'cLabel', 'HS Cal Rx' ...
             );
         end
         
@@ -325,22 +327,22 @@ classdef WaferTTZClosedLoop < mic.Base
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
-                'config-wafer-coarse-stage-tilt-y.json' ...
+                'config-wafer-coarse-stage-ry-hs-cl.json' ...
             );
         
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
             
-            this.uiTiltY = mic.ui.device.GetSetNumber(...
+            this.uiCLTiltY = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
-                'cName', sprintf('%s-tilt-y', this.cName), ...
+                'cName', sprintf('%s-tilt-y-cl', this.cName), ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
-                'cLabel', 'Tilt Y' ...
+                'cLabel', 'HS Cal Rx' ...
             );
         end
         
