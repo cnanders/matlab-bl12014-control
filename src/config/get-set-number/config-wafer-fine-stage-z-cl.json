@@ -3,7 +3,7 @@
 	"units": [
 		{
 			"name": "nm",
-			"slope": "10^6",
+			"slope": "1",
 			"offset": 0,
 			"precision": 1
 		}

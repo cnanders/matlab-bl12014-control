@@ -96,7 +96,7 @@ classdef GetSetNumberFromClosedLoopControl < mic.interface.device.GetSetNumber
         
         % @return {double 1x1} the value of the height sensor in nm
         function d = get(this)
-            d = this.fhGetSensor.get();                        
+            d = this.fhGetSensor();                        
         end
         
         
@@ -128,9 +128,9 @@ classdef GetSetNumberFromClosedLoopControl < mic.interface.device.GetSetNumber
                 
                 this.msg(sprintf('Making move move on iteration %d\n', u8iterationCt), this.u8_MSG_TYPE_SCAN);
                 
-                dErrorSensor    = dValSensor - this.fhGetSensor();
+                dErrorSensor    = dSensorDestination - this.fhGetSensor();
                 
-                dErrorMotorP    = dErrorSensor * dErrorSensor * this.dPID(1);
+                dErrorMotorP    = dErrorSensor * this.dPID(1);
                 dErrorMotorI    = -dLastError * this.dPID(2);
                 dErrorMotorD    = -(dErrorMotorP - dLastError) * this.dPID(3);
                 
@@ -146,7 +146,7 @@ classdef GetSetNumberFromClosedLoopControl < mic.interface.device.GetSetNumber
                 
                 dDestMotor = this.fhGetMotor() + dErrorMotor;
                 
-                this.fhSet(dDestMotor);
+                this.fhSetMotor(dDestMotor);
                 
                 if (~this.waitForStage(this.fhIsReadyMotor))
                     this.msg('Motor timed out\n', this.u8_MSG_TYPE_SCAN);

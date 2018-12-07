@@ -338,8 +338,7 @@ classdef PrescriptionTool < mic.Base
                     % FEM
                     
                     dY = -this.uiFemTool.dY;
-                    dFocus = flip(this.uiFemTool.dFocus);
-                        
+                    dFocus = this.uiFemTool.dFocus;
                     
                     if mod(m, 2) == 0
                         dY = flip(dY);
@@ -351,7 +350,6 @@ classdef PrescriptionTool < mic.Base
                     stValue.workingModeStart = '5'; 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
-                    
                     
                     %{
                     % x position on wafer you want the exposure to be

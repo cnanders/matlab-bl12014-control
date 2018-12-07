@@ -24,8 +24,8 @@ classdef WaferTTZClosedLoop < mic.Base
         uiCLTiltY
         uiCLZ
             
-        dTiltXTol = 50; %urad
-        dTiltYTol = 50; %urad
+        dTiltXTol = 3; %urad
+        dTiltYTol = 3; %urad
         dZTol  = 4; %nm
     end
     
@@ -74,25 +74,30 @@ classdef WaferTTZClosedLoop < mic.Base
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
         % fhIsReadyMotor, dTolearnce
         
-        function device = createCLZdevice(this,  commPPMAC, commDriftMonitor)
+        function device = createCLZdevice(this, commPPMAC, commDriftMonitor)
+            mm2nm           = 1e6;
             
-            % Leverage existing PPMAC device implementation:
-            deviceCoarseZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            deviceFineZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
+            
+            % Leverage existing PPMAC device implementation for isReady,
+            % possibly could use the UIs for this too, 
+            deviceCoarseZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
+                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
+            deviceFineZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
+                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
             
             
             fhIsReadyMotor  = @() deviceCoarseZ.isReady() & deviceFineZ.isReady();
             dTolerance      = this.dZTol;
-            
-            fhGetSensor     = commDriftMonitor.getSimpleZ;
-            
-            fhGetMotor      = deviceFineZ.get;
+           
+            fhGetSensor     = @()commDriftMonitor.getSimpleZ();
+            fhGetMotor      = @()deviceFineZ.get() * mm2nm;
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
             
             device = bl12014.device.GetSetNumberFromClosedLoopControl(...
                 this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance, ...
-                'cName', 'device-closed-loop-z');
+                'cName', 'device-closed-loop-z',...
+                'dDelay', 0.2);
         end
         
         
@@ -106,17 +111,28 @@ classdef WaferTTZClosedLoop < mic.Base
             nm2mm = 1e-6;
             dCENTER_RANGE = (this.dFINE_Z_HIGH_LIMIT + this.dFINE_Z_LOW_LIMIT)/2;
             
-            if dMotorDest >= this.dFINE_Z_HIGH_LIMIT
-                dCoarseZCorrection = -(dMotorDest - this.dFINE_Z_HIGH_LIMIT) * nm2mm - dCENTER_RANGE;
-            elseif dMotorDest <= this.dFINE_Z_HIGH_LIMIT
-                dCoarseZCorrection = -(dMotorDest - this.dFINE_Z_LOW_LIMIT) * nm2mm + dCENTER_RANGE;
-            end
-            
             % If we need a coarse correction, set coarse stage, otherwise
             % set fine stage
-            if dCoarseZCorrection ~= 0
+            if  dMotorDest >= this.dFINE_Z_HIGH_LIMIT || dMotorDest <= this.dFINE_Z_LOW_LIMIT
+                
+                % The amount we need to buffer for fine stage is:
+                dBuffer = dCENTER_RANGE - this.uiFineZ.getValCalDisplay();
+                
+
+                % Since we added this to fine stage, must subtract from
+                % coarse stage:
+                dCoarseZCorrection = -dBuffer * nm2mm;
+               
+                % Next we need to make actua desired move, which is
+                % difference between current fine value and the motor
+                % destination:
+                dCoarseZCorrection = dCoarseZCorrection + (dMotorDest - this.uiFineZ.getValCalDisplay()) * nm2mm;
+                
                 dCurrentCoarseZ = this.uiCoarseZ.getValCalDisplay();
+                
+                % Set Coarse and fine stages:
                 this.setDestAndGo(this.uiCoarseZ, dCurrentCoarseZ + dCoarseZCorrection);
+                this.setDestAndGo(this.uiFineZ, dCENTER_RANGE);
                 
             else
                 % Make a normal fine stage move:
@@ -128,33 +144,41 @@ classdef WaferTTZClosedLoop < mic.Base
         
         
         function device = createCLRxdevice(this,  commPPMAC, commDriftMonitor)
-            deviceTiltXPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            mrad2urad = 1e3;
             
-            fhGetMotor      = deviceTiltXPPMAC.get;
+            deviceTiltXPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
+                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
+            
+            fhGetMotor      = @()deviceTiltXPPMAC.get();
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal);
-            fhIsReadyMotor  = deviceTiltXPPMAC.isReady;
+            fhIsReadyMotor  = @()deviceTiltXPPMAC.isReady();
             dTolerance      = this.dTiltXTol;
-            fhGetSensor     = @()commDriftMonitor.getHSValue(1);   
+            fhGetSensor     = @()commDriftMonitor.getHSValue(1) * mrad2urad;   
             
             
             device = bl12014.device.GetSetNumberFromClosedLoopControl(...
                 this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
-                'cName', 'device-closed-loop-rx');
+                'cName', 'device-closed-loop-rx', ...
+                'dDelay', 0.5);
         end
         
         function device = createCLRydevice(this,  commPPMAC, commDriftMonitor)
-            deviceTiltYPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            mrad2urad = 1e3;
             
-            fhGetMotor      = deviceTiltYPPMAC.get;
-            fhSetMotor      =  @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
-            fhIsReadyMotor  = deviceTiltYPPMAC.isReady;
+            deviceTiltYPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
+                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
+            
+            fhGetMotor      = @() deviceTiltYPPMAC.get();
+            fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
+            fhIsReadyMotor  = @()deviceTiltYPPMAC.isReady();
             dTolerance      = this.dTiltYTol;
-            fhGetSensor     = @()commDriftMonitor.getHSValue(2);   
+            fhGetSensor     = @()commDriftMonitor.getHSValue(2) * mrad2urad;   
             
             
             device = bl12014.device.GetSetNumberFromClosedLoopControl(...
                 this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
-                'cName', 'device-closed-loop-ry');
+                'cName', 'device-closed-loop-ry',...
+                'dDelay', 0.5);
         end
         
         % Set lambda that edits UI destination before moving so that it
@@ -168,9 +192,9 @@ classdef WaferTTZClosedLoop < mic.Base
         function connect(this, commPPMAC, commDriftMonitor)
 
             % Represent devices implementations from Closed loop control
-            deviceCLZ  = this.createCLZdevice(this, commPPMAC, commDriftMonitor);
-            deviceCLRx = this.createCLRxdevice(this, commPPMAC, commDriftMonitor);
-            deviceCLRy = this.createCLRydevice(this, commPPMAC, commDriftMonitor);
+            deviceCLZ  = this.createCLZdevice(commPPMAC, commDriftMonitor);
+            deviceCLRx = this.createCLRxdevice(commPPMAC, commDriftMonitor);
+            deviceCLRy = this.createCLRydevice(commPPMAC, commDriftMonitor);
             
             % Set Devices
             this.uiCLZ.setDevice(deviceCLZ);
@@ -182,10 +206,15 @@ classdef WaferTTZClosedLoop < mic.Base
             this.uiCLTiltX.turnOn();
             this.uiCLTiltY.turnOn();
             
+            
+            this.uiCLZ.syncDestination();
+            this.uiCLTiltX.syncDestination();
+            this.uiCLTiltY.syncDestination();
+            
         end
         
         
-        function disconnectDeltaTauPowerPmac(this)
+        function disconnect(this)
             
             this.uiCLZ.turnOff();
             this.uiCLTiltX.turnOff();
@@ -204,7 +233,7 @@ classdef WaferTTZClosedLoop < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Z/T/T Closed Loop Control: Z -> HS simple Z (4 nm tol), [Rx,Ry] -> HS Calibrated tilt (20 urad tol)',...
+                'Title', 'Wafer Z/T/T Closed Loop Control: Z -> HS simple Z (4 nm tol), [Rx,Ry] -> HS Calibrated tilt (3 urad tol)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...

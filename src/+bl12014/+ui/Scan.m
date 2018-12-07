@@ -1097,7 +1097,7 @@ classdef Scan < mic.Base
                                 lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
                             case 'waferZ'
                                % lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
-                               lReady = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().isReady();
+                               lReady = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
                                
                             case 'workingModeEnd'
                                 
@@ -1618,9 +1618,9 @@ classdef Scan < mic.Base
             end
             %}
             
-             if ~this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.isActive() 
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.id());
-            end
+%              if ~this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.isActive() 
+%                 cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.id());
+%             end
             
             
             %{
@@ -1954,8 +1954,8 @@ classdef Scan < mic.Base
             st.z_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiZ.getValCal('mm');
             st.tilt_x_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltX.getValCal('urad');
             st.tilt_y_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltY.getValCal('urad');
-            st.tilt_x_wafer_height_sensor_urad = this.uiWafer.uiHeightSensorRxClosedLoop.uiRxHeightSensor.getValCal('urad');
-            st.tilt_y_wafer_height_sensor_urad = this.uiWafer.uiHeightSensorRyClosedLoop.uiRyHeightSensor.getValCal('urad');
+            st.tilt_x_wafer_height_sensor_urad = this.uiWafer.uiWaferTTZClosedLoop.uiCLTiltX.getValCal('urad');
+            st.tilt_y_wafer_height_sensor_urad = this.uiWafer.uiWaferTTZClosedLoop.uiCLTiltY.getValCal('urad');
             
             [dTiltX, dTiltY] =  this.uiWafer.uiPobCapSensors.getTiltXAndTiltYWithoutSensor4(); % returns deg
             st.tilt_x_wafer_cap_urad = dTiltX * pi / 180 * 1e6;
@@ -1972,7 +1972,7 @@ classdef Scan < mic.Base
             st.cap_4_wafer_um = this.uiWafer.uiPobCapSensors.uiCap4.getValCal('um');
             
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
-            st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getValCal('nm');
+            st.z_height_sensor_nm = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal('nm');
             
             
             % VIS

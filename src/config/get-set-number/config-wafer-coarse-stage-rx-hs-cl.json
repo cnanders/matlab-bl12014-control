@@ -3,7 +3,7 @@
 	"units": [
 				{
 					"name": "urad",
-					"slope": 1000,
+					"slope": 1,
 					"offset": 0,
 					"precision": 1
 				}
@@ -14,7 +14,7 @@
     "stores": [
 		{
 			"name": "2018-10-24 level (632)",
-			"raw": 0.632
+			"raw": 632
 		}
     ]
 }
