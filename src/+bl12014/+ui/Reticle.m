@@ -21,6 +21,9 @@ classdef Reticle < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         % uiCommDataTranslationMeasurPoint
         
+        
+        ReticleTTZClosedLoop
+        
         uiCoarseStage
         uiFineStage
         uiAxes
@@ -129,6 +132,7 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
 
+            this.ReticleTTZClosedLoop.connect(comm);
         end
         
         function disconnectDeltaTauPowerPmac(this)
@@ -136,7 +140,8 @@ classdef Reticle < mic.Base
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac();            
+            this.uiWorkingMode.disconnectDeltaTauPowerPmac();     
+            this.ReticleTTZClosedLoop.disconnect();
         end
         
         
@@ -212,9 +217,9 @@ classdef Reticle < mic.Base
             this.uiDiode.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
+            this.ReticleTTZClosedLoop.build(this.hFigure, dLeft, dTop);
             
-            
-%             dLeft = 690;
+            dLeft = 655;
             this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
@@ -255,6 +260,7 @@ classdef Reticle < mic.Base
             st = struct();
             st.uiCoarseStage = this.uiCoarseStage.save();
             st.uiFineStage = this.uiFineStage.save();
+%             st.ReticleTTZClosedLoop = this.ReticleTTZClosedLoop.save();
             
         end
         
@@ -320,6 +326,8 @@ classdef Reticle < mic.Base
             this.uiDiode = bl12014.ui.ReticleDiode(...
                 'clock', this.clock ...
             );
+        
+            
                 
             dHeight = this.dHeight - 20;
             this.uiAxes = bl12014.ui.ReticleAxes(...
@@ -329,6 +337,14 @@ classdef Reticle < mic.Base
         
             this.uiMod3CapSensors = bl12014.ui.Mod3CapSensors(...
                 'clock', this.clock ...
+            );
+        
+            this.ReticleTTZClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
+                'clock',        this.clock, ...
+                'uiTiltX',      this.uiCoarseStage.uiTiltX, ...
+                'uiTiltY',      this.uiCoarseStage.uiTiltY, ...
+                'uiCoarseZ',    this.uiCoarseStage.uiZ, ...
+                'uiCapSensors', this.uiMod3CapSensors...
             );
         
             this.initUiCommDataTranslationMeasurPoint();

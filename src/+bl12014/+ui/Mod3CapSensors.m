@@ -16,12 +16,13 @@ classdef Mod3CapSensors < mic.Base
         
         uiTextTiltX
         uiTextTiltY
+        uiTextZ
                 
     end
     
     properties (SetAccess = private)
         
-        dWidth = 550
+        dWidth = 390
         dHeight = 160
         
         cName = 'Mod3 Cap Sensors'
@@ -149,10 +150,12 @@ classdef Mod3CapSensors < mic.Base
             dTop = dTop + dSep;
             
             dTop = 20;
-            dLeft = 300;
+            dLeft = 325;
             this.uiTextTiltX.build(this.hPanel, dLeft, dTop, 100, 24);
-            dLeft = dLeft + 100;
+            dTop = dTop + 50;
             this.uiTextTiltY.build(this.hPanel, dLeft, dTop, 100, 24);
+            dTop = dTop + 50;
+            this.uiTextZ.build(this.hPanel, dLeft, dTop, 100, 24);
             
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
@@ -182,7 +185,7 @@ classdef Mod3CapSensors < mic.Base
         end 
         
         
-        function [dTiltX, dTiltY] = getTiltXAndTiltY(this)
+        function [dTiltX, dTiltY, dZ] = getTiltXAndTiltYAndZ(this)
             
             dOffsetX = 34.075 * 1e-3; % m
             dOffsetY = 27.833 * 1e-3; % m
@@ -195,6 +198,8 @@ classdef Mod3CapSensors < mic.Base
             dPoint3 = [dOffsetX 0 this.uiCap3.getValCal('um')*1e-6];
             dPoint2 = [dOffsetX -dOffsetY this.uiCap2.getValCal('um')*1e-6];
             dPoint1 = [-dOffsetX -dOffsetY this.uiCap1.getValCal('um')*1e-6];
+            
+            dZ = mean([dPoint1(3), dPoint2(3), dPoint3(3), dPoint4(3)]) * 1e6 -2282; % Offset to read roughly around 0 for level
             
             % Compute vectors in the plane
             dV43 = dPoint4 - dPoint3;
@@ -349,6 +354,14 @@ classdef Mod3CapSensors < mic.Base
             
         end
         
+        function initUiTextZ(this)
+            
+            this.uiTextZ = mic.ui.common.Text(...
+                'cLabel', 'Z (um)', ...
+                'lShowLabel', true ...
+            );
+            
+        end
         
         
         % @param {double 1x3} dN - normal vector
@@ -377,9 +390,10 @@ classdef Mod3CapSensors < mic.Base
                 end
             end
             
-            [dTiltX, dTiltY] = this.getTiltXAndTiltY();
+            [dTiltX, dTiltY, dZ] = this.getTiltXAndTiltYAndZ();
             this.uiTextTiltX.set(sprintf('%1.1f', dTiltX * pi / 180 * 1e6))
             this.uiTextTiltY.set(sprintf('%1.1f', dTiltY * pi / 180 * 1e6))
+            this.uiTextZ.set(sprintf('%1.3f', dZ))
             
         end
         
@@ -388,6 +402,7 @@ classdef Mod3CapSensors < mic.Base
             this.msg('init()');
             this.initUiTextTiltX();
             this.initUiTextTiltY();
+            this.initUiTextZ();
             this.initUiCap1();
             this.initUiCap2();
             this.initUiCap3();
