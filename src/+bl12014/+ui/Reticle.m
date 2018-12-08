@@ -212,6 +212,9 @@ classdef Reticle < mic.Base
             this.uiDiode.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
+            
+            
+%             dLeft = 690;
             this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
