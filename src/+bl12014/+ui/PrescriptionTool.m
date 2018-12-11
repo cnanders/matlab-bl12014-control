@@ -59,6 +59,7 @@ classdef PrescriptionTool < mic.Base
         hFigure
         hPanel
         hPanelSaved
+        hDock
         cDirThis
         cDirSrc
         
@@ -141,8 +142,19 @@ classdef PrescriptionTool < mic.Base
         
         
         function build(this)
-              
-            this.buildFigure()            
+            if isa(this.hDock, 'bl12014.ui.Dock')
+                cUIName = 'Prescription Tool';
+                % If UI exists, simply make active
+                if this.hDock.doesUIExist(cUIName)
+                    this.hDock.makeUIActive(cUIName);
+                    return
+                else
+                    % This UI should be docked onto the main figure as a tab
+                    this.hFigure = this.hDock.addUITab(cUIName);
+                end
+            else
+                this.buildFigure()
+            end
             
             dPad = 10;
             dTop = 10;

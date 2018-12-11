@@ -60,6 +60,11 @@ classdef Mod3CapSensors < mic.Base
         
         end
         
+        function onClose(this)
+            delete(this.hPanel);
+            this.hPanel = []; % necessary to remove clock task
+            
+        end
         
         function connectDeltaTauPowerPmac(this, comm)
             
@@ -380,13 +385,13 @@ classdef Mod3CapSensors < mic.Base
         
         function onClock(this)
             
-            if ~ishghandle(this.hPanel)
+            if isempty(this.hPanel) || ~ishghandle(this.hPanel)
                 this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
                 
                 % Remove task
                 if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
+                   this.clock.has(sprintf('%s-calc-tiltx-tilty', this.id()))
+                    this.clock.remove(sprintf('%s-calc-tiltx-tilty', this.id()));
                 end
             end
             
@@ -396,6 +401,8 @@ classdef Mod3CapSensors < mic.Base
             this.uiTextZ.set(sprintf('%1.3f', dZ))
             
         end
+        
+        
         
         
         function init(this)

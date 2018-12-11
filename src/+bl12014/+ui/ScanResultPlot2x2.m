@@ -19,7 +19,7 @@ classdef ScanResultPlot2x2 < mic.Base
         dHeightPadAxesBottom = 40
         dWidthAxes = 650
         dHeightAxes = 330
-        dHeightOffsetTop = 80;
+        dHeightOffsetTop = 120;
        
         dWidthPopup = 200;
         dHeightPopup = 24;
@@ -33,6 +33,7 @@ classdef ScanResultPlot2x2 < mic.Base
          
         
         clock
+        hDock
         
         hFigure
         hAxes1
@@ -195,22 +196,37 @@ classdef ScanResultPlot2x2 < mic.Base
         end
         
         function build(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
+            if isa(this.hDock, 'bl12014.ui.Dock')
+                cUIName = 'Scan Results Plotter';
+                % If UI exists, simply make active
+                if this.hDock.doesUIExist(cUIName)
+                    this.hDock.makeUIActive(cUIName);
+                    return
+                else
+                    % This UI should be docked onto the main figure as a tab
+                    this.hFigure = this.hDock.addUITab(cUIName);
+                    this.hDock.registerCloseRequestHandler(cUIName, @this.onDockClose);
+                end
+            else
+                
+                if ishghandle(this.hFigure)
+                    % Bring to front
+                    figure(this.hFigure);
+                    return
+                end
 
+                    this.buildFigure();
+            end
             
-            this.buildFigure();
+            
             this.buildAxes1();
             this.buildAxes2();
             this.buildAxes3();
             this.buildAxes4();
             
+            
             dLeft = this.getLeft1();
-            dTop = 10;
+            dTop = 50;
             
             this.uiButtonRefresh.build(...
                 this.hFigure, ...
@@ -240,7 +256,7 @@ classdef ScanResultPlot2x2 < mic.Base
             );
         
             dLeft = this.getLeft1();
-            dTop = 40;
+            dTop = 90;
         
             dWidth = 70
             this.uiPopupIndexStart.build(...
@@ -881,6 +897,15 @@ classdef ScanResultPlot2x2 < mic.Base
             this.hFigure = [];
             
          end
+         
+         function onDockClose(this, ~, ~)
+            if ~isempty(this.hFigure) && ~isvalid(this.hFigure)
+                return
+            end
+            
+            this.hFigure = [];
+         end
+         
         
          function d = getTopPulldown1(this)
              d = this.dHeightOffsetTop + ...

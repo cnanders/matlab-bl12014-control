@@ -10,6 +10,7 @@ classdef Wafer < mic.Base
     
 	properties
         
+        hDock = {}
         
         % These are the UI for activating the hardware that gives the 
         % software real data
@@ -209,38 +210,53 @@ classdef Wafer < mic.Base
         
         
         function build(this)
-                        
-            % Figure
+                    
+            if isa(this.hDock, 'bl12014.ui.Dock')
+                cUIName = 'Wafer';
+                % If UI exists, simply make active
+                if this.hDock.doesUIExist(cUIName)
+                    this.hDock.makeUIActive(cUIName);
+                    return
+                else
+                    % This UI should be docked onto the main figure as a tab
+                    this.hFigure = this.hDock.addUITab(cUIName);
+                    this.hDock.registerCloseRequestHandler(cUIName, @this.onDockClose);
+                end
+            else
+                % Figure
+                if ishghandle(this.hFigure)
+                    % Bring to front
+                    figure(this.hFigure);
+                    return
+                end
+
+                dScreenSize = get(0, 'ScreenSize');
+
+                this.hFigure = figure( ...
+                    'NumberTitle', 'off',...
+                    'MenuBar', 'none',...
+                    'Name', 'Wafer Control',...
+                    'Position', [ ...
+                        (dScreenSize(3) - this.dWidth)/2 ...
+                        (dScreenSize(4) - this.dHeight)/2 ...
+                        this.dWidth ...
+                        this.dHeight ...
+                     ],... % left bottom width height
+                    'Resize', 'off',...
+                    'HandleVisibility', 'on',... % lets close all close the figure
+                    'Visible', 'on',...
+                    'CloseRequestFcn', @this.onCloseRequestFcn ...
+                    );
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
             end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off',...
-                'MenuBar', 'none',...
-                'Name', 'Wafer Control',...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off',...
-                'HandleVisibility', 'on',... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequestFcn ...
-                );
             
             % There is a bug in the default 'painters' renderer when
             % drawing stacked patches.  This is required to make ordering
             % work as expected
             
             % set(this.hFigure, 'renderer', 'OpenGL');
+            
+            
             
             drawnow;
 
@@ -639,7 +655,10 @@ classdef Wafer < mic.Base
             
         end
         
-        
+        function onDockClose(this, ~, ~)
+            this.msg('ReticleControl.closeRequestFcn()');
+            this.hFigure = [];
+        end
         
         
     end % private

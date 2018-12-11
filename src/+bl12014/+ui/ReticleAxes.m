@@ -217,7 +217,7 @@ classdef ReticleAxes < mic.Base
             % drawing stacked patches.  This is required to make ordering
             % work as expected
             
-            set(hParent, 'renderer', 'OpenGL');
+            set(gcf, 'renderer', 'OpenGL');
             
             this.uiZoomPanAxes.build(hParent, dLeft, dTop);
             

@@ -4,6 +4,8 @@ classdef App < mic.Base
         
         dWidth = 750
         dHeight = 550
+        
+        lUseDock = true;
                        
     end
     
@@ -40,6 +42,7 @@ classdef App < mic.Base
         uiPowerPmacHydraMotMin
         uiMfDriftMonitorVibration
         uiExitSlit
+        uiDock
         
         
         % Eventually make private.
@@ -464,6 +467,7 @@ classdef App < mic.Base
             delete(this.uiMfDriftMonitorVibration);
             delete(this.uiPowerPmacHydraMotMin);
             delete(this.uiPowerPmacStatus);
+            delete(this.uiDock);
             
             % Delete the clock
             delete(this.clock);
@@ -849,20 +853,29 @@ classdef App < mic.Base
             
             this.clock = mic.Clock('Master');
             
+             % Used for docking UIs
+            this.uiDock = bl12014.ui.Dock();
+            
+            if this.lUseDock
+                 hDock = this.uiDock;
+            else
+                 hDock = {};
+            end
+                       
             % Set clock, required for drift monitor middle layer
             this.hHardware.setClock(this.clock);
             
             this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clock);
             this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clock);
-            this.uiBeamline = bl12014.ui.Beamline('clock', this.clock);
+            this.uiBeamline = bl12014.ui.Beamline('clock', this.clock, 'hDock', hDock);
             this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
             this.uiD141 = bl12014.ui.D141('clock', this.clock);
             this.uiD142 = bl12014.ui.D142('clock', this.clock);
             this.uiM141 = bl12014.ui.M141('clock', this.clock);
             this.uiM142 = bl12014.ui.M142('clock', this.clock);
             this.uiM143 = bl12014.ui.M143('clock', this.clock);
-            this.uiReticle = bl12014.ui.Reticle('clock', this.clock);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clock);
+            this.uiReticle = bl12014.ui.Reticle('clock', this.clock, 'hDock', hDock);
+            this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'hDock', hDock);
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
             this.uiPowerPmacHydraMotMin = bl12014.ui.PowerPmacHydraMotMin('clock', this.clock);
             this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clock);
@@ -878,6 +891,8 @@ classdef App < mic.Base
                 'cName', 'MA Scanner', ...
                 'dScale', 0.67 ... % 0.67 rel amp = sig 1
             );
+        
+           
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
@@ -889,7 +904,7 @@ classdef App < mic.Base
            
             
 
-            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
+            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool('hDock', hDock);
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ...
                 'uiShutter', this.uiShutter, ...
@@ -898,7 +913,8 @@ classdef App < mic.Base
                 'uiVibrationIsolationSystem', this.uiVibrationIsolationSystem, ...
                 'uiMfDriftMonitorVibration', this.uiMfDriftMonitorVibration, ...
                 'uiMFDriftMonitor', this.uiDriftMonitor, ...
-                'uiBeamline', this.uiBeamline ...
+                'uiBeamline', this.uiBeamline, ...
+                'hDock', hDock ...
             );
         
             this.uiHeightSensorLEDs = bl12014.ui.HeightSensorLEDs(...
@@ -907,7 +923,7 @@ classdef App < mic.Base
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
                 'clock', this.clock ...
             );
-            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clock);
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clock, 'hDock', hDock);
             this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clock);
             this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clock);
             

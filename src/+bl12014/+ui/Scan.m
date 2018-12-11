@@ -81,6 +81,7 @@ classdef Scan < mic.Base
         
         clock
         
+        hDock
         
         cDirThis
         cDirSrc
@@ -445,8 +446,21 @@ classdef Scan < mic.Base
         end
         
         function build(this)
+            if isa(this.hDock, 'bl12014.ui.Dock')
+                cUIName = 'FEM Control';
+                % If UI exists, simply make active
+                if this.hDock.doesUIExist(cUIName)
+                    this.hDock.makeUIActive(cUIName);
+                    return
+                else
+                    % This UI should be docked onto the main figure as a tab
+                    this.hFigure = this.hDock.addUITab(cUIName);
+                end
+            else
             
-            this.buildFigure()
+                this.buildFigure()
+            end
+            
             this.buildPanelAvailable()
             this.buildPanelAdded()
           
@@ -1933,9 +1947,11 @@ classdef Scan < mic.Base
             st.tilt_x_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltX.getValCal('urad');
             st.tilt_y_reticle_coarse_urad = this.uiReticle.uiCoarseStage.uiTiltY.getValCal('urad');
             
-            [dTiltX, dTiltY] =  this.uiReticle.uiMod3CapSensors.getTiltXAndTiltY(); % returns deg
+            [dTiltX, dTiltY, dZ] =  this.uiReticle.uiMod3CapSensors.getTiltXAndTiltYAndZ(); % returns deg
             st.tilt_x_reticle_cap_urad = dTiltX * pi / 180 * 1e6;
             st.tilt_y_reticle_cap_urad = dTiltY * pi / 180 * 1e6;
+            st.z_reticle_cap_um = dZ;
+            
             st.cap_1_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap1.getValCal('V');
             st.cap_2_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap2.getValCal('V');
             st.cap_3_reticle_V = this.uiReticle.uiMod3CapSensors.uiCap3.getValCal('V');
