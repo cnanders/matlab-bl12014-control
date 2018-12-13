@@ -15,10 +15,10 @@ classdef WaferAxes < mic.Base
         
         
         % {double 1x1} width of the mic.ui.axes.ZoomPanAxes in pixels
-        dWidth = 600
+        dWidth = 500
         
         % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
-        dHeight = 600
+        dHeight = 500
         
         
         dXChiefRay = 1e-3 % m

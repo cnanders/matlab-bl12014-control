@@ -32,6 +32,7 @@ classdef Reticle < mic.Base
         uiDiode
         uiMod3CapSensors
         uiWorkingMode
+        uiMotMin
     end
     
     properties (SetAccess = private)
@@ -42,7 +43,7 @@ classdef Reticle < mic.Base
     properties (Access = private)
                       
         clock
-        hFigure
+        hParent
         dDelay = 0.5
         
     end
@@ -133,6 +134,7 @@ classdef Reticle < mic.Base
             this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
             this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
+            this.uiMotMin.connectDeltaTauPowerPmac(comm);
 
             this.ReticleTTZClosedLoop.connect(comm);
         end
@@ -142,75 +144,28 @@ classdef Reticle < mic.Base
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac();     
+            this.uiWorkingMode.disconnectDeltaTauPowerPmac(); 
+            this.uiMotMin.disconnectDeltaTauPowerPmac();     
             this.ReticleTTZClosedLoop.disconnect();
         end
         
         
                 
-        function build(this)
-            if isa(this.hDock, 'bl12014.ui.Dock')
-                cUIName = 'Reticle';
-                % If UI exists, simply make active
-                if this.hDock.doesUIExist(cUIName)
-                    this.hDock.makeUIActive(cUIName);
-                    return
-                else
-                    % This UI should be docked onto the main figure as a tab
-                    this.hFigure = this.hDock.addUITab(cUIName);
-                    this.hDock.registerCloseRequestHandler(cUIName, @this.onDockClose);
-                end
-            else
-                        
-            % Figure
-            
-                if ishghandle(this.hFigure)
-                    % Bring to front
-                    figure(this.hFigure);
-                    return
-                end
+        function build(this, hParent, dLeft, dTop)
+            this.hParent = hParent;
 
-                dScreenSize = get(0, 'ScreenSize');
-
-                this.hFigure = figure( ...
-                    'NumberTitle', 'off', ...
-                    'MenuBar', 'none', ...
-                    'Name', 'Reticle Control', ...
-                    'Position', [ ...
-                        (dScreenSize(3) - this.dWidth)/2 ...
-                        (dScreenSize(4) - this.dHeight)/2 ...
-                        this.dWidth ...
-                        this.dHeight ...
-                     ],... % left bottom width height
-                    'Resize', 'off', ...
-                    'HandleVisibility', 'on', ... % lets close all close the figure
-                    'Visible', 'on',...
-                    'CloseRequestFcn', @this.onCloseRequest ...
-                    );
-
-                % There is a bug in the default 'painters' renderer when
-                % drawing stacked patches.  This is required to make ordering
-                % work as expected
-
-                set(this.hFigure, 'renderer', 'OpenGL');
-            end
-            
-            drawnow;
-
-            dTop = 10;
             dPad = 10;
-            dLeft = 10;
             dSep = 30;
             
             
-            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
+            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             %{
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             %}
             
@@ -218,29 +173,29 @@ classdef Reticle < mic.Base
             dTop = 10;
             dLeft = 290;
             
-            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
-            
+            this.uiWorkingMode.build(this.hParent, dLeft, dTop);
+            this.uiMotMin.build(this.hParent, 800, dTop);
             dLeft = 10;
-            dTop = 210;
+            dTop = 280;
                         
-            this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
+            this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            this.uiFineStage.build(this.hFigure, dLeft, dTop);
+            this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            this.uiDiode.build(this.hFigure, dLeft, dTop);
+            this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
-            this.ReticleTTZClosedLoop.build(this.hFigure, dLeft, dTop);
+            this.ReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
             
             dLeft = 655;
-            this.uiMod3CapSensors.build(this.hFigure, dLeft, dTop);
+            this.uiMod3CapSensors.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
-            dLeft = 1050;
-            dTop = 10;
-            this.uiAxes.build(this.hFigure, dLeft, dTop);
+            dLeft = 1100;
+            dTop = 280;
+            this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
                   
             this.clock.add(@this.onClock, this.id(), this.dDelay);
@@ -264,8 +219,8 @@ classdef Reticle < mic.Base
             
             % Delete the figure
             
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
+            if ishandle(this.hParent)
+                delete(this.hParent);
             end
             
             
@@ -298,8 +253,8 @@ classdef Reticle < mic.Base
         
         function onClock(this)
             
-            if isempty(this.hFigure) || ...
-               ~ishghandle(this.hFigure)
+            if isempty(this.hParent) || ...
+               ~ishghandle(this.hParent)
                 this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
                 
                 % Remove task
@@ -330,6 +285,11 @@ classdef Reticle < mic.Base
                 'cName', 'reticle-pmac-working-mode', ...
                 'clock', this.clock ...
             );
+        
+            this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
+                'cName', 'reticle-pmac-hydra-mot-min', ...
+                'clock', this.clock ...
+            );
             this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
                 'clock', this.clock ...
             );
@@ -344,7 +304,7 @@ classdef Reticle < mic.Base
         
             
                 
-            dHeight = this.dHeight - 20;
+            dHeight = 600;
             this.uiAxes = bl12014.ui.ReticleAxes(...
                 'dWidth', dHeight, ...
                 'dHeight', dHeight ...
@@ -374,15 +334,15 @@ classdef Reticle < mic.Base
         function onCloseRequest(this, src, evt)
             this.msg('ReticleControl.closeRequestFcn()');
             this.uiMod3CapSensors.onClose();
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
             % this.saveState();
         end
         
         function onDockClose(this, ~, ~)
             this.msg('ReticleControl.closeRequestFcn()');
             this.uiMod3CapSensors.onClose();
-            this.hFigure = [];
+            this.hParent = [];
         end
         
         

@@ -27,7 +27,7 @@ classdef WaferCoarseStage < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1030
+        dWidth = 960
         dHeight = 205        
         cName = 'wafer-coarse-stage'
         lShowRange = true
@@ -46,7 +46,7 @@ classdef WaferCoarseStage < mic.Base
         
         hPanel
         
-        dWidthName = 70
+        dWidthName = 30
         
         configStageY
         configMeasPointVolts
@@ -142,8 +142,6 @@ classdef WaferCoarseStage < mic.Base
                 this.dHeight], hParent) ...
             );
         
-			drawnow;            
-
             dTop = 20;
             dLeft = 10;
             dSep = 30;
@@ -163,9 +161,11 @@ classdef WaferCoarseStage < mic.Base
             this.uiTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 630;
-            dTop = 20;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 380, 170);
+            dLeft = 590;
+            dTop = 15;
+            dWidth = 360;
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 200);
+            
             
             
             

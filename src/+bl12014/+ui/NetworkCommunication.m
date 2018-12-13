@@ -2,6 +2,9 @@ classdef NetworkCommunication < mic.Base
     
     properties
 
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiConnect
+        
         % {mic.ui.device.GetLogical 1xn}
         uis = {}
         cName = 'Network Status (Updates every 2 sec)'
@@ -14,7 +17,7 @@ classdef NetworkCommunication < mic.Base
         dHeight = 750
         
         
-        hFigure
+        hParent
         
         % {struct 1xn}
         stDevices = [... % Legacy BL12.0.1.3 services / hardware
@@ -157,6 +160,8 @@ classdef NetworkCommunication < mic.Base
         lShowDevice = false
         lShowInitButton = false
         
+        lIsConnected = false
+        
         
     end
     
@@ -194,18 +199,18 @@ classdef NetworkCommunication < mic.Base
         
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-                       
-            this.buildFigure()
-            
-            dTop = 10;
-            dLeft = 10;
+            this.hParent = hParent;
             dSep = 30;
             
             
+            this.uiConnect.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep + 15;
+            
+            
             for n = 1 : length(this.stDevices)
-                this.uis{n}.build(this.hFigure, dLeft, dTop);
+                this.uis{n}.build(this.hParent, dLeft, dTop);
                 
                 if n == 1
                     dTop = dTop + 15 + dSep;
@@ -220,63 +225,15 @@ classdef NetworkCommunication < mic.Base
         function delete(this)
             
             this.msg('delete');
-            
             this.turnOff();
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
-            
+
         end    
         
         
     end
     
     methods (Access = private)
-        
-        function buildFigure(this)
-            
-            this.connect();
-            this.turnOn();
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', this.cName, ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-        
-			drawnow; 
-        end
-        
-        function onFigureCloseRequest(this, src, evt)
-            
-            this.turnOff();
-            this.msg('M143Control.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
-        end
-        
+
         % Creates bl12014.device.GetLogicalPing device for each device UI
         % and pass it to the device UI through the setDevice() method
         function connect(this)
@@ -288,12 +245,49 @@ classdef NetworkCommunication < mic.Base
                     'dTimeout', 500 ...
                 );
                 this.uis{n}.setDevice(device);
+                this.uis{n}.turnOn();
             end
+        end
+        
+        
+        function disconnect(this)
+            
+            for n = 1 : length(this.stDevices)
+                this.uis{n}.turnOff();
+                this.uis{n}.setDevice([]);
+            end
+        end
+        
+        function initUiConnect(this)
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiConnect = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', 'network-comm-', ...
+                'fhGet', @this.getIsConnected, ...
+                'fhSet', @this.setIsConnected, ...
+                'fhIsVirtual', @()false, ... % 
+                'lUseFunctionCallbacks', true, ...
+                'cLabel', 'Network' ...
+            );
+            
         end
                 
         function init(this)
             
             this.msg('init()');
+            
+            this.initUiConnect();
             
             for n = 1 : length(this.stDevices)
                 
@@ -335,6 +329,21 @@ classdef NetworkCommunication < mic.Base
             end
             
             
+        end
+        
+        function l = getIsConnected(this)
+            l = this.lIsConnected;
+        end
+        
+        function setIsConnected(this, lVal)
+            
+            this.lIsConnected = lVal;
+            
+            if this.lIsConnected
+                this.connect();
+            else
+                this.disconnect();
+            end
         end
         
         

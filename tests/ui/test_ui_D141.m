@@ -18,8 +18,8 @@ clock = mic.Clock('Master');
 ui = bl12014.ui.D141(...
     'clock', clock ...
 );
-
-ui.build();
+h = figure();
+ui.build(h, 10, 10);
 
 
  

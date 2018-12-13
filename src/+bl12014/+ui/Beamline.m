@@ -69,8 +69,6 @@ classdef Beamline < mic.Base
         deviceShutterVirtual
         
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommExitSlit
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommBL1201CorbaProxy
@@ -78,12 +76,6 @@ classdef Beamline < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDctCorbaProxy % Previous DCT shutter driver
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        
-        uiCommRigolDG1000Z
-        
-        % {mic.ui.device.GetSetLogical 1x1} % D142 Diode Current
-        uiCommDataTranslationMeasurPoint
         
         % {mic.ui.device.GetSetLogical 1x1} 
         uiCommGalilD142
@@ -101,16 +93,14 @@ classdef Beamline < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiGratingTiltX
         
-         % {mic.ui.device.GetSetNumber 1x1}
-        uiD142StageY
         
-        % {mic.ui.device.GetNumber 1x1}
-        uiD141Current
-        uiM141Current
-        uiD142Current
-        
-            % {mic.ui.common.PositionRecaller 1x1}
+        % {mic.ui.common.PositionRecaller 1x1}
         uiPositionRecaller 
+        
+        uiM141
+        uiD141
+        uiM142
+        uiD142
         
         
     end
@@ -139,7 +129,7 @@ classdef Beamline < mic.Base
         % result.json) are saved.  Each scan is saved to a new folder
         cDirScan
         
-        hFigure
+        hParent
         hPanelDevices
         hPanelScan
         hPanelData
@@ -216,105 +206,69 @@ classdef Beamline < mic.Base
             % Need to click "connect" button from Wafer Module since
             % there is not one in this UI
             device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
-            this.uiD141Current.setDevice(device);
-            this.uiD141Current.turnOn();
+            this.uiD141.uiCurrent.setDevice(device);
+            this.uiD141.uiCurrent.turnOn();
         end
         
         function disconnectKeithley6482(this)
-            this.uiD141Current.turnOff()
-            this.uiD141Current.setDevice([]);
+            this.uiD141.uiCurrent.turnOff()
+            this.uiD141.uiCurrent.setDevice([]);
         end
         %}
         
         function connectGalil(this, comm)
             device = bl12014.device.GetSetNumberFromStage(comm, 0);
-            this.uiD142StageY.setDevice(device);
-            this.uiD142StageY.turnOn()
-            this.uiD142StageY.syncDestination()
+            this.uiD142.uiStageY.setDevice(device);
+            this.uiD142.uiStageY.turnOn()
+            this.uiD142.uiStageY.syncDestination()
             
         end
         
         function disconnectGalil(this, comm)
-            this.uiD142StageY.turnOff()
-            this.uiD142StageY.setDevice([]);
+            this.uiD142.uiStageY.turnOff()
+            this.uiD142.uiStageY.setDevice([]);
         end
         
         function connectExitSlit(this, comm)
-            device = bl12014.device.GetSetNumberFromExitSlitObject(comm, bl12014.device.GetSetNumberFromExitSlitObject.cPROP_GAP);
-            this.uiExitSlit.setDevice(device);
-            this.uiExitSlit.turnOn();
-            this.uiExitSlit.syncDestination();
+            this.uiExitSlit.connectExitSlit(comm);
         end
         
         function disconnectExitSlit(this)
-            this.uiExitSlit.turnOff();
-            this.uiExitSlit.setDevice([]);
+            this.uiExitSlit.disconnectExitSlit();
+
         end
         
         function connectDataTranslationMeasurPoint(this, comm)
             
            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-
-           %{
-           Ch 32: M141
-Ch 33: D141
-Ch 34: D142
-           %}
-           device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                32 ... % M141
-            );
-            this.uiM141Current.setDevice(device);
-            this.uiM141Current.turnOn();  
             
-            
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                33 ... % M141
-            );
-            this.uiD141Current.setDevice(device);
-            this.uiD141Current.turnOn();  
+            this.uiM141.connectDataTranslationMeasurPoint(comm);
+            this.uiD141.connectDataTranslationMeasurPoint(comm);
+            this.uiD142.connectDataTranslationMeasurPoint(comm);
            
-           
-           device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                34 ... % D142
-            );
-            this.uiD142Current.setDevice(device);
-            this.uiD142Current.turnOn();     
 
         end
         
         function disconnectDataTranslationMeasurPoint(this)
             
-            this.uiM141Current.turnOff();
-            this.uiM141Current.setDevice([]);
+            %{
+            this.uiM141.uiCurrent.turnOff();
+            this.uiM141.uiCurrent.setDevice([]);
             
-            this.uiD141Current.turnOff();
-            this.uiD141Current.setDevice([]);
+            this.uiD141.uiCurrent.turnOff();
+            this.uiD141.uiCurrent.setDevice([]);
             
-            this.uiD142Current.turnOff();
-            this.uiD142Current.setDevice([]);
+            this.uiD142.uiCurrent.turnOff();
+            this.uiD142.uiCurrent.setDevice([]);
+            %}
+            
+            
+            this.uiM141.disconnectDataTranslationMeasurPoint();
+            this.uiD141.disconnectDataTranslationMeasurPoint();
+            this.uiD142.disconnectDataTranslationMeasurPoint();
         end
         
         
-        function connectDctCorbaProxy(this, comm)
-            device = bl12014.device.GetSetNumberFromDctCorbaProxy(...
-                comm, ...
-                bl12014.device.GetSetNumberFromDctCorbaProxy.cDEVICE_SHUTTER ...
-            );
-        
-            this.uiShutter.setDevice(device)
-            this.uiShutter.turnOn()
-        end
-        
-        function disconnectDctCorbaProxy(this)
-            this.uiShutter.turnOff()
-            this.uiShutter.setDevice([])
-        end
         
         function connectRigolDG1000Z(this, comm)
             
@@ -369,20 +323,171 @@ Ch 34: D142
         
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            this.buildFigure();
+            this.hParent = hParent;
             
-            this.buildCommUi();
-            
-            
-            this.buildPanelDevices();
             this.buildPanelRecipe();
             %this.buildUiScan();
             this.buildPanelData();
             this.buildAxes();
             
+            dTop = 20;
+            dSep = 30;
+            this.uiCommBL1201CorbaProxy.build(hParent, dLeft + 820, dTop);
+            dTop = dTop + dSep + 15;
+                        
+            this.uiGratingTiltX.build(hParent, dLeft + 820, dTop);
+            dTop = dTop + dSep;
             
+            this.uiUndulatorGap.build(hParent, dLeft + 820, dTop);
+            dTop = dTop + dSep;
+           
+            this.uiShutter.build(hParent, dLeft + 820, dTop);
+
+            
+            
+            
+            this.uiM141.build(hParent, dLeft + 820, dTop + 120);
+            this.uiD141.build(hParent, dLeft + 820, dTop + 370);
+            this.uiM142.build(hParent, dLeft + 820, dTop + 540);
+            this.uiD142.build(hParent, 10, 600);
+            
+            this.uiExitSlit.build(hParent, 10, 800);
+                        
+            
+        end
+        
+        function showSetAsZeroIfFigureClickIsInAxes(this, hFigure)
+            
+            % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hParent)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+          
+           dCursor = get(hFigure, 'CurrentPoint');     % [left bottom]
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1) + dPositionPanel(1);
+           dAxesBottom =    dAxes(2) + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                
+                cePrompt = {'Original Calibrated Value:', 'New Calibrated Value:'};
+                cTitle = 'Set Clicked Position As Zero?';
+                dLines = 1;
+                ceDefaultAns = {...
+                    sprintf('%1.3f', dPoint(1, 1)), ...
+                    '0' ...
+                };
+                stOptions = struct(...
+                    'Resize', 'on' ...
+                );
+                ceAnswer = inputdlg(...
+                    cePrompt,...
+                    cTitle,...
+                    dLines,...
+                    ceDefaultAns, ...
+                    stOptions ...
+                );
+
+                if isempty(ceAnswer)
+                    return
+                end
+                
+                this.uiGratingTiltX.setValToNewVal(...
+                    str2double(ceAnswer{1}), ...
+                    str2double(ceAnswer{2}) ...
+                );
+
+   
+           
+           end
+            
+        end
+        
+        
+        function updateAxesCrosshair(this, hFigure)
+            
+           % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hParent)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+          
+           dCursor = get(hFigure, 'CurrentPoint');     % [left bottom]
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1) + dPositionPanel(1);
+           dAxesBottom =    dAxes(2) + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                if strcmp(get(hFigure, 'Pointer'), 'arrow')
+                    set(hFigure, 'Pointer', 'crosshair')
+                end
+                
+                this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
+                this.uiTextPlotY.set(sprintf('y: %1.3e', dPoint(1, 2)));
+           else
+                if ~strcmp(get(hFigure, 'Pointer'), 'arrow')
+                    set(hFigure, 'Pointer', 'arrow')
+                end
+                this.uiTextPlotX.set('x: [hover]');
+                this.uiTextPlotY.set('y: [hover]');
+           end
         end
         
         function delete(this)
@@ -420,26 +525,14 @@ Ch 34: D142
             % delete(this.deviceShutterVirtual)
             
             
-            delete(this.uiCommExitSlit)
             delete(this.uiCommBL1201CorbaProxy)
             delete(this.uiCommDctCorbaProxy)
-            delete(this.uiCommDataTranslationMeasurPoint)
             delete(this.uiCommGalilD142)
             delete(this.uiExitSlit)
             delete(this.uiUndulatorGap)
             delete(this.uiShutter)
             delete(this.uiGratingTiltX)
-            delete(this.uiD142StageY)
-            delete(this.uiD141Current)
-            delete(this.uiM141Current)
-            delete(this.uiD142Current)
-        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
+            delete(this.uiD142.uiStageY)
 
         end
         
@@ -460,58 +553,7 @@ Ch 34: D142
     
     methods (Access = private)
         
-        function buildFigure(this)
-             if isa(this.hDock, 'bl12014.ui.Dock')
-                cUIName = 'Beamline';
-                % If UI exists, simply make active
-                if this.hDock.doesUIExist(cUIName)
-                    this.hDock.makeUIActive(cUIName);
-                    return
-                else
-                    % This UI should be docked onto the main figure as a tab
-                    this.hFigure = this.hDock.addUITab(cUIName);
-                end
-             else
-                
-                if ishghandle(this.hFigure)
-                    % Bring to front
-                    figure(this.hFigure);
-                    return
-                else 
-
-
-                    dHeight = this.dHeightFigurePad + ...
-                        this.dHeightPanelDevices + ...
-                        this.dHeightFigurePad;
-
-                    dScreenSize = get(0, 'ScreenSize');
-                    this.hFigure = figure( ...
-                        'NumberTitle', 'off', ...
-                        'MenuBar', 'none', ...
-                        'Name', 'Beamline Control', ...
-                        'Color', this.dColorFigure, ...
-                        'CloseRequestFcn', @this.onFigureCloseRequest, ...
-                        'Position', [ ...
-                            (dScreenSize(3) - this.dWidth)/2 ...
-                            (dScreenSize(4) - dHeight)/2 ...
-                            this.dWidth ...
-                            dHeight ...
-                         ],... % left bottom width height
-                        'Resize', 'off', ... 
-                        'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
-                        'WindowButtonDownFcn', @this.onFigureWindowButtonDown, ... % doesn't work if datacursormode is on!
-                        'HandleVisibility', 'on', ... % lets close all close the figure
-                        'Visible', 'on' ...
-                    );
-
-                    % pan(this.hFigure);
-                    % zoom(this.hFigure);
-                    % set(this.hFigure, 'toolbar', 'figure');
-                    % datacursormode(this.hFigure, 'on');
-                end
-                
-             end
-        end
+        
         
         
         function buildPanelData(this)
@@ -522,7 +564,7 @@ Ch 34: D142
                 this.dHeightPanelRecipe; % No vertical pad between scan and data panels
             
             this.hPanelData = uipanel(...
-                'Parent', this.hFigure,...
+                'Parent', this.hParent,...
                 'Units', 'pixels',...
                 'Title', '',...
                 'BorderWidth', this.dWidthPanelBorder, ...
@@ -533,7 +575,7 @@ Ch 34: D142
                     dTop ...
                     this.dWidthPanelData ...
                     this.dHeightPanelData], ...
-                    this.hFigure ...
+                    this.hParent ...
                 ) ...
             );
         
@@ -583,137 +625,17 @@ Ch 34: D142
         end
         
         
-        function buildCommUi(this)
-            
-            return
-         
-            dTop = 10;
-            dLeft = 10;
-            dSep = 30;
-            
-            this.uiCommGalilD142.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiCommExitSlit.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            %{
-            this.uiCommDctCorbaProxy.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            %}
-            
-            this.uiCommRigolDG1000Z.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiCommBL1201CorbaProxy.build(this.hFigure, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-        end
-        
-        
-        function buildPanelDevices(this)
-            
-            dLeft = this.dWidthFigurePad + ...
-                this.dWidthPanelRecipe + ...
-                this.dWidthFigurePad;
-            dTop = this.dWidthFigurePad;
-            
-            %{
-            dTop = this.dHeightFigurePad + ...
-                this.dHeightPanelComm + ...
-                this.dHeightFigurePad + ...
-                this.dHeightPanelRecipe + ...
-                this.dHeightPanelData + ...
-                this.dHeightFigurePad;
-           %}
-            
-            this.hPanelDevices = uipanel(...
-                'Parent', this.hFigure,...
-                'Units', 'pixels',...
-                'Title', 'Hardware',...
-                'BorderWidth', this.dWidthPanelBorder, ...
-                'Clipping', 'on',...
-                'Position', mic.Utils.lt2lb([ ...
-                    dLeft ...
-                    dTop ...
-                    this.dWidthPanelDevices ...
-                    this.dHeightPanelDevices], ...
-                    this.hFigure ...
-                ) ...
-            );
-        
-			drawnow; 
-                        
-            dLeft = 10;
-            dSep = 30;
-            dSepGroup = 20;
-            dTop = 20;
-                                    
-            
-            this.uiCommBL1201CorbaProxy.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-                        
-            this.uiGratingTiltX.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiUndulatorGap.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            dTop = dTop + dSepGroup;
-            
-                        
-            this.uiCommExitSlit.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-                        
-            this.uiExitSlit.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            dTop = dTop + dSepGroup;
-            
-            this.uiCommGalilD142.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;            
-            this.uiD142StageY.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            dTop = dTop + dSepGroup;
-            
-            this.uiCommRigolDG1000Z.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            %{
-            this.uiCommDctCorbaProxy.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            %}
-                        
-            this.uiShutter.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            dTop = dTop + dSepGroup;
-            
-             
-            this.uiCommDataTranslationMeasurPoint.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiM141Current.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiD141Current.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiD142Current.build(this.hPanelDevices, dLeft, dTop);
-            dTop = dTop + dSep;
-            dTop = dTop + dSepGroup;
-            
-        end
+
         
         function buildPanelRecipe(this)
             
             dLeft = this.dWidthFigurePad;
-            dTop = this.dHeightFigurePad; % + ...
-                % this.dHeightPanelComm + ...
-                % this.dHeightFigurePad;
+            
+            
+            dTop = 20;
                         
             this.hPanelScan = uipanel(...
-                'Parent', this.hFigure,...
+                'Parent', this.hParent,...
                 'Units', 'pixels',...
                 'Title', 'Scan',...
                 'BorderWidth', this.dWidthPanelBorder, ...
@@ -723,7 +645,7 @@ Ch 34: D142
                     dTop ...
                     this.dWidthPanelRecipe ...
                     this.dHeightPanelRecipe], ...
-                    this.hFigure ...
+                    this.hParent ...
                 ) ...
             );
         
@@ -808,144 +730,12 @@ Ch 34: D142
         end
         
         
-        function initUiDeviceD142StageY(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-set-number', ...
-                'config-d142-stage-y.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-            
-            this.uiD142StageY = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
-                'cName', 'beamline-d142-stage-y', ...
-                'config', uiConfig, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'lShowLabels', false, ...
-                'cLabel', 'D142 Stage Y' ...
-            );
-        
-            addlistener(this.uiD142StageY, 'eUnitChange', @this.onUnitChange);
-        end
-        
-        
-        function initUiDeviceD141Current(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-number', ...
-                'config-d141-current.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-        
-            this.uiD141Current = mic.ui.device.GetNumber(...
-                'clock', this.clock, ...
-                'cName', 'beamline-measur-point-d141-diode', ...
-                'config', uiConfig, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cLabel', 'D141 Current', ...
-                'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
-            );
-        
-            addlistener(this.uiD141Current, 'eUnitChange', @this.onUnitChange);
-        end 
         
         
         
-        function initUiDeviceM141Current(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-number', ...
-                'config-m141-current.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-        
-            this.uiM141Current = mic.ui.device.GetNumber(...
-                'clock', this.clock, ...
-                'cName', 'beamline-measur-point-m141-diode', ...
-                'config', uiConfig, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cLabel', 'M141 Current', ...
-                'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
-            );
-        
-            addlistener(this.uiM141Current, 'eUnitChange', @this.onUnitChange);
-        end 
-        
-        
-        function initUiDeviceD142Current(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-number', ...
-                'config-d142-current.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-        
-            this.uiD142Current = mic.ui.device.GetNumber(...
-                'clock', this.clock, ...
-                'cName', 'beamline-measur-point-d142-diode', ...
-                'config', uiConfig, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cLabel', 'D142 Current', ...
-                'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
-            );
-        
-            addlistener(this.uiD142Current, 'eUnitChange', @this.onUnitChange);
-        end 
-        
-        
+
          
-        function initUiDeviceExitSlit(this)
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-set-number', ...
-                'config-gap-of-exit-slit.json' ...
-            );
         
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-            
-            this.uiExitSlit = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'lShowLabels', false, ...
-                'cName', 'beamline-exit-slit', ...
-                'config', uiConfig, ...
-                'cLabel', 'Exit Slit' ...
-            );
-        
-            addlistener(this.uiExitSlit, 'eUnitChange', @this.onUnitChange);
-        end
         
         function initUiDeviceUndulatorGap(this)
             
@@ -974,32 +764,9 @@ Ch 34: D142
         end
         
         function initUiDeviceShutter(this)
-            
-            this.deviceShutterVirtual = bl12014.device.ShutterVirtual();
-            
-            cPathConfig = fullfile(...
-                bl12014.Utils.pathUiConfig(), ...
-                'get-set-number', ...
-                'config-shutter-rigol.json' ...
-            );
-        
-            uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
-            );
-            
-            this.uiShutter = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
-                'lShowLabels', false, ...
-                'dWidthPadName', this.dWidthPadName, ...
-                'dWidthName', this.dWidthUiDeviceName, ...
-                'dWidthUnit', this.dWidthUiDeviceUnit, ...
-                'cName', 'beamline-shutter', ...
-                'config', uiConfig, ...
-                'cLabel', 'Shutter' ...
-            );
-            
-        	this.uiShutter.setDeviceVirtual(this.deviceShutterVirtual);
-            addlistener(this.uiShutter, 'eUnitChange', @this.onUnitChange);
+                        
+            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
+            addlistener(this.uiShutter.uiShutter, 'eUnitChange', @this.onUnitChange);
         end
         
         
@@ -1173,23 +940,16 @@ Ch 34: D142
         function init(this)
             this.msg('init()');
             
-            this.initUiCommExitSlit();
             this.initUiCommGalil();
-            this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDctCorbaProxy();
             this.initUiCommBL1201CorbaProxy();
-            this.initUiCommRigolDG1000Z();
+                        
+            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.clock);
             
-            this.initUiDeviceExitSlit();
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
             this.initUiDeviceShutter(); % DCT Corba Proxy
             this.initUiDeviceGratingTiltX(); % BL1201 Corba Proxy
-            this.initUiDeviceD142StageY();
-            
-            this.initUiDeviceD141Current();
-            this.initUiDeviceM141Current();
-            this.initUiDeviceD142Current();
-            
+           
             this.initUiPositionRecaller();
             
             this.initUiRecipe();
@@ -1201,24 +961,29 @@ Ch 34: D142
             
             this.initUiTextPlotX();
             this.initUiTextPlotY();
+            
+            this.uiM141 = bl12014.ui.M141('clock', this.clock);
+            this.uiD141 = bl12014.ui.D141('clock', this.clock);
+            this.uiM142 = bl12014.ui.M142('clock', this.clock);
+            this.uiD142 = bl12014.ui.D142('clock', this.clock);
         end
          
         function onFigureCloseRequest(this, src, evt)
             
             
             this.msg('onFigureCloseRequest()');
-            if ~isvalid(this.hFigure)
+            if ~isvalid(this.hParent)
                 return
             end
             
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
             
         end
         
         function onFigureWindowButtonDown(this, src, evt)
             
-            this.showSetAsZeroIfAxesIsClicked();
+            this.showSetAsZeroIfFigureClickIsInAxes();
             
         end
         
@@ -1438,7 +1203,7 @@ Ch 34: D142
             cLabelY = sprintf(...
                 '%s Current (%s)', ...
                 this.uiPopupRecipeOutput.get().cLabel, ...
-                this.uiD141Current.getUnit().name ...
+                this.uiD141.uiCurrent.getUnit().name ...
             );
             ylabel(this.hAxes, cLabelY);
         end
@@ -1512,13 +1277,13 @@ Ch 34: D142
                 case 'grating_tilt_x'
                     c = this.uiGratingTiltX.getUnit().name;
                 case 'shutter'
-                    c = this.uiShutter.getUnit().name;
+                    c = this.uiShutter.uiShutter.getUnit().name;
                 case 'exit_slit'
-                    c = this.uiExitSlit.getUnit().name;
+                    c = this.uiExitSlit.uiGap.getUnit().name;
                 case 'undulator_gap'
                     c = this.uiUndulatorGap.getUnit().name;
                 case 'd142_stage_y'
-                    c = this.uiD142StageY.getUnit().name;
+                    c = this.uiD142.uiStageY.getUnit().name;
                 otherwise 
                     c = 'unknown';
             end
@@ -1578,13 +1343,13 @@ Ch 34: D142
         function st = getDeviceUnits(this)
             st = struct();
             st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getUnit().name;
-            st.(this.cNameDeviceShutter) = this.uiShutter.getUnit().name;
-            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getUnit().name;
+            st.(this.cNameDeviceShutter) = this.uiShutter.uiShutter.getUnit().name;
+            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.uiGap.getUnit().name;
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getUnit().name;
-            st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getUnit().name;
-            st.(this.cNameDeviceD141Current) = this.uiD141Current.getUnit().name;
-            st.(this.cNameDeviceM141Current) = this.uiM141Current.getUnit().name;
-            st.(this.cNameDeviceD142Current) = this.uiD142Current.getUnit().name;
+            st.(this.cNameDeviceD142StageY) = this.uiD142.uiStageY.getUnit().name;
+            st.(this.cNameDeviceD141Current) = this.uiD141.uiCurrent.getUnit().name;
+            st.(this.cNameDeviceM141Current) = this.uiM141.uiCurrent.getUnit().name;
+            st.(this.cNameDeviceD142Current) = this.uiD142.uiCurrent.getUnit().name;
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1770,8 +1535,8 @@ Ch 34: D142
 
                 switch ceFields{n}
                     case this.cNameDeviceExitSlit
-                        this.uiExitSlit.setDestCalDisplay(dValue, cUnit);
-                        this.uiExitSlit.moveToDest(); % click
+                        this.uiExitSlit.uiGap.setDestCalDisplay(dValue, cUnit);
+                        this.uiExitSlit.uiGap.moveToDest(); % click
                     case this.cNameDeviceUndulatorGap
                         this.uiUndulatorGap.setDestCalDisplay(dValue, cUnit);
                         this.uiUndulatorGap.moveToDest(); % click
@@ -1779,8 +1544,8 @@ Ch 34: D142
                         this.uiGratingTiltX.setDestCalDisplay(dValue, cUnit);
                         this.uiGratingTiltX.moveToDest(); % click
                     case this.cNameDeviceD142StageY
-                        this.uiD142StageY.setDestCalDisplay(dValue, cUnit);
-                        this.uiD142StageY.moveToDest(); % click 
+                        this.uiD142.uiStageY.setDestCalDisplay(dValue, cUnit);
+                        this.uiD142.uiStageY.moveToDest(); % click 
                     otherwise
                         % do nothing
                 end
@@ -1830,13 +1595,13 @@ Ch 34: D142
 
                         switch ceFields{n}
                             case this.cNameDeviceExitSlit
-                                lReady = this.uiExitSlit.getDevice().isReady();
+                                lReady = this.uiExitSlit.uiGap.getDevice().isReady();
                             case this.cNameDeviceUndulatorGap
                                 lReady = this.uiUndulatorGap.getDevice().isReady();
                             case this.cNameDeviceGratingTiltX 
                                 lReady = this.uiGratingTiltX.getDevice().isReady();
                             case this.cNameDeviceD142StageY
-                                lReady = this.uiD142StageY.getDevice().isReady();
+                                lReady = this.uiD142.uiStageY.getDevice().isReady();
                             otherwise
                                 lReady = true;
                                 % do nothing
@@ -1928,8 +1693,8 @@ Ch 34: D142
                     
                     %{
                     % Open the shutter
-                    this.uiShutter.setDestCal(10000, 'ms');
-                    this.uiShutter.moveToDest();
+                    this.uiShutter.uiShutter.setDestCal(10000, 'ms');
+                    this.uiShutter.uiShutter.moveToDest();
                     
                     %}
                     
@@ -1949,7 +1714,7 @@ Ch 34: D142
                     
                     %{
                     % Close the shutter
-                    this.uiShutter.stop();
+                    this.uiShutter.uiShutter.stop();
                     %}
                     
                     % Update the contract lIssued
@@ -2168,13 +1933,13 @@ Ch 34: D142
             
             switch this.uiPopupRecipeDevice.get().cValue
                 case this.cNameDeviceExitSlit
-                    d = this.uiExitSlit.getValCalDisplay();
+                    d = this.uiExitSlit.uiGap.getValCalDisplay();
                 case this.cNameDeviceUndulatorGap
                     d = this.uiUndulatorGap.getValCalDisplay();
                 case this.cNameDeviceGratingTiltX 
                     d = this.uiGratingTiltX.getValCalDisplay();
                 case this.cNameDeviceD142StageY
-                    d = this.uiD142StageY.getValCalDisplay();
+                    d = this.uiD142.uiStageY.getValCalDisplay();
                 otherwise
                     % do nothing
             end
@@ -2184,13 +1949,13 @@ Ch 34: D142
         function st = getState(this, stUnit)
             
         	st = struct();
-            st.(this.cNameDeviceM141Current) = this.uiM141Current.getValCal(stUnit.(this.cNameDeviceM141Current));
-            st.(this.cNameDeviceD141Current) = this.uiD141Current.getValCal(stUnit.(this.cNameDeviceD141Current));
-            st.(this.cNameDeviceD142Current) = this.uiD142Current.getValCal(stUnit.(this.cNameDeviceD142Current));
-            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.getValCal(stUnit.(this.cNameDeviceExitSlit));
+            st.(this.cNameDeviceM141Current) = this.uiM141.uiCurrent.getValCal(stUnit.(this.cNameDeviceM141Current));
+            st.(this.cNameDeviceD141Current) = this.uiD141.uiCurrent.getValCal(stUnit.(this.cNameDeviceD141Current));
+            st.(this.cNameDeviceD142Current) = this.uiD142.uiCurrent.getValCal(stUnit.(this.cNameDeviceD142Current));
+            st.(this.cNameDeviceExitSlit) = this.uiExitSlit.uiGap.getValCal(stUnit.(this.cNameDeviceExitSlit));
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
             st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
-            st.(this.cNameDeviceD142StageY) = this.uiD142StageY.getValCal(stUnit.(this.cNameDeviceD142StageY));
+            st.(this.cNameDeviceD142StageY) = this.uiD142.uiStageY.getValCal(stUnit.(this.cNameDeviceD142StageY));
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
         end
@@ -2239,49 +2004,9 @@ Ch 34: D142
         
         end
         
-        function initUiCommExitSlit(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommExitSlit = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-exit-slit', this.cName), ...
-                'cLabel', 'Exit Slit' ...
-            );
+   
         
-        end
         
-        function initUiCommDataTranslationMeasurPoint(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-data-translation-measur-point', this.cName), ...
-                'cLabel', 'DataTrans MeasurPoint' ...
-            );
-        
-        end
         
         function initUiCommGalil(this)
             
@@ -2304,26 +2029,7 @@ Ch 34: D142
         
         end
         
-        function initUiCommRigolDG1000Z(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
         
-            this.uiCommRigolDG1000Z = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-               'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', 'rigol-dg1000z', ...
-                'cLabel', 'Rigol DG1000Z' ...
-            );
-        
-        end
         
         
         function initUiPositionRecaller(this)
@@ -2372,137 +2078,7 @@ Ch 34: D142
         end
         
         
-        function showSetAsZeroIfAxesIsClicked(this)
-            
-            % If the mouse is inside the axes, turn the cursor into a
-           % crosshair, else make sure it is an arrow
-           
-           if ~ishandle(this.hFigure)
-               return;
-           end
-           
-           if ~ishandle(this.hAxes)
-               return;
-           end
-           
-          
-           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
-           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
-           dPoint = get(this.hAxes, 'CurrentPoint');
-           
-           dPositionPanel = get(this.hPanelData, 'Position');
-           
-           if isempty(dAxes)
-               return;
-           end
-           
-           dCursorLeft =    dCursor(1);
-           dCursorBottom =  dCursor(2);
-           
-           % Need to include left/bottom of container panel to get correct
-           % left / bottom of the Axes since its Position is relative to
-           % its parent
-           
-           dAxesLeft =      dAxes(1) + dPositionPanel(1);
-           dAxesBottom =    dAxes(2) + dPositionPanel(2);
-           dAxesWidth =     dAxes(3);
-           dAxesHeight =    dAxes(4);
-           
-           if   dCursorLeft >= dAxesLeft && ...
-                dCursorLeft <= dAxesLeft + dAxesWidth && ...
-                dCursorBottom >= dAxesBottom && ...
-                dCursorBottom <= dAxesBottom + dAxesHeight
-            
-                
-                cePrompt = {'Original Calibrated Value:', 'New Calibrated Value:'};
-                cTitle = 'Set Clicked Position As Zero?';
-                dLines = 1;
-                ceDefaultAns = {...
-                    sprintf('%1.3f', dPoint(1, 1)), ...
-                    '0' ...
-                };
-                stOptions = struct(...
-                    'Resize', 'on' ...
-                );
-                ceAnswer = inputdlg(...
-                    cePrompt,...
-                    cTitle,...
-                    dLines,...
-                    ceDefaultAns, ...
-                    stOptions ...
-                );
-
-                if isempty(ceAnswer)
-                    return
-                end
-                
-                this.uiGratingTiltX.setValToNewVal(...
-                    str2double(ceAnswer{1}), ...
-                    str2double(ceAnswer{2}) ...
-                );
-
-   
-           
-           end
-            
-        end
         
-        
-        function updateAxesCrosshair(this)
-            
-           % If the mouse is inside the axes, turn the cursor into a
-           % crosshair, else make sure it is an arrow
-           
-           if ~ishandle(this.hFigure)
-               return;
-           end
-           
-           if ~ishandle(this.hAxes)
-               return;
-           end
-           
-          
-           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
-           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
-           dPoint = get(this.hAxes, 'CurrentPoint');
-           
-           dPositionPanel = get(this.hPanelData, 'Position');
-           
-           if isempty(dAxes)
-               return;
-           end
-           
-           dCursorLeft =    dCursor(1);
-           dCursorBottom =  dCursor(2);
-           
-           % Need to include left/bottom of container panel to get correct
-           % left / bottom of the Axes since its Position is relative to
-           % its parent
-           
-           dAxesLeft =      dAxes(1) + dPositionPanel(1);
-           dAxesBottom =    dAxes(2) + dPositionPanel(2);
-           dAxesWidth =     dAxes(3);
-           dAxesHeight =    dAxes(4);
-           
-           if   dCursorLeft >= dAxesLeft && ...
-                dCursorLeft <= dAxesLeft + dAxesWidth && ...
-                dCursorBottom >= dAxesBottom && ...
-                dCursorBottom <= dAxesBottom + dAxesHeight
-            
-                if strcmp(get(this.hFigure, 'Pointer'), 'arrow')
-                    set(this.hFigure, 'Pointer', 'crosshair')
-                end
-                
-                this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
-                this.uiTextPlotY.set(sprintf('y: %1.3e', dPoint(1, 2)));
-           else
-                if ~strcmp(get(this.hFigure, 'Pointer'), 'arrow')
-                    set(this.hFigure, 'Pointer', 'arrow')
-                end
-                this.uiTextPlotX.set('x: [hover]');
-                this.uiTextPlotY.set('y: [hover]');
-           end
-        end
         
         function initUiTextPlotX(this)
             

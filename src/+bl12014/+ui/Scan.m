@@ -76,6 +76,7 @@ classdef Scan < mic.Base
         uiWafer
         uiReticle
         uiPupilFill
+        % {mic.ui.device.GetSetNumber 1x1}
         uiShutter
         uiBeamline % Temporary, allows control of the shutter
         
@@ -91,7 +92,7 @@ classdef Scan < mic.Base
         
         hPanelAvailable
         hPanelAdded
-        hFigure
+        hParent
         
         cePrescriptions           % Store uiListActive.ceOptions when FEM starts
          
@@ -227,7 +228,7 @@ classdef Scan < mic.Base
                 this.dWidthPadPanel;
             
             this.hPanelAvailable = uipanel(...
-                'Parent', this.hFigure,...
+                'Parent', this.hParent,...
                 'Units', 'pixels',...
                 'Title', 'Available Prescriptions',...
                 'BorderWidth', this.dWidthPanelBorder, ...
@@ -237,7 +238,7 @@ classdef Scan < mic.Base
                     dTop ...
                     dWidth ...
                     this.dHeightPanelAvailable], ...
-                    this.hFigure ...
+                    this.hParent ...
                 ) ...
             );
 
@@ -300,7 +301,7 @@ classdef Scan < mic.Base
                 this.dWidthPadFigure;
             
             this.hPanelAdded = uipanel(...
-                'Parent', this.hFigure,...
+                'Parent', this.hParent,...
                 'Units', 'pixels',...
                 'Title', '',...
                 'BorderWidth', this.dWidthPanelBorder, ...
@@ -310,7 +311,7 @@ classdef Scan < mic.Base
                     dTop ...
                     dWidth ...
                     this.dHeightPanelAdded], ...
-                    this.hFigure ...
+                    this.hParent ...
                 ) ...
             );
         
@@ -403,64 +404,11 @@ classdef Scan < mic.Base
         end
              
         
-        function buildFigure(this)
-          
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            
-             dWidth = this.dWidthPadFigure + ...
-                this.dWidthPadPanel + ...
-                this.dWidthList + ...
-                this.dWidthPadPanel + ...
-                this.dWidthPadFigure + ...
-                this.dWidthPadPanel + ...
-                this.dWidthList + ...
-                this.dWidthPadPanel + ...                
-                this.dWidthPadFigure;
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off',...
-                'MenuBar', 'none',...
-                'Name',  'FEM Control',...
-                'Position', [ ...
-                    (dScreenSize(3) - dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off',...
-                'Color', this.dColorFigure, ...
-                'HandleVisibility', 'on',... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequestFcn ...
-                );
-            
-            drawnow;     
-            
-        end
         
-        function build(this)
-            if isa(this.hDock, 'bl12014.ui.Dock')
-                cUIName = 'FEM Control';
-                % If UI exists, simply make active
-                if this.hDock.doesUIExist(cUIName)
-                    this.hDock.makeUIActive(cUIName);
-                    return
-                else
-                    % This UI should be docked onto the main figure as a tab
-                    this.hFigure = this.hDock.addUITab(cUIName);
-                end
-            else
+        
+        function build(this, hParent, dLeft, dTop)
             
-                this.buildFigure()
-            end
-            
+            this.hParent = hParent;
             this.buildPanelAvailable()
             this.buildPanelAdded()
           
@@ -476,8 +424,8 @@ classdef Scan < mic.Base
             
             % Delete the figure
             
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
+            if ishandle(this.hParent)
+                delete(this.hParent);
             end
                         
         end
@@ -1206,12 +1154,12 @@ classdef Scan < mic.Base
             dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
             
             % Set the shutter UI time (ms)
-            this.uiShutter.uiShutter.setDestCal(...
+            this.uiShutter.setDestCal(...
                 dSec * 1e3, ...
                 'ms' ...
             );
             % Trigger the shutter UI
-            this.uiShutter.uiShutter.moveToDest();
+            this.uiShutter.moveToDest();
             
             
             % 2018.04.19
@@ -1275,12 +1223,8 @@ classdef Scan < mic.Base
                         switch cField
                             case 'shutter'
                                 
-                               %{ 
-                               if ~this.uiShutter.uiShutter.getDevice().isReady()
-                                   lReady = false;
-                               end
-                                %}
-                               lReady = this.uiBeamline.uiShutter.getDevice().isReady();
+                               
+                               lReady = this.uiShutter.getDevice().isReady();
                                  
                             otherwise
                                 
@@ -1481,11 +1425,7 @@ classdef Scan < mic.Base
         
         
         
-        function onCloseRequestFcn(this, src, evt)
-            delete(this.hFigure);
-            this.hFigure = [];
-            % this.saveState();
-        end
+       
         
         function abort(this, cMsg)
                            
@@ -1566,8 +1506,8 @@ classdef Scan < mic.Base
             
             % Shutter
             
-            if ~this.uiShutter.uiShutter.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiShutter.uiShutter.id());
+            if ~this.uiShutter.isActive()
+                cMsg = sprintf('%s\n%s', cMsg, this.uiShutter.id());
             end
             
             % Reticle Coarse Stage
@@ -1937,7 +1877,7 @@ classdef Scan < mic.Base
         	st = struct();
             
             st.als_current_ma = 500; % FIX ME
-            st.exit_slit_um = this.uiBeamline.uiExitSlit.getValCal('um');
+            st.exit_slit_um = this.uiBeamline.uiExitSlit.uiGap.getValCal('um');
             st.undulator_gap_mm = this.uiBeamline.uiUndulatorGap.getValCal('mm');
             st.wavelength_nm = this.uiBeamline.uiGratingTiltX.getValCal('wav (nm)');
             
@@ -2006,7 +1946,7 @@ classdef Scan < mic.Base
                         
             
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
-            st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
+            st.shutter_ms = this.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 

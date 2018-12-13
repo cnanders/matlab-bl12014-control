@@ -29,17 +29,17 @@ classdef PowerPmacStatus < mic.Base
         ceceTypes
         
         cName = 'Power PMAC Status (Updates every sec)'
-        hFigure
+        hParent
         
         clock
-        dWidthName = 150
+        dWidthName = 130
         lShowDevice = false
         lShowInitButton = false
         
         %{ cell of char 1xm } list of titles of each status category
         cecTitles 
         
-        dWidthColSep = 55
+        dWidthColSep = 30
         
         
     end
@@ -104,7 +104,7 @@ classdef PowerPmacStatus < mic.Base
             
             dTop = 10;
             dLeft = 10;
-            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             
         end
         
@@ -139,7 +139,7 @@ classdef PowerPmacStatus < mic.Base
             
             for m = 1 : length(this.ceceTypes)
                 for n = 1 : length(this.ceceTypes{m})
-                    this.uiGetLogicals{m}{n}.build(this.hFigure, dLeft, dTop);
+                    this.uiGetLogicals{m}{n}.build(this.hParent, dLeft, dTop);
                     dTop = dTop + dSep;
                 end
                 
@@ -159,7 +159,7 @@ classdef PowerPmacStatus < mic.Base
             
             for m = 1 : length(this.ceceTypes)
                     
-                this.uiTexts{m}.build(this.hFigure, dLeft, dTop, this.dWidthName, 20);
+                this.uiTexts{m}.build(this.hParent, dLeft, dTop, this.dWidthName, 20);
                 % Update dLeft (shift to right)
                 dLeft = dLeft + this.dWidthName + this.dWidthColSep + 10;
                 
@@ -169,15 +169,10 @@ classdef PowerPmacStatus < mic.Base
         
           
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front and return
-                figure(this.hFigure);
-                return
-            end
+            this.hParent = hParent;
             
-            this.buildFigure()
             this.buildUiComm();
             this.buildUiTexts();
             this.buildUiGetLogicals();
@@ -187,11 +182,6 @@ classdef PowerPmacStatus < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-            % Delete the figure
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
             
         end    
@@ -200,47 +190,6 @@ classdef PowerPmacStatus < mic.Base
     end
     
     methods (Access = private)
-        
-        function buildFigure(this)
-            
-            % this.connect();
-            % this.turnOn();
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', this.cName, ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-        
-			drawnow; 
-        end
-        
-        function onFigureCloseRequest(this, src, evt)
-            
-            % this.turnOff();
-            this.msg('M143Control.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
-        end
-        
         
                 
         function init(this)

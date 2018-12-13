@@ -35,12 +35,12 @@ classdef M142 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 710
-        dHeight = 260
-        hFigure
+        dWidth = 690
+        dHeight = 255
         
         dWidthName = 140
         dWidthPadName = 29
+        hPanel
         
         configStageY
         configMeasPointVolts
@@ -125,13 +125,7 @@ classdef M142 < mic.Base
             this.uiStageTiltYMfr.setDevice([]);
         end
         
-        function build(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
+        function buildFigure(this)
             
             dScreenSize = get(0, 'ScreenSize');
             
@@ -152,32 +146,49 @@ classdef M142 < mic.Base
             );
                         
             drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+            
+        end
+        
+        
+        function build(this, hParent, dLeft, dTop)
+            
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'M142',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+            dLeft = 0;
+            dTop = 15;
             dSep = 30;
             
            
-            this.uiCommMicronixMmc103.build(this.hFigure, dLeft, dTop);
+            this.uiCommMicronixMmc103.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommNewFocusModel8742.build(this.hFigure, dLeft, dTop);
+            this.uiCommNewFocusModel8742.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
                          
-            this.uiStageX.build(this.hFigure, dLeft, dTop);
+            this.uiStageX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStageTiltYMf.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltYMf.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStageTiltYMfr.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltYMfr.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStageTiltZMfr.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltZMfr.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
             
@@ -187,15 +198,7 @@ classdef M142 < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
-            
+           
         end    
         
         

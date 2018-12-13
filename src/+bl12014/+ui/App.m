@@ -12,14 +12,15 @@ classdef App < mic.Base
 	properties
         
         cName = 'ui.App'
+        
+        
+        
         uiNetworkCommunication
         uiBeamline
         uiShutter
-        uiM141
-        uiM142
+        
         uiM143
-        uiD141
-        uiD142
+
         uiVibrationIsolationSystem
         uiReticle
         uiWafer
@@ -39,15 +40,41 @@ classdef App < mic.Base
         uiMeasurPointLogPlotter
         uiMADiagnostics
         uiPOCurrent
-        uiPowerPmacHydraMotMin
         uiMfDriftMonitorVibration
-        uiExitSlit
-        uiDock
-        
+        uiButtonListClockTasks
         
         % Eventually make private.
         % Exposing for troubleshooting
         clock
+        
+        % { mic.ClockGroup 1x1}
+        clockNetworkCommunication
+        clockBeamline
+        clockShutter
+       
+        clockM143
+       
+        clockVibrationIsolationSystem
+        clockReticle
+        clockWafer
+        clockPowerPmacStatus
+        clockPrescriptionTool
+        clockScan
+        clockTempSensors
+        clockFocusSensor
+        clockDriftMonitor
+        clockLSIControl
+        clockLSIAnalyze
+        clockScannerM142
+        clockScannerMA
+        clockHeightSensorLEDs
+        clockCameraLEDs
+        clockScanResultPlot2x2
+        clockMeasurPointLogPlotter
+        clockMADiagnostics
+        clockPOCurrent
+        clockMfDriftMonitorVibration
+        clockMfDriftMonitor
 
     end
     
@@ -56,6 +83,31 @@ classdef App < mic.Base
     end
     
     properties (Access = private)
+        
+        cecTabs = {...
+            'Beamline', ...
+            'Field Scanner (M142)', ...
+            'M143', ...
+            'Pupil Scanner (MA)', ...
+            'MA Diagnostics', ...
+            'VIS', ...
+            'Drift Monitor Vib', ...
+            'Drift Monitor', ...
+            'Reticle', ...
+            'Wafer', ...
+            'Pre Tool', ...
+            'FEM Control', ...
+            'PO Current', ...
+            'PPMAC Status', ....
+            'Camera LEDs', ...
+            'MeasurPoint Log', ...
+            'Height Sensor LEDs', ...
+            'Network Status', ...
+            '2x2 Plotter' ...
+        };
+    
+        lIsTabBuilt = false(1, 30);
+            
          
         dHeightEdit = 24
         dWidthButtonButtonList = 200
@@ -66,17 +118,20 @@ classdef App < mic.Base
         
         uiButtonListBeamline
         uiButtonListVisAndPpmac
-        uiButtonListHsDmi
+
         uiButtonListInterferometry
         uiButtonListFemScan
-        uiButtonListOther
         
         hHardware
         dDelay = 0.5
         dColorOn = [0 0.9 0]
         dColorOff = [0.9 0.9 0.9]
         
+        uiTextDurationLabel
         uiTextDurationOfTimerExecution
+        
+        hFigureNew
+        uiTabGroup
     end
     
         
@@ -132,7 +187,7 @@ classdef App < mic.Base
                     'NumberTitle', 'off', ...
                     'MenuBar', 'none', ...
                     'Name', 'MET5', ...
-                    'Position', [50 50 this.dWidth this.dHeight], ... % left bottom width height
+                    'Position', [50 50 400 250], ... % left bottom width height
                     'Resize', 'off', ...
                     'HandleVisibility', 'on', ... % lets close all close the figure
                     'CloseRequestFcn', @this.onFigureCloseRequest, ...
@@ -154,24 +209,56 @@ classdef App < mic.Base
         function build(this)
             
             this.buildFigure();
+            this.uiButtonListInterferometry.build(this.hFigure, 10, 10);
             
             
-            this.uiButtonListBeamline.build(this.hFigure, 10, 10);
-            this.uiButtonListVisAndPpmac.build(this.hFigure, 250, 10);
+            % Tab-based 
+            this.buildNew();
+            % this.onUiTabGroup();
             
-            this.uiButtonListHsDmi.build(this.hFigure, 250, 200);
-            this.uiButtonListFemScan.build(this.hFigure, 250, 350);
+        end
+        
+        function buildNew(this)
             
-            this.uiButtonListOther.build(this.hFigure, 500, 10);
-            this.uiButtonListInterferometry.build(this.hFigure, 500, 300);
+            dWidth = 1900;
+            dHeight = 1080;
+            dScreenSize = get(0, 'ScreenSize');
             
-            this.uiTextDurationOfTimerExecution.build(...
-                this.hFigure, ...
-                10, ... % left
-                480, ... % top
-                200, ... % width
-                24 ...
+            this.hFigureNew = figure( ...
+                'NumberTitle', 'off',...
+                'MenuBar', 'none',...
+                'Name', 'MET5 Control',...
+                'Position', [ ...
+                (dScreenSize(3) - dWidth)/2 ...
+                (dScreenSize(4) - dHeight)/2 ...
+                dWidth ...
+                dHeight ...
+                ],... % left bottom width height
+                'Resize', 'off',...
+                'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
+                'WindowButtonDownFcn', @this.onFigureWindowMouseDown, ... % doesn't work if datacursormode is on!
+                'HandleVisibility', 'on',... % lets close all close the figure
+                ... % 'CloseRequestFcn', @this.onCloseRequest, ...
+                'Visible', 'on'...
             );
+            this.uiTabGroup.build(this.hFigureNew, 0, 25, dWidth, dHeight - 2);
+            
+            this.uiTextDurationLabel.build(...
+                this.hFigureNew, ...
+                10, ... % left
+                5, ... % top
+                180, ... % width
+                12 ...
+            );
+            this.uiTextDurationOfTimerExecution.build(...
+                this.hFigureNew, ...
+                190, ... % left
+                5, ... % top
+                200, ... % width
+                12 ...
+            );
+        
+            this.uiButtonListClockTasks.build(this.hFigureNew, 290, 5, 100, 20);
         
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
@@ -182,240 +269,47 @@ classdef App < mic.Base
         end
         
         
-        function setColorOfBeamline(this)
-            if (...
-                this.uiBeamline.uiCommExitSlit.get() ||...
-                this.uiBeamline.uiCommBL1201CorbaProxy.get() || ...
-                this.uiBeamline.uiCommDctCorbaProxy.get() || ...
-                this.uiBeamline.uiCommRigolDG1000Z.get() || ...
-                this.uiBeamline.uiCommDataTranslationMeasurPoint.get() || ...
-                this.uiBeamline.uiCommGalilD142.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(1, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(1, this.dColorOff);
+        function onFigureWindowMouseDown(this, src, evt)
+           
+            cTab = this.uiTabGroup.getSelectedTabName();
+            
+            switch cTab
+               case 'Beamline'
+                    this.uiBeamline.showSetAsZeroIfFigureClickIsInAxes(this.hFigureNew);
+               
             end
+            
         end
-        function setColorOfExitSlit(this)
+        
+        
+        function onFigureWindowMouseMotion(this, src, evt)
+           
+           % this.msg('onWindowMouseMotion()');
+           cTab = this.uiTabGroup.getSelectedTabName();
+            
+           switch cTab
+               case 'Beamline'
+                    this.uiBeamline.updateAxesCrosshair(this.hFigureNew);
+               case 'MeasurPoint Log'
+                    this.uiMeasurPointLogPlotter.setTextPlotXPlotYBasedOnAxesCurrentPoint(this.hFigureNew);
+           end
+           
+        end
+        
+        
+        
+        
+        
 
-            if (...
-                this.uiExitSlit.uiCommExitSlit.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(2, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(2, this.dColorOff);
-            end
-        end
-        function setColorOfM141(this)
-            if (...
-                this.uiM141.uiCommSmarActMcsM141.get() ||...
-                this.uiM141.uiCommDataTranslationMeasurPoint.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(4, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(4, this.dColorOff);
-            end
-        end
-        function setColorOfD141(this)
-            if (...
-                this.uiD141.uiCommDataTranslationMeasurPoint.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(5, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(5, this.dColorOff);
-            end
-        end
-        function setColorOfM142(this)
-            if (...
-                this.uiM142.uiCommNewFocusModel8742.get() ||...
-                this.uiM142.uiCommMicronixMmc103.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(6, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(6, this.dColorOff);
-            end
-        end
-        function setColorOfScannerM142(this)
-            if (...
-                this.uiScannerM142.uiCommNPointLC400.get() ... 
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(7, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(7, this.dColorOff);
-            end
-        end
-        function setColorOfD142(this)
-            if (...
-                this.uiD142.uiCommGalil.get() ||...
-                this.uiD142.uiCommDataTranslationMeasurPoint.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(8, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(8, this.dColorOff);
-            end
-        end
-        function setColorOfM143(this)
-            if (...
-                this.uiM143.uiCommGalil.get() ||...
-                this.uiM143.uiCommDataTranslationMeasurPoint.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(9, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(9, this.dColorOff);
-            end
-        end
-        
-        function setColorOfMADiagnostics(this)
-            if (...
-                this.uiMADiagnostics.uiCommNewFocusModel8742.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(10, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(10, this.dColorOff);
-            end
-        end
-        function setColorOfScannerMA(this)
-            if (...
-                this.uiScannerMA.uiCommNPointLC400.get() ... 
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(11, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(11, this.dColorOff);
-            end
-        end
         
         
-        function setColorOfVibrationIsolationSystem(this)
-
-            if (...
-                this.uiVibrationIsolationSystem.uiCommGalil.get() ||...
-                this.uiVibrationIsolationSystem.uiCommDataTranslation.get() ...
-            ) 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(1, this.dColorOn);
-            else 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(1, this.dColorOff);
-            end
-        end
-        function setColorOfReticle(this)
-
-             if (...
-                this.uiReticle.uiCommDeltaTauPowerPmac.get() ||...
-                this.uiReticle.uiCommKeithley6482.get() ...
-            ) 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(2, this.dColorOn);
-            else 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(2, this.dColorOff);
-             end
-        end
-        function setColorOfWafer(this)
-             if (...
-                this.uiWafer.uiCommDeltaTauPowerPmac.get() ||...
-                this.uiWafer.uiCommMfDriftMonitor.get() || ...
-                this.uiWafer.uiCommKeithley6482.get() ...
-            ) 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(3, this.dColorOn);
-            else 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(3, this.dColorOff);
-             end
-        end
-        
-        function setColorOfPpmacStatus(this)
-              if (...
-                this.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.get() ...
-            ) 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(4, this.dColorOn);
-            else 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(4, this.dColorOff);
-              end
-        end
-        
-        function setColorOfPpmacHydraMotMin(this)
-            if (...
-                this.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.get() ...
-            ) 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(5, this.dColorOn);
-            else 
-                this.uiButtonListVisAndPpmac.setButtonColorBackground(5, this.dColorOff);
-            end
-        end
-        
-        
-        function setColorOfMfDriftMonitorVibration(this)
-
-             if (...
-                this.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.get() ...
-            ) 
-                this.uiButtonListHsDmi.setButtonColorBackground(2, this.dColorOn);
-            else 
-                this.uiButtonListHsDmi.setButtonColorBackground(2, this.dColorOff);
-             end
-        end
-        function setColorOfPoCurrent(this)
-             if (...
-                this.uiPOCurrent.uiCommKeithley6482.get() ...
-            ) 
-                this.uiButtonListFemScan.setButtonColorBackground(3, this.dColorOn);
-            else 
-                this.uiButtonListFemScan.setButtonColorBackground(3, this.dColorOff);
-             end
-             
-        end
-        
-        
-        function setColorOfShutter(this)
-
-             if (...
-                this.uiShutter.uiCommRigol.get() ...
-            ) 
-                this.uiButtonListBeamline.setButtonColorBackground(3, this.dColorOn);
-            else 
-                this.uiButtonListBeamline.setButtonColorBackground(3, this.dColorOff);
-             end
-        end
-        
-        
-        
+       
         function onClock(this)
             
-             
+            cDuration = sprintf('%1.1f', this.clock.getDurationOfLastTimerExecution() * 1000);
+            dNum = this.clock.getNumberOfActiveTasks();
             
-            % Update the color of the buttons
-            %{
-            stButtons = [
-              
-              stTempSensors, ...
-              stFocusSensor, ...
-              stDriftMonitor, ...
-              stLSIControl, ...
-              stLSIAnalyze, ...
-              stHeightSensorLEDs, ...
-              stCameraLEDs, ...
-              stScanResultPlot2x2, ...
-              stShutter ...
-           ];
-            %}
-            
-            
-            this.setColorOfBeamline();
-            this.setColorOfExitSlit()
-            this.setColorOfM141();
-            this.setColorOfD141()
-            this.setColorOfM142();
-            this.setColorOfScannerM142();
-            this.setColorOfD142();
-            this.setColorOfM143();
-            this.setColorOfVibrationIsolationSystem();
-            this.setColorOfMADiagnostics();
-            this.setColorOfScannerMA()
-            this.setColorOfReticle()
-            this.setColorOfWafer()
-            this.setColorOfMfDriftMonitorVibration()
-            this.setColorOfPoCurrent()
-            this.setColorOfPpmacStatus()
-            this.setColorOfPpmacHydraMotMin()
-            this.setColorOfShutter() 
-            
-            cVal = sprintf('%1.1f', this.clock.getDurationOfLastTimerExecution() * 1000);
+            cVal = sprintf('%s (%1.0f tasks)', cDuration, dNum);
             this.uiTextDurationOfTimerExecution.set(cVal);
             
             
@@ -442,14 +336,10 @@ classdef App < mic.Base
             end
             
             % Delete the device UI controls
+            delete(this.uiBeamline)
             delete(this.uiNetworkCommunication)
-            delete(this.uiShutter)
-            delete(this.uiM141)
-            delete(this.uiM142)
             delete(this.uiMADiagnostics)
             delete(this.uiM143)
-            delete(this.uiD141)
-            delete(this.uiD142)
             delete(this.uiVibrationIsolationSystem)
             delete(this.uiReticle)
             delete(this.uiWafer)
@@ -463,11 +353,8 @@ classdef App < mic.Base
             delete(this.uiHeightSensorLEDs)
             delete(this.uiCameraLEDs)
             delete(this.uiScanResultPlot2x2)
-            delete(this.uiExitSlit)
             delete(this.uiMfDriftMonitorVibration);
-            delete(this.uiPowerPmacHydraMotMin);
             delete(this.uiPowerPmacStatus);
-            delete(this.uiDock);
             
             % Delete the clock
             delete(this.clock);
@@ -484,20 +371,15 @@ classdef App < mic.Base
                 ...%'uiNetworkCommunication', ...
                 ...%'uiBeamline', ...
                 ...%'uiShutter', ...
-                'uiM141', ...
-                'uiM142', ...
                 'uiMADiagnostics', ...
                 'uiPOCurrent', ...
                 'uiM143', ...
-                'uiD141', ...
-                'uiD142', ...
                 ...% 'uiVibrationIsolationSystem', ...
                 'uiReticle', ...
                 'uiWafer', ...
                 'uiScanResultPlot2x2', ...
                 'uiMeasurPointLogPlotter', ...
                 'uiMfDriftMonitorVibration', ...
-                'uiExitSlit' ...
              };
             
         end
@@ -560,121 +442,8 @@ classdef App < mic.Base
             this.uiWafer.uiAxes.addFemPreviewPrescription(evt.stData.dX, evt.stData.dY);
         end
         
-        function initBeamline(this)
-            stBeamline = struct(...
-                'cLabel',  'Grating Scan / Calibrate', ...
-                'fhOnClick',  @() this.uiBeamline.build(), ...
-                'cTooltip',  'Beamline' ...
-            );
+       
         
-            stExitSlit = struct(...
-                'cLabel',  'Exit Slit (All 4 Blades)', ...
-                'fhOnClick',  @() this.uiExitSlit.build(), ...
-                'cTooltip',  'Exit Slit' ...
-            );
-            
-            stShutter = struct(...
-            'cLabel',  'Shutter', ...
-            'fhOnClick',  @() this.uiShutter.build(), ...
-            'cTooltip',  'Beamline');
-            
-            stD141 = struct(...
-            'cLabel',  'D141', ...
-            'fhOnClick',  @() this.uiD141.build(), ...
-            'cTooltip',  'D141');
-                        
-            stM141 = struct(...
-            'cLabel',  'M141', ...
-            'fhOnClick',  @() this.uiM141.build(), ...
-            'cTooltip',  'Beamline');
-        
-        
-            stD142 = struct(...
-            'cLabel',  'D142', ...
-            'fhOnClick',  @() this.uiD142.build(), ...
-            'cTooltip',  'D142');
-            
-            stM142 = struct(...
-            'cLabel',  'M142', ...
-            'fhOnClick',  @() this.uiM142.build(), ...
-            'cTooltip',  'Beamline');
-        
-            stMADiagnostics = struct(...
-            'cLabel',  'MA Diagnostics', ...
-            'fhOnClick',  @() this.uiMADiagnostics.build(), ...
-            'cTooltip',  'MA Diagnostics');
-            
-            stM143 = struct(...
-            'cLabel',  'M143', ...
-            'fhOnClick',  @() this.uiM143.build(), ...
-            'cTooltip',  'Beamline');
-        
-            stScannerMA = struct(...
-            'cLabel',  'MA Scanner', ...
-            'fhOnClick',  @() this.uiScannerMA.build(), ...
-            'cTooltip',  'Beamline');
-        
-            stScannerM142 = struct(...
-            'cLabel',  'M142 Scanner', ...
-            'fhOnClick',  @() this.uiScannerM142.build(), ...
-            'cTooltip',  'Beamline');
-        
-            stButtons = [
-              stBeamline, ...
-              stExitSlit, ...
-              stShutter, ...
-              stM141, ...
-              stD141, ...
-              stM142, ...
-              stScannerM142, ...
-              stD142, ...
-              stM143, ...  
-              stMADiagnostics, ...
-              stScannerMA ...
-            ];
-        
-            this.uiButtonListBeamline = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', stButtons, ...
-                'cTitle', 'Branch Line', ...
-                'dWidthButton', this.dWidthButtonButtonList ...
-            );
-            
-        end
-        
-        function initHsDmi(this)
-            
-            stMfDriftMonitorVibration = struct(...
-                'cLabel',  'HS + DMI Vibration 1 kHz', ...
-                'fhOnClick',  @() this.uiMfDriftMonitorVibration.build(), ...
-                'cTooltip',  'HS + DMI Vibration 1 kHz' ...
-            );
-        
-            stHeightSensorLEDs = struct(...
-            'cLabel',  'Height Sensor LEDs', ...
-            'fhOnClick',  @() this.uiHeightSensorLEDs.build(), ...
-            'cTooltip',  'HeightSensorLEDs');
-        
-            stDriftMonitor =  struct(...
-                'cLabel',  'Drift Monitor/Height Sensor', ...
-                'fhOnClick',  @() this.uiDriftMonitor.build(10, 10), ...
-                'cTooltip',  'Drift Monitor/Height Sensor'...
-            );
-        
-            stButtons = [...
-              stHeightSensorLEDs, ...
-              stMfDriftMonitorVibration, ...
-              stDriftMonitor, ... 
-            ];
-        
-            this.uiButtonListHsDmi = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', stButtons, ...
-                'cTitle', 'HS / DMI', ...
-                'dWidthButton', this.dWidthButtonButtonList ...
-            );
-        
-        
-            
-        end
         
         function initInterferometry(this)
             
@@ -712,140 +481,10 @@ classdef App < mic.Base
            
         end
         
-        function initVisAndPpmac(this)
-            
-            stPowerPmacStatus = struct(...
-                'cLabel',  'Power PMAC Status', ...
-                'fhOnClick',  @() this.uiPowerPmacStatus.build(), ...
-                'cTooltip',  'Power PMAC Status' ...
-            );
-        
-            stVibrationIsolationSystem = struct(...
-            'cLabel',  'Vibration Isolation System', ...
-            'fhOnClick',  @() this.uiVibrationIsolationSystem.build(), ...
-            'cTooltip',  'Vibration Isolation System');
-        
-            stReticle = struct(...
-            'cLabel',  'Reticle', ...
-            'fhOnClick',  @() this.uiReticle.build(), ...
-            'cTooltip',  'Beamline');
-            
-            stWafer = struct(...
-            'cLabel',  'Wafer', ...
-            'fhOnClick',  @() this.uiWafer.build(), ...
-            'cTooltip',  'Beamline');
-        
-            stPowerPmacHydraMotMin = struct(...
-                'cLabel',  'Power PMAC Hydra MotMin', ...
-                'fhOnClick',  @() this.uiPowerPmacHydraMotMin.build(), ...
-                'cTooltip',  'Power PMAC Hydra MotMin' ...
-            );
-        
-            stButtons = [
-              stVibrationIsolationSystem, ...
-              stReticle, ...
-              stWafer, ...
-              stPowerPmacStatus, ...
-              stPowerPmacHydraMotMin, ...
-           ];
-       
-            this.uiButtonListVisAndPpmac = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', stButtons, ...
-                'cTitle', 'VIS + Wafer + Reticle Stages', ...
-                'dWidthButton', this.dWidthButtonButtonList ...
-            );
-            
-        end
-        
-        function initFemScan(this)
-            
-            stExptControl = struct(...
-            'cLabel',  'FEM Control', ...
-            'fhOnClick',  @() this.uiScan.build(), ...
-            'cTooltip',  'Beamline');
-        
-        
-            stPrescriptionTool = struct(...
-            'cLabel',  'Prescription Tool', ...
-            'fhOnClick',  @()this.uiPrescriptionTool.build(), ...
-            'cTooltip',  'Beamline');
-        
-         stPOCurrent = struct(...
-            'cLabel',  'PO Current (MDM)', ...
-            'fhOnClick',  @() this.uiPOCurrent.build(), ...
-            'cTooltip',  'PO Current (MDM)');
-        
-        
-            stButtons = [...
-              stPrescriptionTool, ...
-              stExptControl, ...
-              stPOCurrent ...
-            ];
-        
-            this.uiButtonListFemScan = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', stButtons, ...
-                'cTitle', 'FEM', ...
-                'dWidthButton', this.dWidthButtonButtonList ...
-            );
-        
-            
-        end
-        
-        function initOther(this)
-            
-             stNetworkCommunication = struct(...
-                'cLabel',  'Network Status', ...
-                'fhOnClick',  @() this.uiNetworkCommunication.build(), ...
-                'cTooltip',  'Network Status' ...
-            );
-        
-            stMeasurPointLogPlotter = struct(...
-                'cLabel',  'MeasurPoint Log Plotter', ...
-                'fhOnClick',  @() this.uiMeasurPointLogPlotter.build(), ...
-                'cTooltip',  'MeasurPoint Log Plotter' ...
-            );
-            
-            stTempSensors = struct( ...
-                'cLabel',  'Temp Sensors', ...
-                'fhOnClick',  @()this.uiTempSensors.build(), ...
-                'cTooltip',  'Temp Sensors (Mod3, POB)' ...
-            );
-                                          
-        
-            stCameraLEDs = struct(...
-            'cLabel',  'Diag. Cam + LED Power', ...
-            'fhOnClick',  @() this.uiCameraLEDs.build(), ...
-            'cTooltip',  'Diag. Cam + LED Power');
-        
-        
-            stScanResultPlot2x2 = struct(...
-            'cLabel',  'Scan Result Plotter 2x2', ...
-            'fhOnClick',  @() this.uiScanResultPlot2x2.build(), ...
-            'cTooltip',  'Scan Result Plotter 2x2');
-        
-            
-            stListClockTasks =  struct(...
-                'cLabel',  'List Clock Tasks', ...
-                'fhOnClick',  @this.onListClockTasks, ...
-                'cTooltip',  ''...
-            );
-        
 
-            stButtons = [
-              stNetworkCommunication, ...
-              stScanResultPlot2x2, ...
-              stMeasurPointLogPlotter, ...
-              stTempSensors, ...
-              stCameraLEDs, ...  
-              stListClockTasks ...
-           ];
-            
-            this.uiButtonListOther = mic.ui.common.ButtonList(...
-                'stButtonDefinitions', stButtons, ...
-                'cTitle', 'Other', ...
-                'dWidthButton', this.dWidthButtonButtonList ...
-            );
-        end
+        
+        
+        
         
         
         
@@ -853,79 +492,99 @@ classdef App < mic.Base
             
             this.clock = mic.Clock('Master');
             
-             % Used for docking UIs
-            this.uiDock = bl12014.ui.Dock();
+            % Initialize cell of function handle callbacks for each tab of 
+            % the tab group
             
-            if this.lUseDock
-                 hDock = this.uiDock;
-            else
-                 hDock = {};
+            cefhCallback = cell(1, length(this.cecTabs));
+            for n = 1 : length(this.cecTabs)
+                cefhCallback{n} = @this.onUiTabGroup;
             end
-                       
-            % Set clock, required for drift monitor middle layer
-            this.hHardware.setClock(this.clock);
             
-            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clock);
-            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clock);
-            this.uiBeamline = bl12014.ui.Beamline('clock', this.clock, 'hDock', hDock);
-            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
-            this.uiD141 = bl12014.ui.D141('clock', this.clock);
-            this.uiD142 = bl12014.ui.D142('clock', this.clock);
-            this.uiM141 = bl12014.ui.M141('clock', this.clock);
-            this.uiM142 = bl12014.ui.M142('clock', this.clock);
-            this.uiM143 = bl12014.ui.M143('clock', this.clock);
-            this.uiReticle = bl12014.ui.Reticle('clock', this.clock, 'hDock', hDock);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'hDock', hDock);
-            this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clock);
-            this.uiPowerPmacHydraMotMin = bl12014.ui.PowerPmacHydraMotMin('clock', this.clock);
-            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clock);
-            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.clock);
-            this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clock);
-            this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clock);
+            
+            this.uiTabGroup = mic.ui.common.Tabgroup(...
+                'fhDirectCallback', cefhCallback, ...
+                'ceTabNames',  this.cecTabs ...
+            );
+                                   
+            % Set clock, required for drift monitor middle layer
+            this.hHardware.setClock(this.clock);            
+            this.clockNetworkCommunication = mic.ClockGroup(this.clock);
+            this.clockBeamline = mic.ClockGroup(this.clock);
+            this.clockM143 = mic.ClockGroup(this.clock);
+            this.clockVibrationIsolationSystem = mic.ClockGroup(this.clock);
+            this.clockReticle = mic.ClockGroup(this.clock);
+            this.clockWafer = mic.ClockGroup(this.clock);
+            this.clockPowerPmacStatus = mic.ClockGroup(this.clock);
+            this.clockPrescriptionTool = mic.ClockGroup(this.clock);
+            this.clockScan = mic.ClockGroup(this.clock);
+            this.clockTempSensors = mic.ClockGroup(this.clock);
+            this.clockFocusSensor = mic.ClockGroup(this.clock);
+            this.clockDriftMonitor = mic.ClockGroup(this.clock);
+            this.clockLSIControl = mic.ClockGroup(this.clock);
+            this.clockLSIAnalyze = mic.ClockGroup(this.clock);
+            this.clockScannerM142 = mic.ClockGroup(this.clock);
+            this.clockScannerMA = mic.ClockGroup(this.clock);
+            this.clockHeightSensorLEDs = mic.ClockGroup(this.clock);
+            this.clockCameraLEDs = mic.ClockGroup(this.clock);
+            this.clockScanResultPlot2x2 = mic.ClockGroup(this.clock);
+            this.clockMeasurPointLogPlotter = mic.ClockGroup(this.clock);
+            this.clockMADiagnostics = mic.ClockGroup(this.clock);
+            this.clockPOCurrent = mic.ClockGroup(this.clock);
+            this.clockMfDriftMonitorVibration = mic.ClockGroup(this.clock);
+            this.clockMfDriftMonitor = mic.ClockGroup(this.clock);
+            
+            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clockNetworkCommunication);
+            
+            this.uiBeamline = bl12014.ui.Beamline('clock', this.clockBeamline);
             this.uiScannerM142 = bl12014.ui.Scanner(...
-                'clock', this.clock, ...
+                'clock', this.clockScannerM142, ...
                 'cName', 'M142 Scanner' ...
             );
+            this.uiM143 = bl12014.ui.M143('clock', this.clockM143);
+            this.uiReticle = bl12014.ui.Reticle('clock', this.clockReticle);
+            this.uiWafer = bl12014.ui.Wafer('clock', this.clockWafer);
+            this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clockPowerPmacStatus);
+            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clockMfDriftMonitorVibration);
+            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clockVibrationIsolationSystem);
+            this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clockTempSensors);
+            this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clockFocusSensor);
             this.uiScannerMA = bl12014.ui.Scanner(...
-                'clock', this.clock, ...
+                'clock', this.clockScannerMA, ...
                 'cName', 'MA Scanner', ...
                 'dScale', 0.67 ... % 0.67 rel amp = sig 1
             );
         
-           
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
-            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock, ...
+            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clockLSIControl, ...
                                                            'hardware', this.hHardware);
             this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', this.hHardware, ...
-                               'clock', this.clock);
+                               'clock', this.clockMfDriftMonitorVibration);
            
-            
-
-            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool('hDock', hDock);
+            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
             this.uiScan = bl12014.ui.Scan(...
-                'clock', this.clock, ...
-                'uiShutter', this.uiShutter, ...
+                'clock', this.clock, ... % DONT GIVE A CLOCK GROUP!
+                'uiShutter', this.uiBeamline.uiShutter.uiShutter, ...
                 'uiReticle', this.uiReticle, ...
                 'uiWafer', this.uiWafer, ...
                 'uiVibrationIsolationSystem', this.uiVibrationIsolationSystem, ...
                 'uiMfDriftMonitorVibration', this.uiMfDriftMonitorVibration, ...
                 'uiMFDriftMonitor', this.uiDriftMonitor, ...
-                'uiBeamline', this.uiBeamline, ...
-                'hDock', hDock ...
+                'uiBeamline', this.uiBeamline ...
             );
-        
+
             this.uiHeightSensorLEDs = bl12014.ui.HeightSensorLEDs(...
-                'clock', this.clock ...
+                'clock', this.clockHeightSensorLEDs ...
             );
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
-                'clock', this.clock ...
+                'clock', this.clockCameraLEDs ...
             );
-            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clock, 'hDock', hDock);
-            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clock);
-            this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clock);
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clockScanResultPlot2x2);
+            
+            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clockMADiagnostics);
+            this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clockPOCurrent);
             
             this.uiMeasurPointLogPlotter = bl12014.ui.MeasurPointLogPlotter();
             
@@ -943,20 +602,19 @@ classdef App < mic.Base
             % Does work: anonymous function that calls uiBeamline.build()
             % st.fhOnClick = @() this.uiBeamline.build()
               
-            this.initBeamline();
-            this.initVisAndPpmac();
-            this.initHsDmi();
             this.initInterferometry();
-            this.initFemScan();
-            this.initOther();
            
-        
-            this.uiTextDurationOfTimerExecution = mic.ui.common.Text(...
-                'lShowLabel', true, ...
-                'cLabel', 'Duration of last timer execution (ms)' ...
+            this.uiTextDurationLabel = mic.ui.common.Text(...
+                'cVal', 'Duration of last timer execution (ms)' ...
             );
+            this.uiTextDurationOfTimerExecution = mic.ui.common.Text();
         
             this.loadStateFromDisk();
+            
+            this.uiButtonListClockTasks = mic.ui.common.Button(...
+                'cText', 'List Clock Tasks', ...
+                'fhOnClick', @this.onListClockTasks ...
+            );
 
         end
         
@@ -989,9 +647,6 @@ classdef App < mic.Base
             this.uiPrescriptionTool.pupilFillSelect.refreshList();
         end
         
-        
-        
-        
         function c = file(this)
             mic.Utils.checkDir(this.cDirSave);
             c = fullfile(...
@@ -999,6 +654,151 @@ classdef App < mic.Base
                 ['saved-state', '.mat']...
             );
             c = mic.Utils.path2canonical(c);
+        end
+        
+        
+        function stopAllClockGroups(this)
+            
+            this.clockNetworkCommunication.stop();
+            this.clockBeamline.stop();
+            this.clockM143.stop();
+            this.clockVibrationIsolationSystem.stop();
+            this.clockReticle.stop();
+            this.clockWafer.stop();
+            this.clockPowerPmacStatus.stop();
+            this.clockPrescriptionTool.stop();
+            % this.clockScan.stop();
+            this.clockTempSensors.stop();
+            this.clockFocusSensor.stop();
+            this.clockDriftMonitor.stop();
+            this.clockLSIControl.stop();
+            this.clockLSIAnalyze.stop();
+            this.clockScannerM142.stop();
+            this.clockScannerMA.stop();
+            this.clockHeightSensorLEDs.stop();
+            this.clockCameraLEDs.stop();
+            this.clockScanResultPlot2x2.stop();
+            this.clockMeasurPointLogPlotter.stop();
+            this.clockMADiagnostics.stop();
+            this.clockPOCurrent.stop();
+            this.clockMfDriftMonitorVibration.stop();
+            this.clockMfDriftMonitor.stop();
+        end
+        
+        function startClockGroupOfActiveTab(this)
+            cTab = this.uiTabGroup.getSelectedTabName();
+            
+            switch cTab
+                case 'Beamline'
+                    this.clockBeamline.start();
+                case 'Shutter'
+                     this.clockShutter.start();
+                case 'Field Scanner (M142)'
+                     this.clockScannerM142.start();
+                case 'M143'
+                    this.clockM143.start();
+                case 'Pupil Scanner (MA)'
+                    this.clockScannerMA.start();
+                case 'MA Diagnostics'
+                    this.clockMADiagnostics.start();
+                case 'VIS'
+                    this.clockVibrationIsolationSystem.start();
+                case 'Drift Monitor Vib'
+                    this.clockMfDriftMonitorVibration.start();
+                case 'Drift Monitor'
+                     this.clockDriftMonitor.start();
+                case 'Reticle'
+                    this.clockReticle.start();
+                case 'Wafer'
+                    this.clockWafer.start();
+                case 'PPMAC Status'
+                    this.clockPowerPmacStatus.start();
+                case 'Pre Tool'
+                    this.clockPrescriptionTool.start();
+                case 'FEM Control'
+                    this.clockScan.start();
+                case 'PO Current'
+                    this.clockPOCurrent.start();
+                case 'Camera LEDs'
+                    this.clockCameraLEDs.start();
+                case '2x2 Plotter'
+                    this.clockScanResultPlot2x2.start();
+                case 'Height Sensor LEDs'
+                    this.clockHeightSensorLEDs.start();
+                case 'MeasurPoint Log'
+                    this.clockMeasurPointLogPlotter.start();
+                case 'Network Status'
+                    this.clockNetworkCommunication.start();
+                    
+
+            end
+        end
+        
+        
+        function onUiTabGroup(this)
+            
+            cTab = this.uiTabGroup.getSelectedTabName();
+            lIsBuilt = this.lIsTabBuilt(strcmp(cTab, this.cecTabs));
+            
+            this.stopAllClockGroups();
+            this.startClockGroupOfActiveTab();
+            
+            if lIsBuilt
+                % Already built
+                return;
+            end
+            
+            % Store that it has been built
+            this.lIsTabBuilt(strcmp(cTab, this.cecTabs)) = true;
+            hTab = this.uiTabGroup.getTabByName(cTab);
+            
+            switch cTab
+                case 'Beamline'
+                    this.uiBeamline.build(hTab, 10, 30);
+                case 'Shutter'
+                     this.uiShutter.build(hTab, 10, 30);
+                case 'Field Scanner (M142)'
+                     this.uiScannerM142.build(hTab, 10, 30);
+                case 'M143'
+                    this.uiM143.build(hTab, 10, 30);
+                case 'Pupil Scanner (MA)'
+                    this.uiScannerMA.build(hTab, 10, 30);
+                case 'MA Diagnostics'
+                    this.uiMADiagnostics.build(hTab, 10, 30);
+                case 'VIS'
+                    this.uiVibrationIsolationSystem.build(hTab, 10, 30);
+                case 'Drift Monitor Vib'
+                    this.uiMfDriftMonitorVibration.build(hTab, 10, 30);
+                case 'Drift Monitor'
+                     this.uiDriftMonitor.build(hTab, 10, 30);
+                case 'Reticle'
+                    this.uiReticle.build(hTab, 10, 30);
+                case 'Wafer'
+                    this.uiWafer.build(hTab, 10, 30);
+                case 'PPMAC Status'
+                    this.uiPowerPmacStatus.build(hTab, 10, 30);
+               
+                case 'Pre Tool'
+                    this.uiPrescriptionTool.build(hTab, 10, 30);
+                case 'FEM Control'
+                    this.uiScan.build(hTab, 10, 30);
+                case 'PO Current'
+                    this.uiPOCurrent.build(hTab, 10, 30);
+                case 'Camera LEDs'
+                    this.uiCameraLEDs.build(hTab, 10, 30);
+                case '2x2 Plotter'
+                    this.uiScanResultPlot2x2.build(hTab, 10, 30);
+                case 'Height Sensor LEDs'
+                    this.uiHeightSensorLEDs.build(hTab, 10, 30);
+                case 'MeasurPoint Log'
+                    this.uiMeasurPointLogPlotter.build(hTab, 10, 10);
+                case 'Network Status'
+                    this.uiNetworkCommunication.build(hTab, 10, 10);
+                    
+
+            end
+            
+            
         end
         
     end % private

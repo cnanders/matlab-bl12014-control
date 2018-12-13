@@ -88,7 +88,7 @@ classdef MFDriftMonitor < mic.Base
         
         % UI ELEMENTS
         
-        hFigure % main figure
+        hParent % main figure
         
         % Two main tabs
         uitgMode
@@ -1527,46 +1527,25 @@ classdef MFDriftMonitor < mic.Base
         
         
         %% BUILD
-        function build(this, dLeft, dTop)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
+            this.hParent = hParent;
             
-            % build the main window
-            this.hFigure = figure(...
-                'name', 'Drift Monitor (DMI and Height Sensor)',...
-                'Units', 'pixels',...
-                'Position', [5+dLeft, 5+dTop,  this.dWidth, this.dHeight],...
-                'numberTitle','off',...
-                'Toolbar','none',...
-                'Menubar','none', ...
-                'Resize', 'off',...
-                'HandleVisibility', 'on',... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequest ...
-                );
-            
-            
-            this.uitgMode.build(this.hFigure, 10, 100, this.dWidth - 20, this.dHeight - 150)
+            this.uitgMode.build(this.hParent, 10, 100, this.dWidth - 20, this.dHeight - 150)
             uitMonitor      = this.uitgMode.getTabByName('Monitor');
             uitWaferLevel   = this.uitgMode.getTabByName('Wafer-level');
             uitCalibrate    = this.uitgMode.getTabByName('Calibrate');
-            
-            
             
             
             dTop = 5;
             dLeft = 10;
             
             % Connect button above tabs:
-            this.uicConnectDriftMonitor.build(this.hFigure, dLeft, dTop);
-            this.uicPlotOn.build(this.hFigure, dLeft, dTop + 30);
-            this.uicConnectWafer.build(this.hFigure, dLeft, dTop + 60)
+            this.uicConnectDriftMonitor.build(this.hParent, dLeft, dTop);
+            this.uicPlotOn.build(this.hParent, dLeft, dTop + 30);
+            this.uicConnectWafer.build(this.hParent, dLeft, dTop + 60)
             
-            this.uitCalibrationText.build(this.hFigure, dLeft + 320, dTop + 5, 400, 30);
+            this.uitCalibrationText.build(this.hParent, dLeft + 320, dTop + 5, 400, 30);
             
             
             this.hpDMI = uipanel(...
@@ -1746,8 +1725,8 @@ classdef MFDriftMonitor < mic.Base
         
         function onCloseRequest(this, src, evt)
 
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
+            if ishandle(this.hParent)
+                delete(this.hParent);
             end
         end
         

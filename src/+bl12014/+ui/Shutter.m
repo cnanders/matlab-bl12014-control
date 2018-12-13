@@ -22,9 +22,7 @@ classdef Shutter < mic.Base
         
         clock
         dWidth = 540
-        dHeight = 100
-        hFigure
-        
+        dHeight = 100        
         configStageY
         configMeasPointVolts
         
@@ -47,6 +45,23 @@ classdef Shutter < mic.Base
             this.init();
         
         end
+        
+        %{
+        function connectDctCorbaProxy(this, comm)
+            device = bl12014.device.GetSetNumberFromDctCorbaProxy(...
+                comm, ...
+                bl12014.device.GetSetNumberFromDctCorbaProxy.cDEVICE_SHUTTER ...
+            );
+        
+            this.uiShutter.setDevice(device)
+            this.uiShutter.turnOn()
+        end
+        
+        function disconnectDctCorbaProxy(this)
+            this.uiShutter.turnOff()
+            this.uiShutter.setDevice([])
+        end
+        %}
         
         function connectRigolDG1000ZVirtual(this)
             
@@ -83,53 +98,33 @@ classdef Shutter < mic.Base
         end
             
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            this.msg('Shutter.build()');
-            
-            if ishghandle(this.hFigure)
-                cMsg = sprintf(...
-                    'Shutter.build() ishghandle(%1.0f) === true', ...
-                    this.hFigure ...
-                );
-                this.msg(cMsg);
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Shutter Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
 
-            dTop = 10;
-            dLeft = 10;
+            hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Shutter',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+            dLeft = 0;
+            dTop = 15;
             dSep = 30;
+                       
             
-            this.uiCommRigol.build(this.hFigure, dLeft, dTop);
+            this.uiCommRigol.build(hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            
-            this.uiShutter.build(this.hFigure, dLeft, dTop);
+            this.uiShutter.build(hPanel, dLeft, dTop);
             % dTop = dTop + 15 + dSep;
             
-            this.uiOverride.build(this.hFigure, 145, dTop);
+            this.uiOverride.build(hPanel, 135, dTop);
             % dTop = dTop + 15 + dSep;
                         
         end
@@ -143,10 +138,6 @@ classdef Shutter < mic.Base
 
             delete(this.uiShutter) % uses deviceVirtrual so need to delete this first
             delete(this.deviceVirtual)
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
             
         end    
@@ -239,7 +230,6 @@ classdef Shutter < mic.Base
         
         function initDeviceShutterVirtual(this)
             this.deviceVirtual = bl12014.device.ShutterVirtual();
-            
         end
         
         

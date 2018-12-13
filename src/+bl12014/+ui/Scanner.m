@@ -64,47 +64,20 @@ classdef Scanner < mic.Base
         
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
             
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', this.cName, ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
             dSep = 10;
             
            
-            this.uiCommNPointLC400.build(this.hFigure, dLeft, dTop);
+            this.uiCommNPointLC400.build(hParent, dLeft, dTop);
             dTop = dTop + 24 + dSep;
             
-            this.uiPupilFillGenerator.build(this.hFigure, dLeft, dTop);
+            this.uiPupilFillGenerator.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiPupilFillGenerator.dHeight + 10;
             % dLeft = dLeft + this.uiPupilFillGenerator.dWidth + dSep;
                          
-            this.uiNPointLC400.build(this.hFigure, dLeft, dTop);
+            this.uiNPointLC400.build(hParent, dLeft, dTop);
             % dTop = dTop + 300;
             
         end
@@ -117,9 +90,6 @@ classdef Scanner < mic.Base
             delete(this.uiNPointLC400)
             delete(this.uiPupilFillGenerator);
             
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
         end  
         
@@ -140,11 +110,7 @@ classdef Scanner < mic.Base
     
     methods (Access = protected)
         
-        function onFigureCloseRequest(this, src, evt)
-            this.msg(sprintf('%s.closeRequestFcn()', this.cName));
-            delete(this.hFigure);
-            this.hFigure = [];
-        end
+        
         
          
         function initUiPupilFillGenerator(this)

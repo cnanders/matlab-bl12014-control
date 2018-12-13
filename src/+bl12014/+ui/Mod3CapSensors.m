@@ -156,11 +156,14 @@ classdef Mod3CapSensors < mic.Base
             
             dTop = 20;
             dLeft = 325;
+            
+             this.uiTextZ.build(this.hPanel, dLeft, dTop, 100, 24);
+             dTop = dTop + 50;
             this.uiTextTiltX.build(this.hPanel, dLeft, dTop, 100, 24);
             dTop = dTop + 50;
             this.uiTextTiltY.build(this.hPanel, dLeft, dTop, 100, 24);
             dTop = dTop + 50;
-            this.uiTextZ.build(this.hPanel, dLeft, dTop, 100, 24);
+           
             
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())

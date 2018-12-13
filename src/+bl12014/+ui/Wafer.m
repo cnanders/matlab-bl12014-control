@@ -40,6 +40,7 @@ classdef Wafer < mic.Base
         uiPobCapSensors
         % uiHeightSensor
         uiWorkingMode
+        uiMotMin
        
         
         commDeltaTauPowerPmac = []
@@ -50,7 +51,7 @@ classdef Wafer < mic.Base
     
     properties (SetAccess = private)
         
-        hFigure
+        hParent
         cName = 'Wafer Control'
         
     end
@@ -135,6 +136,7 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
             this.uiFineStage.connectDeltaTauPowerPmac(comm);
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
+            this.uiMotMin.connectDeltaTauPowerPmac(comm);
             
         end
         
@@ -148,7 +150,7 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiWorkingMode.disconnectDeltaTauPowerPmac();
-            
+            this.uiMotMin.disconnectDeltaTauPowerPmac();
             this.commDeltaTauPowerPmac = [];
                         
         end
@@ -209,140 +211,92 @@ classdef Wafer < mic.Base
         
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
                     
-            if isa(this.hDock, 'bl12014.ui.Dock')
-                cUIName = 'Wafer';
-                % If UI exists, simply make active
-                if this.hDock.doesUIExist(cUIName)
-                    this.hDock.makeUIActive(cUIName);
-                    return
-                else
-                    % This UI should be docked onto the main figure as a tab
-                    this.hFigure = this.hDock.addUITab(cUIName);
-                    this.hDock.registerCloseRequestHandler(cUIName, @this.onDockClose);
-                end
-            else
-                % Figure
-                if ishghandle(this.hFigure)
-                    % Bring to front
-                    figure(this.hFigure);
-                    return
-                end
+            this.hParent = hParent;
 
-                dScreenSize = get(0, 'ScreenSize');
-
-                this.hFigure = figure( ...
-                    'NumberTitle', 'off',...
-                    'MenuBar', 'none',...
-                    'Name', 'Wafer Control',...
-                    'Position', [ ...
-                        (dScreenSize(3) - this.dWidth)/2 ...
-                        (dScreenSize(4) - this.dHeight)/2 ...
-                        this.dWidth ...
-                        this.dHeight ...
-                     ],... % left bottom width height
-                    'Resize', 'off',...
-                    'HandleVisibility', 'on',... % lets close all close the figure
-                    'Visible', 'on',...
-                    'CloseRequestFcn', @this.onCloseRequestFcn ...
-                    );
-            
-            end
-            
-            % There is a bug in the default 'painters' renderer when
-            % drawing stacked patches.  This is required to make ordering
-            % work as expected
-            
-            % set(this.hFigure, 'renderer', 'OpenGL');
-            
-            
-            
-            drawnow;
-
-            dTop = 10;
             dPad = 10;
-            dLeft = 10;
             dSep = 30;
 
-            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+            this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             %{
-            this.uiCommCxroHeightSensor.build(this.hFigure, dLeft, dTop);
+            this.uiCommCxroHeightSensor.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             %}
                         
-            this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
+            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommMfDriftMonitor.build(this.hFigure, dLeft, dTop);
+            this.uiCommMfDriftMonitor.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             
             %{
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             %}
             
-            % this.hs.build(this.hFigure, dPad, dTop);
+            % this.hs.build(this.hParent, dPad, dTop);
             
             dTop = 10;
             dLeft = 290;
             
-            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
+            this.uiWorkingMode.build(this.hParent, dLeft, dTop);
+            this.uiMotMin.build(this.hParent, 800, 10);
             
             dLeft = 10;
-            dTop = 210;
+            dTop = 280;
                         
-            this.uiCoarseStage.build(this.hFigure, dLeft, dTop);
+            this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            this.uiLsiCoarseStage.build(this.hFigure, dLeft, dTop);
+            this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
             
-            this.uiFineStage.build(this.hFigure, dLeft, dTop);
+            this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
             dTopHS = dTop;
-%             this.uiHeightSensorZClosedLoop.build(this.hFigure, dLeft, dTop);
+%             this.uiHeightSensorZClosedLoop.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiHeightSensorZClosedLoop.dHeight + dPad;
             
-            this.uiHeightSensorZClosedLoopCoarse.build(this.hFigure, dLeft, dTop);
+            this.uiHeightSensorZClosedLoopCoarse.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiHeightSensorZClosedLoopCoarse.dHeight + dPad;
             
            
             
-%             this.uiHeightSensorRxClosedLoop.build(this.hFigure, dLeft, dTop);
+%             this.uiHeightSensorRxClosedLoop.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiHeightSensorZClosedLoop.dHeight + dPad;
 %             
-%             this.uiHeightSensorRyClosedLoop.build(this.hFigure, dLeft, dTop);
+%             this.uiHeightSensorRyClosedLoop.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiHeightSensorZClosedLoop.dHeight + dPad;
             
             dTop = dTopHS;
             dTop = dTop + this.uiDiode.dHeight + dPad;
-            this.uiWaferTTZClosedLoop.build(this.hFigure, dLeft, dTop)
+            this.uiWaferTTZClosedLoop.build(this.hParent, dLeft, dTop)
             
             
             dLeft = 650;
-            this.uiPobCapSensors.build(this.hFigure, dLeft, dTop);
+            this.uiPobCapSensors.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiWaferTTZClosedLoop.dHeight + dPad;
              
             dTopDiode = dTop;
             dLeft = 10;
-            this.uiDiode.build(this.hFigure, dLeft, dTop);
+            this.uiDiode.build(this.hParent, dLeft, dTop);
 
             
             
             
             %{
-            this.uiHeightSensor.build(this.hFigure, 375, dTopDiode);
+            this.uiHeightSensor.build(this.hParent, 375, dTopDiode);
             dTop = dTop + this.uiHeightSensor.dHeight + dPad;
             %}
             
             dLeft = 1050;
-            dTop = 10;
-            this.uiAxes.build(this.hFigure, dLeft, dTop);
+            dTop = 280;
+            this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
             
             % this.hs     = HeightSensor(this.clock);
@@ -369,11 +323,7 @@ classdef Wafer < mic.Base
                 this.clock.remove(this.id());
             end
             
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
+
             
         end
         
@@ -404,8 +354,8 @@ classdef Wafer < mic.Base
             % Make sure the hggroup of the carriage is at the correct
             % location.
             
-            if isempty(this.hFigure) || ...
-               ~ishghandle(this.hFigure)
+            if isempty(this.hParent) || ...
+               ~ishghandle(this.hParent)
                 this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
                 
                 % Remove task
@@ -438,6 +388,11 @@ classdef Wafer < mic.Base
             
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', 'wafer-pmac-working-mode', ...
+                'clock', this.clock ...
+            );
+        
+            this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
+                'cName', 'wafer-ppmac-hydra-mot-min', ...
                 'clock', this.clock ...
             );
         
@@ -514,7 +469,7 @@ classdef Wafer < mic.Base
             this.initUiCommKeithley6482();
             this.initUiCommMfDriftMonitor();
         
-            dHeight = this.dHeight - 20;
+            dHeight = 600;
             this.uiAxes = bl12014.ui.WaferAxes( ...
                 'dWidth', dHeight, ...
                 'dHeight', dHeight ...
@@ -649,15 +604,15 @@ classdef Wafer < mic.Base
         
         function onCloseRequestFcn(this, src, evt)
             
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
             % this.saveState();
             
         end
         
         function onDockClose(this, ~, ~)
             this.msg('ReticleControl.closeRequestFcn()');
-            this.hFigure = [];
+            this.hParent = [];
         end
         
         

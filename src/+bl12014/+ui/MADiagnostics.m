@@ -22,7 +22,7 @@ classdef MADiagnostics < mic.Base
         clock
         dWidth = 710
         dHeight = 160
-        hFigure
+        hParent
         
         dWidthName = 140
         dWidthPadName = 29
@@ -80,46 +80,18 @@ classdef MADiagnostics < mic.Base
             
         end
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'MADiagnostics Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+            this.hParent = hParent;
             dSep = 30;
             
-                      
-            this.uiCommNewFocusModel8742.build(this.hFigure, dLeft, dTop);
+            this.uiCommNewFocusModel8742.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
                         
-            this.uiStageMAYag.build(this.hFigure, dLeft, dTop);
+            this.uiStageMAYag.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStageWheel.build(this.hFigure, dLeft, dTop);
+            this.uiStageWheel.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
                         
         end
@@ -128,12 +100,6 @@ classdef MADiagnostics < mic.Base
             
             this.msg('delete');
                         
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
             
         end    
         
@@ -165,8 +131,8 @@ classdef MADiagnostics < mic.Base
         
          function onFigureCloseRequest(this, src, evt)
             this.msg('MADiagnosticsControl.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
          end
         
          

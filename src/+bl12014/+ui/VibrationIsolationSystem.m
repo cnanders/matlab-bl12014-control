@@ -44,11 +44,11 @@ classdef VibrationIsolationSystem < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 1150
-        dHeight = 270
-        hFigure
+        dWidth = 1120
+        dHeight = 230
+        hPanel
         
-        dWidthNameMotor = 150
+        dWidthNameMotor = 160
         dWidthNameEncoder = 0
         dWidthVal = 100
         dWidthDest = 80
@@ -327,120 +327,107 @@ classdef VibrationIsolationSystem < mic.Base
         end
         
         
-        function build(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Vibration Isolation System Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
+        function build(this, hParent, dLeft, dTop)
                         
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Minus K Vibration Isolation System',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+            dTopStart = 20;
+            dLeft = 0;
+            dTop = dTopStart;
             dSep = 30;
             
                        
-            this.uiCommGalil.build(this.hFigure, dLeft, dTop);
+            this.uiCommGalil.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslation.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslation.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
                        
-            this.uiStage1.build(this.hFigure, dLeft, dTop);
+            this.uiStage1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep + 15;
             
-            this.uiStage2.build(this.hFigure, dLeft, dTop);
+            this.uiStage2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStage3.build(this.hFigure, dLeft, dTop);
+            this.uiStage3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStage4.build(this.hFigure, dLeft, dTop);
+            this.uiStage4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
             
             dLeft = 313 - this.dWidthDest - 5;
-            this.uiButtonStop.build(this.hFigure, dLeft, dTop, this.dWidthDest, 24);
+            this.uiButtonStop.build(this.hPanel, dLeft, dTop, this.dWidthDest, 24);
             
             dLeft = 313;
-            this.uiButtonGoDest.build(this.hFigure, dLeft, dTop, this.dWidthDest, 24);
+            this.uiButtonGoDest.build(this.hPanel, dLeft, dTop, this.dWidthDest, 24);
             
             dLeft = dLeft + this.dWidthDest + this.dWidthPadStep;
             
-            this.uiButtonGoStep.build(this.hFigure, dLeft, dTop, this.dWidthStep, 24);
+            this.uiButtonGoStep.build(this.hPanel, dLeft, dTop, this.dWidthStep, 24);
             
             
             % Hack to draw these in line with stage GetSetNumbers as if
             % they were another column of those devices
             
-            dTop = 10;
+            dTop = dTopStart;
             dLeft = 90;
             dSep = 30;
             dTop = dTop + 15 + dSep + dSep;
             
             
-            this.uiEncoder1.build(this.hFigure, dLeft, dTop);
+            this.uiEncoder1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep + 15;
             
-            this.uiEncoder2.build(this.hFigure, dLeft, dTop);
+            this.uiEncoder2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiEncoder3.build(this.hFigure, dLeft, dTop);
+            this.uiEncoder3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiEncoder4.build(this.hFigure, dLeft, dTop);
+            this.uiEncoder4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
             % Hack to draw these in line with stage GetSetNumbers as if
             % they were another column of those devices
             
-            dTop = 10;
+            dTop = dTopStart;
             dLeft = 570;
             dSep = 30;
             dTop = dTop + 15 + dSep + dSep;
             
-            this.uiTemp1.build(this.hFigure, dLeft, dTop);
+            this.uiTemp1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiTemp2.build(this.hFigure, dLeft, dTop);
+            this.uiTemp2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiTemp3.build(this.hFigure, dLeft, dTop);
+            this.uiTemp3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiTemp4.build(this.hFigure, dLeft, dTop);
+            this.uiTemp4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 750
-            dTop = 10
-            this.uiPositionRecaller.build(this.hFigure, dLeft, dTop, 380, 250);
+            dLeft = 750;
+            dTop = dTopStart;
+            this.uiPositionRecaller.build(this.hPanel, dLeft, 0, 380, 230);
             
-            dTop = 10;
+            dTop = dTopStart;
             dLeft = 350;
-            this.uiTextTiltX.build(this.hFigure, dLeft, dTop, 100, 24);
+            this.uiTextTiltX.build(this.hPanel, dLeft, dTop, 100, 24);
             
             dTop = dTop + dSep + 10;
-            this.uiTextTiltY.build(this.hFigure, dLeft, dTop, 100, 24);
+            this.uiTextTiltY.build(this.hPanel, dLeft, dTop, 100, 24);
             
 
             if ~isempty(this.clock) && ...
@@ -455,13 +442,6 @@ classdef VibrationIsolationSystem < mic.Base
         function delete(this)
             
             this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
             
         end    
         
@@ -489,14 +469,7 @@ classdef VibrationIsolationSystem < mic.Base
 
         end
         
-        
-         function onFigureCloseRequest(this, src, evt)
-            this.msg('M141Control.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
-         end
-         
-         
+                 
          function initUiEncoder1(this)
             
             cPathConfig = fullfile(...
@@ -1028,17 +1001,7 @@ classdef VibrationIsolationSystem < mic.Base
         
         
         function onClock(this)
-            
-            if ~ishghandle(this.hFigure)
-                this.msg('onClock() returning since not built', this.u8_MSG_TYPE_INFO);
-                
-                % Remove task
-                if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
-            end
-            
+                        
             [dTiltX, dTiltY] = this.getTiltXAndTiltY();
             this.uiTextTiltX.set(sprintf('%1.1f', dTiltX * pi / 180 * 1e6))
             this.uiTextTiltY.set(sprintf('%1.1f', dTiltY * pi / 180 * 1e6))

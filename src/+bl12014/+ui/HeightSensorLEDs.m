@@ -37,7 +37,7 @@ classdef HeightSensorLEDs < mic.Base
         clock
         
         hPanel
-        hFigure
+        hParent
         
         dWidthName = 70
         dWidthUnit = 80
@@ -129,79 +129,35 @@ classdef HeightSensorLEDs < mic.Base
         
         
 
-        function build(this) % , hParent, dLeft, dTop
+        function build(this, hParent, dLeft, dTop)
             
-            %{
-            this.hPanel = uipanel(...
-                'Parent', hParent,...
-                'Units', 'pixels',...
-                'Title', 'Height Sensor LEDs',...
-                'Clipping', 'on',...
-                'Position', mic.Utils.lt2lb([ ...
-                dLeft ...
-                dTop ...
-                this.dWidth ...
-                this.dHeight], hParent) ...
-            );
-            %}
-            
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Height Sensor LEDs', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequest ...
-            );
-            
-            
-			drawnow;            
-
-            dTop = 20;
-            dLeft = 10;
+            this.hParent = hParent;
             dSep = 30;
             
-            this.uiCommMightex.build(this.hFigure, dLeft, dTop);
+            this.uiCommMightex.build(this.hParent, dLeft, dTop);
             dTop = dTop + 5 + dSep;
             
-            this.ui1.build(this.hFigure, dLeft, dTop);
+            this.ui1.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.ui2.build(this.hFigure, dLeft, dTop);
+            this.ui2.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui3.build(this.hFigure, dLeft, dTop);
+            this.ui3.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui4.build(this.hFigure, dLeft, dTop);
+            this.ui4.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui5.build(this.hFigure, dLeft, dTop);
+            this.ui5.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui6.build(this.hFigure, dLeft, dTop);
+            this.ui6.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             dLeft = 500
             dBot = 15
-            this.uiPositionRecaller.build(this.hFigure, dLeft, dBot, 380, 170);
+            this.uiPositionRecaller.build(this.hParent, dLeft, dBot, 380, 170);
             
             
             
@@ -210,14 +166,7 @@ classdef HeightSensorLEDs < mic.Base
         function delete(this)
             
             this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
-            
+ 
         end    
         
         
@@ -228,8 +177,8 @@ classdef HeightSensorLEDs < mic.Base
          
         function onCloseRequest(this, src, evt)
             this.msg('HeightSensorLEDs.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
         end
         
         function initUi1(this)

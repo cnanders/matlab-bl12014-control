@@ -23,7 +23,7 @@ classdef M143 < mic.Base
         clock
         dWidth = 610
         dHeight = 170
-        hFigure
+        hParent
         
         configStageY
         configMeasPointVolts
@@ -86,48 +86,21 @@ classdef M143 < mic.Base
         
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'M143 Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+            this.hParent = hParent
             dSep = 30;
                         
-            this.uiCommGalil.build(this.hFigure, dLeft, dTop);
+            this.uiCommGalil.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiStageY.build(this.hFigure, dLeft, dTop);
+            this.uiStageY.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
                         
-            this.uiCurrent.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
 
             
@@ -140,22 +113,7 @@ classdef M143 < mic.Base
         function delete(this)
             
             this.msg('delete');
-            
-            % Clean up clock tasks
-            
-            %{
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
-            
+                        
         end   
         
         function st = save(this)
@@ -176,8 +134,8 @@ classdef M143 < mic.Base
         
          function onFigureCloseRequest(this, src, evt)
             this.msg('M143Control.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
          end
         
          

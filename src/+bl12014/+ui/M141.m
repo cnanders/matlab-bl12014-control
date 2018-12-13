@@ -26,12 +26,13 @@ classdef M141 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 610
-        dHeight = 230
-        hFigure
+        dWidth = 590
+        dHeight = 225
         
         configStageY
         configMeasPointVolts
+        
+        hPanel
         
         
     end
@@ -116,57 +117,46 @@ classdef M141 < mic.Base
             
         end
         
+        
+        
                 
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
             
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'M141 Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'M141',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
             );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+        
+            dLeft = 0;
+            dTop = 15;
             dSep = 30;
             
-            this.uiCommSmarActMcsM141.build(this.hFigure, dLeft, dTop);
+            this.uiCommSmarActMcsM141.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
-            this.uiStageX.build(this.hFigure, dLeft, dTop);
+            this.uiStageX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
-            this.uiStageTiltX.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiStageTiltY.build(this.hFigure, dLeft, dTop);
+            this.uiStageTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCurrent.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
 
             
@@ -178,21 +168,6 @@ classdef M141 < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-            
-            % Clean up clock tasks
-            
-            %{
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
             
         end   

@@ -22,7 +22,7 @@ classdef CameraLEDs < mic.Base
         clock
         dWidth = 610
         dHeight = 230
-        hFigure
+        hParent
         
         
     end
@@ -104,56 +104,29 @@ classdef CameraLEDs < mic.Base
         
         
                 
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Diag Cam + LED Power DEVICES ARE SLOW. BE PATIENT WHEN CLICKING.', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+            this.hParent = hParent
             dSep = 30;
             
-            this.uiComm3GStoreRemotePowerSwitch1.build(this.hFigure, dLeft, dTop);
+            this.uiComm3GStoreRemotePowerSwitch1.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiComm3GStoreRemotePowerSwitch2.build(this.hFigure, dLeft, dTop);
+            this.uiComm3GStoreRemotePowerSwitch2.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
-            this.uiSwitch1Outlet1.build(this.hFigure, dLeft, dTop);
+            this.uiSwitch1Outlet1.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
             
-            this.uiSwitch1Outlet2.build(this.hFigure, dLeft, dTop);
+            this.uiSwitch1Outlet2.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiSwitch2Outlet1.build(this.hFigure, dLeft, dTop);
+            this.uiSwitch2Outlet1.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiSwitch2Outlet2.build(this.hFigure, dLeft, dTop);
+            this.uiSwitch2Outlet2.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             
@@ -168,20 +141,7 @@ classdef CameraLEDs < mic.Base
         function delete(this)
             
             this.msg('delete');
-            
-            % Clean up clock tasks
-            
-            %{
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
+
             
             
         end   
@@ -205,8 +165,8 @@ classdef CameraLEDs < mic.Base
     methods (Access = private)
         
          function onFigureCloseRequest(this, src, evt)
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
          end
         
          

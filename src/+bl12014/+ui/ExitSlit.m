@@ -23,10 +23,10 @@ classdef ExitSlit < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 730
+        dWidth = 670
 
-        dHeight = 230
-        hFigure
+        dHeight = 160
+        hPanel
         
         
         dWidthPanelMotors = 710
@@ -44,7 +44,6 @@ classdef ExitSlit < mic.Base
                 
         dWidthButton = 55
         
-        hPanelMotors
     end
     
     properties (SetAccess = private)
@@ -166,114 +165,51 @@ classdef ExitSlit < mic.Base
           
         end
         
-        function buildPanelMotors(this)
-            
-            this.hPanelMotors = uipanel(...
-                'Parent', this.hFigure,...
-                'Units', 'pixels',...
-                'Title', 'Individual Motors (um)',...
-                'Clipping', 'on',...
-                'Position', mic.Utils.lt2lb([...
-                    10 ...
-                    120 ...
-                    this.dWidthPanelMotors ...
-                    this.dHeightPanelMotors...
-                 ], this.hFigure) ...
-            );
-            drawnow
-            
-            
-            dTop = 20;
-            dLeftCol1 = 10;
-            dLeftCol2 = 380;
-            dSep = 30;
-            
-            this.uiStage1.build(this.hPanelMotors, dLeftCol1, dTop);
-            dTop = dTop + dSep + 15;
-            
-            this.uiStage2.build(this.hPanelMotors, dLeftCol1, dTop);
-            
-            
-            dTop = 20;
-            
-            this.uiStage3.build(this.hPanelMotors, dLeftCol2, dTop);
-            dTop = dTop + dSep + 15;
-            
-            this.uiStage4.build(this.hPanelMotors, dLeftCol2, dTop);
-            dTop = dTop + dSep;
-                        
-            
-            
-        end
-        
-        
-        function buildFigure(this)
-            
-            
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Exit Slit Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
-            );
-                        
-            drawnow;
-        end
-        
-        function build(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            
-            this.buildFigure()
-            this.buildPanelMotors()
+     
 
-            dTop = 10;
-            dLeft = 10;
+        
+        function build(this, hParent, dLeft, dTop)
+                        
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Exit Slit',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+            dLeft = 0;
+            dTop = 15;
             dSep = 30;
                        
-            this.uiCommExitSlit.build(this.hFigure, dLeft, dTop);
+            this.uiCommExitSlit.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+
+            this.uiGap.build(this.hPanel, dLeft, dTop);
+          
+            dTop = 100;
+            dLeftCol1 = 0;
+            dLeftCol2 = 350;
+            dSep = 30;
+            
+            this.uiStage1.build(this.hPanel, dLeftCol1, dTop);
             dTop = dTop + dSep;
             
-            dTop = 50;
-            dLeft = 20;
-            this.uiGap.build(this.hFigure, dLeft, dTop);
-          
-            %{
-            dLeft = 850
-            dTop = 10
-            this.uiPositionRecaller.build(this.hFigure, dLeft, dTop, 380, 250);
-            %}
-
+            this.uiStage2.build(this.hPanel, dLeftCol1, dTop);
+            dTop = 100;
             
+            this.uiStage3.build(this.hPanel, dLeftCol2, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiStage4.build(this.hPanel, dLeftCol2, dTop);
         end
         
         function delete(this)
-            
-            this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
+  
             
         end    
         
@@ -283,12 +219,6 @@ classdef ExitSlit < mic.Base
     
     methods (Access = private)
         
-         function onFigureCloseRequest(this, src, evt)
-            this.msg('M141Control.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
-         end
-         
          
          
         
@@ -334,10 +264,10 @@ classdef ExitSlit < mic.Base
             this.uiStage1 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 ceProps{:}, ...
-                'lShowLabels', true, ...
+                'lShowLabels', false, ...
                 'cName', sprintf('%s-upper-outboard', this.cName), ...
                 'config', uiConfig, ...
-                'cLabel', 'Upper Outboard (6)' ...
+                'cLabel', 'Upper Out (6) (um)' ...
             );
         end
         
@@ -359,7 +289,7 @@ classdef ExitSlit < mic.Base
                 ceProps{:}, ...
                 'cName', sprintf('%s-lower-outboard', this.cName), ...
                 'config', uiConfig, ...
-                'cLabel', 'Lower Outboard (7)' ...
+                'cLabel', 'Lower Out (7) (um)' ...
             );
         end
         
@@ -381,8 +311,8 @@ classdef ExitSlit < mic.Base
                 ceProps{:}, ...
                 'cName', sprintf('%s-upper-inboard', this.cName), ...
                 'config', uiConfig, ...
-                'lShowLabels', true, ...
-                'cLabel', 'Upper Inboard (4)' ...
+                'lShowLabels', false, ...
+                'cLabel', 'Upper In (4) (um)' ...
             );
         end
         
@@ -404,7 +334,7 @@ classdef ExitSlit < mic.Base
                 ceProps{:}, ...
                 'cName', sprintf('%s-lower-inboard', this.cName), ...
                 'config', uiConfig, ...
-                'cLabel', 'Lower Inboard (5)' ...
+                'cLabel', 'Lower In (5) (um)' ...
             );
         end
         
@@ -451,7 +381,7 @@ classdef ExitSlit < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-comm-exit-slit', this.cName), ...
-                'cLabel', 'Exit Slit' ...
+                'cLabel', 'BL12Pico (PN) ' ...
             );
         
         end

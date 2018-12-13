@@ -207,9 +207,9 @@ classdef WaferTTZClosedLoop < mic.Base
             this.uiCLTiltY.turnOn();
             
             
-            this.uiCLZ.syncDestination();
-            this.uiCLTiltX.syncDestination();
-            this.uiCLTiltY.syncDestination();
+%             this.uiCLZ.syncDestination();
+%             this.uiCLTiltX.syncDestination();
+%             this.uiCLTiltY.syncDestination();
             
         end
         

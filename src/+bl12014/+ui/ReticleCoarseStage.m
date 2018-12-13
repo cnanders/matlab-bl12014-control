@@ -31,7 +31,7 @@ classdef ReticleCoarseStage < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1030
+        dWidth = 950
         dHeight = 205
         
         cName = 'ReticleCoarseStage'
@@ -47,7 +47,7 @@ classdef ReticleCoarseStage < mic.Base
         
         hPanel
         
-        dWidthName = 70
+        dWidthName = 30
         
         configStageY
         configMeasPointVolts
@@ -196,9 +196,10 @@ classdef ReticleCoarseStage < mic.Base
             this.uiTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 630;
-            dTop = 20;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 360, 170);
+            dLeft = 590;
+            dTop = 15;
+            dWidth = 360;
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 200);
             
             
 

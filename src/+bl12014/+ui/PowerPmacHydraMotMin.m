@@ -22,7 +22,7 @@ classdef PowerPmacHydraMotMin < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 1400
+        dWidth = 820
         dHeight = 255
         
         cName = 'power-pmac-hydra-mot-min'
@@ -32,7 +32,6 @@ classdef PowerPmacHydraMotMin < mic.Base
         lShowRel = false
         
         commDeltaTau
-                uiWorkingMode
 
     end
     
@@ -41,7 +40,6 @@ classdef PowerPmacHydraMotMin < mic.Base
         clock
         
         hPanel
-        hFigure
         
         dWidthName = 70
         dWidthUnit = 80
@@ -76,96 +74,60 @@ classdef PowerPmacHydraMotMin < mic.Base
             import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
             
             this.commDeltaTau = comm;
-            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
-            
-                       
-            % Can't do this - results with calling the disconnect
-            % function again while it is in the middle of running
-            % this.uiCommDeltaTauPowerPmac.set(true);
           
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac();
             this.commDeltaTau = [];
-            
-          
         end
         
-        function buildFigure(this)
-            
-                        dScreenSize = get(0, 'ScreenSize');
-
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'Power Pmac Hydra Mot Min', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onCloseRequest ...
+        function build(this, hParent, dLeft, dTop)
+                                    
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'PPMAC Mot Min',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
             );
-            
-            
-			drawnow;  
-            
-        end
         
-
-        function build(this) % , hParent, dLeft, dTop
-                        
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-
-            
-            this.buildFigure()          
-
             dTop = 20;
             dLeft = 10;
             dSep = 30;
             
-            this.uiCommDeltaTauPowerPmac.build(this.hFigure, dLeft, dTop);
+                       
+            this.uiCommDeltaTauPowerPmac.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 5 + dSep;
             
-            this.ui1.build(this.hFigure, dLeft, dTop);
+            this.ui1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.ui2.build(this.hFigure, dLeft, dTop);
+            this.ui2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui3.build(this.hFigure, dLeft, dTop);
+            this.ui3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui4.build(this.hFigure, dLeft, dTop);
+            this.ui4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui5.build(this.hFigure, dLeft, dTop);
+            this.ui5.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             dTop = dTop + 5;
-            this.uiTextInstructions.build(this.hFigure, dLeft, dTop, this.dWidth - 2 * dLeft, 50);
+            this.uiTextInstructions.build(this.hPanel, dLeft, dTop, this.dWidth - 2 * dLeft, 50);
             
             
-            dLeft = 500;
+            dLeft = 480;
             dBot = 15;
-            this.uiPositionRecaller.build(this.hFigure, dLeft, dBot, 380, 170);
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dBot, 330, 170);
             
-            dLeft = 900;
-            dTop = 20;
-            this.uiWorkingMode.build(this.hFigure, dLeft, dTop);
-            
-            
+           
             
         end
         
@@ -175,8 +137,8 @@ classdef PowerPmacHydraMotMin < mic.Base
                         
             % Delete the figure
             
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
+            if ishandle(this.hPanel)
+                delete(this.hPanel);
             end
             
             
@@ -312,8 +274,8 @@ classdef PowerPmacHydraMotMin < mic.Base
         
         function onCloseRequest(this, src, evt)
             this.msg('HeightSensorLEDs.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hPanel);
+            this.hPanel = [];
         end
         
         function x = getConfig(this)
@@ -533,10 +495,7 @@ classdef PowerPmacHydraMotMin < mic.Base
             this.initUiCommDeltaTauPowerPmac();
             this.initUiPositionRecaller();
             
-            this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
-                'cName', 'ppmac-mot-min-working-mode', ...
-                'clock', this.clock ...
-            );
+          
             
             
         end

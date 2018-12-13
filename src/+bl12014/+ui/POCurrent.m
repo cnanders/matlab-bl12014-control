@@ -22,7 +22,7 @@ classdef POCurrent < mic.Base
         dWidthAxes = 1000
         dHeightAxes = 500
         
-        hFigure
+        hParent
         hAxes
         
         % {double 1xm} storage of current
@@ -75,29 +75,23 @@ classdef POCurrent < mic.Base
         end
         
                 
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
             
-            this.buildFigure();
-            
+            this.hParent = hParent;
             dTop = 10;
             dLeft = this.dWidthPadLeftAxes;
             dSep = 30;
             
-            this.uiCommKeithley6482.build(this.hFigure, dLeft, dTop);
+            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep + 15;
                         
-            this.uiCurrent.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hParent, dLeft, dTop);
             
             
             dLeft = 900;
             this.uiButtonClear.build(...
-                this.hFigure, ...
+                this.hParent, ...
                 dLeft, ...
                 dTop, ...
                 100, ...
@@ -116,21 +110,6 @@ classdef POCurrent < mic.Base
         function delete(this)
             
             this.msg('delete');
-            
-            % Clean up clock tasks
-            
-            %{
-            if (isvalid(this.cl))
-                this.cl.remove(this.id());
-            end
-            %}
-            
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
             
         end   
         
@@ -162,8 +141,8 @@ classdef POCurrent < mic.Base
         
         function onClock(this)
             
-            if isempty(this.hFigure) || ...
-               ~ishghandle(this.hFigure)
+            if isempty(this.hParent) || ...
+               ~ishghandle(this.hParent)
                 this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
                 
                 % Remove task
@@ -178,7 +157,7 @@ classdef POCurrent < mic.Base
                 this.dValues(end + 1) = this.uiCurrent.getValCal('A');
                 this.dtTimes(end + 1) = datetime;
 
-                if ~ishghandle(this.hFigure)
+                if ~ishghandle(this.hParent)
                     return
                 end
 
@@ -190,16 +169,16 @@ classdef POCurrent < mic.Base
         
          function onFigureCloseRequest(this, src, evt)
             this.msg('POCurrentControl.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
          end
         
         
          function updateAxes(this, dX, dY)
              
              
-            if  isempty(this.hFigure) || ...
-                ~ishandle(this.hFigure)
+            if  isempty(this.hParent) || ...
+                ~ishandle(this.hParent)
                 return;
             end
              
@@ -302,9 +281,9 @@ classdef POCurrent < mic.Base
         function buildAxes(this)
                         
             this.hAxes = axes(...
-                'Parent', this.hFigure, ...
+                'Parent', this.hParent, ...
                 'Units', 'pixels',...
-                'Position', mic.Utils.lt2lb([this.dWidthPadLeftAxes, 100, this.dWidthAxes, this.dHeightAxes], this.hFigure),...
+                'Position', mic.Utils.lt2lb([this.dWidthPadLeftAxes, 100, this.dWidthAxes, this.dHeightAxes], this.hParent),...
                 'HandleVisibility', 'on', ...
                 'XMinorTick','on', ...
                 'YMinorTick','on', ...
@@ -315,42 +294,6 @@ classdef POCurrent < mic.Base
             );
                         
         end
-        
-        function buildFigure(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-
-            dScreenSize = get(0, 'ScreenSize');
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'PO Current Monitor', ...
-                'CloseRequestFcn', @this.onFigureCloseRequest, ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ... 
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Toolbar', 'figure', ...
-                'Visible', 'on' ...
-            );
-        
-            % zoom(this.hFigure, 'on')
-            % uitoolbar(this.hFigure)
-
-            
-        end
-        
-        
-        
-        
         
     end
     

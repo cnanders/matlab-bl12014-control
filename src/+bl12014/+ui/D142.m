@@ -19,9 +19,9 @@ classdef D142 < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 610
-        dHeight = 170
-        hFigure
+        dWidth = 590
+        dHeight = 165
+        hPanel
         
         configStageY
         configMeasPointVolts
@@ -75,55 +75,34 @@ classdef D142 < mic.Base
         end
         
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            this.msg('D142.build()');
-            
-            if ishghandle(this.hFigure)
-                cMsg = sprintf(...
-                    'D142.build() ishghandle(%1.0f) === true', ...
-                    this.hFigure ...
-                );
-                this.msg(cMsg);
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-            
-            dScreenSize = get(0, 'ScreenSize');
-            
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'D142 Control', ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ...
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Visible', 'on',...
-                'CloseRequestFcn', @this.onFigureCloseRequest ...
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'D142',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
             );
-                        
-            drawnow;
-
-            dTop = 10;
-            dLeft = 10;
+        
+            dLeft = 0;
+            dTop = 15;
             dSep = 30;
-            
-            this.uiCommGalil.build(this.hFigure, dLeft, dTop);
+                        
+            this.uiCommGalil.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDataTranslationMeasurPoint.build(this.hFigure, dLeft, dTop);
+            this.uiCommDataTranslationMeasurPoint.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiStageY.build(this.hFigure, dLeft, dTop);
+            this.uiStageY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.uiCurrent.build(this.hFigure, dLeft, dTop);
+            this.uiCurrent.build(this.hPanel, dLeft, dTop);
             
         end
         
@@ -132,13 +111,6 @@ classdef D142 < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-            
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
             
             
         end   
@@ -257,11 +229,7 @@ classdef D142 < mic.Base
             this.initUiCommDataTranslationMeasurPoint();
         end
         
-        function onFigureCloseRequest(this, src, evt)
-            this.msg('closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
-        end
+       
         
         
         

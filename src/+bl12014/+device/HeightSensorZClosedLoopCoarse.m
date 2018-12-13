@@ -62,7 +62,7 @@ classdef HeightSensorZClosedLoopCoarse < mic.interface.device.GetSetNumber
             % Input validation and parsing
             
             p = inputParser;
-            addRequired(p, 'clock', @(x) isa(x, 'mic.Clock'))
+            addRequired(p, 'clock', @(x) isa(x, 'mic.Clock') || isa(x, 'mic.ClockGroup'))
             addRequired(p, 'zWaferFine', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
             addRequired(p, 'zWaferCoarse', @(x) isa(x, 'mic.interface.device.GetSetNumber'))
             addRequired(p, 'zHeightSensor', @(x) isa(x, 'mic.interface.device.GetNumber')) % also has method setSampleAverage

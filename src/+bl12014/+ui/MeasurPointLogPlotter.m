@@ -52,7 +52,7 @@ classdef MeasurPointLogPlotter < mic.Base
     
     properties (Access = private)
          
-        hFigure
+        hParent
         hAxes
         
          % {mic.ui.common.Checkbox 1xm}
@@ -117,14 +117,6 @@ classdef MeasurPointLogPlotter < mic.Base
         function delete(this)
                         
             delete(this.hAxes);
-
-            % Delete the figure
-            
-            if ishandle(this.hFigure)
-                delete(this.hFigure);
-            end
-            
-
         end
         
         function ce = getUiPropsSaved(this)
@@ -197,23 +189,16 @@ classdef MeasurPointLogPlotter < mic.Base
                         
         end
         
-        function build(this)
+        function build(this, hParent, dLeft, dTop)
             
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            end
-
-            
-            this.buildFigure();
+            this.hParent = hParent;
             this.buildAxes();
             
             dLeft = 10;
             dTop = 10;
             
             this.uiButtonRefresh.build(...
-                this.hFigure, ...
+                this.hParent, ...
                 dLeft, ...
                 dTop, ...
                 100, ...
@@ -222,7 +207,7 @@ classdef MeasurPointLogPlotter < mic.Base
             dLeft = dLeft + 120;
             
             this.uiButtonFile.build(...
-                this.hFigure, ...
+                this.hParent, ...
                 dLeft, ...
                 dTop, ...
                 100, ...
@@ -232,7 +217,7 @@ classdef MeasurPointLogPlotter < mic.Base
             dLeft = dLeft + 120;
             dTop = dTop + 5;
             this.uiTextFile.build(...
-                this.hFigure, ...
+                this.hParent, ...
                 dLeft, ...
                 dTop, ...
                 1200, ...
@@ -244,7 +229,7 @@ classdef MeasurPointLogPlotter < mic.Base
             dWidth = 200;
             for n = 1 : length(this.uiCheckboxes)
                 this.uiCheckboxes(n).build(...
-                    this.hFigure, ...
+                    this.hParent, ...
                     dLeft, ...
                     dTop + n * 20 , ...
                     dWidth, ...
@@ -252,7 +237,7 @@ classdef MeasurPointLogPlotter < mic.Base
                 );
             
                 this.uiTextValues(n).build(...
-                    this.hFigure, ...
+                    this.hParent, ...
                     dLeft + 180, ...
                     dTop + n * 20 + 6, ...
                     100, ...
@@ -264,9 +249,8 @@ classdef MeasurPointLogPlotter < mic.Base
             dTop = 80;
             dWidth = 150;
             dHeight = 14;
-            this.uiTextPlotX.build(this.hFigure, dLeft, dTop, dWidth, dHeight);
-            this.uiTextPlotY.build(this.hFigure, dLeft + dWidth, dTop, dWidth, dHeight);
-            
+            this.uiTextPlotX.build(this.hParent, dLeft, dTop, dWidth, dHeight);
+            this.uiTextPlotY.build(this.hParent, dLeft + dWidth, dTop, dWidth, dHeight);
             
             this.plotData();
                 
@@ -291,6 +275,67 @@ classdef MeasurPointLogPlotter < mic.Base
         function refresh(this)
             
             this.loadFileAndPlot();
+        end
+        
+        % @param {handle 1x1} hFigure - handle to the top-level figure
+        
+        function setTextPlotXPlotYBasedOnAxesCurrentPoint(this, hFigure)
+            
+           % If the mouse is inside the axes, turn the cursor into a
+           % crosshair, else make sure it is an arrow
+           
+           if ~ishandle(this.hParent)
+               return;
+           end
+           
+           if ~ishandle(this.hAxes)
+               return;
+           end
+           
+           dCursor = get(hFigure, 'CurrentPoint');     % [left bottom] 
+           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
+           dPoint = get(this.hAxes, 'CurrentPoint');
+           
+           % dPositionPanel = get(this.hPanelData, 'Position');
+           
+           if isempty(dAxes)
+               return;
+           end
+           
+           dCursorLeft =    dCursor(1);
+           dCursorBottom =  dCursor(2);
+           
+           % Need to include left/bottom of container panel to get correct
+           % left / bottom of the Axes since its Position is relative to
+           % its parent
+           
+           dAxesLeft =      dAxes(1); %  + dPositionPanel(1);
+           dAxesBottom =    dAxes(2); %  + dPositionPanel(2);
+           dAxesWidth =     dAxes(3);
+           dAxesHeight =    dAxes(4);
+           
+           if   dCursorLeft >= dAxesLeft && ...
+                dCursorLeft <= dAxesLeft + dAxesWidth && ...
+                dCursorBottom >= dAxesBottom && ...
+                dCursorBottom <= dAxesBottom + dAxesHeight
+            
+                if strcmp(get(hFigure, 'Pointer'), 'arrow')
+                    set(hFigure, 'Pointer', 'crosshair')
+                end
+                
+                % this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
+                
+                % https://www.mathworks.com/matlabcentral/answers/370074-gca-currentpoint-with-the-datetime-ticks-on-the-x-axis
+                t = num2ruler(dPoint(1, 1), this.hAxes.XAxis);
+                this.uiTextPlotX.set(datestr(t, 0)); % second arg of datestr is format identifier
+                this.uiTextPlotY.set(sprintf('y: %1.3f', dPoint(1, 2)));
+           else
+                if ~strcmp(get(hFigure, 'Pointer'), 'arrow')
+                    set(hFigure, 'Pointer', 'arrow')
+                end
+                this.uiTextPlotX.set('x: [hover]');
+                this.uiTextPlotY.set('y: [hover]');
+           end
         end
         
     end
@@ -352,8 +397,8 @@ classdef MeasurPointLogPlotter < mic.Base
                         
             % Return if figure 
             
-            if  isempty(this.hFigure) || ...
-                ~ishghandle(this.hFigure)
+            if  isempty(this.hParent) || ...
+                ~ishghandle(this.hParent)
                 return
             end
             if  isempty(this.hAxes) || ...
@@ -470,33 +515,7 @@ classdef MeasurPointLogPlotter < mic.Base
         end
         
         
-        function buildFigure(this)
-           
-            dScreenSize = get(0, 'ScreenSize');
-            this.hFigure = figure( ...
-                'NumberTitle', 'off', ...
-                'MenuBar', 'none', ...
-                'Name', 'MeasurPoint Log Plotter', ...
-                'CloseRequestFcn', @this.onFigureCloseRequest, ...
-                'Position', [ ...
-                    (dScreenSize(3) - this.dWidth)/2 ...
-                    (dScreenSize(4) - this.dHeight)/2 ...
-                    this.dWidth ...
-                    this.dHeight ...
-                 ],... % left bottom width height
-                'Resize', 'off', ... 
-                'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
-                'WindowButtonDownFcn', @this.onFigureWindowButtonDown, ... % doesn't work if datacursormode is on!
-                'HandleVisibility', 'on', ... % lets close all close the figure
-                'Toolbar', 'figure', ... % zoom and all of that stuff
-                'Visible', 'on' ...
-            );
         
-            % zoom(this.hFigure, 'on')
-            % uitoolbar(this.hFigure)
-
-            
-        end
         
         function buildAxes(this)
             
@@ -504,9 +523,9 @@ classdef MeasurPointLogPlotter < mic.Base
             dTop = 100;
             
             this.hAxes = axes(...
-                'Parent', this.hFigure, ...
+                'Parent', this.hParent, ...
                 'Units', 'pixels',...
-                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidth - 400, this.dHeight - 200], this.hFigure),...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidth - 400, this.dHeight - 200], this.hParent),...
                 'HandleVisibility', 'on', ...
                 'XMinorTick','on', ...
                 'YMinorTick','on', ...
@@ -531,12 +550,12 @@ classdef MeasurPointLogPlotter < mic.Base
          function onFigureCloseRequest(this, src, evt)
             
              
-            if ~isempty(this.hFigure) && ~isvalid(this.hFigure)
+            if ~isempty(this.hParent) && ~isvalid(this.hParent)
                 return
             end
             
-            delete(this.hFigure);
-            this.hFigure = [];
+            delete(this.hParent);
+            this.hParent = [];
             
          end
          
@@ -555,65 +574,7 @@ classdef MeasurPointLogPlotter < mic.Base
         end
         
         
-        function setTextPlotXPlotYBasedOnAxesCurrentPoint(this)
-            
-           % If the mouse is inside the axes, turn the cursor into a
-           % crosshair, else make sure it is an arrow
-           
-           if ~ishandle(this.hFigure)
-               return;
-           end
-           
-           if ~ishandle(this.hAxes)
-               return;
-           end
-           
-          
-           dCursor = get(this.hFigure, 'CurrentPoint');     % [left bottom]
-           dAxes = get(this.hAxes, 'Position');             % [left bottom width height]
-           dPoint = get(this.hAxes, 'CurrentPoint');
-           
-           % dPositionPanel = get(this.hPanelData, 'Position');
-           
-           if isempty(dAxes)
-               return;
-           end
-           
-           dCursorLeft =    dCursor(1);
-           dCursorBottom =  dCursor(2);
-           
-           % Need to include left/bottom of container panel to get correct
-           % left / bottom of the Axes since its Position is relative to
-           % its parent
-           
-           dAxesLeft =      dAxes(1); %  + dPositionPanel(1);
-           dAxesBottom =    dAxes(2); %  + dPositionPanel(2);
-           dAxesWidth =     dAxes(3);
-           dAxesHeight =    dAxes(4);
-           
-           if   dCursorLeft >= dAxesLeft && ...
-                dCursorLeft <= dAxesLeft + dAxesWidth && ...
-                dCursorBottom >= dAxesBottom && ...
-                dCursorBottom <= dAxesBottom + dAxesHeight
-            
-                if strcmp(get(this.hFigure, 'Pointer'), 'arrow')
-                    set(this.hFigure, 'Pointer', 'crosshair')
-                end
-                
-                % this.uiTextPlotX.set(sprintf('x: %1.3f', dPoint(1, 1)));
-                
-                % https://www.mathworks.com/matlabcentral/answers/370074-gca-currentpoint-with-the-datetime-ticks-on-the-x-axis
-                t = num2ruler(dPoint(1, 1), this.hAxes.XAxis);
-                this.uiTextPlotX.set(datestr(t, 0)); % second arg of datestr is format identifier
-                this.uiTextPlotY.set(sprintf('y: %1.3f', dPoint(1, 2)));
-           else
-                if ~strcmp(get(this.hFigure, 'Pointer'), 'arrow')
-                    set(this.hFigure, 'Pointer', 'arrow')
-                end
-                this.uiTextPlotX.set('x: [hover]');
-                this.uiTextPlotY.set('y: [hover]');
-           end
-        end
+        
         
         
         function initUiTextPlotX(this)
