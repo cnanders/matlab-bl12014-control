@@ -168,7 +168,7 @@ classdef WaferTTZClosedLoop < mic.Base
             deviceTiltYPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
                  bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
             
-            fhGetMotor      = @() deviceTiltYPPMAC.get();
+            fhGetMotor      = @()deviceTiltYPPMAC.get();
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
             fhIsReadyMotor  = @()deviceTiltYPPMAC.isReady();
             dTolerance      = this.dTiltYTol;

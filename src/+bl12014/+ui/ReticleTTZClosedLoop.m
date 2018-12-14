@@ -69,6 +69,18 @@ classdef ReticleTTZClosedLoop < mic.Base
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
         % fhIsReadyMotor, dTolearnce
         
+        function dVal = getCapSensorRxRyZ(this, idx)
+            [dTiltX, dTiltY, dZ] = this.uiCapSensors.getTiltXAndTiltYAndZ();
+            switch(idx)
+                case 1
+                    dVal = dZ;
+                case 2
+                    dVal = dTiltX * pi / 180 * 1e6;
+                case 3 
+                    dVal = dTiltY * pi / 180 * 1e6;
+            end
+        end
+        
         function device = createCLZdevice(this, commPPMAC)
             mm2um           = 1e3;
             
@@ -80,7 +92,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             fhIsReadyMotor  = @() deviceCoarseZ.isReady();
             dTolerance      = this.dZTol;
            
-            fhGetSensor     = @()str2double(this.uiCapSensors.uiTextZ.get());
+            fhGetSensor     = @()this.getCapSensorRxRyZ(1);
             fhGetMotor      = @()this.uiCoarseZ.getValCal('um');
             fhSetMotor      = @(dMotorDest)  this.setDestAndGo(this.uiCoarseZ, dMotorDest, 'um');
             
@@ -93,7 +105,6 @@ classdef ReticleTTZClosedLoop < mic.Base
         end
         
         
-        
         function device = createCLRxdevice(this,  commPPMAC)
             
             deviceTiltXPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
@@ -103,7 +114,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal, 'urad');
             fhIsReadyMotor  = @()deviceTiltXPPMAC.isReady();
             dTolerance      = this.dTiltXTol;
-            fhGetSensor     = @()str2double(this.uiCapSensors.uiTextTiltX.get());
+            fhGetSensor     = @()this.getCapSensorRxRyZ(2);
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
@@ -122,7 +133,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal, 'urad');
             fhIsReadyMotor  = @()deviceTiltYPPMAC.isReady();
             dTolerance      = this.dTiltYTol;
-            fhGetSensor     = @()str2double(this.uiCapSensors.uiTextTiltY.get());
+            fhGetSensor     = @()this.getCapSensorRxRyZ(3);
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
