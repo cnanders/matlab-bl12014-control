@@ -23,8 +23,8 @@ classdef PobCapSensors < mic.Base
     
     properties (SetAccess = private)
         
-       dWidth = 350
-        dHeight = 160
+       dWidth = 320
+        dHeight = 135
         
         cName = 'POB Cap Sensors'
         
@@ -136,7 +136,7 @@ classdef PobCapSensors < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 24;
             
             this.uiCap1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;

@@ -23,7 +23,7 @@ classdef PowerPmacHydraMotMin < mic.Base
     properties (SetAccess = private)
         
         dWidth = 820
-        dHeight = 255
+        dHeight = 200
         
         cName = 'power-pmac-hydra-mot-min'
         
@@ -99,7 +99,7 @@ classdef PowerPmacHydraMotMin < mic.Base
         
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 24;
             
                        
             this.uiCommDeltaTauPowerPmac.build(this.hPanel, dLeft, dTop);

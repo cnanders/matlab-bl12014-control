@@ -143,36 +143,24 @@ classdef WaferAxes < mic.Base
         hExposures
         hOverlay
         
-        dFieldX
-        dFieldY
+        clock
         
-        dXFemPreview            % size: [focus x dose] of X positions
-        dYFemPreview            % size: [focus x dose] of Y positions
-                                % these values are updated whenever the FEM
-                                % grid changes
-                                
-        % {double focus x dose} x positions
-        dXFemPreviewScan
-        % {double focus x dose} y positions 
-        dYFemPreviewScan 
+        % @returns {double 1x1} x position of the stage in meters
+        fhGetXOfWafer = @() -0.05
+        % @returns {double 1x1} y position of the stage in meters
+        fhGetYOfWafer = @() 0.02
+        % @returns {double 1x1} x position of the lsi stage in meters
+        fhGetXOfLsi = @() 450
         
+        % @returns {logical 1x1} true if shutter is open
+        fhGetIsShutterOpen = @()false
         
-        % Store exposure data in a cell.  Each item of the cell is an array that 
-        % contains:
-        %
-        %   dX
-        %   dY
-        %   dDoseNum        the dose shot num
-        %   dFEMDoseNum
-        %   dFocusNum       the focus shot num
-        %   dFEMFocusNum
-        %
-        % The dose/focus data is used for color/hue 
-        % As each exposure finishes, an array is pushed to to this cell
+        % {bl12014.waferExposureHistory
+        waferExposureHistory
         
-        ceExposure  
+        dDelay = 0.5
         
-        
+        lIsExposing
     end
     
         
@@ -222,166 +210,100 @@ classdef WaferAxes < mic.Base
             
         end
         
-                
+          
+        function delete(this)
+            if (isvalid(this.clock))
+                this.clock.remove(this.id());
+            end
+        end
+        
         function build(this, hParent, dLeft, dTop)
                         
             this.uiZoomPanAxes.build(hParent, dLeft, dTop);
-            
             this.dThicknessOfCrosshair = this.getThicknessOfCrosshair();
-            
-            % Build heirarchy of hggroups/hgtransforms for drawing
-            
-            %{
-            this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hWafer         = hggroup('Parent', this.hCarriage);
-            this.hFemPreview    = hggroup('Parent', this.hWafer);
-            this.hFEM           = hggroup('Parent', this.hWafer);
-            this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            
-            this.drawTrack(); 
-            this.drawCarriage();
-            this.drawWafer(); 
-            this.drawIllum(); 
-            this.drawFEM(); 
-            this.drawFemPreview(); 
-            %}
             
             % For some reason when I build the hg* instances as shown above
             % and then add content to them, the stacking order is messed up
             % (the wafer is not on top of the carriage) but when I do it
             % this way it works. 
             
-           
-            
-           
-            this.hTrack         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hTrack = hggroup('Parent', this.uiZoomPanAxes.hHggroup); 
             this.drawTrack(); 
-            
-           
-            
-            this.hCarriage      = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCarriage(); 
-            
-            this.hCarriageLsi = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCarriage = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);      
+            this.drawCarriage();         
+            this.hCarriageLsi = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);    
             this.drawCarriageLsi();
+            this.setXLsi()
             
-            this.hWafer         = hggroup('Parent', this.hCarriage);
+            
+            this.hWafer = hggroup('Parent', this.hCarriage);  
             this.drawWafer();
-            
-            this.hCrosshairDiode = hggroup('Parent', this.hCarriage);
-            this.drawCrosshairDiode();
-            
+
+                     
+            this.hCrosshairDiode = hggroup('Parent', this.hCarriage);   
+            this.drawCrosshairDiode();         
             this.hCrosshairYag = hggroup('Parent', this.hCarriage);
-            % this.drawCrosshairYag();
             
             this.hCrosshairWafer = hggroup('Parent', this.hWafer);
+            this.hFemPreviewPrescription = hggroup('Parent', this.hWafer);
+            this.hFemPreviewScan = hggroup('Parent', this.hWafer);
+            this.hExposures = hggroup('Parent', this.hWafer);
+            
+            this.hIllum = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.drawIllum();
+            
+            
+            this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hOverlay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hClockTimes = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairCap1 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairCap2 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairCap3 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairCap4 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            
+            
+                       
+            % this.drawCrosshairYag();
+
+            
+            
+            this.drawCrosshairChiefRay();
+            this.drawCrosshairZero();
+            this.drawCrosshairLoadLock();
+            this.drawClockTimes();
+            this.drawCrosshairCap1();
+            this.drawCrosshairCap2();
+            this.drawCrosshairCap3();
+            this.drawCrosshairCap4();
             this.drawCrosshairWafer();
             
             
-           
+            this.clock.add(@this.onClock, this.id(), this.dDelay);
             
-         
+        end
+
             
 
-            this.hFemPreviewPrescription    = hggroup('Parent', this.hWafer);
-            this.hFemPreviewScan    = hggroup('Parent', this.hWafer);
+    end
+    
+    methods (Access = private)
+        
+        function onClock(this)
             
-            this.hExposures     = hggroup('Parent', this.hWafer);
+            this.setXLsi();
+            this.setStagePosition();
+            
             this.drawExposures();
+            this.drawFemPreview('prescription');
+            this.drawFemPreview('scan');
             
-            this.hIllum         = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawIllum();
-            
-            this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairChiefRay();
-            
-            this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairZero();
-            
-            
-            
-            this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairLoadLock();
-            
-            this.hOverlay       = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            
-            this.hClockTimes    = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawClockTimes();
-            
-             this.hCrosshairCap1 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairCap1();
-            
-            this.hCrosshairCap2 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairCap2();
-            
-            this.hCrosshairCap3 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairCap3();
-            
-            this.hCrosshairCap4 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.drawCrosshairCap4();
-            
-        end
-        
-                        
-        
-        %% Destructor
-        
-        function delete(this)
-            
-            
-            
-        end
-        
-        % The FEM preview is not drawn as a single rectangle like it is in
-        % MET software.  It is a grid of exposure sites.  You don't pass
-        % in information to draw one rectangle, you pass in the x, y
-        % meshgrid of the (, y) position on the wafer at every exposure site
-        % @param {double focus x dose} dX - x position of
-        % every exposure, e.g.:
-        %  [-1.1  -0.8   -0.5
-        %   -1.1  -0.8   -0.5
-        %   -1.1  -0.8   -0.5] * 1e-3
-        % @param {double focus x dose} dY - y position of
-        % every exposure, e.g.:
-        %  [2.2   2.2   2.2
-        %   2.1   2.1   2.1
-        %   2.0   2.0   2.0] * 1e-3
-        % See addFakeFemPreview()
-        
-        function addFemPreviewPrescription(this, dX, dY)
-           this.drawFemPreview(dX, dY, 'prescription')
+            this.setExposing();
+
         end 
-        
-        function addFemPreviewScan(this, dX, dY)
-           this.drawFemPreview(dX, dY, 'scan')
-        end 
-                
-        % Draw an exposure on the wafer.  It is understood that the
-        % exposure is part of a FEM.  Information about the FEM the
-        % exposure is part of must be passed in so the colors can be drawn
-        % correctly.  May need to edit this at some point to take
-        % experimental data of exposure time and stage z of each exposure.
-        % @param {double 1x6} dData
-        % @param {double 1x1} dData[1] x position of the exposure on the
-        % wafer.  OR is it the x position of the stage when the exposure
-        % occurs?
-        % @param {double 1x1} dData[2] y position of the stage when the
-        %   exposure occurs
-        % @param {double 1x1} dData[3] dose shot num (used with dData[4]
-        %   to calculate the saturation of the fill color 
-        % @param {double 1x1} dData[4] FEM dose size
-        % @param {double 1x1} dData[5] focus shot num (used with dData[6]
-        %   to calculate the hue of the fill color 
-        % @param {double 1x1} dData[6] FEM focus size
-        function addExposure(this, dData)
-            
-            this.ceExposure{length(this.ceExposure) + 1} = dData;
-            this.drawExposure(dData);
-                        
-        end
-        
-         function deleteCrosshairCap1(this)
+                                
+        function deleteCrosshairCap1(this)
             this.deleteChildren(this.hCrosshairCap1)
         end
         
@@ -396,9 +318,7 @@ classdef WaferAxes < mic.Base
         function deleteCrosshairCap4(this)
             this.deleteChildren(this.hCrosshairCap4)
         end
-        
-        
-        
+                
         function deleteClockTimes(this)
             this.deleteChildren(this.hClockTimes)
         end
@@ -427,20 +347,17 @@ classdef WaferAxes < mic.Base
             this.deleteChildren(this.hCrosshairLoadLock)
         end
         
-        function purgeExposures(this)
-            
-            this.ceExposure = {};
+        function deleteExposures(this)
             this.deleteChildren(this.hExposures);                
-            
         end
         
-        function purgeOverlay(this)
-            
+        function deleteOverlay(this)
             this.deleteChildren(this.hOverlay);                
-            
         end
         
-        function setXLsi(this, dX)
+        function setXLsi(this)
+            
+            dX = this.fhGetXOfLsi();
             
             if isnan(dX)
                 this.msg('setXLsi() dX === NaN', this.u8_MSG_TYPE_ERROR);
@@ -458,12 +375,14 @@ classdef WaferAxes < mic.Base
             end
         end
         
-        % @param {double 1x1} x position of the stage in meters
-        % @param {double 1x1} y position of the stage in meters
-        function setStagePosition(this, dX, dY)
+        
+        function setStagePosition(this)
             
             % Make sure the hggroup of the carriage is at the correct
-            % location. 
+            % location.
+            
+            dX = this.fhGetXOfWafer();
+            dY = this.fhGetYOfWafer();
             
             if isnan(dX)
                 this.msg('setStagePosition() dX === NaN', this.u8_MSG_TYPE_ERROR);
@@ -485,66 +404,26 @@ classdef WaferAxes < mic.Base
             catch mE
                 this.msg(getReport(mE));
             end
-                
             
         end
         
-        function addFakeFemPreview(this)
-        
-            dX          = 0.5e-3; % Dose
-            dY          = -0.1e-3; % Focus
-            dX0         = .3e-3;
-            dY0         = -.3e-3;
-            dDoseNum    = 11;
-            dFocusNum   = 9;
+        function setExposing(this)
             
-            x = dX0 : dX : dX0 + (dDoseNum - 1) * dX;
-            y = dY0 : dY : dY0 + (dFocusNum - 1) * dY;
+            lIsExposing = this.fhGetIsShutterOpen();
             
-            [xx, yy] = meshgrid(x, y);
-            
-            this.addFemPreviewPrescription(xx, yy);
-            
-        end
-        
-        function addFakeExposures(this)
-            
-            % For testing
-            
-            dX          = 0.4e-3;
-            dY          = -0.1e-3;
-            dX0         = 0e-3;
-            dY0         = 1e-3;
-            dDoseNum    = 11;
-            dFocusNum   = 9;
-            
-            for focus = 1:dFocusNum
-                for dose = 1:dDoseNum
-                    this.addExposure([...
-                        dX0 + (dose - 1)*dX, ...
-                        dY0 + (focus - 1)*dY, ...
-                        dose, ...
-                        dDoseNum, ...
-                        focus, ...
-                        dFocusNum ...
-                    ]);
-                end
+            if (this.lIsExposing == lIsExposing)
+                return
             end
-        end
-        
-        
-        function setExposing(this, lVal)
             
-            this.lExposing = lVal;
-            
-            if this.lExposing
+            this.lIsExposing = lIsExposing;
+                
+            if this.lIsExposing
                 this.drawOverlay();
             else
-                this.purgeOverlay();
+                this.deleteOverlay();
             end
                             
         end
-        
         
         function deleteFemPreviewPrescription(this)
             
@@ -565,13 +444,6 @@ classdef WaferAxes < mic.Base
             end 
             
         end
-        
-            
-
-    end
-    
-    methods (Access = private)
-        
         
         function init(this)
             this.msg('init()');
@@ -793,7 +665,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairWafer ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -820,7 +692,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairWafer ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             
             
@@ -847,7 +719,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairChiefRay ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -873,7 +745,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairChiefRay ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             
             
@@ -899,7 +771,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairZero ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -925,7 +797,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairZero ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
                         
         end
         
@@ -949,7 +821,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairDiode ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -993,7 +865,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairDiode ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
                         
         end 
         
@@ -1017,7 +889,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairYag ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -1043,7 +915,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairYag ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
                         
         end 
         
@@ -1069,7 +941,7 @@ classdef WaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaCrosshairLoadLock ...
             );
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
             
             % Horizontal Line
             
@@ -1095,7 +967,7 @@ classdef WaferAxes < mic.Base
                 'Color', this.dColorCrosshairLoadLock ... 
             ); 
         
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
                         
         end 
         
@@ -1181,27 +1053,50 @@ classdef WaferAxes < mic.Base
                 'Parent', this.hWafer, ...
                 'EdgeColor', 'none');
             
-            uistack(hPatch, 'top');
+            % uistack(hPatch, 'top');
                         
         end
         
 
         
-        function drawFemPreview(this, dX, dY, cType)
+        function drawFemPreview(this, cType)
             
             if ~ishandle(this.hFemPreviewPrescription)
                 return;
             end
             
+            
+            
             switch cType
                 case 'prescription'
+                    
+                    this.deleteFemPreviewPrescription();
                     dColor = [1 1 1];
                     dAlpha = 0.5;
                     hParent = this.hFemPreviewPrescription;
+                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreview();
+                    if isempty(dX) 
+                        return 
+                    end
+                    if isempty(dY) 
+                        return 
+                    end
+                        
                 case 'scan'
+                    this.deleteFemPreviewScan();
+                    
                     dColor = [1 0 1];
                     dAlpha = 0.5;
                     hParent = this.hFemPreviewScan;
+                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreviewScan();
+                    
+                    if isempty(dX) 
+                        return 
+                    end
+                    if isempty(dY) 
+                        return 
+                    end
+
             end
                         
             [dFocusNum, dDoseNum] = size(dX);
@@ -1249,17 +1144,26 @@ classdef WaferAxes < mic.Base
             
         end
         
+        
         function drawExposures(this)
-                        
-            for k = 1:length(this.ceExposure)
-                this.drawExposure(this.ceExposure{k});
+                  
+            % Need a clever way of doing this
+            
+            ceExposure = this.waferExposureHistory.getExposures();
+            
+            % size(ceExposure)
+            this.deleteExposures();
+            
+            for k = 1:length(ceExposure)
+                this.drawExposure(ceExposure{k});
             end
+            
+            
             
         end
         
         function drawExposure(this, dData)
-            
-            
+                        
             if isempty(this.hExposures) || ...
                 ~ishandle(this.hExposures)
                 return
@@ -1288,7 +1192,6 @@ classdef WaferAxes < mic.Base
         function drawCrosshairCap1(this)
             
             % Vertical Line
-            
                        
             dL = -this.dThicknessOfCrosshair/2 + this.dXCap1;
             dR = this.dThicknessOfCrosshair/2 + this.dXCap1;

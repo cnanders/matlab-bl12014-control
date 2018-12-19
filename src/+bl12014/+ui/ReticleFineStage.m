@@ -13,7 +13,7 @@ classdef ReticleFineStage < mic.Base
     properties (SetAccess = private)
         
         dWidth = 730
-        dHeight = 100
+        dHeight = 85
         
         cName = 'ReticleFineStage'
         
@@ -121,7 +121,7 @@ classdef ReticleFineStage < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 25;
             
             this.uiX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;

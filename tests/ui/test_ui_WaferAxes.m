@@ -1,3 +1,7 @@
+try
+    purge
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
@@ -11,11 +15,17 @@ cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control'
 addpath(genpath(cDirMic));
 
 
-purge
-
 clock = mic.Clock('Master');
 
-ui = bl12014.ui.WaferAxes();
+weh = bl12014.WaferExposureHistory();
+weh.addFakeExposures();
+weh.setIsExposing(true);
+
+ui = bl12014.ui.WaferAxes(...
+    'clock', clock, ...
+    'waferExposureHistory', weh, ...
+    'cName', 'test' ...
+);
 
 
 dWidth = 800;
@@ -31,13 +41,8 @@ h = figure( ...
         dHeight ...
      ] ...
 );
+% set(h,'renderer','zbuffer')
 ui.build(h, 10, 10);
-
-ui.addFakeExposures();
-ui.addFakeFemPreview();
-
-ui.setXLsi(400)
-
 
  
 

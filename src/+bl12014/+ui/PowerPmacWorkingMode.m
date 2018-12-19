@@ -17,7 +17,7 @@ classdef PowerPmacWorkingMode < mic.Base
         
         dWidth = 450
         dWidthName = 130
-        dHeight = 190
+        dHeight = 160
         
         cName = 'power-pmac-working-mode'
         
@@ -117,7 +117,7 @@ classdef PowerPmacWorkingMode < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 25;
             
             this.uiWorkingMode.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;

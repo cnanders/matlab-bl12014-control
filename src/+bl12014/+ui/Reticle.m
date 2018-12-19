@@ -33,6 +33,8 @@ classdef Reticle < mic.Base
         uiMod3CapSensors
         uiWorkingMode
         uiMotMin
+        uiShutter
+        
     end
     
     properties (SetAccess = private)
@@ -45,6 +47,8 @@ classdef Reticle < mic.Base
         clock
         hParent
         dDelay = 0.5
+        
+        
         
     end
     
@@ -70,6 +74,22 @@ classdef Reticle < mic.Base
             this.init();
             
         end
+        
+        function connectRigolDG1000Z(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
+            this.uiShutter.setDevice(device);
+            this.uiShutter.turnOn();
+                      
+        end
+        
+        function disconnectRigolDG1000Z(this)
+            
+            this.uiShutter.turnOff();
+            this.uiShutter.setDevice([]);
+   
+        end
+        
         
         %{
         function connectDataTranslationMeasurPoint(this, comm)
@@ -176,7 +196,7 @@ classdef Reticle < mic.Base
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             this.uiMotMin.build(this.hParent, 800, dTop);
             dLeft = 10;
-            dTop = 280;
+            dTop = 220;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
@@ -193,13 +213,15 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
-            dLeft = 1100;
-            dTop = 280;
+            this.uiShutter.build(this.hParent, 10, dTop);
+            dTop = dTop + this.uiShutter.dHeight + dPad;
+            
+            
+            dLeft = 1000;
+            dTop = 220;
             this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
                   
-            this.clock.add(@this.onClock, this.id(), this.dDelay);
-
             
         end
         
@@ -251,30 +273,6 @@ classdef Reticle < mic.Base
         
         
         
-        function onClock(this)
-            
-            if isempty(this.hParent) || ...
-               ~ishghandle(this.hParent)
-                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
-                
-                % Remove task
-                if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
-                
-            end
-            
-            % Make sure the hggroup of the carriage is at the correct
-            % location.  
-            
-            
-            
-            dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
-            dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
-            this.uiAxes.setStagePosition(-dX, -dY); % Flip y so screen corresponds to plan view
-                        
-        end
         
         
         function init(this)
@@ -301,11 +299,17 @@ classdef Reticle < mic.Base
             this.uiDiode = bl12014.ui.ReticleDiode(...
                 'clock', this.clock ...
             );
-        
             
                 
+            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
+
+                    
             dHeight = 600;
             this.uiAxes = bl12014.ui.ReticleAxes(...
+                'clock', this.clock, ...
+                'fhGetIsShutterOpen', @this.uiShutter.uiOverride.get, ...
+                'fhGetX', @() this.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
+                'fhGetY', @() this.uiCoarseStage.uiY.getValCal('mm') / 1000, ...
                 'dWidth', dHeight, ...
                 'dHeight', dHeight ...
             );

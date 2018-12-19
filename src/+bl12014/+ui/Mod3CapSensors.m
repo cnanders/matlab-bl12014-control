@@ -23,7 +23,7 @@ classdef Mod3CapSensors < mic.Base
     properties (SetAccess = private)
         
         dWidth = 390
-        dHeight = 160
+        dHeight = 140
         
         cName = 'Mod3 Cap Sensors'
         
@@ -140,7 +140,7 @@ classdef Mod3CapSensors < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 25;
             
             this.uiCap1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
