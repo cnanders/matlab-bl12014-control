@@ -20,7 +20,7 @@ classdef ReticleTTZClosedLoop < mic.Base
         uibLevel
         hLevelScan
         dLevelScanPeriod = 0.5
-        cReticleLevelConfig = '../../src/config/Reticle-CLTTZ-leveler-coordinates.json'
+        cReticleLevelConfig = 'Reticle-CLTTZ-leveler-coordinates.json'
         stConfigDat
         hProgress
        
@@ -71,6 +71,19 @@ classdef ReticleTTZClosedLoop < mic.Base
             this.init();
         
         end
+        
+        
+        function lVal = isLeveled(this)
+            
+            lVal =  abs(this.stConfigDat.tiltX.value - this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) <= ...
+                        this.stConfigDat.tiltX.displayTol && ...
+                    abs(this.stConfigDat.tiltY.value - this.uiCLTiltY.getValCal(this.stConfigDat.tiltY.unit)) <= ...
+                        this.stConfigDat.tiltY.displayTol && ...
+                    abs(this.stConfigDat.Z.value - this.uiCLZ.getValCal(this.stConfigDat.Z.unit)) <= ...
+                    this.stConfigDat.Z.displayTol;
+        end
+        
+        
         
          function onLevel(this)
             
@@ -398,8 +411,10 @@ classdef ReticleTTZClosedLoop < mic.Base
         function init(this)
             this.msg('init()');
             
+            cDirThis = fileparts(mfilename('fullpath'));
+
             % Init config
-            this.stConfigDat = loadjson(this.cReticleLevelConfig);
+            this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cReticleLevelConfig));
             
             % Init button:
             this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Reticle');

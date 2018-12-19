@@ -24,7 +24,7 @@ classdef WaferTTZClosedLoop < mic.Base
         uibLevel
         hLevelScan
         dLevelScanPeriod = 0.5
-        cWaferLevelConfig = '../../src/config/Wafer-CLTTZ-leveler-coordinates.json'
+        cWaferLevelConfig = 'Wafer-CLTTZ-leveler-coordinates.json'
         stConfigDat
         hProgress
         
@@ -76,6 +76,16 @@ classdef WaferTTZClosedLoop < mic.Base
             
             this.init();
         
+        end
+        
+        function lVal = isLeveled(this)
+            
+            lVal =  abs(this.stConfigDat.tiltX.value - this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) <= ...
+                        this.stConfigDat.tiltX.displayTol && ...
+                    abs(this.stConfigDat.tiltY.value - this.uiCLTiltY.getValCal(this.stConfigDat.tiltY.unit)) <= ...
+                        this.stConfigDat.tiltY.displayTol && ...
+                    abs(this.stConfigDat.Z.value - this.uiCLZ.getValCal(this.stConfigDat.Z.unit)) <= ...
+                    this.stConfigDat.Z.displayTol;
         end
         
         
@@ -448,8 +458,10 @@ classdef WaferTTZClosedLoop < mic.Base
         function init(this)
             this.msg('init()');
             
+            cDirThis = fileparts(mfilename('fullpath'));
+
             % Init config
-            this.stConfigDat = loadjson(this.cWaferLevelConfig);
+            this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig));
             
             % Init button:
             this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Wafer');
