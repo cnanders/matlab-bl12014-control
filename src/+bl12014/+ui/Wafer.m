@@ -41,12 +41,14 @@ classdef Wafer < mic.Base
         % uiHeightSensor
         uiWorkingMode
         uiMotMin
-       
+        uiShutter
         
         commDeltaTauPowerPmac = []
         commMfDriftMonitorMiddleware = []
         
         hardware % needed for MFDriftMonitor integration
+        
+        waferExposureHistory
     end
     
     properties (SetAccess = private)
@@ -123,6 +125,20 @@ classdef Wafer < mic.Base
         %}
         
         
+        function connectRigolDG1000Z(this, comm)
+            
+            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
+            this.uiShutter.setDevice(device);
+            this.uiShutter.turnOn();
+                      
+        end
+        
+        function disconnectRigolDG1000Z(this)
+            
+            this.uiShutter.turnOff();
+            this.uiShutter.setDevice([]);
+   
+        end
        
         
         function connectDeltaTauPowerPmac(this, comm)
@@ -247,7 +263,7 @@ classdef Wafer < mic.Base
             this.uiMotMin.build(this.hParent, 800, 10);
             
             dLeft = 10;
-            dTop = 280;
+            dTop = 220;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
@@ -258,13 +274,13 @@ classdef Wafer < mic.Base
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            dTopHS = dTop;
 %             this.uiHeightSensorZClosedLoop.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiHeightSensorZClosedLoop.dHeight + dPad;
             
+            %{
             this.uiHeightSensorZClosedLoopCoarse.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiHeightSensorZClosedLoopCoarse.dHeight + dPad;
-            
+            %}
            
             
 %             this.uiHeightSensorRxClosedLoop.build(this.hParent, dLeft, dTop);
@@ -273,8 +289,6 @@ classdef Wafer < mic.Base
 %             this.uiHeightSensorRyClosedLoop.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiHeightSensorZClosedLoop.dHeight + dPad;
             
-            dTop = dTopHS;
-            dTop = dTop + this.uiDiode.dHeight + dPad;
             this.uiWaferTTZClosedLoop.build(this.hParent, dLeft, dTop)
             
             
@@ -285,8 +299,9 @@ classdef Wafer < mic.Base
             dTopDiode = dTop;
             dLeft = 10;
             this.uiDiode.build(this.hParent, dLeft, dTop);
-
+            dTop = dTop + this.uiDiode.dHeight + dPad;
             
+            this.uiShutter.build(this.hParent, dLeft, dTop);
             
             
             %{
@@ -294,14 +309,13 @@ classdef Wafer < mic.Base
             dTop = dTop + this.uiHeightSensor.dHeight + dPad;
             %}
             
-            dLeft = 1050;
+            dLeft = 1000;
             dTop = 280;
             this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
             
-            % this.hs     = HeightSensor(this.clock);
-            this.clock.add(@this.onClock, this.id(), this.dDelay);
-           
+            
+            
             
         end
         
@@ -317,13 +331,6 @@ classdef Wafer < mic.Base
            %  delete(this.uiCommCxroHeightSensor)
             % delete(this.uiCommDataTranslationMeasurPoint)
             
-            % Clean up clock tasks
-            
-            if (isvalid(this.clock))
-                this.clock.remove(this.id());
-            end
-            
-
             
         end
         
@@ -349,32 +356,7 @@ classdef Wafer < mic.Base
         end
                
         
-        function onClock(this)
-            
-            % Make sure the hggroup of the carriage is at the correct
-            % location.
-            
-            if isempty(this.hParent) || ...
-               ~ishghandle(this.hParent)
-                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
-                
-                % Remove task
-                if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
-                
-            end
-            
-            dX = this.uiCoarseStage.uiX.getValCal('mm') / 1000;
-            dY = this.uiCoarseStage.uiY.getValCal('mm') / 1000;
-            this.uiAxes.setStagePosition(dX, dY);
-            
-            
-            dXLsi = this.uiLsiCoarseStage.uiX.getValCal('mm') / 1000;
-            this.uiAxes.setXLsi(dXLsi);
-                        
-        end
+        
         
         
         
@@ -469,11 +451,22 @@ classdef Wafer < mic.Base
             this.initUiCommKeithley6482();
             this.initUiCommMfDriftMonitor();
         
+            
+            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
+
+                        
             dHeight = 600;
             this.uiAxes = bl12014.ui.WaferAxes( ...
+                'clock', this.clock, ...
+                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
+                'fhGetXOfWafer', @() this.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
+                'fhGetYOfWafer', @() this.uiCoarseStage.uiY.getValCal('mm') / 1000, ...
+                'fhGetXOfLsi', @() this.uiLsiCoarseStage.uiX.getValCal('mm') / 1000, ...
+                'waferExposureHistory', this.waferExposureHistory, ...
                 'dWidth', dHeight, ...
                 'dHeight', dHeight ...
             );
+        
             
                         
             

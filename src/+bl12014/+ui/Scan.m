@@ -125,6 +125,11 @@ classdef Scan < mic.Base
         
         % {cell of struct} storage of state during each acquire
         ceValues
+                
+        
+        uiWaferAxes
+        uiReticleAxes
+        waferExposureHistory
             
         
     end
@@ -411,6 +416,9 @@ classdef Scan < mic.Base
             this.hParent = hParent;
             this.buildPanelAvailable()
             this.buildPanelAdded()
+            
+            this.uiReticleAxes.build(this.hParent, 10, 300);
+            this.uiWaferAxes.build(this.hParent, 500, 300);
           
         end
         
@@ -570,6 +578,24 @@ classdef Scan < mic.Base
             this.uiEditColStart.set(uint8(1));
             this.uiEditColStart.setMin(uint8(0));
             
+            this.uiWaferAxes = bl12014.ui.WaferAxes(...
+                'dWidth', 400, ...
+                'dHeight', 400, ...
+                'clock', this.clock, ...
+                'waferExposureHistory', this.waferExposureHistory, ...
+                'fhGetXOfWafer', @() this.uiWafer.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
+                'fhGetYOfWafer', @() this.uiWafer.uiCoarseStage.uiY.getValCal('mm') / 1000, ...
+                'fhGetXOfLsi', @() this.uiWafer.uiLsiCoarseStage.uiX.getValCal('mm') / 1000 ...
+            );
+        
+            this.uiReticleAxes = bl12014.ui.ReticleAxes(...
+                'dWidth', 400, ...
+                'dHeight', 400, ...
+                'clock', this.clock, ...
+                'fhGetX', @() this.uiReticle.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
+                'fhGetY', @() this.uiReticle.uiCoarseStage.uiY.getValCal('mm') / 1000 ...
+            );
+            
                        
         end
         
@@ -695,23 +721,26 @@ classdef Scan < mic.Base
             
             % Purge all items from uiListActive
             this.uiListActive.setOptions(cell(1,0));
-            this.uiWafer.uiAxes.purgeExposures();
-            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+            this.waferExposureHistory.deleteExposures();
+            this.waferExposureHistory.deleteFemPreviewScan();
             
         end
         
         function onUiButtonClearWafer(this, src, evt)
             
-            this.uiWafer.uiAxes.purgeExposures();
-            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            
+            
+            this.waferExposureHistory.deleteExposures();
+            this.waferExposureHistory.deleteFemPreviewScan();
             
         end
         
         function onUiButtonClearPrescriptions(this, src, evt)
             
             this.uiListActive.setOptions(cell(1,0));
-            this.uiWafer.uiAxes.deleteFemPreviewScan();
-            
+            this.waferExposureHistory.deleteFemPreviewScan();
+
         end
         
         function onListActiveChange(this)
@@ -742,7 +771,8 @@ classdef Scan < mic.Base
             % Loop through all selected prescriptions and push them to the
             % active list
             
-            this.uiWafer.uiAxes.deleteFemPreviewScan();
+            this.waferExposureHistory.deleteFemPreviewScan();
+
             
             ceOptions = this.uiListActive.getOptions();
             for k = 1:length(ceOptions)
@@ -759,7 +789,7 @@ classdef Scan < mic.Base
                     stRecipe.fem.dPositionStepY, ...
                     stRecipe.fem.u8FocusNum ...
                 );
-                this.uiWafer.uiAxes.addFemPreviewScan(dX, dY);
+                this.waferExposureHistory.addFemPreviewScan(dX, dY);
                     
             end
             
@@ -1134,8 +1164,6 @@ classdef Scan < mic.Base
                 return
             end
             
-             % Update the UI of wafer to show exposing
-            this.uiWafer.uiAxes.setExposing(true);
             
             
             % Should eventually have a "type" property associated with the
@@ -1293,10 +1321,8 @@ classdef Scan < mic.Base
                     stValue.task.femRow ...
                     stValue.task.femRows ...
                 ];
-                this.uiWafer.uiAxes.addExposure(dExposure);
+                this.waferExposureHistory.addExposure(dExposure);
             
-                % Update the UI of wafer to show exposing
-                this.uiWafer.uiAxes.setExposing(false);
                 
                 % Overwrite the results file
                 this.saveScanResults(stUnit);
@@ -1330,8 +1356,6 @@ classdef Scan < mic.Base
         function onScanAbort(this, stUnit)
              this.saveScanResults(stUnit, true);
              this.abort();
-             % Update the UI of wafer to show exposing
-             this.uiWafer.uiAxes.setExposing(false);
              
         end
 
@@ -1433,8 +1457,6 @@ classdef Scan < mic.Base
                 cMsg = 'The FEM was aborted.';
             end
             
-            % Cleanup
-            this.uiWafer.uiAxes.setExposing(false);
             
             % Throw message box.
             h = msgbox( ...

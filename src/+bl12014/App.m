@@ -1518,7 +1518,9 @@ classdef App < mic.Base
                 );
                 this.commRigolDG1000Z.idn()
                 this.uiApp.uiBeamline.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                                
+                this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                
             catch mE
                 
                 this.commRigolDG1000Z = [];
@@ -1533,6 +1535,9 @@ classdef App < mic.Base
         function destroyAndDisconnectRigolDG1000Z(this)
             
             this.uiApp.uiBeamline.uiShutter.disconnectRigolDG1000Z();
+            this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
+            this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
+            
             this.commRigolDG1000Z = [];
             
         end

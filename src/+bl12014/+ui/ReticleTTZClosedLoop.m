@@ -31,7 +31,7 @@ classdef ReticleTTZClosedLoop < mic.Base
     properties (SetAccess = private)
         
         dWidth = 630
-        dHeight = 150        
+        dHeight = 110        
         cName = 'reticle-coarse-stage-ttz-closed-loop'
         lShowRange = false
         lShowStores = true
@@ -208,7 +208,7 @@ classdef ReticleTTZClosedLoop < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 25;
             
 
             

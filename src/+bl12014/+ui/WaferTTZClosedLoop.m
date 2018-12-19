@@ -33,7 +33,7 @@ classdef WaferTTZClosedLoop < mic.Base
     properties (SetAccess = private)
         
         dWidth = 630
-        dHeight = 150        
+        dHeight = 95       
         cName = 'wafer-coarse-stage-ttz-closed-loop'
         lShowRange = false
         lShowStores = true
@@ -246,7 +246,7 @@ classdef WaferTTZClosedLoop < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            dSep = 30;
+            dSep = 24;
             
 
             

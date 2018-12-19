@@ -18,17 +18,22 @@ addpath(genpath(cDirMic));
 
 
 hardware = bl12014.Hardware();
+waferExposureHistory = bl12014.WaferExposureHistory();
+waferExposureHistory.addFakeExposures();
+
 
 clock = mic.Clock('Master');
 
 ui = bl12014.ui.Wafer(...
     'clock', clock, ...
+    'waferExposureHistory', waferExposureHistory, ...
     'hardware', hardware ...
 );
 
 
-dWidth = 1800;
-dHeight = 1000;
+dWidth = 1650;
+dHeight = 900;
+
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
     'Position', [ ...

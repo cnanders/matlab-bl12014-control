@@ -127,6 +127,18 @@ classdef ReticleAxes < mic.Base
         dXLoadLock = -0.35 % As drawn, needs to be on left, even through this is positive X coordinate of stage.
         dYLoadLock = 0
                 
+        % @returns {double 1x1} x position of the stage in meters
+        fhGetX = @() 0
+        % @returns {double 1x1} y position of the stage in meters
+        fhGetY = @() 0
+        
+        % @returns {logical 1x1} true if shutter is open
+        fhGetShutterIsOpen = @()false
+        
+        
+        dDelay = 0.5;
+        clock
+        
     end
     
     properties (SetAccess = private)
@@ -290,6 +302,9 @@ classdef ReticleAxes < mic.Base
             this.hClockTimes    = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
             this.drawClockTimes();
             
+            this.clock.add(@this.onClock, this.id(), this.dDelay);
+
+            
         end
         
                         
@@ -303,9 +318,12 @@ classdef ReticleAxes < mic.Base
         end
         
         
-        % @param {double 1x1} x position of the stage in meters
-        % @param {double 1x1} y position of the stage in meters
-        function setStagePosition(this, dX, dY)
+        
+        function setStagePosition(this)
+            
+            
+            dX = -this.fhGetX();
+            dY = -this.fhGetY();
             
             % Make sure the hggroup of the carriage is at the correct
             % location. 
@@ -341,6 +359,11 @@ classdef ReticleAxes < mic.Base
     
     methods (Access = private)
         
+        
+        function onClock(this)
+            this.setStagePosition();
+            
+        end
         
         function init(this)
             this.msg('init()');

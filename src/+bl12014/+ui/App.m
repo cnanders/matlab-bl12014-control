@@ -14,7 +14,7 @@ classdef App < mic.Base
         cName = 'ui.App'
         
         
-        
+        waferExposureHistory
         uiNetworkCommunication
         uiBeamline
         uiShutter
@@ -220,8 +220,8 @@ classdef App < mic.Base
         
         function buildNew(this)
             
-            dWidth = 1900;
-            dHeight = 1080;
+            dWidth = 1850;
+            dHeight = 1040;
             dScreenSize = get(0, 'ScreenSize');
             
             this.hFigureNew = figure( ...
@@ -439,8 +439,11 @@ classdef App < mic.Base
             %disp(evt.stData.dX)
             %disp(evt.stData.dY)
             
-            this.uiWafer.uiAxes.deleteFemPreviewPrescription();
-            this.uiWafer.uiAxes.addFemPreviewPrescription(evt.stData.dX, evt.stData.dY);
+            this.waferExposureHistory.deleteFemPreview();
+            this.waferExposureHistory.addFemPreview(evt.stData.dX, evt.stData.dY);
+            
+            %this.uiWafer.uiAxes.deleteFemPreviewPrescription();
+            %this.uiWafer.uiAxes.addFemPreviewPrescription(evt.stData.dX, evt.stData.dY);
         end
         
        
@@ -493,6 +496,8 @@ classdef App < mic.Base
             
             this.clock = mic.Clock('Master');
             
+            this.waferExposureHistory = bl12014.WaferExposureHistory();
+            
             % Initialize cell of function handle callbacks for each tab of 
             % the tab group
             
@@ -543,7 +548,9 @@ classdef App < mic.Base
             );
             this.uiM143 = bl12014.ui.M143('clock', this.clockM143);
             this.uiReticle = bl12014.ui.Reticle('clock', this.clockReticle);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clockWafer);
+            this.uiWafer = bl12014.ui.Wafer('clock', this.clockWafer, ...
+                'waferExposureHistory', this.waferExposureHistory ...
+            );
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clockPowerPmacStatus);
             this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clockMfDriftMonitorVibration);
             this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clockVibrationIsolationSystem);
@@ -573,6 +580,7 @@ classdef App < mic.Base
                 'uiVibrationIsolationSystem', this.uiVibrationIsolationSystem, ...
                 'uiMfDriftMonitorVibration', this.uiMfDriftMonitorVibration, ...
                 'uiMFDriftMonitor', this.uiDriftMonitor, ...
+                'waferExposureHistory', this.waferExposureHistory, ...
                 'uiBeamline', this.uiBeamline ...
             );
 
