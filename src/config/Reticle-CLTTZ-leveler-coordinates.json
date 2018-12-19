@@ -1,0 +1,14 @@
+{  
+    "tiltX": {
+        "value":-18518,
+        "unit": "urad"
+    },
+    "tiltY": {
+        "value":-630,
+        "unit": "urad"
+    },
+    "Z": {
+        "value":-46.85,
+        "unit": "um"
+    }
+ }

@@ -292,9 +292,11 @@ classdef Wafer < mic.Base
             this.uiWaferTTZClosedLoop.build(this.hParent, dLeft, dTop)
             
             
+            
+            dTop = dTop + this.uiWaferTTZClosedLoop.dHeight + dPad;
+            
             dLeft = 650;
             this.uiPobCapSensors.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiWaferTTZClosedLoop.dHeight + dPad;
              
             dTopDiode = dTop;
             dLeft = 10;

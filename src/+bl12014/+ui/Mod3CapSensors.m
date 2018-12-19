@@ -158,9 +158,9 @@ classdef Mod3CapSensors < mic.Base
             dLeft = 325;
             
              this.uiTextZ.build(this.hPanel, dLeft, dTop, 100, 24);
-             dTop = dTop + 50;
+             dTop = dTop + 40;
             this.uiTextTiltX.build(this.hPanel, dLeft, dTop, 100, 24);
-            dTop = dTop + 50;
+            dTop = dTop + 40;
             this.uiTextTiltY.build(this.hPanel, dLeft, dTop, 100, 24);
             dTop = dTop + 50;
            

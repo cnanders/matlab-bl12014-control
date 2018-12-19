@@ -20,6 +20,14 @@ classdef WaferTTZClosedLoop < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiFineZ  
         
+        
+        uibLevel
+        hLevelScan
+        dLevelScanPeriod = 0.5
+        cWaferLevelConfig = '../../src/config/Wafer-CLTTZ-leveler-coordinates.json'
+        stConfigDat
+        hProgress
+        
         uiCLTiltX
         uiCLTiltY
         uiCLZ
@@ -32,7 +40,7 @@ classdef WaferTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 630
+        dWidth = 700
         dHeight = 95       
         cName = 'wafer-coarse-stage-ttz-closed-loop'
         lShowRange = false
@@ -69,6 +77,56 @@ classdef WaferTTZClosedLoop < mic.Base
             this.init();
         
         end
+        
+        
+        function onLevel(this)
+            
+            this.hProgress = waitbar(0, 'Wafer is leveling, please wait...');
+            
+            % Set up scanner
+            fhSetState      = @(~, stState) stState.action();
+            fhIsAtState     = @(~, stState) stState.isReady();
+            fhAcquire       = @(~, stState) waitbar((stState.idx)/3, this.hProgress);
+            fhIsAcquired    = @(~, stState) true;
+            fhOnComplete    = @(~, stState) delete(this.hProgress);
+            fhOnAbort       = @(~, stState) delete(this.hProgress);
+            
+            stateList = { ...
+                struct('idx', 1, 'action', @()this.setUIFromStoreandGo(this.uiCLTiltX, 'tiltX'), 'isReady', @()this.uiCLTiltX.isReady()), ...
+                struct('idx', 2, 'action', @()this.setUIFromStoreandGo(this.uiCLTiltY, 'tiltY'), 'isReady', @()this.uiCLTiltY.isReady()), ...
+                struct('idx', 3, 'action', @()this.setUIFromStoreandGo(this.uiCLZ, 'Z'), 'isReady', @()this.uiCLZ.isReady())...
+                ...
+            };
+        
+            stRecipe = struct;
+            stRecipe.values = stateList; % enumerable list of states that can be read by setState
+            stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
+            
+            this.hLevelScan = mic.Scan(this.cName, ...
+                                        this.clock, ...
+                                        stRecipe, ...
+                                        fhSetState, ...
+                                        fhIsAtState, ...
+                                        fhAcquire, ...
+                                        fhIsAcquired, ...
+                                        fhOnComplete, ...
+                                        fhOnAbort, ...
+                                        this.dLevelScanPeriod...
+                                        );
+            this.hLevelScan.start();
+        end
+        
+        function setUIFromStoreandGo(this, ui, cAxisName)
+            % Load values from config store:
+            dVal = this.stConfigDat.(cAxisName).value;
+            cUnit = this.stConfigDat.(cAxisName).unit;
+            
+            this.setDestAndGo(ui, dVal);            
+        end
+        
+        
+      
+        
         
         % Need to construct req function handles for GSNFromCLC device
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
@@ -251,7 +309,11 @@ classdef WaferTTZClosedLoop < mic.Base
 
             
             this.uiCLZ.build(this.hPanel, dLeft, dTop);
+            this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+            
             dTop = dTop + dSep;
+            
+            
             
             this.uiCLTiltX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
@@ -379,6 +441,12 @@ classdef WaferTTZClosedLoop < mic.Base
         
         function init(this)
             this.msg('init()');
+            
+            % Init config
+            this.stConfigDat = loadjson(this.cWaferLevelConfig);
+            
+            % Init button:
+            this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Wafer');
             
             this.initUiZ();
             this.initUiTiltX();
