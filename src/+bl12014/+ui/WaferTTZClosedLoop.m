@@ -88,8 +88,34 @@ classdef WaferTTZClosedLoop < mic.Base
                     this.stConfigDat.Z.displayTol;
         end
         
+        function lVal = isMissing(this)
+            lVal = abs(this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) >= 887000 ||...
+                    abs(this.uiCLTiltY.getValCal(this.stConfigDat.tiltY.unit)) >= 887000;
+            
+        end
+        
+        function updateButtonColor(this)
+            if (this.isLeveled())
+                this.uibLevel.setColor([.85, 1, .85]);
+                this.uibLevel.setText('Wafer is level');
+            elseif this.isMissing()
+                this.uibLevel.setColor([1, 1, .85]);
+                this.uibLevel.setText('No Wafer!');
+            else
+                
+                this.uibLevel.setColor([1, .85, .85]);
+                this.uibLevel.setText('Level Wafer');
+            end
+            
+        end
+        
         
         function onLevel(this)
+            
+            if this.isMissing()
+                msgbox('Not leveling wafer because no wafer is detected');
+                return
+            end
             
             this.hProgress = waitbar(0, 'Wafer is leveling, please wait...');
             
@@ -459,6 +485,8 @@ classdef WaferTTZClosedLoop < mic.Base
             this.msg('init()');
             
             cDirThis = fileparts(mfilename('fullpath'));
+            
+            this.clock.add(@()this.updateButtonColor(), this.id(), 1);
 
             % Init config
             this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig));

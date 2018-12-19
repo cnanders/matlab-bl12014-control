@@ -83,9 +83,37 @@ classdef ReticleTTZClosedLoop < mic.Base
                     this.stConfigDat.Z.displayTol;
         end
         
+        function lVal = isMissing(this)
+            lVal = this.uiCapSensors.uiCap3.getValCal('V') < -9.99 || ...
+                this.uiCapSensors.uiCap2.getValCal('V') < -9.99 ;
+            
+         
+            
+        end
+        
+        
+        function updateButtonColor(this)
+            if (this.isLeveled())
+                this.uibLevel.setColor([.85, 1, .85]);
+                this.uibLevel.setText('Reticle is level');
+            elseif this.isMissing()
+                this.uibLevel.setColor([1, 1, .85]);
+                this.uibLevel.setText('Reticle pos invalid');
+            else 
+                this.uibLevel.setColor([1, .85, .85]);
+                this.uibLevel.setText('Level Reticle');
+            end
+            
+        end
+        
         
         
          function onLevel(this)
+             
+            if this.isMissing()
+                msgbox('Not leveling reticle because reticle is not in cap sensor range');
+                return
+            end
             
             this.hProgress = waitbar(0, 'Reticle is leveling, please wait...');
             
@@ -412,6 +440,9 @@ classdef ReticleTTZClosedLoop < mic.Base
             this.msg('init()');
             
             cDirThis = fileparts(mfilename('fullpath'));
+            
+            this.clock.add(@()this.updateButtonColor(), this.id(), 1);
+
 
             % Init config
             this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cReticleLevelConfig));
