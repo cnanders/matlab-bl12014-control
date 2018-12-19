@@ -2048,6 +2048,12 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.turnOn();
             
+            this.uiApp.uiWafer.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiWafer.uiShutter.uiCommRigol.turnOn();
+            
+            this.uiApp.uiReticle.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiReticle.uiShutter.uiCommRigol.turnOn();
+            
             % Camera LEDs
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.turnOn();

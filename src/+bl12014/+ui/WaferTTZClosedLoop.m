@@ -200,6 +200,12 @@ classdef WaferTTZClosedLoop < mic.Base
         end
         
         
+        function dVal = getFreshHSValue(~, commDriftMonitor, u8idx)
+            
+            commDriftMonitor.forceUpdate();
+            dVal = commDriftMonitor.getHSValue(u8idx); 
+            
+        end
         
         function device = createCLRxdevice(this,  commPPMAC, commDriftMonitor)
             mrad2urad = 1e3;
@@ -211,7 +217,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal);
             fhIsReadyMotor  = @()deviceTiltXPPMAC.isReady();
             dTolerance      = this.dTiltXTol;
-            fhGetSensor     = @()commDriftMonitor.getHSValue(1) * mrad2urad;   
+            fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 1) * mrad2urad;   
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
@@ -230,7 +236,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
             fhIsReadyMotor  = @()deviceTiltYPPMAC.isReady();
             dTolerance      = this.dTiltYTol;
-            fhGetSensor     = @()commDriftMonitor.getHSValue(2) * mrad2urad;   
+            fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 2) * mrad2urad; 
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...

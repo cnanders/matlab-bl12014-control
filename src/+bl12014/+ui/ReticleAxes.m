@@ -19,7 +19,7 @@ classdef ReticleAxes < mic.Base
         dZoomMax = 200
         dZoomMinForFieldLabels = 40
         
-        cName = 'ReticleAxes'
+        cName = 'reticle-axes'
         
         
         
