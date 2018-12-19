@@ -8,6 +8,7 @@ classdef WaferAxes < mic.Base
     
 	properties
         
+        
        
     end
     
@@ -37,6 +38,8 @@ classdef WaferAxes < mic.Base
         
         dXCap4 = 80e-3
         dYCap4 = -20e-3
+        
+        cName = 'wafer-axes'
         
         
     end
