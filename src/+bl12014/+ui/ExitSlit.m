@@ -23,9 +23,7 @@ classdef ExitSlit < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 670
-
-        dHeight = 160
+        
         hPanel
         
         
@@ -49,6 +47,8 @@ classdef ExitSlit < mic.Base
     properties (SetAccess = private)
         
         cName = 'exit-slit'
+        dWidth = 670
+        dHeight = 160
     end
     
     methods

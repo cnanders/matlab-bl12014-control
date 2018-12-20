@@ -18,7 +18,7 @@ classdef App < mic.Base
         uiNetworkCommunication
         uiBeamline
         uiShutter
-        
+        uiTuneFluxDensity
         uiM143
 
         uiVibrationIsolationSystem
@@ -46,34 +46,33 @@ classdef App < mic.Base
         % Exposing for troubleshooting
         clock
         
-        % { mic.ClockGroup 1x1}
-        clockNetworkCommunication
-        clockBeamline
-        clockShutter
-       
-        clockM143
-       
-        clockVibrationIsolationSystem
-        clockReticle
-        clockWafer
-        clockPowerPmacStatus
-        clockPrescriptionTool
-        clockScan
-        clockTempSensors
-        clockFocusSensor
-        clockDriftMonitor
-        clockLSIControl
-        clockLSIAnalyze
-        clockScannerM142
-        clockScannerMA
-        clockHeightSensorLEDs
-        clockCameraLEDs
-        clockScanResultPlot2x2
-        clockMeasurPointLogPlotter
-        clockMADiagnostics
-        clockPOCurrent
-        clockMfDriftMonitorVibration
-        clockMfDriftMonitor
+        % { mic.ui.Clock 1x1}
+        uiClockNetworkCommunication
+        uiClockBeamline
+        uiClockShutter
+        uiClockM143
+        uiClockVibrationIsolationSystem
+        uiClockReticle
+        uiClockWafer
+        uiClockPowerPmacStatus
+        uiClockPrescriptionTool
+        uiClockScan
+        uiClockTempSensors
+        uiClockFocusSensor
+        uiClockDriftMonitor
+        uiClockLSIControl
+        uiClockLSIAnalyze
+        uiClockScannerM142
+        uiClockScannerMA
+        uiClockHeightSensorLEDs
+        uiClockCameraLEDs
+        uiClockScanResultPlot2x2
+        uiClockMeasurPointLogPlotter
+        uiClockMADiagnostics
+        uiClockPOCurrent
+        uiClockMfDriftMonitorVibration
+        uiClockMfDriftMonitor
+        uiClockTuneFluxDensity
 
     end
     
@@ -94,6 +93,7 @@ classdef App < mic.Base
             'Drift Monitor', ...
             'Reticle', ...
             'Wafer', ...
+            'Tune Flux Density', ...
             'FEM Control', ...
             'PO Current', ...
             'PPMAC Status', ....
@@ -512,51 +512,60 @@ classdef App < mic.Base
             );
                                    
             % Set clock, required for drift monitor middle layer
-            this.hHardware.setClock(this.clock);            
-            this.clockNetworkCommunication = mic.ClockGroup(this.clock);
-            this.clockBeamline = mic.ClockGroup(this.clock);
-            this.clockM143 = mic.ClockGroup(this.clock);
-            this.clockVibrationIsolationSystem = mic.ClockGroup(this.clock);
-            this.clockReticle = mic.ClockGroup(this.clock);
-            this.clockWafer = mic.ClockGroup(this.clock);
-            this.clockPowerPmacStatus = mic.ClockGroup(this.clock);
-            this.clockPrescriptionTool = mic.ClockGroup(this.clock);
-            this.clockScan = mic.ClockGroup(this.clock);
-            this.clockTempSensors = mic.ClockGroup(this.clock);
-            this.clockFocusSensor = mic.ClockGroup(this.clock);
-            this.clockDriftMonitor = mic.ClockGroup(this.clock);
-            this.clockLSIControl = mic.ClockGroup(this.clock);
-            this.clockLSIAnalyze = mic.ClockGroup(this.clock);
-            this.clockScannerM142 = mic.ClockGroup(this.clock);
-            this.clockScannerMA = mic.ClockGroup(this.clock);
-            this.clockHeightSensorLEDs = mic.ClockGroup(this.clock);
-            this.clockCameraLEDs = mic.ClockGroup(this.clock);
-            this.clockScanResultPlot2x2 = mic.ClockGroup(this.clock);
-            this.clockMeasurPointLogPlotter = mic.ClockGroup(this.clock);
-            this.clockMADiagnostics = mic.ClockGroup(this.clock);
-            this.clockPOCurrent = mic.ClockGroup(this.clock);
-            this.clockMfDriftMonitorVibration = mic.ClockGroup(this.clock);
-            this.clockMfDriftMonitor = mic.ClockGroup(this.clock);
+            this.hHardware.setClock(this.clock);  
             
-            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.clockNetworkCommunication);
+            this.uiClockNetworkCommunication = mic.ui.Clock(this.clock);
+            this.uiClockBeamline = mic.ui.Clock(this.clock);
+            this.uiClockM143 = mic.ui.Clock(this.clock);
+            this.uiClockVibrationIsolationSystem = mic.ui.Clock(this.clock);
+            this.uiClockReticle = mic.ui.Clock(this.clock);
+            this.uiClockWafer = mic.ui.Clock(this.clock);
+            this.uiClockPowerPmacStatus = mic.ui.Clock(this.clock);
+            this.uiClockPrescriptionTool = mic.ui.Clock(this.clock);
+            this.uiClockScan = mic.ui.Clock(this.clock);
+            this.uiClockTempSensors = mic.ui.Clock(this.clock);
+            this.uiClockFocusSensor = mic.ui.Clock(this.clock);
+            this.uiClockDriftMonitor = mic.ui.Clock(this.clock);
+            this.uiClockLSIControl = mic.ui.Clock(this.clock);
+            this.uiClockLSIAnalyze = mic.ui.Clock(this.clock);
+            this.uiClockScannerM142 = mic.ui.Clock(this.clock);
+            this.uiClockScannerMA = mic.ui.Clock(this.clock);
+            this.uiClockHeightSensorLEDs = mic.ui.Clock(this.clock);
+            this.uiClockCameraLEDs = mic.ui.Clock(this.clock);
+            this.uiClockScanResultPlot2x2 = mic.ui.Clock(this.clock);
+            this.uiClockMeasurPointLogPlotter = mic.ui.Clock(this.clock);
+            this.uiClockMADiagnostics = mic.ui.Clock(this.clock);
+            this.uiClockPOCurrent = mic.ui.Clock(this.clock);
+            this.uiClockMfDriftMonitorVibration = mic.ui.Clock(this.clock);
+            this.uiClockMfDriftMonitor = mic.ui.Clock(this.clock);
+            this.uiClockTuneFluxDensity = mic.ui.Clock(this.clock);
             
-            this.uiBeamline = bl12014.ui.Beamline('clock', this.clockBeamline);
+            this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.uiClockNetworkCommunication);
+            
+            this.uiBeamline = bl12014.ui.Beamline('clock', this.uiClockBeamline);
             this.uiScannerM142 = bl12014.ui.Scanner(...
-                'clock', this.clockScannerM142, ...
+                'clock', this.uiClockScannerM142, ...
                 'cName', 'M142 Scanner' ...
             );
-            this.uiM143 = bl12014.ui.M143('clock', this.clockM143);
-            this.uiReticle = bl12014.ui.Reticle('clock', this.clock, 'uiClock', this.clockReticle);
-            this.uiWafer = bl12014.ui.Wafer('clock', this.clock, 'uiClock', this.clockWafer, ...
+        
+            this.uiM143 = bl12014.ui.M143('clock', this.uiClockM143);            
+            this.uiReticle = bl12014.ui.Reticle(...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockReticle ...
+            );
+            
+            this.uiWafer = bl12014.ui.Wafer(...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockWafer, ...
                 'waferExposureHistory', this.waferExposureHistory ...
             );
-            this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.clockPowerPmacStatus);
-            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.clockMfDriftMonitorVibration);
-            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.clockVibrationIsolationSystem);
-            this.uiTempSensors = bl12014.ui.TempSensors('clock', this.clockTempSensors);
-            this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.clockFocusSensor);
+            this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus('clock', this.uiClockPowerPmacStatus);
+            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.uiClockMfDriftMonitorVibration);
+            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.uiClockVibrationIsolationSystem);
+            this.uiTempSensors = bl12014.ui.TempSensors('clock', this.uiClockTempSensors);
+            this.uiFocusSensor = bl12014.ui.FocusSensor('clock', this.uiClockFocusSensor);
             this.uiScannerMA = bl12014.ui.Scanner(...
-                'clock', this.clockScannerMA, ...
+                'clock', this.uiClockScannerMA, ...
                 'cName', 'MA Scanner', ...
                 'dScale', 0.67 ... % 0.67 rel amp = sig 1
             );
@@ -564,13 +573,18 @@ classdef App < mic.Base
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
-            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clockLSIControl, ...
+            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.uiClockLSIControl, ...
                                                            'hardware', this.hHardware);
             this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', this.hHardware, ...
-                               'clock', this.clockMfDriftMonitorVibration);
+                               'clock', this.uiClockMfDriftMonitorVibration);
            
             
+            this.uiTuneFluxDensity = bl12014.ui.TuneFluxDensity(...
+                'waferExposureHistory', this.waferExposureHistory, ...
+                'clock', this.uiClockTuneFluxDensity ...
+            );
+        
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ... % DONT GIVE A CLOCK GROUP!
                 ...% 'uiShutter', this.uiBeamline.uiShutter.uiShutter, ...
@@ -584,15 +598,15 @@ classdef App < mic.Base
             );
 
             this.uiHeightSensorLEDs = bl12014.ui.HeightSensorLEDs(...
-                'clock', this.clockHeightSensorLEDs ...
+                'clock', this.uiClockHeightSensorLEDs ...
             );
             this.uiCameraLEDs = bl12014.ui.CameraLEDs(...
-                'clock', this.clockCameraLEDs ...
+                'clock', this.uiClockCameraLEDs ...
             );
-            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.clockScanResultPlot2x2);
+            this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.uiClockScanResultPlot2x2);
             
-            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.clockMADiagnostics);
-            this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.clockPOCurrent);
+            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.uiClockMADiagnostics);
+            this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.uiClockPOCurrent);
             
             this.uiMeasurPointLogPlotter = bl12014.ui.MeasurPointLogPlotter();
             
@@ -665,78 +679,81 @@ classdef App < mic.Base
         end
         
         
-        function stopAllClockGroups(this)
+        function stopAllUiClocks(this)
             
-            this.clockNetworkCommunication.stop();
-            this.clockBeamline.stop();
-            this.clockM143.stop();
-            this.clockVibrationIsolationSystem.stop();
-            this.clockReticle.stop();
-            this.clockWafer.stop();
-            this.clockPowerPmacStatus.stop();
-            this.clockPrescriptionTool.stop();
-            % this.clockScan.stop();
-            this.clockTempSensors.stop();
-            this.clockFocusSensor.stop();
-            this.clockDriftMonitor.stop();
-            this.clockLSIControl.stop();
-            this.clockLSIAnalyze.stop();
-            this.clockScannerM142.stop();
-            this.clockScannerMA.stop();
-            this.clockHeightSensorLEDs.stop();
-            this.clockCameraLEDs.stop();
-            this.clockScanResultPlot2x2.stop();
-            this.clockMeasurPointLogPlotter.stop();
-            this.clockMADiagnostics.stop();
-            this.clockPOCurrent.stop();
-            this.clockMfDriftMonitorVibration.stop();
-            this.clockMfDriftMonitor.stop();
+            this.uiClockNetworkCommunication.stop();
+            this.uiClockBeamline.stop();
+            this.uiClockM143.stop();
+            this.uiClockVibrationIsolationSystem.stop();
+            this.uiClockReticle.stop();
+            this.uiClockWafer.stop();
+            this.uiClockPowerPmacStatus.stop();
+            this.uiClockPrescriptionTool.stop();
+            % this.uiClockScan.stop();
+            this.uiClockTempSensors.stop();
+            this.uiClockFocusSensor.stop();
+            this.uiClockDriftMonitor.stop();
+            this.uiClockLSIControl.stop();
+            this.uiClockLSIAnalyze.stop();
+            this.uiClockScannerM142.stop();
+            this.uiClockScannerMA.stop();
+            this.uiClockHeightSensorLEDs.stop();
+            this.uiClockCameraLEDs.stop();
+            this.uiClockScanResultPlot2x2.stop();
+            this.uiClockMeasurPointLogPlotter.stop();
+            this.uiClockMADiagnostics.stop();
+            this.uiClockPOCurrent.stop();
+            this.uiClockMfDriftMonitorVibration.stop();
+            this.uiClockMfDriftMonitor.stop();
+            this.uiClockTuneFluxDensity.stop();
         end
         
-        function startClockGroupOfActiveTab(this)
+        function startUiClockOfActiveTab(this)
             cTab = this.uiTabGroup.getSelectedTabName();
             
             switch cTab
                 case 'Beamline'
-                    this.clockBeamline.start();
+                    this.uiClockBeamline.start();
                 case 'Shutter'
-                     this.clockShutter.start();
+                     this.uiClockShutter.start();
                 case 'Field Scanner (M142)'
-                     this.clockScannerM142.start();
+                     this.uiClockScannerM142.start();
                 case 'M143'
-                    this.clockM143.start();
+                    this.uiClockM143.start();
                 case 'Pupil Scanner (MA)'
-                    this.clockScannerMA.start();
+                    this.uiClockScannerMA.start();
                 case 'MA Diagnostics'
-                    this.clockMADiagnostics.start();
+                    this.uiClockMADiagnostics.start();
                 case 'VIS'
-                    this.clockVibrationIsolationSystem.start();
+                    this.uiClockVibrationIsolationSystem.start();
                 case 'Drift Monitor Vib'
-                    this.clockMfDriftMonitorVibration.start();
+                    this.uiClockMfDriftMonitorVibration.start();
                 case 'Drift Monitor'
-                     this.clockDriftMonitor.start();
+                     this.uiClockDriftMonitor.start();
                 case 'Reticle'
-                    this.clockReticle.start();
+                    this.uiClockReticle.start();
                 case 'Wafer'
-                    this.clockWafer.start();
+                    this.uiClockWafer.start();
                 case 'PPMAC Status'
-                    this.clockPowerPmacStatus.start();
+                    this.uiClockPowerPmacStatus.start();
                 case 'Pre Tool'
-                    this.clockPrescriptionTool.start();
+                    this.uiClockPrescriptionTool.start();
                 case 'FEM Control'
-                    this.clockScan.start();
+                    this.uiClockScan.start();
                 case 'PO Current'
-                    this.clockPOCurrent.start();
+                    this.uiClockPOCurrent.start();
                 case 'Camera LEDs'
-                    this.clockCameraLEDs.start();
+                    this.uiClockCameraLEDs.start();
                 case '2x2 Plotter'
-                    this.clockScanResultPlot2x2.start();
+                    this.uiClockScanResultPlot2x2.start();
                 case 'Height Sensor LEDs'
-                    this.clockHeightSensorLEDs.start();
+                    this.uiClockHeightSensorLEDs.start();
                 case 'MeasurPoint Log'
-                    this.clockMeasurPointLogPlotter.start();
+                    this.uiClockMeasurPointLogPlotter.start();
                 case 'Network Status'
-                    this.clockNetworkCommunication.start();
+                    this.uiClockNetworkCommunication.start();
+                case 'Tune Flux Density'
+                    this.uiClockTuneFluxDensity.start();
                     
 
             end
@@ -748,8 +765,8 @@ classdef App < mic.Base
             cTab = this.uiTabGroup.getSelectedTabName();
             lIsBuilt = this.lIsTabBuilt(strcmp(cTab, this.cecTabs));
             
-            this.stopAllClockGroups();
-            this.startClockGroupOfActiveTab();
+            this.stopAllUiClocks();
+            this.startUiClockOfActiveTab();
             
             if lIsBuilt
                 % Already built
@@ -801,6 +818,8 @@ classdef App < mic.Base
                     this.uiMeasurPointLogPlotter.build(hTab, 10, 10);
                 case 'Network Status'
                     this.uiNetworkCommunication.build(hTab, 10, 10);
+                case 'Tune Flux Density'
+                    this.uiTuneFluxDensity.build(hTab, 10, 10);
                     
 
             end
