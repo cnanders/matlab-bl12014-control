@@ -38,6 +38,8 @@ classdef Scan < mic.Base
     
     properties (SetAccess = private)
         
+        hDYMO
+        
         uiEditMjPerCm2PerSec
         uiEditRowStart
         uiEditColStart
@@ -539,6 +541,13 @@ classdef Scan < mic.Base
                 'dWidth', 780, ...
                 'dHeight', 400 ...
             );
+        
+        
+        try
+            this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
+        catch
+            this.msg('DYMO labelwriter failed to initialize!!', this.u8_MSG_TYPE_SCAN);
+        end
                        
         end
         
@@ -655,9 +664,62 @@ classdef Scan < mic.Base
         
         
         function onPrint(this, src, evt)
+            this.msg('Printing label on DYMO', this.u8_MSG_TYPE_SCAN);
+           
+            if isempty(this.hDYMO)
+                msgbox('Cannot print label because DYMO failed to initialize');
+                return
+            end
             
-            % POST to URL (copy code from DCT control software)
+            % Grab active prescriptions
+            cFile = this.getPathRecipe();  
+            [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
             
+            % build strings:
+            cFEMSize = sprintf('[%d(F) X %d(D)]', stRecipe.u8FocusNum, stRecipe.u8DoseNum);
+            cWaferID = regexp(cFile, '(?<=\\)\d+\-\d+','match');
+%               struct with fields:
+% 
+%     dPositionStartX: 5.7500
+%      dPositionStepX: 0.2500
+%     dPositionStartY: -3.3000
+%      dPositionStepY: -0.1700
+%           u8DoseNum: 3
+%         dDoseCenter: 55
+%           dDoseStep: 10
+%      u8DoseStepType: 1
+%          u8FocusNum: 20
+%        dFocusCenter: 12860
+%          dFocusStep: 20
+% 
+% stRecipe.process
+% 
+% ans = 
+% 
+%   struct with fields:
+% 
+%                   cUser: 'Chris'
+%                   cBase: [1×0 char]
+%        cUnderlayer1Name: [1×0 char]
+%       dUnderlayer1Thick: 0
+%     dUnderlayer1PabTemp: 0
+%     dUnderlayer1PabTime: 0
+%        cUnderlayer2Name: [1×0 char]
+%       dUnderlayer2Thick: 0
+%     dUnderlayer2PabTemp: 0
+%     dUnderlayer2PabTime: 0
+%             cResistName: 'YATU1015'
+%            dResistThick: 25
+%          dResistPabTemp: 100
+%          dResistPabTime: 120
+%          dResistPebTemp: 170
+%          dResistPebTime: 120
+%                cDevName: '2-Hep'
+%                dDevTime: 15
+%              cRinseName: '2-Hep'
+%              dRinseTime: 15
+            
+            this.hDYMO.printLabel();
         end
         
         function onUiButtonNewWafer(this, src, evt)
