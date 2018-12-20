@@ -663,7 +663,7 @@ classdef Scan < mic.Base
         end
         
         
-        function onPrint(this, src, evt)
+        function onPrint(this, ~, ~)
             this.msg('Printing label on DYMO', this.u8_MSG_TYPE_SCAN);
            
             if isempty(this.hDYMO)
@@ -676,49 +676,29 @@ classdef Scan < mic.Base
             [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
             
             % build strings:
-            cFEMSize = sprintf('[%d(F) X %d(D)]', stRecipe.u8FocusNum, stRecipe.u8DoseNum);
-            cWaferID = regexp(cFile, '(?<=\\)\d+\-\d+','match');
-%               struct with fields:
-% 
-%     dPositionStartX: 5.7500
-%      dPositionStepX: 0.2500
-%     dPositionStartY: -3.3000
-%      dPositionStepY: -0.1700
-%           u8DoseNum: 3
-%         dDoseCenter: 55
-%           dDoseStep: 10
-%      u8DoseStepType: 1
-%          u8FocusNum: 20
-%        dFocusCenter: 12860
-%          dFocusStep: 20
-% 
-% stRecipe.process
-% 
-% ans = 
-% 
-%   struct with fields:
-% 
-%                   cUser: 'Chris'
-%                   cBase: [1×0 char]
-%        cUnderlayer1Name: [1×0 char]
-%       dUnderlayer1Thick: 0
-%     dUnderlayer1PabTemp: 0
-%     dUnderlayer1PabTime: 0
-%        cUnderlayer2Name: [1×0 char]
-%       dUnderlayer2Thick: 0
-%     dUnderlayer2PabTemp: 0
-%     dUnderlayer2PabTime: 0
-%             cResistName: 'YATU1015'
-%            dResistThick: 25
-%          dResistPabTemp: 100
-%          dResistPabTime: 120
-%          dResistPebTemp: 170
-%          dResistPebTime: 120
-%                cDevName: '2-Hep'
-%                dDevTime: 15
-%              cRinseName: '2-Hep'
-%              dRinseTime: 15
+            cFEMSize        = sprintf('[%d(F) X %d(D)]', stRecipe.fem.u8FocusNum, stRecipe.fem.u8DoseNum);
+            cWaferID        = regexp(cFile, '(?<=\\)\d+\-\d+','match');
+            cFocusString    = sprintf('%g / %g', stRecipe.fem.dFocusCenter, stRecipe.fem.dFocusStep);
+            cDoseString     = sprintf('%g / %g', stRecipe.fem.dDoseCenter, stRecipe.fem.dDoseStep);
+            cPEB            = sprintf('%gC / %gs', stRecipe.process.dResistPebTemp, stRecipe.process.dResistPebTime);
+            cDev            = sprintf('%s - %gs / %s - %gs', stRecipe.process.cDevName, stRecipe.process.dDevTime, ...
+                                                  stRecipe.process.cRinseName, stRecipe.process.dRinseTime);
+            cResist         = sprintf('%s: %g nm', stRecipe.process.cResistName, stRecipe.process.dResistThick);
             
+            % Set fields:
+            % Not setting all fields here, can still set the following:
+            % cField, cSublayer, cResistThickness, cPrescription,
+            % cIllumination
+            this.hDYMO.setfield(...
+                'cWaferID', cWaferID, ...
+                'cSize',    cFEMSize, ...
+                'cDose',    cDoseString, ...
+                'cFocus',   cFocusString, ...
+                'cPEB',     cPEB, ...
+                'cDev',     cDev, ...
+                'cResist',  cResist...
+            )
+        
             this.hDYMO.printLabel();
         end
         
