@@ -209,11 +209,12 @@ classdef App < mic.Base
         
         function build(this)
             
-            
+            %{
+            2018.12.20 UNCOMMENT TO GET LSI LAUNCHER
             this.buildFigure();
             this.uiButtonListInterferometry.build(this.hFigure, 10, 10);
             
-            
+            %}
             
             % Tab-based 
             this.buildNew();

@@ -677,7 +677,8 @@ classdef Scan < mic.Base
             
             % build strings:
             cFEMSize        = sprintf('[%d(F) X %d(D)]', stRecipe.fem.u8FocusNum, stRecipe.fem.u8DoseNum);
-            cWaferID        = regexp(cFile, '(?<=\\)\d+\-\d+','match');
+            ceWaferID        = regexp(cFile, '(?<=\\)\d+\-\d+','match');
+            cWaferID        = ceWaferID{1};
             cFocusString    = sprintf('%g / %g', stRecipe.fem.dFocusCenter, stRecipe.fem.dFocusStep);
             cDoseString     = sprintf('%g / %g', stRecipe.fem.dDoseCenter, stRecipe.fem.dDoseStep);
             cPEB            = sprintf('%gC / %gs', stRecipe.process.dResistPebTemp, stRecipe.process.dResistPebTime);
