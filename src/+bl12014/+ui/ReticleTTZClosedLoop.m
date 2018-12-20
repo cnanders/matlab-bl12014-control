@@ -16,6 +16,13 @@ classdef ReticleTTZClosedLoop < mic.Base
         uiCoarseZ
         
         uiCapSensors
+        
+        uibLevel
+        hLevelScan
+        dLevelScanPeriod = 0.5
+        cReticleLevelConfig = 'Reticle-CLTTZ-leveler-coordinates.json'
+        stConfigDat
+        hProgress
        
         
         uiCLTiltX
@@ -30,7 +37,7 @@ classdef ReticleTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 630
+        dWidth = 700
         dHeight = 110        
         cName = 'reticle-coarse-stage-ttz-closed-loop'
         lShowRange = false
@@ -64,6 +71,94 @@ classdef ReticleTTZClosedLoop < mic.Base
             this.init();
         
         end
+        
+        
+        function lVal = isLeveled(this)
+            
+            lVal =  abs(this.stConfigDat.tiltX.value - this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) <= ...
+                        this.stConfigDat.tiltX.displayTol && ...
+                    abs(this.stConfigDat.tiltY.value - this.uiCLTiltY.getValCal(this.stConfigDat.tiltY.unit)) <= ...
+                        this.stConfigDat.tiltY.displayTol && ...
+                    abs(this.stConfigDat.Z.value - this.uiCLZ.getValCal(this.stConfigDat.Z.unit)) <= ...
+                    this.stConfigDat.Z.displayTol;
+        end
+        
+        function lVal = isMissing(this)
+            lVal = this.uiCapSensors.uiCap3.getValCal('V') < -9.99 || ...
+                this.uiCapSensors.uiCap2.getValCal('V') < -9.99 ;
+            
+         
+            
+        end
+        
+        
+        function updateButtonColor(this)
+            if (this.isLeveled())
+                this.uibLevel.setColor([.85, 1, .85]);
+                this.uibLevel.setText('Reticle is level');
+            elseif this.isMissing()
+                this.uibLevel.setColor([1, 1, .85]);
+                this.uibLevel.setText('Reticle pos invalid');
+            else 
+                this.uibLevel.setColor([1, .85, .85]);
+                this.uibLevel.setText('Level Reticle');
+            end
+            
+        end
+        
+        
+        
+         function onLevel(this)
+             
+            if this.isMissing()
+                msgbox('Not leveling reticle because reticle is not in cap sensor range');
+                return
+            end
+            
+            this.hProgress = waitbar(0, 'Reticle is leveling, please wait...');
+            
+            % Set up scanner
+            fhSetState      = @(~, stState) stState.action();
+            fhIsAtState     = @(~, stState) stState.isReady();
+            fhAcquire       = @(~, stState) waitbar((stState.idx)/3, this.hProgress);
+            fhIsAcquired    = @(~, stState) true;
+            fhOnComplete    = @(~, stState) delete(this.hProgress);
+            fhOnAbort       = @(~, stState) delete(this.hProgress);
+            
+            stateList = { ...
+                struct('idx', 1, 'action', @()this.setUIFromStoreandGo(this.uiCLTiltX, 'tiltX'), 'isReady', @()this.uiCLTiltX.isReady()), ...
+                struct('idx', 2, 'action', @()this.setUIFromStoreandGo(this.uiCLTiltY, 'tiltY'), 'isReady', @()this.uiCLTiltY.isReady()), ...
+                struct('idx', 3, 'action', @()this.setUIFromStoreandGo(this.uiCLZ, 'Z'), 'isReady', @()this.uiCLZ.isReady())...
+                ...
+            };
+        
+            stRecipe = struct;
+            stRecipe.values = stateList; % enumerable list of states that can be read by setState
+            stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
+            
+            this.hLevelScan = mic.Scan(this.cName, ...
+                                        this.clock, ...
+                                        stRecipe, ...
+                                        fhSetState, ...
+                                        fhIsAtState, ...
+                                        fhAcquire, ...
+                                        fhIsAcquired, ...
+                                        fhOnComplete, ...
+                                        fhOnAbort, ...
+                                        this.dLevelScanPeriod...
+                                        );
+            this.hLevelScan.start();
+        end
+        
+        function setUIFromStoreandGo(this, ui, cAxisName)
+            % Load values from config store:
+            dVal = this.stConfigDat.(cAxisName).value;
+            cUnit = this.stConfigDat.(cAxisName).unit;
+            
+            this.setDestAndGo(ui, dVal, cUnit);            
+        end
+        
+        
         
         % Need to construct req function handles for GSNFromCLC device
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
@@ -213,6 +308,8 @@ classdef ReticleTTZClosedLoop < mic.Base
 
             
             this.uiCLZ.build(this.hPanel, dLeft, dTop);
+            this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+
             dTop = dTop + dSep;
             
             this.uiCLTiltX.build(this.hPanel, dLeft, dTop);
@@ -341,6 +438,19 @@ classdef ReticleTTZClosedLoop < mic.Base
         
         function init(this)
             this.msg('init()');
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            
+            this.clock.add(@()this.updateButtonColor(), this.id(), 1);
+
+
+            % Init config
+            this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cReticleLevelConfig));
+            
+            % Init button:
+            this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Reticle');
+            
+            
             
             this.initUiZ();
             this.initUiTiltX();

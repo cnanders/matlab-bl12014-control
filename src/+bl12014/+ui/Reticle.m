@@ -208,10 +208,11 @@ classdef Reticle < mic.Base
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.ReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.ReticleTTZClosedLoop.dHeight + dPad;
             
-            dLeft = 655;
+            dLeft = 600;
             this.uiMod3CapSensors.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
+%             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
             this.uiShutter.build(this.hParent, 10, dTop);
             dTop = dTop + this.uiShutter.dHeight + dPad;
