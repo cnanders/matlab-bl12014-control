@@ -22,7 +22,7 @@ classdef HeightSensorLEDs < mic.Base
     properties (SetAccess = private)
         
         dWidth = 900
-        dHeight = 255
+        dHeight = 220
         
         cName = 'Height Sensor LEDs'
         
@@ -131,33 +131,49 @@ classdef HeightSensorLEDs < mic.Base
 
         function build(this, hParent, dLeft, dTop)
             
-            this.hParent = hParent;
-            dSep = 30;
+            hParent;
             
-            this.uiCommMightex.build(this.hParent, dLeft, dTop);
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Height Sensor LEDs',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+            dTop = 20;
+            dLeft = 10;
+            dSep = 24;
+            
+            
+            this.uiCommMightex.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 5 + dSep;
             
-            this.ui1.build(this.hParent, dLeft, dTop);
+            this.ui1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             
-            this.ui2.build(this.hParent, dLeft, dTop);
+            this.ui2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui3.build(this.hParent, dLeft, dTop);
+            this.ui3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui4.build(this.hParent, dLeft, dTop);
+            this.ui4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui5.build(this.hParent, dLeft, dTop);
+            this.ui5.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.ui6.build(this.hParent, dLeft, dTop);
+            this.ui6.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
             dLeft = 500
-            dBot = 15
-            this.uiPositionRecaller.build(this.hParent, dLeft, dBot, 380, 170);
+            
+            this.uiPositionRecaller.build(this.hPanel, dLeft, 40, 380, 170);
             
             
             
@@ -175,11 +191,7 @@ classdef HeightSensorLEDs < mic.Base
     methods (Access = private)
                 
          
-        function onCloseRequest(this, src, evt)
-            this.msg('HeightSensorLEDs.closeRequestFcn()');
-            delete(this.hParent);
-            this.hParent = [];
-        end
+        
         
         function initUi1(this)
             

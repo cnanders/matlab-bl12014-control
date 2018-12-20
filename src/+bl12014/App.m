@@ -1572,7 +1572,7 @@ classdef App < mic.Base
                 );
                 this.commMightex1.init();
                 this.uiApp.uiHeightSensorLEDs.connectMightex1(this.commMightex1);
-                                
+                this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.connectMightex1(this.commMightex1);
             catch mE
                 
                 this.commMightex1 = [];
@@ -1588,7 +1588,7 @@ classdef App < mic.Base
                 );
                 this.commMightex2.init();
                 this.uiApp.uiHeightSensorLEDs.connectMightex2(this.commMightex2);
-                
+                this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.connectMightex2(this.commMightex2);
             catch mE
                 
                 this.commMightex2 = [];
@@ -1606,6 +1606,9 @@ classdef App < mic.Base
             % Disconnect UI
             this.uiApp.uiHeightSensorLEDs.disconnectMightex1();
             this.uiApp.uiHeightSensorLEDs.disconnectMightex2();
+            
+            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.disconnectMightex1();
+            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.disconnectMightex2();
             
             % this.commMightex1.disconnect();
             % this.commMightex2.disconnect();
@@ -1951,6 +1954,9 @@ classdef App < mic.Base
             
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.setDevice(gslcCommMightex);
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.turnOn();
+            
+            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.setDevice(gslcCommMightex);
+            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.turnOn();
             
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.turnOn();
