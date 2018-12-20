@@ -199,6 +199,9 @@ classdef App < mic.Base
         end
         
         function onFigureCloseRequest(this, src, evt)
+            
+            return;
+            
             this.msg('App.closeRequestFcn()');
             delete(this.hFigure);
             this.hFigure = [];

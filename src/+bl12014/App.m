@@ -869,7 +869,7 @@ classdef App < mic.Base
                         
             this.uiApp.uiBeamline.connectExitSlit(this.commExitSlit);
             this.uiApp.uiBeamline.uiExitSlit.connectExitSlit(this.commExitSlit);
-                        
+            this.uiApp.uiTuneFluxDensity.uiExitSlit.connectExitSlit(this.commExitSlit);
         end
         
         function destroyAndDisconnectExitSlit(this)
@@ -881,6 +881,7 @@ classdef App < mic.Base
             
             this.uiApp.uiBeamline.disconnectExitSlit();
             this.uiApp.uiBeamline.uiExitSlit.disconnectExitSlit();
+            this.uiApp.uiTuneFluxDensity.uiExitSlit.disconnectExitSlit();
             
             % this.commExitSlit.delete();
             this.commExitSlit = [];
@@ -1801,6 +1802,9 @@ classdef App < mic.Base
                         
             this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
             this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.turnOn()
+            
+            this.uiApp.uiTuneFluxDensity.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
+            this.uiApp.uiTuneFluxDensity.uiExitSlit.uiCommExitSlit.turnOn()
                         
             this.uiApp.uiBeamline.uiCommGalilD142.setDevice(gslcCommGalilD142);
             this.uiApp.uiBeamline.uiCommGalilD142.turnOn()
