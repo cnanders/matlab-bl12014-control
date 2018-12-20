@@ -3,8 +3,8 @@ classdef TuneFluxDensity < mic.Base
     properties (Constant)
        
         
-        dWidth      = 1900 %1295
-        dHeight     = 1000
+        dWidth      = 1000 %1295
+        dHeight     = 880
         
         dWidthNameComm = 100;
         
@@ -18,11 +18,14 @@ classdef TuneFluxDensity < mic.Base
         % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
+        uiCommConnectAll
         uiCommDeltaTauPowerPmac
         uiCommKeithley6482
         uiCommBL1201CorbaProxy
-
         
+        uiHeightSensorLeds
+
+        uiTabGroup
                 
         uiStageWaferCoarse
         uiStageReticleCoarse
@@ -119,53 +122,70 @@ classdef TuneFluxDensity < mic.Base
         function build(this, hParent, dLeft, dTop)
                     
             this.hParent = hParent;
+            
+            this.uiTabGroup.build(hParent, dLeft, dTop, this.dWidth, this.dHeight);
 
+
+           
+
+            
+            % Tab (Stages)
+            
+            dLeft = 10;
+            dTop = 20;
             dPad = 10;
             dSep = 30;
+            
+            hTab = this.uiTabGroup.getTabByIndex(1);
+             
+            this.uiCommDeltaTauPowerPmac.build(hTab, dLeft, dTop);
+            dTop = dTop + dSep;
 
-            this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
-                        
-            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiCommBL1201CorbaProxy.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            
-
-            this.uiStageWaferCoarse.build(this.hParent, dLeft, dTop);
+            this.uiStageWaferCoarse.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiStageWaferCoarse.dHeight + dPad;
             
-            this.uiStageReticleCoarse.build(this.hParent, dLeft, dTop);
+            
+            this.uiStageReticleCoarse.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiStageReticleCoarse.dHeight + dPad;
+            
+            this.uiAxesReticle.build(hTab, dLeft, dTop);            
+            % dTop = dTop + this.uiAxesReticle.dHeight + dPad;
+            
+            this.uiAxesWafer.build(hTab, 480, dTop);
                          
-            dTopDiode = dTop;
+            % Tab (Tune)
+            
+            hTab = this.uiTabGroup.getTabByIndex(2);
+            
             dLeft = 10;
-            this.uiDiode.build(this.hParent, dLeft, dTop);
+            dTop = 15;
+            
+            this.uiCommConnectAll.build(hTab, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommKeithley6482.build(hTab, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiDiode.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
-            this.uiShutter.build(this.hParent, dLeft, dTop);
+            this.uiShutter.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiShutter.dHeight + dPad;
             
-            this.uiExitSlit.build(this.hParent, dLeft, dTop);
+            this.uiExitSlit.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiExitSlit.dHeight + dPad;
             
-            this.uiUndulatorGap.build(this.hParent, dLeft, dTop);
+            
+            this.uiCommBL1201CorbaProxy.build(hTab, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            this.uiUndulatorGap.build(hTab, dLeft, dTop);
             dTop = dTop + 24 + dPad;
             
-            
-            dLeft = 1000;
-            dTop = 10;
-            
-            this.uiAxesReticle.build(this.hParent, dLeft, dTop);            
-            dTop = dTop + this.uiAxesReticle.dHeight + dPad;
-            
-            this.uiAxesWafer.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiAxesWafer.dHeight + dPad;
-            
-            
+            this.uiHeightSensorLeds.build(hTab, dLeft, dTop);
+            dTop = dTop + this.uiHeightSensorLeds.dHeight + dPad;
             
         end
         
@@ -226,6 +246,27 @@ classdef TuneFluxDensity < mic.Base
             this.msg('init()');
             
             
+            cecNames = {...
+                'Position Wafer + Reticle Stages', ...
+                'Tune Exit Slit + Undulator' ...
+            };
+        
+%             cefhCallbacks = { ...
+%                 @this.onUiTabStages, ...
+%                 @this.onUiTabTune ...
+%             };
+%         
+            this.uiTabGroup = mic.ui.common.Tabgroup(...
+                ... % 'fhDirectCallback', cefhCallbacks, ...
+                'ceTabNames',  cecNames ...
+            );
+        
+        
+            this.uiHeightSensorLeds = bl12014.ui.HeightSensorLEDs(...
+                'clock', this.clock ...
+            );
+            
+            
             this.uiStageWaferCoarse = bl12014.ui.WaferCoarseStage(...
                 'cName', [this.cName, 'stage-wafer-coarse'], ...
                 'clock', this.clock ...
@@ -241,6 +282,7 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.clock ...
             );
            
+            this.initUiCommConnectAll();
             this.initUiCommBL1201CorbaProxy();
             this.initUiCommDeltaTauPowerPmac();
             this.initUiCommKeithley6482();
@@ -256,7 +298,7 @@ classdef TuneFluxDensity < mic.Base
             );
 
 
-            dHeight = 400;
+            dHeight = 410;
             this.uiAxesWafer = bl12014.ui.WaferAxes( ...
                 'cName', [this.cName, 'wafer-axes'], ...
                 'clock', this.clock, ...
@@ -269,7 +311,7 @@ classdef TuneFluxDensity < mic.Base
             );
         
         
-            dHeight = 400;
+            dHeight = 410;
             this.uiAxesReticle = bl12014.ui.ReticleAxes( ...
                 'cName', [this.cName, 'reticle-axes'], ...
                 'clock', this.clock, ...
@@ -330,6 +372,52 @@ classdef TuneFluxDensity < mic.Base
                 'lShowInitButton', false, ...
                 'cName', [this.cName, 'keithley-6482-wafer'], ...
                 'cLabel', 'Keithley 6482 (Wafer)' ...
+            );
+        
+        end
+        
+        
+        function l = onGet(this)
+            l = this.uiCommBL1201CorbaProxy.get() && ...
+                this.uiCommDeltaTauPowerPmac.get() && ...
+                this.uiCommKeithley6482.get() && ...
+                this.uiExitSlit.uiCommExitSlit.get() && ...
+                this.uiShutter.uiCommRigol.get() && ...
+                this.uiHeightSensorLeds.uiCommMightex.get();
+        end
+        
+        function onSet(this, lVal)
+            
+            this.uiCommBL1201CorbaProxy.set(lVal);
+            this.uiCommDeltaTauPowerPmac.set(lVal);
+            this.uiCommKeithley6482.set(lVal);
+            this.uiExitSlit.uiCommExitSlit.set(lVal);
+            this.uiShutter.uiCommRigol.set(lVal);
+            this.uiHeightSensorLeds.uiCommMightex.set(lVal);
+        end
+        
+        function initUiCommConnectAll(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            
+            this.uiCommConnectAll = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', this.dWidthNameComm, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', [this.cName, 'connect-all'], ...
+                'lUseFunctionCallbacks', true, ...
+                'fhIsVirtual', @() false, ...
+                'fhGet', @this.onGet, ...
+                'fhSet', @this.onSet, ...
+                'cLabel', 'All' ...
             );
         
         end
