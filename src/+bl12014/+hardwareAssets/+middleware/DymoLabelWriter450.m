@@ -81,7 +81,7 @@ classdef DymoLabelWriter450 < mic.Base
         
         function init(this)
             this.api = actxserver('DYMO.DymoAddIn');
-            this.hLabel = actxserver('DYMO.this.hLabel');
+            this.hLabel = actxserver('DYMO.DymoLabels');
             
             % get direct path to file:
             cDirThis = fileparts(mfilename('fullpath'));
