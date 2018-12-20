@@ -277,6 +277,7 @@ classdef MFDriftMonitor < mic.Base
         
         function forceUpdate(this)
             this.updateChannelData();
+            this.updateHSPositions();
         end
         
         
@@ -373,7 +374,7 @@ classdef MFDriftMonitor < mic.Base
 
         end
         
-        function updateHSPositions(this)
+        function hsPositions = updateHSPositions(this)
             
             % return out of range if any channel is out of range:
             if any(abs(this.dHSChannelData) > 500)
@@ -417,6 +418,8 @@ classdef MFDriftMonitor < mic.Base
             % permute x and y, not sure why:
             this.dHSPositions(1) = X(2);
             this.dHSPositions(2) = X(1);
+            
+            hsPositions = this.dHSPositions;
         end
         
         

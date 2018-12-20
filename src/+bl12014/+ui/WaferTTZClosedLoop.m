@@ -55,6 +55,7 @@ classdef WaferTTZClosedLoop < mic.Base
     properties (Access = private)
         
         clock
+        uiClock
         
         hPanel
         
@@ -94,6 +95,13 @@ classdef WaferTTZClosedLoop < mic.Base
             
         end
         
+        function lVal = isDriftMonitorOff(this)
+            % as a proxy, we'll detect if the values are zero:
+            lVal = this.uiCLTiltX.getValCal('urad') == 0 && ...
+                    this.uiCLTiltY.getValCal('urad') == 0 && ...
+                    this.uiCLZ.getValCal('nm') == 0;
+        end
+        
         function updateButtonColor(this)
             if (this.isLeveled())
                 this.uibLevel.setColor([.85, 1, .85]);
@@ -101,6 +109,9 @@ classdef WaferTTZClosedLoop < mic.Base
             elseif this.isMissing()
                 this.uibLevel.setColor([1, 1, .85]);
                 this.uibLevel.setText('No Wafer!');
+            elseif this.isDriftMonitorOff()
+                this.uibLevel.setColor([1, 1, .85]);
+                this.uibLevel.setText('Level Wafer');
             else
                 
                 this.uibLevel.setColor([1, .85, .85]);
@@ -114,6 +125,11 @@ classdef WaferTTZClosedLoop < mic.Base
             
             if this.isMissing()
                 msgbox('Not leveling wafer because no wafer is detected');
+                return
+            end
+            
+            if this.isDriftMonitorOff()
+                msgbox('Turn on MFDriftMonitor before leveling wafer');
                 return
             end
             
@@ -189,7 +205,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
-                this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance, ...
+                this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance, ...
                 'cName', 'device-closed-loop-z',...
                 'dDelay', 0.2);
         end
@@ -251,13 +267,13 @@ classdef WaferTTZClosedLoop < mic.Base
             
             fhGetMotor      = @()deviceTiltXPPMAC.get();
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal);
-            fhIsReadyMotor  = @()deviceTiltXPPMAC.isReady();
+            fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltXPPMAC, this.uiTiltX);
             dTolerance      = this.dTiltXTol;
             fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 1) * mrad2urad;   
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
-                this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
+                this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
                 'cName', 'device-closed-loop-rx', ...
                 'dDelay', 0.5);
         end
@@ -270,15 +286,22 @@ classdef WaferTTZClosedLoop < mic.Base
             
             fhGetMotor      = @()deviceTiltYPPMAC.get();
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
-            fhIsReadyMotor  = @()deviceTiltYPPMAC.isReady();
+            fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltYPPMAC, this.uiTiltY);
             dTolerance      = this.dTiltYTol;
             fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 2) * mrad2urad; 
             
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
-                this.clock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
+                this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
                 'cName', 'device-closed-loop-ry',...
                 'dDelay', 0.5);
+        end
+        
+        function lVal = isPPMACReady(this, commPPMAC, ui)
+            cUnit = ui.getUnit().name;
+            dError =  ui.getDestCal(cUnit)-  ui.getValCal(cUnit);
+            this.msg(sprintf('Destination: %0.2f, Current position: %0.2f, Error: %0.2f\n', ui.getDestCal(cUnit), ui.getValCal(cUnit), dError),  this.u8_MSG_TYPE_SCAN);
+            lVal = commPPMAC.isReady();
         end
         
         % Set lambda that edits UI destination before moving so that it
@@ -417,7 +440,7 @@ classdef WaferTTZClosedLoop < mic.Base
             );
             
             this.uiCLZ = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
                 'cName', sprintf('%s-z', this.cName), ...
@@ -444,7 +467,7 @@ classdef WaferTTZClosedLoop < mic.Base
             );
             
             this.uiCLTiltX = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
                 'cName', sprintf('%s-tilt-x-cl', this.cName), ...
@@ -468,7 +491,7 @@ classdef WaferTTZClosedLoop < mic.Base
             );
             
             this.uiCLTiltY = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'dWidthName', this.dWidthName, ...
                 'cName', sprintf('%s-tilt-y-cl', this.cName), ...
@@ -486,7 +509,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
             cDirThis = fileparts(mfilename('fullpath'));
             
-            this.clock.add(@()this.updateButtonColor(), this.id(), 1);
+           
 
             % Init config
             this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig));
@@ -497,6 +520,9 @@ classdef WaferTTZClosedLoop < mic.Base
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
+            
+             this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
+             
         end
         
         
