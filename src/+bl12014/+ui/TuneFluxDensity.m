@@ -18,6 +18,7 @@ classdef TuneFluxDensity < mic.Base
         % software real data
         
         % {mic.ui.device.GetSetLogical 1x1}
+        uiCommConnectAll
         uiCommDeltaTauPowerPmac
         uiCommKeithley6482
         uiCommBL1201CorbaProxy
@@ -123,15 +124,14 @@ classdef TuneFluxDensity < mic.Base
             dPad = 10;
             dSep = 30;
 
+            
+            this.uiCommConnectAll.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
             this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
                         
-            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiCommBL1201CorbaProxy.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
             
 
@@ -141,8 +141,11 @@ classdef TuneFluxDensity < mic.Base
             this.uiStageReticleCoarse.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiStageReticleCoarse.dHeight + dPad;
                          
-            dTopDiode = dTop;
-            dLeft = 10;
+            
+            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+           
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
@@ -151,6 +154,11 @@ classdef TuneFluxDensity < mic.Base
             
             this.uiExitSlit.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiExitSlit.dHeight + dPad;
+            
+            
+            this.uiCommBL1201CorbaProxy.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
             
             this.uiUndulatorGap.build(this.hParent, dLeft, dTop);
             dTop = dTop + 24 + dPad;
@@ -241,6 +249,7 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.clock ...
             );
            
+            this.initUiCommConnectAll();
             this.initUiCommBL1201CorbaProxy();
             this.initUiCommDeltaTauPowerPmac();
             this.initUiCommKeithley6482();
@@ -330,6 +339,50 @@ classdef TuneFluxDensity < mic.Base
                 'lShowInitButton', false, ...
                 'cName', [this.cName, 'keithley-6482-wafer'], ...
                 'cLabel', 'Keithley 6482 (Wafer)' ...
+            );
+        
+        end
+        
+        
+        function l = onGet(this)
+            l = this.uiCommBL1201CorbaProxy.get() && ...
+                this.uiCommDeltaTauPowerPmac.get() && ...
+                this.uiCommKeithley6482.get() && ...
+                this.uiExitSlit.uiCommExitSlit.get() && ...
+                this.uiShutter.uiCommRigol.get();
+        end
+        
+        function onSet(this, lVal)
+            
+            this.uiCommBL1201CorbaProxy.set(lVal);
+            this.uiCommDeltaTauPowerPmac.set(lVal);
+            this.uiCommKeithley6482.set(lVal);
+            this.uiExitSlit.uiCommExitSlit.set(lVal);
+            this.uiShutter.uiCommRigol.set(lVal);
+        end
+        
+        function initUiCommConnectAll(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            
+            this.uiCommConnectAll = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', this.dWidthNameComm, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', [this.cName, 'connect-all'], ...
+                'lUseFunctionCallbacks', true, ...
+                'fhIsVirtual', @() false, ...
+                'fhGet', @this.onGet, ...
+                'fhSet', @this.onSet, ...
+                'cLabel', 'All' ...
             );
         
         end
