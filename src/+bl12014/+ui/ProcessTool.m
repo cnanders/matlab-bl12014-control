@@ -25,7 +25,7 @@ classdef ProcessTool < mic.Base
         uieRinseName
         uieRinseTime
         dWidth = 335
-        dHeight = 400
+        dHeight = 260
         
         uitQA
   
@@ -159,7 +159,7 @@ classdef ProcessTool < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Process',...
+                'Title', 'Resist Process',...
                 'Clipping', 'on',...
                 'BorderWidth', this.dWidthBorderPanel, ...
                 'Position', mic.Utils.lt2lb([dLeft dTop this.dWidth this.dHeight], hParent) ...
@@ -174,7 +174,7 @@ classdef ProcessTool < mic.Base
             dWidthTime = 55;
                      
             dTop = 20;
-            dSep = 55;
+            dSep = 38;
 
             
 
@@ -227,6 +227,8 @@ classdef ProcessTool < mic.Base
         
             dTop = dTop + dSep;
             
+            %{
+            
             this.uieUnderlayer2Name.build( ...
                 this.hPanel, ...
                 dPadX, ...
@@ -260,6 +262,7 @@ classdef ProcessTool < mic.Base
             );
         
             dTop = dTop + dSep;
+            %}
             
             this.uieResistName.build( ...
                 this.hPanel, ...

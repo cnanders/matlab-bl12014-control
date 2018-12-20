@@ -906,6 +906,8 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiDiode.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
             this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
             this.uiApp.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer); % uses ch1
+            this.uiApp.uiScan.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer); % uses ch1
+            
         end
         
         function destroyAndDisconnectKeithley6482Wafer(this)
@@ -919,6 +921,7 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiDiode.disconnectKeithley6482()
             this.uiApp.uiLSIControl.disconnectKeithley6482();
             this.uiApp.uiPOCurrent.disconnectKeithley6482();
+            this.uiApp.uiScan.uiPOCurrent.disconnectKeithley6482();
             
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
@@ -1520,6 +1523,7 @@ classdef App < mic.Base
                 this.uiApp.uiBeamline.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                 this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                 this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                this.uiApp.uiScan.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                 
             catch mE
                 
@@ -1537,6 +1541,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiShutter.disconnectRigolDG1000Z();
             this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
             this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
+            this.uiApp.uiScan.uiShutter.disconnectRigolDG1000Z();
             
             this.commRigolDG1000Z = [];
             
@@ -1968,6 +1973,9 @@ classdef App < mic.Base
             this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
             this.uiApp.uiPOCurrent.uiCommKeithley6482.turnOn();
             
+            this.uiApp.uiScan.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
+            this.uiApp.uiScan.uiPOCurrent.uiCommKeithley6482.turnOn();
+            
             % Wafer
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
@@ -2053,6 +2061,9 @@ classdef App < mic.Base
             
             this.uiApp.uiReticle.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiReticle.uiShutter.uiCommRigol.turnOn();
+            
+            this.uiApp.uiScan.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiScan.uiShutter.uiCommRigol.turnOn();
             
             % Camera LEDs
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);

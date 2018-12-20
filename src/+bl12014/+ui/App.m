@@ -25,7 +25,6 @@ classdef App < mic.Base
         uiReticle
         uiWafer
         uiPowerPmacStatus
-        uiPrescriptionTool           
         uiScan
         uiTempSensors
         uiFocusSensor
@@ -95,7 +94,6 @@ classdef App < mic.Base
             'Drift Monitor', ...
             'Reticle', ...
             'Wafer', ...
-            'Pre Tool', ...
             'FEM Control', ...
             'PO Current', ...
             'PPMAC Status', ....
@@ -347,7 +345,6 @@ classdef App < mic.Base
             delete(this.uiPOCurrent)
             delete(this.uiScannerMA)
             delete(this.uiScannerM142)
-            delete(this.uiPrescriptionTool)           
             delete(this.uiScan) 
             delete(this.uiTempSensors)
             delete(this.uiFocusSensor)
@@ -402,9 +399,11 @@ classdef App < mic.Base
                         
             cecProps = this.getSaveLoadProps();
             for n = 1 : length(cecProps)
-                cProp = cecProps{n};
+               cProp = cecProps{n};
                if isfield(st, cProp)
-               	this.(cProp).load(st.(cProp))
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
                end
             end
             
@@ -571,10 +570,10 @@ classdef App < mic.Base
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor('hardware', this.hHardware, ...
                                'clock', this.clockMfDriftMonitorVibration);
            
-            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
+            
             this.uiScan = bl12014.ui.Scan(...
                 'clock', this.clock, ... % DONT GIVE A CLOCK GROUP!
-                'uiShutter', this.uiBeamline.uiShutter.uiShutter, ...
+                ...% 'uiShutter', this.uiBeamline.uiShutter.uiShutter, ...
                 'uiReticle', this.uiReticle, ...
                 'uiWafer', this.uiWafer, ...
                 'uiVibrationIsolationSystem', this.uiVibrationIsolationSystem, ...
@@ -597,9 +596,9 @@ classdef App < mic.Base
             
             this.uiMeasurPointLogPlotter = bl12014.ui.MeasurPointLogPlotter();
             
-            addlistener(this.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
-            addlistener(this.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
-            addlistener(this.uiPrescriptionTool, 'eDelete', @this.onPrescriptionToolDelete);
+            addlistener(this.uiScan.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
+            addlistener(this.uiScan.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
+            addlistener(this.uiScan.uiPrescriptionTool, 'eDelete', @this.onPrescriptionToolDelete);
            
             % Cannot directly pass the function handle of the build method
             % of the bl12014.ui.* instances but I found that passing an
@@ -648,12 +647,12 @@ classdef App < mic.Base
         
         function onPupilFillNew(this, src, evt)
             % uil property is private, so I exposed a public method
-            this.uiPrescriptionTool.pupilFillSelect.refreshList();
+            this.uiScan.uiPrescriptionTool.pupilFillSelect.refreshList();
         end
         
         function onPupilFillDelete(this, src, evt)
             % uil property is private, so I exposed a public method
-            this.uiPrescriptionTool.pupilFillSelect.refreshList();
+            this.uiScan.uiPrescriptionTool.pupilFillSelect.refreshList();
         end
         
         function c = file(this)
@@ -787,8 +786,7 @@ classdef App < mic.Base
                 case 'PPMAC Status'
                     this.uiPowerPmacStatus.build(hTab, 10, 30);
                
-                case 'Pre Tool'
-                    this.uiPrescriptionTool.build(hTab, 10, 30);
+                
                 case 'FEM Control'
                     this.uiScan.build(hTab, 10, 30);
                 case 'PO Current'
