@@ -784,8 +784,8 @@ classdef App < mic.Base
             this.uiApp.uiPowerPmacStatus.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiWafer.uiMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiReticle.uiMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiTuneFluxDensity.uiCoarseStageWafer.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiTuneFluxDensity.uiCoarseStageReticle.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiTuneFluxDensity.uiStageWaferCoarse.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiTuneFluxDensity.uiStageReticleCoarse.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             
             % RYAN WILL REPLACE
             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
@@ -825,8 +825,8 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiMotMin.disconnectDeltaTauPowerPmac();
             this.uiApp.uiReticle.uiMotMin.disconnectDeltaTauPowerPmac();
             
-            this.uiApp.uiTuneFluxDensity.uiCoarseStageWafer.disconnectDeltaTauPowerPmac();
-            this.uiApp.uiTuneFluxDensity.uiCoarseStageReticle.disconnectDeltaTauPowerPmac();
+            this.uiApp.uiTuneFluxDensity.uiStageWaferCoarse.disconnectDeltaTauPowerPmac();
+            this.uiApp.uiTuneFluxDensity.uiStageReticleCoarse.disconnectDeltaTauPowerPmac();
             
             % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
@@ -1534,7 +1534,7 @@ classdef App < mic.Base
                 this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                 this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
                 this.uiApp.uiScan.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                
+                this.uiApp.uiTuneFluxDensity.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
             catch mE
                 
                 this.commRigolDG1000Z = [];
@@ -1552,7 +1552,7 @@ classdef App < mic.Base
             this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
             this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
             this.uiApp.uiScan.uiShutter.disconnectRigolDG1000Z();
-            
+            this.uiApp.uiTuneFluxDensity.uiShutter.disconnectRigolDG1000Z();
             this.commRigolDG1000Z = [];
             
         end
@@ -1853,14 +1853,13 @@ classdef App < mic.Base
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.turnOn();
             
-            % Reticle
-            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
-            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
-            % this.uiApp.uiReticle.uiCommDataTranslationMeasurPoint.turnOn()
-
+            this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.turnOn();
+            
+            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
+            
+            this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
             this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
            
             this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
@@ -1960,6 +1959,9 @@ classdef App < mic.Base
             
             this.uiApp.uiScan.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiScan.uiShutter.uiCommRigol.turnOn();
+            
+            this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
+            this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.turnOn();
             
             % Camera LEDs
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);

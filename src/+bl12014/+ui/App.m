@@ -206,8 +206,10 @@ classdef App < mic.Base
         
         function build(this)
             
+            
             this.buildFigure();
             this.uiButtonListInterferometry.build(this.hFigure, 10, 10);
+            
             
             
             % Tab-based 

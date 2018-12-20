@@ -169,13 +169,32 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
+        function connectBL1201CorbaProxy(this, comm)
+            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
+                comm, ...
+                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
+            );
+            
+            
+            this.uiUndulatorGap.setDevice(deviceUndulatorGap)
+            this.uiUndulatorGap.turnOn()
+            this.uiUndulatorGap.syncDestination()
+
+            
+        end
+        
+        function disconnectBL1201CorbaProxy(this, comm)
+            this.uiUndulatorGap.turnOff()
+            this.uiUndulatorGap.setDevice([])
+            
+        end
                         
         
         %% Destructor
         
         function delete(this)
             
-            delete(this.uiCommMfDriftMonitor)
+            delete(this.uiCommBL1201CorbaProxy)
             delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
             
