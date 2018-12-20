@@ -26,7 +26,6 @@ uiBeamline = bl12014.ui.Beamline('clock', clock);
 
 waferExposureHistory = bl12014.WaferExposureHistory();
 waferExposureHistory.addFakeExposures();
-waferExposureHistory.setIsExposing(true);
 
 ui = bl12014.ui.Scan(...
     'clock', clock, ...
@@ -36,8 +35,8 @@ ui = bl12014.ui.Scan(...
     'uiWafer', uiWafer ...
 );
 
-dWidth = 1800;
-dHeight = 1000;
+dWidth = 1650;
+dHeight = 900;
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
     'Position', [ ...
@@ -50,7 +49,7 @@ h = figure(...
 
 
 
-ui.build(h, 10, 100);
+ui.build(h, 10, 10);
 
 %{
 cb = @(src, evt) (fprintf('x %1.3f, y %1.3f \n', evt.stData.dX, evt.stData.dY));

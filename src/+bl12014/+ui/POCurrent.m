@@ -14,15 +14,12 @@ classdef POCurrent < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 1210
+        dWidth = 800
         dHeight = 680
         
-        dWidthPadLeftAxes = 80
+        dWidthPadLeftAxes = 60
         
-        dWidthAxes = 1000
-        dHeightAxes = 500
-        
-        hParent
+        hPanel
         hAxes
         
         % {double 1xm} storage of current
@@ -78,28 +75,66 @@ classdef POCurrent < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             
-            this.hParent = hParent;
-            dTop = 10;
-            dLeft = this.dWidthPadLeftAxes;
-            dSep = 30;
             
-            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
+            this.hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'PO Photo Current',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop ...
+                this.dWidth ...
+                this.dHeight], hParent) ...
+            );
+        
+        
+            dTop = 15;
+            dLeft = 10;
+            dSep = 10;
+            
+            this.uiCommKeithley6482.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep + 15;
                         
-            this.uiCurrent.build(this.hParent, dLeft, dTop);
+            this.uiCurrent.build(this.hPanel, dLeft, dTop);
             
             
-            dLeft = 900;
+            
+        
+            dLeft = this.dWidthPadLeftAxes;
+            dTop = 80;
+            dWidth = this.dWidth - this.dWidthPadLeftAxes - 40;
+            dHeight = this.dHeight - dTop - 50;
+            
+            this.hAxes = axes(...
+                'Parent', this.hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([ ...
+                    dLeft, ...
+                    dTop, ...
+                    dWidth, ...
+                    dHeight, ...
+                    ], ...
+                    this.hPanel ...
+                ),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+        
+            dLeft = this.dWidth - 40 - 100;
+            dTop = 50;
             this.uiButtonClear.build(...
-                this.hParent, ...
+                this.hPanel, ...
                 dLeft, ...
                 dTop, ...
                 100, ...
                 24 ...
             );
-        
-        
-            this.buildAxes();
             
             if ~isempty(this.clock)
                 this.clock.add(@this.onClock, this.id(), this.dPeriod);
@@ -141,25 +176,12 @@ classdef POCurrent < mic.Base
         
         function onClock(this)
             
-            if isempty(this.hParent) || ...
-               ~ishghandle(this.hParent)
-                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
-                
-                % Remove task
-                if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
-                
-            end
+           
              
             try
                 this.dValues(end + 1) = this.uiCurrent.getValCal('A');
                 this.dtTimes(end + 1) = datetime;
 
-                if ~ishghandle(this.hParent)
-                    return
-                end
 
                 this.updateAxes(this.dtTimes, this.dValues);
             catch
@@ -167,21 +189,13 @@ classdef POCurrent < mic.Base
             
         end
         
-         function onFigureCloseRequest(this, src, evt)
-            this.msg('POCurrentControl.closeRequestFcn()');
-            delete(this.hParent);
-            this.hParent = [];
-         end
+         
         
         
          function updateAxes(this, dX, dY)
              
-             
-            if  isempty(this.hParent) || ...
-                ~ishandle(this.hParent)
-                return;
-            end
-             
+            
+            
             if  isempty(this.hAxes) || ...
                 ~ishandle(this.hAxes)
                 return;
@@ -278,22 +292,7 @@ classdef POCurrent < mic.Base
             this.clearValues()
         end
         
-        function buildAxes(this)
-                        
-            this.hAxes = axes(...
-                'Parent', this.hParent, ...
-                'Units', 'pixels',...
-                'Position', mic.Utils.lt2lb([this.dWidthPadLeftAxes, 100, this.dWidthAxes, this.dHeightAxes], this.hParent),...
-                'HandleVisibility', 'on', ...
-                'XMinorTick','on', ...
-                'YMinorTick','on', ...
-                'XMinorGrid','on', ...
-                'YMinorGrid','on', ...
-                'XGrid','on', ...
-                'YGrid','on' ... 
-            );
-                        
-        end
+        
         
     end
     

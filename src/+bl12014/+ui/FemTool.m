@@ -541,6 +541,8 @@ classdef FemTool < mic.Base
         end
         
         function onDoseNum(this, src, evt)
+            
+            disp('onDOseNum');
             this.updateSize();
             this.updateDose();
         end

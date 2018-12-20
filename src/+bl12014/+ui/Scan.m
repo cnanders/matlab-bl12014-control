@@ -12,14 +12,14 @@ classdef Scan < mic.Base
         dHeight = 470
         
         
-        dWidthList = 700
-        dHeightList = 150
+        dWidthList = 500
+        dHeightList = 100
         dWidthUiScan = 270
         
         dPauseTime = 1
         
         dWidthPanelAvailable = 600
-        dHeightPanelAvailable = 255
+        dHeightPanelAvailable = 200
         
         dWidthPanelAdded = 600
         dHeightPanelAdded = 440
@@ -41,6 +41,11 @@ classdef Scan < mic.Base
         uiEditMjPerCm2PerSec
         uiEditRowStart
         uiEditColStart
+        
+        
+        uiPOCurrent
+        uiShutter
+        uiPrescriptionTool
     
     end
     
@@ -66,9 +71,7 @@ classdef Scan < mic.Base
         uicAutoVentAtLL 
         
         
-        uiButtonChooseDir
-        uiTextDir
-        
+       
         shutter
         uiMFDriftMonitor
         uiMfDriftMonitorVibration
@@ -77,7 +80,6 @@ classdef Scan < mic.Base
         uiReticle
         uiPupilFill
         % {mic.ui.device.GetSetNumber 1x1}
-        uiShutter
         uiBeamline % Temporary, allows control of the shutter
         
         clock
@@ -130,6 +132,7 @@ classdef Scan < mic.Base
         uiWaferAxes
         uiReticleAxes
         waferExposureHistory
+        
             
         
     end
@@ -197,7 +200,6 @@ classdef Scan < mic.Base
         
         function load(this, st)
             this.cDirPrescriptions = st.cDirPrescriptions;
-            this.updateUiTextDir();
             this.uicWaferLL.set(st.lWaferLoadLock);
             this.uicAutoVentAtLL.set(st.lAutoVentAtLoadLock);
             
@@ -219,91 +221,20 @@ classdef Scan < mic.Base
                 end
             end
             
-            this.refreshPrescriptions();
         end
-        
-        function buildPanelAvailable(this)
-            
-            dTop = this.dHeightPadFigure;
-            dLeft = this.dWidthPadFigure;
-            
-            
-            dWidth = this.dWidthPadPanel + ...
-                this.dWidthList + ...
-                this.dWidthPadPanel;
-            
-            this.hPanelAvailable = uipanel(...
-                'Parent', this.hParent,...
-                'Units', 'pixels',...
-                'Title', 'Available Prescriptions',...
-                'BorderWidth', this.dWidthPanelBorder, ...
-                'Clipping', 'on',...
-                'Position', mic.Utils.lt2lb([ ...
-                    dLeft ...
-                    dTop ...
-                    dWidth ...
-                    this.dHeightPanelAvailable], ...
-                    this.hParent ...
-                ) ...
-            );
-
-            dTop = dTop + 10;            
-            
-            this.uiButtonChooseDir.build(...
-                this.hPanelAvailable, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthButton, ...
-                this.dHeightButton ...
-            );
-        
-            dLeft = dLeft + this.dWidthButton + 10;
-            
-            this.uiTextDir.build(...
-                this.hPanelAvailable, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthList - dLeft, ...
-                this.dHeightButton ...
-            );
-
-            dTop = dTop + this.dHeightButton + 10;
-            dLeft = this.dWidthPadFigure;
-
-            this.uiListPrescriptions.build(this.hPanelAvailable, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthList, ...
-                this.dHeightList);
-            dTop = dTop + this.dHeightList + this.dHeightPadFigure;  
-            
-            this.uibAddToWafer.build(this.hPanelAvailable, ...
-                dWidth - this.dWidthPadFigure - this.dWidthButton, ...
-                dTop, ...
-                this.dWidthButton, ...
-                this.dHeightButton);
-            
-        end
+       
         
         
         function buildPanelAdded(this)
             
-            dTop = this.dHeightPadFigure + ...
-                this.dHeightPanelAvailable + ...
-                this.dHeightPadFigure;
-            
-            dLeft = this.dWidthPadFigure;
             
             dWidth = this.dWidthPadPanel + ...
                 this.dWidthList + ...
                 this.dWidthPadPanel;
             
+            
+            dLeft = 1000;
             dTop = 10;
-            dLeft = this.dWidthPadFigure + ...
-                this.dWidthPadPanel + ...
-                this.dWidthList + ...
-                this.dWidthPadPanel + ...
-                this.dWidthPadFigure;
             
             this.hPanelAdded = uipanel(...
                 'Parent', this.hParent,...
@@ -369,7 +300,7 @@ classdef Scan < mic.Base
             
            
            dLeft = this.dWidthPadFigure;
-           dTop = dTop + 50
+           dTop = dTop + 50;
            
            dSep = 40;
            this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
@@ -414,11 +345,25 @@ classdef Scan < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             this.hParent = hParent;
-            this.buildPanelAvailable()
+            
+            
+            this.uiPrescriptionTool.build(hParent, dLeft, dTop);
+            
+            this.uibAddToWafer.build(...
+                hParent, ...
+                dLeft + 10, ...
+                dTop + this.uiPrescriptionTool.dHeight - 40, ...
+                200, ...
+                this.dHeightButton);
+            
+            
             this.buildPanelAdded()
             
-            this.uiReticleAxes.build(this.hParent, 10, 500);
-            this.uiWaferAxes.build(this.hParent, 1000, 500);
+            dTop = 500;
+            this.uiReticleAxes.build(this.hParent, 10, dTop);
+            this.uiWaferAxes.build(this.hParent, 420, dTop);
+            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 20, 400);
+            this.uiPOCurrent.build(this.hParent, 840, dTop);
           
         end
         
@@ -442,9 +387,7 @@ classdef Scan < mic.Base
             ceReturn = mic.Utils.dir2cell(this.cDirPrescriptions, 'date', 'descend', '*.json');
         end
         
-        function refreshPrescriptions(this)
-            this.uiListPrescriptions.refresh(); 
-        end
+        
                     
 
     end
@@ -455,28 +398,7 @@ classdef Scan < mic.Base
                   
             this.msg('init()');
             
-            this.uiButtonChooseDir = mic.ui.common.Button(...
-                'cText', 'Choose Dir' ...
-            );
-            this.uiTextDir = mic.ui.common.Text(...
-                'cVal', '...' ...
-            );
-            this.updateUiTextDir();
-        
-            addlistener(this.uiButtonChooseDir, 'eChange', @this.onUiButtonChooseDir);
             
-            this.uiListPrescriptions = mic.ui.common.List( ...
-                'ceOptions', cell(1,0), ...
-                'cLabel', 'Prescriptions', ...
-                'lShowDelete', false, ...
-                'lShowMove', false, ...
-                'lShowLabel', false, ...
-                'lShowRefresh', false ...
-            );
-            %addlistener(this.uiListPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
-            %addlistener(this.uiListPrescriptions, 'eChange', @this.onPrescriptionsChange);
-            this.uiListPrescriptions.setRefreshFcn(@this.refreshFcn);
-            this.uiListPrescriptions.refresh();
             
             this.uiButtonClearPrescriptions = mic.ui.common.Button(...
                 'cText', 'Clear Prescriptions', ...
@@ -489,13 +411,16 @@ classdef Scan < mic.Base
             );
         
             this.uibNewWafer = mic.ui.common.Button('cText', 'New');
-            this.uibAddToWafer = mic.ui.common.Button('cText', 'Add To Wafer');
+            this.uibAddToWafer = mic.ui.common.Button(...
+                'cText', 'Add Selected Prescription To Wafer', ...
+                'fhOnClick', @this.onAddToWafer ...
+            );
             this.uibPrint = mic.ui.common.Button('cText', 'Print');
             
             
             
             addlistener(this.uibNewWafer, 'eChange', @this.onUiButtonNewWafer);
-            addlistener(this.uibAddToWafer, 'eChange', @this.onAddToWafer);
+            % addlistener(this.uibAddToWafer, 'eChange', @this.onAddToWafer);
             addlistener(this.uibPrint, 'eChange', @this.onPrint);
             
             this.uiListActive = mic.ui.common.List(...
@@ -578,11 +503,19 @@ classdef Scan < mic.Base
             this.uiEditColStart.set(uint8(1));
             this.uiEditColStart.setMin(uint8(0));
             
+            
+            this.uiShutter = bl12014.ui.Shutter(...
+                'cName', 'fem-control-shutter', ...
+                'clock', this.clock ...
+            );
+            
+            
             this.uiWaferAxes = bl12014.ui.WaferAxes(...
                 'cName', 'scan-wafer-axes', ...
                 'dWidth', 400, ...
                 'dHeight', 400, ...
                 'clock', this.clock, ...
+                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'waferExposureHistory', this.waferExposureHistory, ...
                 'fhGetXOfWafer', @() this.uiWafer.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
                 'fhGetYOfWafer', @() this.uiWafer.uiCoarseStage.uiY.getValCal('mm') / 1000, ...
@@ -594,10 +527,18 @@ classdef Scan < mic.Base
                 'dWidth', 400, ...
                 'dHeight', 400, ...
                 'clock', this.clock, ...
+                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'fhGetX', @() this.uiReticle.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
                 'fhGetY', @() this.uiReticle.uiCoarseStage.uiY.getValCal('mm') / 1000 ...
             );
             
+        
+            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
+            this.uiPOCurrent = bl12014.ui.POCurrent(...
+                'clock', this.clock, ...
+                'dWidth', 780, ...
+                'dHeight', 400 ...
+            );
                        
         end
         
@@ -747,7 +688,7 @@ classdef Scan < mic.Base
         
         function onListActiveChange(this)
             
-            this.drawFemPreviewOfAllAddedPrescriptions();
+            this.addFemPreviewOfAllAddedPrescriptionsToWaferExposureHistory();
             
         end
         
@@ -758,17 +699,20 @@ classdef Scan < mic.Base
             % For all prescriptions highlihged when the user clicks 
             % "add to wafer", add them to ListActive 
             
-            ceSelected = this.uiListPrescriptions.get();
+            % ceSelected = this.uiListPrescriptions.get();
+            
+            ceSelected = this.uiPrescriptionTool.uiListPrescriptions.get();
+            
             for k = 1:length(ceSelected)
                 this.uiListActive.append(ceSelected{k});
             end
            
-            this.drawFemPreviewOfAllAddedPrescriptions();
+            this.addFemPreviewOfAllAddedPrescriptionsToWaferExposureHistory();
            
             
         end 
         
-        function drawFemPreviewOfAllAddedPrescriptions(this)
+        function addFemPreviewOfAllAddedPrescriptionsToWaferExposureHistory(this)
             
             % Loop through all selected prescriptions and push them to the
             % active list
@@ -1184,23 +1128,15 @@ classdef Scan < mic.Base
             dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
             
             % Set the shutter UI time (ms)
-            this.uiShutter.setDestCal(...
+            this.uiShutter.uiShutter.setDestCal(...
                 dSec * 1e3, ...
                 'ms' ...
             );
             % Trigger the shutter UI
-            this.uiShutter.moveToDest();
+            this.uiShutter.uiShutter.moveToDest();
             
             
-            % 2018.04.19
-            %{
-            this.uiBeamline.uiShutter.setDestCal(...
-                dSec * 1e3, ... % ms
-                'ms (1x)' ...
-            );
-            this.uiBeamline.uiShutter.moveToDest();
-            %}
-                        
+                 
             
             
            
@@ -1254,7 +1190,7 @@ classdef Scan < mic.Base
                             case 'shutter'
                                 
                                
-                               lReady = this.uiShutter.getDevice().isReady();
+                               lReady = this.uiShutter.uiShutter.getDevice().isReady();
                                  
                             otherwise
                                 
@@ -1530,7 +1466,7 @@ classdef Scan < mic.Base
             
             % Shutter
             
-            if ~this.uiShutter.isActive()
+            if ~this.uiShutter.uiShutter.isActive()
                 cMsg = sprintf('%s\n%s', cMsg, this.uiShutter.id());
             end
             
@@ -1703,31 +1639,7 @@ classdef Scan < mic.Base
         end
         
         
-        function onUiButtonChooseDir(this, src, evt)
-           
-            cName = uigetdir(...
-                this.cDirPrescriptions, ...
-                'Please choose a directory' ...
-            );
         
-            if isequal(cName,0)
-               return; % User clicked "cancel"
-            end
-            
-            this.cDirPrescriptions = mic.Utils.path2canonical(cName);
-            this.uiListPrescriptions.refresh(); 
-            this.updateUiTextDir();            
-        end
-        
-        function updateUiTextDir(this)
-            this.uiTextDir.setTooltip(sprintf(...
-                'The directory where scan recipe/result files are saved: %s', ...
-                this.cDirPrescriptions ...
-            ));
-            cVal = mic.Utils.truncate(this.cDirPrescriptions, 100, true);
-            this.uiTextDir.set(cVal);
-            
-        end
         
         function saveScanResults(this, stUnit, lAborted)
             this.msg('saveScanResults()');
@@ -1891,7 +1803,16 @@ classdef Scan < mic.Base
         function c = getPathRecipe(this)
             
             cePrescriptions = this.uiListActive.get();
-            c = fullfile(this.cDirPrescriptions, cePrescriptions{1});
+%             c = fullfile(...
+%                 this.cDirPrescriptions, ...
+%                 cePrescriptions{1} ...
+%             );
+
+            c = fullfile(...
+                this.uiPrescriptionTool.uiListPrescriptions.getDir(), ...
+                cePrescriptions{1} ...
+            );
+
                 
         end
         
@@ -1970,7 +1891,7 @@ classdef Scan < mic.Base
                         
             
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
-            st.shutter_ms = this.uiShutter.getDestCal('ms');
+            st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
