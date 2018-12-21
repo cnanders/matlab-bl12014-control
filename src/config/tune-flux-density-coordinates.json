@@ -1,0 +1,33 @@
+{  
+    "xWafer": {
+        "value":-103.45,
+        "unit": "mm",
+        "displayTol": 0.1
+    },
+    "yWafer": {
+        "value":6.95,
+        "unit": "mm",
+        "displayTol": 0.1
+    },
+    "zWafer": {
+        "value":0.313,
+        "unit": "mm",
+        "displayTol": 0.1
+    },
+    "xReticle": {
+        "value":64.5,
+        "unit": "mm",
+        "displayTol": 0.1
+    },
+    "yReticle": {
+        "value":19.08,
+        "unit": "mm",
+        "displayTol": 0.1
+    },
+    "zReticle": {
+        "value":0,
+        "unit": "mm",
+        "displayTol": 0.1
+    }
+    
+ }
