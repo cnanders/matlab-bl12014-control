@@ -132,7 +132,7 @@ classdef TuneFluxDensity < mic.Base
             % Tab (Stages)
             
             dLeft = 10;
-            dTop = 20;
+            dTop = 45;
             dPad = 10;
             dSep = 30;
             
