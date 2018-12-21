@@ -7,12 +7,12 @@ classdef TuneFluxDensity < mic.Base
         dHeight     = 880
         
         dWidthNameComm = 100;
-        
+        dPeriodOfScan = 0.5;
+        cNameOfConfigFile = 'tune-flux-density-coordinates.json'
     end
     
 	properties
         
-        hDock = {}
         
         % These are the UI for activating the hardware that gives the 
         % software real data
@@ -50,12 +50,23 @@ classdef TuneFluxDensity < mic.Base
         hParent
         cName = 'tune-flux-density-'
         
+        % {struct 1x1} stores config date loaded from +bl12014/config/tune-flux-density-coordinates.json
+        stConfig
+        
     end
     
     properties (Access = private)
                       
         clock
+        uiClock
         dDelay = 0.5
+        
+        hProgress
+        
+        % {mic.Scan 1x1}
+        scan
+        
+        uiButtonGo
         
     end
     
@@ -139,7 +150,11 @@ classdef TuneFluxDensity < mic.Base
             hTab = this.uiTabGroup.getTabByIndex(1);
              
             this.uiCommDeltaTauPowerPmac.build(hTab, dLeft, dTop);
+            
+            this.uiButtonGo.build(hTab, 300, dTop, 300, 24);
             dTop = dTop + dSep;
+            this.uiClock.add(@()this.setColorOfGoButton(), this.id(), 1);
+
 
             
             this.uiStageWaferCoarse.build(hTab, dLeft, dTop);
@@ -217,7 +232,7 @@ classdef TuneFluxDensity < mic.Base
             delete(this.uiCommBL1201CorbaProxy)
             delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
-            
+                        
         end
         
         function st = save(this)
@@ -243,6 +258,11 @@ classdef TuneFluxDensity < mic.Base
         
         function init(this)
             
+            % Init config
+            cDirThis = fileparts(mfilename('fullpath'));
+
+            this.stConfig = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cNameOfConfigFile));
+            
             this.msg('init()');
             
             
@@ -263,23 +283,23 @@ classdef TuneFluxDensity < mic.Base
         
         
             this.uiHeightSensorLeds = bl12014.ui.HeightSensorLEDs(...
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
             
             
             this.uiStageWaferCoarse = bl12014.ui.WaferCoarseStage(...
                 'cName', [this.cName, 'stage-wafer-coarse'], ...
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
         
             this.uiStageReticleCoarse = bl12014.ui.ReticleCoarseStage(...
                 'cName', [this.cName, 'stage-reticle-coarse'], ...-
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
         
             this.uiDiode = bl12014.ui.WaferDiode(...
                 'cName', [this.cName, 'diode-wafer'], ...-
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
            
             this.initUiCommConnectAll();
@@ -287,21 +307,21 @@ classdef TuneFluxDensity < mic.Base
             this.initUiCommDeltaTauPowerPmac();
             this.initUiCommKeithley6482();
             
-            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.clock);
+            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
             
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
         
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
 
 
             dHeight = 410;
             this.uiAxesWafer = bl12014.ui.WaferAxes( ...
                 'cName', [this.cName, 'wafer-axes'], ...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'fhGetXOfWafer', @() this.uiStageWaferCoarse.uiX.getValCal('mm') / 1000, ...
                 'fhGetYOfWafer', @() this.uiStageWaferCoarse.uiY.getValCal('mm') / 1000, ...
@@ -314,7 +334,7 @@ classdef TuneFluxDensity < mic.Base
             dHeight = 410;
             this.uiAxesReticle = bl12014.ui.ReticleAxes( ...
                 'cName', [this.cName, 'reticle-axes'], ...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'fhGetX', @() this.uiStageReticleCoarse.uiX.getValCal('mm') / 1000, ...
                 'fhGetY', @() this.uiStageReticleCoarse.uiY.getValCal('mm') / 1000, ...
@@ -323,6 +343,8 @@ classdef TuneFluxDensity < mic.Base
             );
         
             
+            this.uiButtonGo = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onClickGo(), 'cText', '...');
+
                         
             
 
@@ -339,7 +361,7 @@ classdef TuneFluxDensity < mic.Base
             };
         
             this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -364,7 +386,7 @@ classdef TuneFluxDensity < mic.Base
             };
         
             this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -406,7 +428,7 @@ classdef TuneFluxDensity < mic.Base
         
             
             this.uiCommConnectAll = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -432,7 +454,7 @@ classdef TuneFluxDensity < mic.Base
             };
 
             this.uiCommBL1201CorbaProxy = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -457,7 +479,7 @@ classdef TuneFluxDensity < mic.Base
             );
             
             this.uiUndulatorGap = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'dWidthName', 150, ...
                 ... % 'dWidthUnit', this.dWidthUiDeviceUnit, ...
@@ -467,6 +489,157 @@ classdef TuneFluxDensity < mic.Base
             );
         
         end
+        
+        
+        function onClickGo(this)
+            
+            
+            if this.isInPosition() 
+                return
+            end
+            
+            this.hProgress = waitbar(0, 'Sending reticle to clear field and wafer to diode. Please wait...');
+
+                        
+            % Set up scanner
+            fhSetState      = @(~, stState) stState.action();
+            fhIsAtState     = @(~, stState) stState.isReady();
+            fhAcquire       = @(~, stState) waitbar((stState.idx)/6, this.hProgress);
+            fhIsAcquired    = @(~, stState) true;
+            fhOnComplete    = @(~, stState) delete(this.hProgress);
+            fhOnAbort       = @(~, stState) delete(this.hProgress);
+            
+            stateList = { ...
+                % struct('idx', 1, 'action', @()this.setMotMinToMax(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
+                % struct('idx', 1, 'action', @()this.setMotMinToMax(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
+                struct('idx', 1, 'action', @()this.setXOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
+                struct('idx', 2, 'action', @()this.setYOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiY.isReady()), ...
+                struct('idx', 3, 'action', @()this.setZOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiZ.isReady()), ...
+                struct('idx', 4, 'action', @()this.setXOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiX.isReady()), ...
+                struct('idx', 5, 'action', @()this.setYOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiY.isReady()), ...
+                struct('idx', 6, 'action', @()this.setZOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiZ.isReady()) ...
+            };
+        
+            stRecipe = struct;
+            stRecipe.values = stateList; % enumerable list of states that can be read by setState
+            stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
+            
+            this.scan = mic.Scan(this.cName, ...
+                                this.clock, ...
+                                stRecipe, ...
+                                fhSetState, ...
+                                fhIsAtState, ...
+                                fhAcquire, ...
+                                fhIsAcquired, ...
+                                fhOnComplete, ...
+                                fhOnAbort, ...
+                                this.dPeriodOfScan...
+                                );
+            this.scan.start();
+            
+            
+        end
+        
+        
+        function setXOfWaferAndGo(this)
+            this.uiStageWaferCoarse.uiX.setDestCal(this.stConfig.xWafer.value, this.stConfig.xWafer.unit);
+            this.uiStageWaferCoarse.uiX.moveToDest();
+        end
+        
+        function setYOfWaferAndGo(this)
+            this.uiStageWaferCoarse.uiY.setDestCal(this.stConfig.yWafer.value, this.stConfig.yWafer.unit);
+            this.uiStageWaferCoarse.uiY.moveToDest();
+        end
+        
+        function setZOfWaferAndGo(this)
+            this.uiStageWaferCoarse.uiZ.setDestCal(this.stConfig.zWafer.value, this.stConfig.zWafer.unit);
+            this.uiStageWaferCoarse.uiZ.moveToDest();
+        end
+        
+        function setXOfReticleAndGo(this)
+            this.uiStageReticleCoarse.uiX.setDestCal(this.stConfig.xReticle.value, this.stConfig.xReticle.unit);
+            this.uiStageReticleCoarse.uiX.moveToDest();
+        end
+        
+        function setYOfReticleAndGo(this)
+            this.uiStageReticleCoarse.uiY.setDestCal(this.stConfig.yReticle.value, this.stConfig.yReticle.unit);
+            this.uiStageReticleCoarse.uiY.moveToDest();
+        end
+        
+        function setZOfReticleAndGo(this)
+            this.uiStageReticleCoarse.uiZ.setDestCal(this.stConfig.zReticle.value, this.stConfig.zReticle.unit);
+            this.uiStageReticleCoarse.uiZ.moveToDest();
+        end
+        
+        
+        function setMotMinToMax(this)
+                        
+        end
+        
+        function l = isReadyMotMin(this)
+           l = true; 
+        end
+        
+        function setWorkingModeToUndefined(this)
+            
+        end
+        
+        function l = isWorkingModeUndefined(this)
+           l = true; 
+        end
+        
+        function setWorkingModeToActivate(this)
+            
+        end
+        
+        function l = isWorkingModeActivate(this)
+            l = true;
+        end
+        
+        
+        function l = isReticleStageInPosition(this)
+        
+               l =  abs(this.stConfig.xReticle.value - this.uiStageReticleCoarse.uiX.getValCal(this.stConfig.xReticle.unit)) <= ...
+                        this.stConfig.xReticle.displayTol && ...
+                    abs(this.stConfig.yReticle.value - this.uiStageReticleCoarse.uiY.getValCal(this.stConfig.yReticle.unit)) <= ...
+                        this.stConfig.yReticle.displayTol && ...
+                    abs(this.stConfig.zReticle.value - this.uiStageReticleCoarse.uiZ.getValCal(this.stConfig.zReticle.unit)) <= ...
+                        this.stConfig.zReticle.displayTol;
+        
+        end
+        
+        function l = isWaferStageInPosition(this)
+        
+               l =  abs(this.stConfig.xWafer.value - this.uiStageWaferCoarse.uiX.getValCal(this.stConfig.xWafer.unit)) <= ...
+                        this.stConfig.xWafer.displayTol && ...
+                    abs(this.stConfig.yWafer.value - this.uiStageWaferCoarse.uiY.getValCal(this.stConfig.yWafer.unit)) <= ...
+                        this.stConfig.yWafer.displayTol && ...
+                    abs(this.stConfig.zWafer.value - this.uiStageWaferCoarse.uiZ.getValCal(this.stConfig.zWafer.unit)) <= ...
+                        this.stConfig.zWafer.displayTol;
+        
+        end
+        
+        function l = isInPosition(this)
+            l = this.isReticleStageInPosition() && this.isWaferStageInPosition();
+        end
+        
+        function setColorOfGoButton(this)
+            if (this.isInPosition())
+                this.uiButtonGo.setColor([.85, 1, .85]);
+                this.uiButtonGo.setText('In Correct Position');
+%             elseif this.isMissing()
+%                 this.uiButtonGo.setColor([1, 1, .85]);
+%                 this.uiButtonGo.setText('No Wafer!');
+%             elseif this.isDriftMonitorOff()
+%                 this.uiButtonGo.setColor([1, 1, .85]);
+%                 this.uiButtonGo.setText('Level Wafer');
+            else
+                this.uiButtonGo.setColor([1, .85, .85]);
+                this.uiButtonGo.setText('Move Into Position');
+            end
+            
+        end
+        
         
         
         
