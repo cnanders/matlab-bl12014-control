@@ -1,4 +1,4 @@
-[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+ [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
 cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
