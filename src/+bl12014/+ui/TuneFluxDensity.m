@@ -143,7 +143,7 @@ classdef TuneFluxDensity < mic.Base
             % Tab (Stages)
             
             dLeft = 10;
-            dTop = 20;
+            dTop = 45;
             dPad = 10;
             dSep = 30;
             
@@ -283,6 +283,7 @@ classdef TuneFluxDensity < mic.Base
         
         
             this.uiHeightSensorLeds = bl12014.ui.HeightSensorLEDs(...
+                'cName', [this.cName, 'height-sensor-leds'], ...
                 'clock', this.uiClock ...
             );
             

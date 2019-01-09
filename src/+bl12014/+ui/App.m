@@ -209,11 +209,12 @@ classdef App < mic.Base
         
         function build(this)
             
-            
+            %{
+            2018.12.20 UNCOMMENT TO GET LSI LAUNCHER
             this.buildFigure();
             this.uiButtonListInterferometry.build(this.hFigure, 10, 10);
             
-            
+            %}
             
             % Tab-based 
             this.buildNew();
@@ -367,7 +368,6 @@ classdef App < mic.Base
         function cec = getSaveLoadProps(this)
            
             cec = {...
-                'uiPrescriptionTool', ...
                 'uiScannerMA', ...
                 'uiScannerM142', ...
                 'uiScan', ...
@@ -394,7 +394,9 @@ classdef App < mic.Base
             st = struct();
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
-                st.(cProp) = this.(cProp).save();
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
             end
 
              
@@ -587,7 +589,8 @@ classdef App < mic.Base
             
             this.uiTuneFluxDensity = bl12014.ui.TuneFluxDensity(...
                 'waferExposureHistory', this.waferExposureHistory, ...
-                'clock', this.uiClockTuneFluxDensity ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockTuneFluxDensity ...
             );
         
             this.uiScan = bl12014.ui.Scan(...
