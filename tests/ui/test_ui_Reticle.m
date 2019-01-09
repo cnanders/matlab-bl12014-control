@@ -20,9 +20,12 @@ addpath(cDirRigol)
 
 
 clock = mic.Clock('Master');
+uiClock = mic.ui.Clock(clock);
+
 
 ui = bl12014.ui.Reticle(...
-    'clock', clock ...
+    'clock', clock, ...
+    'uiClock', uiClock ...
 );
 
 dWidth = 1650;
