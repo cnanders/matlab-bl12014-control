@@ -45,7 +45,7 @@ classdef VibrationIsolationSystem < mic.Base
         
         clock
         dWidth = 1120
-        dHeight = 230
+        dHeight = 330
         hPanel
         
         dWidthNameMotor = 160
