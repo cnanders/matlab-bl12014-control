@@ -49,14 +49,8 @@ classdef Wafer < mic.Base
         hardware % needed for MFDriftMonitor integration
         
         waferExposureHistory
-        tasks
         
-        uiStateWaferHydraOn
-        uiSequenceTurnOnWaferHydra
-        uiSequenceTurnOffAllHydras
-        
-        uiStateReticleHydraOn
-        uiSequenceTurnOnReticleHydra
+        uiMotMinSimple
     end
     
     properties (SetAccess = private)
@@ -162,7 +156,7 @@ classdef Wafer < mic.Base
             this.uiFineStage.connectDeltaTauPowerPmac(comm);
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
             this.uiMotMin.connectDeltaTauPowerPmac(comm);
-            
+            this.uiMotMinSimple.connectDeltaTauPowerPmac(comm);
         end
         
         
@@ -176,6 +170,7 @@ classdef Wafer < mic.Base
             this.uiFineStage.disconnectDeltaTauPowerPmac();
             this.uiWorkingMode.disconnectDeltaTauPowerPmac();
             this.uiMotMin.disconnectDeltaTauPowerPmac();
+            this.uiMotMinSimple.disconnectDeltaTauPowerPmac();
             this.commDeltaTauPowerPmac = [];
                         
         end
@@ -270,12 +265,9 @@ classdef Wafer < mic.Base
             
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             % this.uiMotMin.build(this.hParent, 800, 10);
+            this.uiMotMinSimple.build(this.hParent, 750, 10);
             
-            dWidth = 200;
             
-            this.uiStateWaferHydraOn.build(this.hParent, 800, 10, dWidth);
-            this.uiSequenceTurnOnWaferHydra.build(this.hParent, 1010, 10, dWidth); 
-            this.uiSequenceTurnOffAllHydras.build(this.hParent, 1220, 10, dWidth); 
             dLeft = 10;
             dTop = 220;
                         
@@ -394,6 +386,12 @@ classdef Wafer < mic.Base
                 'clock', this.uiClock ...
             );
         
+            this.uiMotMinSimple = bl12014.ui.PowerPmacHydraMotMinSimple(...
+                'cName', [this.cName, 'ppmac-hydra-mot-min-simple'], ...
+                'uiClock', this.uiClock, ...
+                'clock', this.clock ...
+            );
+        
             this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'cName', [this.cName, 'wafer-coarse-stage'], ...
                 'clock', this.uiClock ...
@@ -495,26 +493,7 @@ classdef Wafer < mic.Base
                 'dHeight', dHeight ...
             );
         
-            this.uiStateWaferHydraOn = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-task-sequence-state-wafer-hydra-on'], ...
-                'task', bl12014.Tasks.createStateWaferHydraOn(this.uiMotMin, this.clock), ...
-                'lShowButton', false, ...
-                'clock', this.uiClock ...
-            );
-        
-            this.uiSequenceTurnOnWaferHydra = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-task-sequence-turn-on-wafer-hydra'], ...
-                'task', bl12014.Tasks.createSequenceTurnOnWaferHydra(this.uiMotMin, this.uiWorkingMode.uiWorkingMode, this.clock), ...
-                'lShowIsDone', false, ...
-                'clock', this.uiClock ...
-            );
-        
-            this.uiSequenceTurnOffAllHydras = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-task-sequence-turn-off-all-hydras'], ...
-                'task', bl12014.Tasks.createSequenceTurnOffAllHydras(this.uiMotMin, this.uiWorkingMode.uiWorkingMode, this.clock), ...
-                'lShowIsDone', false, ...
-                'clock', this.uiClock ...
-            );
+            
         
             
                         
