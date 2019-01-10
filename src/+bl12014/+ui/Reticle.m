@@ -34,6 +34,7 @@ classdef Reticle < mic.Base
         uiWorkingMode
         uiMotMin
         uiShutter
+        uiMotMinSimple
         
     end
     
@@ -156,6 +157,7 @@ classdef Reticle < mic.Base
             this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
             this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
             this.uiMotMin.connectDeltaTauPowerPmac(comm);
+            this.uiMotMinSimple.connectDeltaTauPowerPmac(comm);
 
             this.ReticleTTZClosedLoop.connect(comm);
         end
@@ -166,7 +168,8 @@ classdef Reticle < mic.Base
             this.uiCoarseStage.disconnectDeltaTauPowerPmac();
             this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
             this.uiWorkingMode.disconnectDeltaTauPowerPmac(); 
-            this.uiMotMin.disconnectDeltaTauPowerPmac();     
+            this.uiMotMin.disconnectDeltaTauPowerPmac();
+            this.uiMotMinSimple.disconnectDeltaTauPowerPmac();
             this.ReticleTTZClosedLoop.disconnect();
         end
         
@@ -195,7 +198,9 @@ classdef Reticle < mic.Base
             dLeft = 290;
             
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
-            this.uiMotMin.build(this.hParent, 800, dTop);
+            % this.uiMotMin.build(this.hParent, 800, dTop);
+            this.uiMotMinSimple.build(this.hParent, 750, dTop);
+
             dLeft = 10;
             dTop = 220;
                         
@@ -289,6 +294,12 @@ classdef Reticle < mic.Base
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
                 'cName', [this.cName, 'pmac-hydra-mot-min'], ...
                 'clock', this.uiClock ...
+            );
+        
+            this.uiMotMinSimple = bl12014.ui.PowerPmacHydraMotMinSimple(...
+                'cName', [this.cName, 'pmac-hydra-mot-min-simple'], ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClock ...
             );
             this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
                 'cName', [this.cName, 'reticle-coarse-stage'], ...
