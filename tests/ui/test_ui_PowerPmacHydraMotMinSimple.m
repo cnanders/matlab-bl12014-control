@@ -14,28 +14,17 @@ cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
-cDirRigol = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src');
-addpath(cDirRigol)
-
-
-hardware = bl12014.Hardware();
-waferExposureHistory = bl12014.WaferExposureHistory();
-waferExposureHistory.addFakeExposures();
-
 
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
 
-ui = bl12014.ui.Wafer(...
-    'clock', clock, ...
+ui = bl12014.ui.PowerPmacHydraMotMinSimple(...
     'uiClock', uiClock, ...
-    'waferExposureHistory', waferExposureHistory, ...
-    'hardware', hardware ...
+    'clock', clock ...
 );
 
-dWidth = 1650;
-dHeight = 900;
-
+dWidth = 400;
+dHeight = 400;
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
     'Position', [ ...
@@ -47,8 +36,6 @@ h = figure(...
 );
 
 ui.build(h, 10, 10);
-
-
 
  
 
