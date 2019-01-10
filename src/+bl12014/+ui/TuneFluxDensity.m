@@ -43,6 +43,8 @@ classdef TuneFluxDensity < mic.Base
         
         % Must pass in
         waferExposureHistory
+        
+        uiStateReticleAtClearFieldAndWaferAtDiodeAndHeightSensorLEDsOff
     end
     
     properties (SetAccess = private)
@@ -151,7 +153,10 @@ classdef TuneFluxDensity < mic.Base
              
             this.uiCommDeltaTauPowerPmac.build(hTab, dLeft, dTop);
             
-            this.uiButtonGo.build(hTab, 300, dTop, 300, 24);
+            % this.uiButtonGo.build(hTab, 300, dTop, 300, 24);
+            
+            this.uiStateReticleAtClearFieldAndWaferAtDiodeAndHeightSensorLEDsOff.build(hTab, 10, dTop, 500);
+            
             dTop = dTop + dSep;
             this.uiClock.add(@()this.setColorOfGoButton(), this.id(), 1);
 
@@ -295,6 +300,18 @@ classdef TuneFluxDensity < mic.Base
         
             this.uiStageReticleCoarse = bl12014.ui.ReticleCoarseStage(...
                 'cName', [this.cName, 'stage-reticle-coarse'], ...-
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateReticleAtClearFieldAndWaferAtDiodeAndHeightSensorLEDsOff = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-task-sequence-state-reticle-at-clear-field-and-wafer-at-diode-and-height-sensor-leds-off'], ...
+                'task', bl12014.Tasks.createStateRetAtClearFieldAndWafAtDiodeAndHeightSensorLEDsOff(...
+                    [this.cName, 'task-sequence-state-reticle-at-clear-field-and-wafer-at-diode-and-height-sensor-leds-off'], ...
+                    this.uiStageReticleCoarse, ...
+                    this.uiStageWaferCoarse, ...
+                    this.uiHeightSensorLeds, ...
+                    this.clock ...
+                ), ...
                 'clock', this.uiClock ...
             );
         
@@ -492,85 +509,7 @@ classdef TuneFluxDensity < mic.Base
         end
         
         
-        function onClickGo(this)
-            
-            
-            if this.isInPosition() 
-                return
-            end
-            
-            this.hProgress = waitbar(0, 'Sending reticle to clear field and wafer to diode. Please wait...');
-
-                        
-            % Set up scanner
-            fhSetState      = @(~, stState) stState.action();
-            fhIsAtState     = @(~, stState) stState.isReady();
-            fhAcquire       = @(~, stState) waitbar((stState.idx)/6, this.hProgress);
-            fhIsAcquired    = @(~, stState) true;
-            fhOnComplete    = @(~, stState) delete(this.hProgress);
-            fhOnAbort       = @(~, stState) delete(this.hProgress);
-            
-            stateList = { ...
-                % struct('idx', 1, 'action', @()this.setMotMinToMax(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
-                % struct('idx', 1, 'action', @()this.setMotMinToMax(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
-                struct('idx', 1, 'action', @()this.setXOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiX.isReady()), ...
-                struct('idx', 2, 'action', @()this.setYOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiY.isReady()), ...
-                struct('idx', 3, 'action', @()this.setZOfReticleAndGo(), 'isReady', @()this.uiStageReticleCoarse.uiZ.isReady()), ...
-                struct('idx', 4, 'action', @()this.setXOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiX.isReady()), ...
-                struct('idx', 5, 'action', @()this.setYOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiY.isReady()), ...
-                struct('idx', 6, 'action', @()this.setZOfWaferAndGo(), 'isReady', @()this.uiStageWaferCoarse.uiZ.isReady()) ...
-            };
         
-            stRecipe = struct;
-            stRecipe.values = stateList; % enumerable list of states that can be read by setState
-            stRecipe.unit = struct('unit', 'unit'); % not sure if we need units really, but let's fix later
-            
-            this.scan = mic.Scan(this.cName, ...
-                                this.clock, ...
-                                stRecipe, ...
-                                fhSetState, ...
-                                fhIsAtState, ...
-                                fhAcquire, ...
-                                fhIsAcquired, ...
-                                fhOnComplete, ...
-                                fhOnAbort, ...
-                                this.dPeriodOfScan...
-                                );
-            this.scan.start();
-            
-            
-        end
-        
-        
-        function setXOfWaferAndGo(this)
-            this.uiStageWaferCoarse.uiX.setDestCal(this.stConfig.xWafer.value, this.stConfig.xWafer.unit);
-            this.uiStageWaferCoarse.uiX.moveToDest();
-        end
-        
-        function setYOfWaferAndGo(this)
-            this.uiStageWaferCoarse.uiY.setDestCal(this.stConfig.yWafer.value, this.stConfig.yWafer.unit);
-            this.uiStageWaferCoarse.uiY.moveToDest();
-        end
-        
-        function setZOfWaferAndGo(this)
-            this.uiStageWaferCoarse.uiZ.setDestCal(this.stConfig.zWafer.value, this.stConfig.zWafer.unit);
-            this.uiStageWaferCoarse.uiZ.moveToDest();
-        end
-        
-        function setXOfReticleAndGo(this)
-            this.uiStageReticleCoarse.uiX.setDestCal(this.stConfig.xReticle.value, this.stConfig.xReticle.unit);
-            this.uiStageReticleCoarse.uiX.moveToDest();
-        end
-        
-        function setYOfReticleAndGo(this)
-            this.uiStageReticleCoarse.uiY.setDestCal(this.stConfig.yReticle.value, this.stConfig.yReticle.unit);
-            this.uiStageReticleCoarse.uiY.moveToDest();
-        end
-        
-        function setZOfReticleAndGo(this)
-            this.uiStageReticleCoarse.uiZ.setDestCal(this.stConfig.zReticle.value, this.stConfig.zReticle.unit);
-            this.uiStageReticleCoarse.uiZ.moveToDest();
-        end
         
         
         function setMotMinToMax(this)
