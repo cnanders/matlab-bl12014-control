@@ -31,7 +31,8 @@ classdef GetSetTextFromDeltaTauPowerPmac < mic.interface.device.GetSetText
             switch this.cType
                 case this.cTYPE_WORKING_MODE
                     d = this.comm.getActiveWorkingMode();
-                    c = this.getWorkingModeString(d);
+                    c = num2str(d);
+                    % c = this.getWorkingModeString(d);
             end
                     
         end

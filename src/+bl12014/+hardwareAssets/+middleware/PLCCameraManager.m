@@ -1,24 +1,34 @@
-% This is a bridge between hardware device and MATLAB UI
+%{
+    Camera manager:
+
+The problem with image acquisition is that anytime a new camera is plugged
+in, MATLAB needs to have its acquisition reset in order to see it, but this
+probably deletes references to existing cameras (update: yes it does)
+
+This means that the only way to detect a new camera is to disconnect
+existing connections, then reconnect them afterward
+%}
 
     
-classdef PLCCamera < mic.Base
+classdef PLCCameraManager < mic.Base
     
     
     properties (Constant)
-        cName = 'camera-name'
         
         ceValidNames = {'TEST', 'FID1', 'FID2', 'UNI'}
-        ceKnownCameraIDs = {'UI225xSE-M R3_4102612161',...
+        ceKnownCameraIDs = {...
+            'UI225xSE-M R3_4102612161',...
             'UI225xSE-M R3_4102658006',...
             'UI225xSE-M R3_4102612163',...
             'UI225xSE-M R3_4102612164'...
             }
-        
-        
+
         
     end
     
     properties 
+        ceConnectedCameras = {}
+        ceAvailableCameras = {}
         cCameraID = 'none'
         dCameraIndex = -1
         hCamera
@@ -30,21 +40,12 @@ classdef PLCCamera < mic.Base
         hTargetAxes
         dCapturePeriod = 1;
         
-        
     end
     
     methods
         
-        % Must construct with cName equal to one of the following: (TEST,
-        % FID1, FID2, UNI)
-        function this = PLCCamera(cName, varargin)
-            if ~any(strcmp(this.ceValidNames,cName))
-                error('Not a valid camera name, use: {TEST, FID1, FID2, UNI}\n');
-            end
+        function this = PLCCameraManager(varargin)
             
-            % Look up camera ID
-            this.cCameraID = this.ceKnownCameraIDs{strcmp(this.ceValidNames,cName)};
-           
              for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -57,24 +58,26 @@ classdef PLCCamera < mic.Base
         end
         
         function init(this)
-            this.hAdapterHandle = imaqhwinfo('winvideo');
-            this.setCameraHandle();
+            this.reset();
         end
         
-        function refreshCameraList(this)
+        function reset(this)
+            fprintf('Resetting IMAQ handle...\n');
+            imaqreset
             this.hAdapterHandle = imaqhwinfo('winvideo');
-            this.setCameraHandle();
+
             stDeviceInfo = this.hAdapterHandle.DeviceInfo;
             fprintf('\nDetected %d camera(s) with IDs:\n', length(stDeviceInfo));
             
+            this.ceAvailableCameras = {};
             for k = 1:length(stDeviceInfo)
+                this.ceAvailableCameras{k} = stDeviceInfo(k).DeviceName; %#ok<AGROW>
                 fprintf('\t%s (%s)\n', stDeviceInfo(k).DeviceName, ...
                         this.ceValidNames{strcmp(this.ceKnownCameraIDs, stDeviceInfo(k).DeviceName)});
             end
         end
         
         function idx = setCameraHandle(this)
-            idx = -1;
             this.hAdapterHandle = imaqhwinfo('winvideo');
             stDeviceInfo = this.hAdapterHandle.DeviceInfo;
             for k = 1:length(stDeviceInfo)
@@ -86,17 +89,7 @@ classdef PLCCamera < mic.Base
             this.hCamera = videoinput('winvideo', idx);
         end
         
-        function startCaptureStream(this)
-            
-        end
-        
-        function stopCaptureStream(this)
-            
-        end
-        
-        function snap(this)
-            imagesc(getsnapshot(this.hCamera));
-        end
+     
         
     end
     
