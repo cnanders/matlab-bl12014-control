@@ -209,7 +209,13 @@ classdef ExitSlit < mic.Base
         end
         
         function delete(this)
-  
+            
+            delete(this.uiStage1);
+            delete(this.uiStage2);
+            delete(this.uiStage3);
+            delete(this.uiStage4);
+            delete(this.uiCommExitSlit);
+            delete(this.uiGap);
             
         end    
         

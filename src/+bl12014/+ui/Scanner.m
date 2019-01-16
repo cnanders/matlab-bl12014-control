@@ -15,6 +15,11 @@ classdef Scanner < mic.Base
         % {https://github.com/cnanders/matlab-pupil-fill-generator}
         uiPupilFillGenerator
         
+        % { mic.ui.device.GetSetText 1x1} use this to set
+        % PupilFillGenerator to a specific waveform by name, which triggers
+        % it update its internal store of the dX, dY waveforms
+        uiGetSetWaveform
+        
     end
     
     properties (Access = protected)
@@ -29,6 +34,13 @@ classdef Scanner < mic.Base
         dWidthPadName = 29
         dScale = 1 % scale factor to hardware
         
+        % {char 1xm} directories to initialize the PupilFillGenerator to
+        cDirWaveforms
+        cDirWaveformsStarred
+        % {logical 1x1} show the "choose dir" button on both lists of saved
+        % pupilfills
+        lShowChooseDir = false
+        
     end
     
     properties (SetAccess = protected)
@@ -39,6 +51,24 @@ classdef Scanner < mic.Base
     methods
         
         function this = Scanner(varargin)
+            
+            [cDir, cName, cExt] = fileparts(mfilename('fullpath'));
+                   
+            this.cDirWaveforms = mic.Utils.path2canonical(fullfile(...
+                cDir, ...
+                '..', ...
+                '..', ...
+                'save', ...
+                'scanner' ...
+            ));
+        
+            this.cDirWaveformsStarred = fullfile(...
+                this.cDirWaveforms, ...
+                'starred' ...
+            );
+            
+        
+        
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -49,6 +79,21 @@ classdef Scanner < mic.Base
             
             this.init();
         
+        end
+        
+        
+        
+        % Sets the pupil fill with name {cName} in the directory of the 
+        % starred list
+        function setStarredIlluminationByName(this, cName)
+            
+            this.uiPupilFillGenerator.selectStarredByName(cName);
+            
+            this.uiPupilFillGenerator.isDone()
+            % Tell the npoint UI to set illumination to the selected
+            % illumination
+            this.uiNPointLC400.setIlluminationFromGetter();
+            
         end
         
         function connectNPointLC400(this, comm)
@@ -66,9 +111,7 @@ classdef Scanner < mic.Base
         
         function build(this, hParent, dLeft, dTop)
             
-            
             dSep = 10;
-            
            
             this.uiCommNPointLC400.build(hParent, dLeft, dTop);
             dTop = dTop + 24 + dSep;
@@ -79,6 +122,8 @@ classdef Scanner < mic.Base
                          
             this.uiNPointLC400.build(hParent, dLeft, dTop);
             % dTop = dTop + 300;
+            
+            % this.uiGetSetWaveform.build(hParent, dLeft + 650, dTop);
             
         end
         
@@ -114,7 +159,11 @@ classdef Scanner < mic.Base
         
          
         function initUiPupilFillGenerator(this)
-            this.uiPupilFillGenerator = PupilFillGenerator();
+            this.uiPupilFillGenerator = PupilFillGenerator(...
+                'lShowChooseDir', this.lShowChooseDir, ...
+                'cDirWaveforms', this.cDirWaveforms, ...
+                'cDirWaveformsStarred', this.cDirWaveformsStarred ...
+            );
         end
         
         function [i32X, i32Y] = get20BitWaveforms(this)
@@ -136,7 +185,9 @@ classdef Scanner < mic.Base
             
             this.uiNPointLC400 =  npoint.ui.LC400(...
                 'clock', this.clock, ...
+                'uiClock', this.clock, ...
                 'fhGet20BitWaveforms', @this.get20BitWaveforms, ...
+                'fhGetPathOfRecipe', @() this.uiPupilFillGenerator.getPathOfRecipe(), ...
                 'cName', sprintf('%s-LC-400-UI', this.cName) ...
             );
             
@@ -170,6 +221,33 @@ classdef Scanner < mic.Base
             this.initUiCommNPointLC400();
             this.initUiPupilFillGenerator();
             this.initUiNPointLC400();
+            
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-set-text', ...
+                'pupil-fill.json' ...
+            );
+        
+            config = mic.config.GetSetText(...
+                'cPath',  cPathConfig ...
+            );
+            
+                
+        %{
+            this.uiGetSetWaveform = mic.ui.device.GetSetText( ...
+                'cName', [this.cName, 'ui-waveform'], ...
+                'cLabel', 'Test', ...
+                'lShowUnit', false, ...
+                'clock', this.clock, ...
+                'config', config, ...
+                'lUseFunctionCallbacks', true, ...
+                'fhGet', @() this.uiPupilFillGenerator.isDone(), ...
+                'fhSet', @(cVal) Utils.this.uiPupilFillGenerator.setStarredByName(cVal), ...
+                'fhIsVirtual', @() false ...
+            );
+            %}
+        
         end
         
         

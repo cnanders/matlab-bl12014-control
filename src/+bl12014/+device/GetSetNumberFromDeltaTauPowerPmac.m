@@ -25,11 +25,11 @@
         % R === reticle
         % LSI === lateral sheraring interferometer
         % C = coarse
-        cWCX_MOT_MIN = 'wcx-mot-min'
-        cWCY_MOT_MIN = 'wcy-mot-min'
-        cRCX_MOT_MIN = 'rcx-mot-min'
-        cRCY_MOT_MIN = 'rcy-mot-min'
-        cLSICX_MOT_MIN = 'lsicx-mot-min'
+        cMOT_MIN_WCX = 'wcx-mot-min'
+        cMOT_MIN_WCY = 'wcy-mot-min'
+        cMOT_MIN_RCX = 'rcx-mot-min'
+        cMOT_MIN_RCY = 'rcy-mot-min'
+        cMOT_MIN_LSIX = 'lsicx-mot-min'
         
     end
     
@@ -53,15 +53,15 @@
         function d = get(this)
             
             switch this.cAxis
-                case this.cWCX_MOT_MIN
+                case this.cMOT_MIN_WCX
                     d = this.comm.getWaferCoarseXMotMin();
-                case this.cWCY_MOT_MIN
+                case this.cMOT_MIN_WCY
                     d = this.comm.getWaferCoarseYMotMin();
-                case this.cRCX_MOT_MIN
+                case this.cMOT_MIN_RCX
                     d = this.comm.getReticleCoarseXMotMin();
-                case this.cRCY_MOT_MIN
+                case this.cMOT_MIN_RCY
                     d = this.comm.getReticleCoarseYMotMin();  
-                case this.cLSICX_MOT_MIN
+                case this.cMOT_MIN_LSIX
                     d = this.comm.getLsiCoarseXMotMin();     
                 case this.cAXIS_WAFER_COARSE_X
                     d = this.comm.getWaferCoarseX();
@@ -104,19 +104,19 @@
             
             switch this.cAxis
                 
-                case this.cWCX_MOT_MIN
+                case this.cMOT_MIN_WCX
                     cCmd = sprintf('Hydra1UMotMinNorm1=%1.3f', dVal);
                     this.comm.command(cCmd);
-                case this.cWCY_MOT_MIN
+                case this.cMOT_MIN_WCY
                     cCmd = sprintf('Hydra1UMotMinNorm2=%1.3f', dVal);
                     this.comm.command(cCmd);
-                case this.cRCX_MOT_MIN
+                case this.cMOT_MIN_RCX
                     cCmd = sprintf('Hydra2UMotMinNorm1=%1.3f', dVal);
                     this.comm.command(cCmd);
-                case this.cRCY_MOT_MIN
+                case this.cMOT_MIN_RCY
                     cCmd = sprintf('Hydra2UMotMinNorm2=%1.3f', dVal);
                     this.comm.command(cCmd);  
-                case this.cLSICX_MOT_MIN
+                case this.cMOT_MIN_LSIX
                     cCmd = sprintf('Hydra3UMotMinNorm1=%1.3f', dVal);
                     this.comm.command(cCmd); 
                     
@@ -156,11 +156,11 @@
             switch this.cAxis
                 
                 case {...
-                    this.cWCX_MOT_MIN, ...
-                    this.cWCY_MOT_MIN, ...
-                    this.cRCX_MOT_MIN, ...
-                    this.cRCY_MOT_MIN, ...
-                    this.cLSICX_MOT_MIN ...
+                    this.cMOT_MIN_WCX, ...
+                    this.cMOT_MIN_WCY, ...
+                    this.cMOT_MIN_RCX, ...
+                    this.cMOT_MIN_RCY, ...
+                    this.cMOT_MIN_LSIX ...
                     }
                     l = true;
                 case {...
