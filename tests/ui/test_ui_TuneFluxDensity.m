@@ -11,11 +11,14 @@ addpath(genpath(cDirBl12014));
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
 
-cDirRigol = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src');
-addpath(cDirRigol)
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-quasar', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-gridded-pupil-fill', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-generator', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
+addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400', 'src')));
 
 
 hardware = bl12014.Hardware();
@@ -26,11 +29,26 @@ waferExposureHistory.addFakeExposures();
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
 
+
+uiScannerMA = bl12014.ui.Scanner(...
+    'cName', 'ma', ...
+    'clock', clock ...
+);
+
+uiScannerM142 = bl12014.ui.Scanner(...
+    'cName', 'm142', ...
+    'clock', clock ...
+);
+
 ui = bl12014.ui.TuneFluxDensity(...
     'clock', clock, ...
     'uiClock', uiClock, ...
+    'uiScannerMA', uiScannerMA, ...
+    'uiScannerM142', uiScannerM142, ...
     'waferExposureHistory', waferExposureHistory ...
 );
+
+
 
 
 dWidth = 1650;

@@ -1,0 +1,16 @@
+{
+ 	
+ 	"delay": 1,
+    "stores": [
+        {
+            "name": "A",
+            "val": "1Pole_off0_rot90_min35_max55_num3_dwell2_xoff0_yoff0_per100_filthz400_dt24"
+        },
+        {
+            "name": "B",
+            "val": "Quasar_rIn40_rOut60_numPoles2_numArcs9_theta90.0_rot0.0_offX0_offY0_period100_filthz400_dt24"
+        }
+    ]
+}	
+	
+	
