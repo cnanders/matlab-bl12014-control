@@ -20,8 +20,8 @@ classdef PowerPmacHydraMotMin < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 820
-        dHeight = 300
+        dWidth = 665
+        dHeight = 230
         
         cName = 'power-pmac-hydra-mot-min'
         
@@ -163,12 +163,13 @@ classdef PowerPmacHydraMotMin < mic.Base
             
             this.ui5.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
-            dTop = dTop + 20;
+            dTop = dTop + 10;
             this.uiSequenceSetAll.build(this.hPanel, dLeft, dTop, 280);
             
             dLeft = 320;
             dTop = 20;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 330, 230);
+            dHeight = 180
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 330, dHeight);
             
            
             

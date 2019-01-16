@@ -26,6 +26,10 @@ classdef Scanner < mic.Base
         
         % {mic.Clock 1x1} must be provided
         clock
+        % {mic.ui.Clock 1x1}
+        uiClock
+        
+        
         dWidth = 1250
         dHeight = 790
         hFigure
@@ -76,6 +80,17 @@ classdef Scanner < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+ 
+            
             
             this.init();
         
@@ -185,7 +200,7 @@ classdef Scanner < mic.Base
             
             this.uiNPointLC400 =  npoint.ui.LC400(...
                 'clock', this.clock, ...
-                'uiClock', this.clock, ...
+                'uiClock', this.uiClock, ...
                 'fhGet20BitWaveforms', @this.get20BitWaveforms, ...
                 'fhGetPathOfRecipe', @() this.uiPupilFillGenerator.getPathOfRecipe(), ...
                 'cName', sprintf('%s-LC-400-UI', this.cName) ...
