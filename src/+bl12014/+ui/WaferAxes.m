@@ -215,7 +215,8 @@ classdef WaferAxes < mic.Base
         
           
         function delete(this)
-            if (isvalid(this.clock))
+            if isvalid(this.clock) &&...
+               this.clock.has(this.id())
                 this.clock.remove(this.id());
             end
         end

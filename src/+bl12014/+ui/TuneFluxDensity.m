@@ -36,12 +36,7 @@ classdef TuneFluxDensity < mic.Base
         uiUndulatorGap
         uiExitSlit
         
-        
-        commDeltaTauPowerPmac = []
-        commMfDriftMonitorMiddleware = []
-        
-        hardware % needed for MFDriftMonitor integration
-        
+                
         % Must pass in
         waferExposureHistory
         uiScannerMA
@@ -141,8 +136,8 @@ classdef TuneFluxDensity < mic.Base
         
         function connectDeltaTauPowerPmac(this, comm)
                             
-            this.commDeltaTauPowerPmac = comm;
             this.uiStageWaferCoarse.connectDeltaTauPowerPmac(comm);
+            this.uiStageReticleCoarse.connectDeltaTauPowerPmac(comm);
             
         end
         
@@ -150,7 +145,7 @@ classdef TuneFluxDensity < mic.Base
         function disconnectDeltaTauPowerPmac(this)
             
             this.uiStageWaferCoarse.disconnectDeltaTauPowerPmac();
-            this.commDeltaTauPowerPmac = [];
+            this.uiStageReticleCoarse.disconnectDeltaTauPowerPmac();
                         
         end
         

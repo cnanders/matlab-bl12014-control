@@ -782,10 +782,8 @@ classdef App < mic.Base
             this.uiApp.uiReticle.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiWafer.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             this.uiApp.uiPowerPmacStatus.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiWafer.uiMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiReticle.uiMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiTuneFluxDensity.uiStageWaferCoarse.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiTuneFluxDensity.uiStageReticleCoarse.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiTuneFluxDensity.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
+            this.uiApp.uiPowerPmacHydraMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
             
             % RYAN WILL REPLACE
             this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
@@ -822,11 +820,8 @@ classdef App < mic.Base
             this.uiApp.uiReticle.disconnectDeltaTauPowerPmac()
             this.uiApp.uiWafer.disconnectDeltaTauPowerPmac();
             this.uiApp.uiPowerPmacStatus.disconnectDeltaTauPowerPmac()
-            this.uiApp.uiWafer.uiMotMin.disconnectDeltaTauPowerPmac();
-            this.uiApp.uiReticle.uiMotMin.disconnectDeltaTauPowerPmac();
-            
-            this.uiApp.uiTuneFluxDensity.uiStageWaferCoarse.disconnectDeltaTauPowerPmac();
-            this.uiApp.uiTuneFluxDensity.uiStageReticleCoarse.disconnectDeltaTauPowerPmac();
+            this.uiApp.uiTuneFluxDensity.disconnectDeltaTauPowerPmac();
+            this.uiApp.uiPowerPmacHydraMotMin.disconnectDeltaTauPowerPmac();
             
             % FIXME
             this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
@@ -1447,9 +1442,7 @@ classdef App < mic.Base
                     'u16TcpipPort', 23 ...
                 );
             
-                this.commNPointLC400MA.init();
-                this.commNPointLC400MA.connect();
-         
+                
             catch mE
                 this.commNPointLC400MA = [];
                 this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
@@ -1486,8 +1479,7 @@ classdef App < mic.Base
                     'cTcpipHost', this.cTcpipLc400M142, ...
                     'u16TcpipPort', 23 ...
                 );
-                this.commNPointLC400M142.init();
-                this.commNPointLC400M142.connect();
+        
                 
             catch mE
                 this.commNPointLC400M142 = [];
@@ -1862,6 +1854,9 @@ classdef App < mic.Base
             
             this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.turnOn();
+            
+            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
+            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.turnOn();
             
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
