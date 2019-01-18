@@ -14,6 +14,12 @@ classdef MADiagnostics < mic.Base
         
         % {mic.ui.device.GetSetNumber 1x1}
         uiStageWheel
+        
+        uiButtonMALeft
+        uiButtonMARight
+        uiButtonWheelLeft
+        uiButtonWheelRight
+        
                 
     end
     
@@ -25,10 +31,15 @@ classdef MADiagnostics < mic.Base
         hParent
         
         dWidthName = 140
-        dWidthPadName = 29
+        dWidthPadName = 5
         
         configStageY
         configMeasPointVolts
+        
+        lActive = false
+        
+        % {newfocus.Model8742 1x1}
+        comm
         
     end
     
@@ -56,6 +67,9 @@ classdef MADiagnostics < mic.Base
         
         function connectNewFocusModel8742(this, comm)
             
+            this.lActive = true;
+            this.comm = comm;
+            
             device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); 
             this.uiStageMAYag.setDevice(device);
             this.uiStageMAYag.turnOn()
@@ -78,6 +92,7 @@ classdef MADiagnostics < mic.Base
             this.uiStageWheel.turnOff()
             this.uiStageWheel.setDevice([]);
             
+            this.lActive = false;
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -89,9 +104,17 @@ classdef MADiagnostics < mic.Base
             dTop = dTop + 15 + dSep;
                         
             this.uiStageMAYag.build(this.hParent, dLeft, dTop);
+            
+            dLeftButton = 600;
+            dWidthButton = 100;
+            this.uiButtonMALeft.build(this.hParent, dLeftButton, dTop, dWidthButton, 24);
+            this.uiButtonMARight.build(this.hParent, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
             dTop = dTop + dSep;
             
             this.uiStageWheel.build(this.hParent, dLeft, dTop);
+            this.uiButtonWheelLeft.build(this.hParent, dLeftButton, dTop, dWidthButton, 24);
+            this.uiButtonWheelRight.build(this.hParent, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
+            
             dTop = dTop + dSep;
                         
         end
@@ -154,6 +177,7 @@ classdef MADiagnostics < mic.Base
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
                 'dWidthPadName', this.dWidthPadName, ...
+                'lShowStores', false, ...
                 'lShowLabels', false, ...
                 'cName', sprintf('%s-ma-yag', this.cName), ...
                 'config', uiConfig, ...
@@ -178,6 +202,7 @@ classdef MADiagnostics < mic.Base
                 'dWidthName', this.dWidthName, ...
                 'dWidthPadName', this.dWidthPadName, ...
                 'lShowLabels', false, ...
+                'lShowStores', false, ...
                 'cName', sprintf('%s-subframe-wheel', this.cName), ...
                 'config', uiConfig, ...
                 'cLabel', 'SF Wheel (Pos = CW)' ...
@@ -218,7 +243,100 @@ classdef MADiagnostics < mic.Base
             this.initUiStageMAYag();
             this.initUiStageWheel();
             
+            this.uiButtonMALeft = mic.ui.common.Button(...
+                'cText', 'Move MA Left', ...
+                'fhOnPress', @this.onPressMALeft, ...
+                'fhOnRelease', @this.onReleaseMALeft ...
+            );
+                
+            this.uiButtonMARight = mic.ui.common.Button(...
+                'cText', 'Move MA Right', ...
+                'fhOnPress', @this.onPressMARight, ...
+                'fhOnRelease', @this.onReleaseMARight ...
+            );
+        
+            this.uiButtonWheelLeft = mic.ui.common.Button(...
+                'cText', 'Move Wheel Left', ...
+                'fhOnPress', @this.onPressWheelLeft, ...
+                'fhOnRelease', @this.onReleaseWheelLeft ...
+            );
+                
+            this.uiButtonWheelRight = mic.ui.common.Button(...
+                'cText', 'Move Wheel Right', ...
+                'fhOnPress', @this.onPressWheelRight, ...
+                'fhOnRelease', @this.onReleaseWheelRight ...
+            );
+            
         end
+        
+        
+        function onPressMALeft(this, src, evt)
+            if this.lActive
+                this.comm.moveIndefinitely(1, -1);
+            else
+                this.uiStageMAYag.getDevice().moveIndefinitely(-1);
+            end
+            
+        end
+        
+        function onReleaseMALeft(this, src, evt)
+            if this.lActive
+                this.comm.stop(1);
+            else
+                this.uiStageMAYag.getDevice().stop()
+            end
+        end
+        
+        function onPressMARight(this, src, evt)
+            if this.lActive
+                this.comm.moveIndefinitely(1, 1);
+            else
+                this.uiStageMAYag.getDevice().moveIndefinitely(1);
+            end
+        end
+        
+        function onReleaseMARight(this, src, evt)
+            if this.lActive
+                this.comm.stop(1);
+            else
+                this.uiStageMAYag.getDevice().stop();
+            end
+        end
+        
+        
+        function onPressWheelLeft(this, src, evt)
+            if this.lActive
+                this.comm.moveIndefinitely(2, -1);
+            else
+                this.uiStageWheel.getDevice().moveIndefinitely(-1);
+            end
+        end
+        
+        function onReleaseWheelLeft(this, src, evt)
+            if this.lActive
+                this.comm.stop(2);
+            else
+                this.uiStageWheel.getDevice().stop();
+            end
+        end
+        
+        function onPressWheelRight(this, src, evt)
+            if this.lActive
+                this.comm.moveIndefinitely(2, 1);
+            else
+                this.uiStageWheel.getDevice().moveIndefinitely(1);
+            end
+        end
+        
+        function onReleaseWheelRight(this, src, evt)
+            if this.lActive
+                this.comm.stop(2);
+            else
+                this.uiStageWheel.getDevice().stop();
+            end
+        end
+        
+        
         
         
         
