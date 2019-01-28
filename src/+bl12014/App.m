@@ -1177,7 +1177,7 @@ classdef App < mic.Base
                 return;
             end
 
-            this.uiApp.uiMADiagnostics.connectNewFocusModel8742(this.commNewFocusModel8742MA)
+            this.uiApp.uiMA.uiDiagnostics.connectNewFocusModel8742(this.commNewFocusModel8742MA)
             
         end
         
@@ -1202,7 +1202,7 @@ classdef App < mic.Base
                 return
             end
             
-            this.uiApp.uiMADiagnostics.disconnectNewFocusModel8742();
+            this.uiApp.uiMA.uiDiagnostics.disconnectNewFocusModel8742();
             
             this.commNewFocusModel8742MA.delete();
             this.commNewFocusModel8742MA = [];
@@ -1450,7 +1450,7 @@ classdef App < mic.Base
                 return;
             end
             
-            this.uiApp.uiScannerMA.connectNPointLC400(this.commNPointLC400MA);
+            this.uiApp.uiMA.uiScanner.connectNPointLC400(this.commNPointLC400MA);
             
         end
         
@@ -1460,7 +1460,7 @@ classdef App < mic.Base
                 return
             end
 
-            this.uiApp.uiScannerMA.disconnectNPointLC400();
+            this.uiApp.uiMA.uiScanner.disconnectNPointLC400();
             
             this.commNPointLC400MA.delete();
             this.commNPointLC400MA = [];
@@ -1841,12 +1841,12 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
             
             % ScannerMA
-            this.uiApp.uiScannerMA.uiCommNPointLC400.setDevice(gslcCommNPointLC400MA);
-            this.uiApp.uiScannerMA.uiCommNPointLC400.turnOn();
+            this.uiApp.uiMA.uiScanner.uiCommNPointLC400.setDevice(gslcCommNPointLC400MA);
+            this.uiApp.uiMA.uiScanner.uiCommNPointLC400.turnOn();
             
             % MA Diagnostics
-            this.uiApp.uiMADiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
-            this.uiApp.uiMADiagnostics.uiCommNewFocusModel8742.turnOn();
+            this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
+            this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.turnOn();
             
             % Vibration Isolation System
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)

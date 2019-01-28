@@ -2,13 +2,6 @@ classdef Scanner < mic.Base
     
     properties (Constant)
         
-        cCONNECT = 'Connect'
-        cDISCONNECT = 'Disconnect'
-        cCONNECTING = 'Creating Video Connection ...'
-        
-        cSTATE_DISCONNECTED = 'Disconnected'
-        cSTATE_CONNECTED = 'Connected'
-        cSTATE_CONNECTING = 'Connecting'
         
     end
     properties
@@ -35,9 +28,6 @@ classdef Scanner < mic.Base
     
     properties (Access = protected)
         
-        
-        cIpCamera = '192.168.30.26';
-        
         % {mic.Clock 1x1} must be provided
         clock
         % {mic.ui.Clock 1x1}
@@ -59,21 +49,9 @@ classdef Scanner < mic.Base
         % pupilfills
         lShowChooseDir = false
         
-        % {axes 1x1}
-        hAxes
-        % {need to create an image in the axes to place video feed}
-        hImage
-        camera
-        uiButtonConnectCamera
         
-        % {double 1x1} dimensions of camera sensor offset and ROI 
-        dOffsetXCamera = 0;
-        dOffsetYCamera = 0;
-        dWidthCamera = 1288
-        dHeightCamera = 728
         
-        % {char 1xm} see this.cSTATE_*
-        cState
+       
         
     end
     
@@ -120,9 +98,7 @@ classdef Scanner < mic.Base
                 error('uiClock must be mic.Clock | mic.ui.Clock');
             end
  
-            
-            this.cState = this.cSTATE_DISCONNECTED;
-            
+                       
             this.init();
         
         end
@@ -155,73 +131,13 @@ classdef Scanner < mic.Base
         
         
         
-        function createCamera(this)
-            
-            if ~isempty(this.camera)
-                return
-            end
-            
-            try
-                this.camera = gigecam(this.cIpCamera);
-                
-                % Set up ROI
-                this.camera.Width = this.dWidthCamera;
-                this.camera.Height = this.dHeightCamera;
-                this.camera.OffsetX = this.dOffsetXCamera;
-                this.camera.OffsetY = this.dOffsetYCamera;
-                
-            catch mE
-                getReport(mE)
-                return;
-            end
-            
+        
+        function d = processImageFrame(this, dData)
+            d = rot90(dData);
+            d = rot90(d);
         end
         
-        function processImageFrame(this, obj, event, himage)
-            rotImg = rot90(event.Data);
-            rotImg = rot90(rotImg);
-            set(himage, 'cdata', rotImg);
-        end
-        
-        function startVideoPreview(this)
-            
-            this.createCamera();
-            
-            
-            if isempty(this.hImage)
-                
-                
-                this.hImage = image(...
-                    zeros(this.dHeightCamera, this.dWidthCamera), ...
-                    'Parent', this.hAxes ...
-                );
-                % Set up the update preview window function.
-                % https://www.mathworks.com/help/imaq/previewing-data.html
-                setappdata(this.hImage, 'UpdatePreviewWindowFcn', @this.processImageFrame);
-            end
-            
-            try
-                preview(this.camera, this.hImage); 
-            catch mE
-                error(getReport(mE));
-            end
-            
-        end
-        
-        function stopVideoPreview(this)
-            
-            if isempty(this.camera)
-                return
-            end
-            
-            try
-                closePreview(this.camera);
-            catch mE
-                getReport(mE)
-            end
-            
-        end
-        
+       
         
         function build(this, hParent, dLeft, dTop)
             
@@ -230,37 +146,13 @@ classdef Scanner < mic.Base
             this.uiCommNPointLC400.build(hParent, dLeft, dTop);
             dTop = dTop + 24 + dSep;
             
-            
             this.uiPupilFillGenerator.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiPupilFillGenerator.dHeight + 10;
             % dLeft = dLeft + this.uiPupilFillGenerator.dWidth + dSep;
                          
             this.uiNPointLC400.build(hParent, dLeft, dTop);
             % dTop = dTop + 300;
-            
-           
-            dLeft = dLeft + 1250;
-            dTop = 330;
-            dWidth = 480;
-            dHeight = this.dHeightCamera / this.dWidthCamera * dWidth;
-            dSep = 30;
-            
-            this.uiButtonConnectCamera.build(hParent, dLeft, dTop, 250, 24);
-            
-            dTop = dTop + dSep;
-            
-            this.hAxes = axes(...
-                'Parent', hParent, ...
-                'Color', [1 1 0.85], ...
-                'Box', 'off', ...
-                'Units','pixels', ...
-                'XColor', 'none', ...
-                'YColor', 'none', ...
-                'Position', mic.Utils.lt2lb([dLeft dTop dWidth dHeight], hParent), ...
-                ... %'DataAspectRatio', [this.dWidthCamera this.dHeightCamera 1], ...
-                'HandleVisibility', 'on' ...
-            );
-            
+                        
             
         end
         
@@ -359,38 +251,8 @@ classdef Scanner < mic.Base
             this.initUiPupilFillGenerator();
             this.initUiNPointLC400();
             
-            
-            this.uiButtonConnectCamera = mic.ui.common.Button(...
-                'cText', 'Connect', ...
-                'fhDirectCallback', @this.onButtonConnectCamera ...
-            );
-        
         end
-        
-        function onButtonConnectCamera(this, src, evt)
-            
-            switch this.cState
-                case this.cSTATE_DISCONNECTED
-                    src.setText(this.cCONNECTING);
-                    drawnow;
-                    this.cState = this.cSTATE_CONNECTING;
-                     
-                    this.startVideoPreview();
-                    
-                    this.cState = this.cSTATE_CONNECTED;
-                    src.setText(this.cDISCONNECT);
-                    
-                case {this.cSTATE_CONNECTING, this.cSTATE_CONNECTED}
-                    this.stopVideoPreview();
-                    src.setText(this.cCONNECT);
-                    this.cState = this.cSTATE_DISCONNECTED;
-            end
-            
-            
-            
-        end
-        
-        
+          
         
     end
     

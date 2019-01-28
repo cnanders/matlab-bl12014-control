@@ -32,12 +32,11 @@ classdef App < mic.Base
         uiLSIControl = {};
         uiLSIAnalyze = {};
         uiScannerM142
-        uiScannerMA
+        uiMA
         uiHeightSensorLEDs
         uiCameraLEDs
         uiScanResultPlot2x2
         uiMeasurPointLogPlotter
-        uiMADiagnostics
         uiPOCurrent
         uiMfDriftMonitorVibration
         uiButtonListClockTasks
@@ -64,12 +63,11 @@ classdef App < mic.Base
         uiClockLSIControl
         uiClockLSIAnalyze
         uiClockScannerM142
-        uiClockScannerMA
+        uiClockMA
         uiClockHeightSensorLEDs
         uiClockCameraLEDs
         uiClockScanResultPlot2x2
         uiClockMeasurPointLogPlotter
-        uiClockMADiagnostics
         uiClockPOCurrent
         uiClockMfDriftMonitorVibration
         uiClockMfDriftMonitor
@@ -88,8 +86,7 @@ classdef App < mic.Base
             'Beamline', ...
             'Field Scanner (M142)', ...
             'M143', ...
-            'Pupil Scanner (MA)', ...
-            'MA Diagnostics', ...
+            'MA', ...
             'VIS', ...
             'Drift Monitor Vib', ...
             'Drift Monitor', ...
@@ -346,13 +343,12 @@ classdef App < mic.Base
             % Delete the device UI controls
             delete(this.uiBeamline)
             delete(this.uiNetworkCommunication)
-            delete(this.uiMADiagnostics)
             delete(this.uiM143)
             delete(this.uiVibrationIsolationSystem)
             delete(this.uiReticle)
             delete(this.uiWafer)
             delete(this.uiPOCurrent)
-            delete(this.uiScannerMA)
+            delete(this.uiMA)
             delete(this.uiScannerM142)
             delete(this.uiScan) 
             delete(this.uiTempSensors)
@@ -372,13 +368,12 @@ classdef App < mic.Base
         function cec = getSaveLoadProps(this)
            
             cec = {...
-                'uiScannerMA', ...
+                'uiMA', ...
                 'uiScannerM142', ...
                 'uiScan', ...
                 ...%'uiNetworkCommunication', ...
                 ...%'uiBeamline', ...
                 ...%'uiShutter', ...
-                'uiMADiagnostics', ...
                 'uiPOCurrent', ...
                 'uiM143', ...
                 ...% 'uiVibrationIsolationSystem', ...
@@ -540,13 +535,12 @@ classdef App < mic.Base
             this.uiClockLSIControl = mic.ui.Clock(this.clock);
             this.uiClockLSIAnalyze = mic.ui.Clock(this.clock);
             this.uiClockScannerM142 = mic.ui.Clock(this.clock);
-            this.uiClockScannerMA = mic.ui.Clock(this.clock);
+            this.uiClockMA = mic.ui.Clock(this.clock);
             this.uiClockHeightSensorLEDs = mic.ui.Clock(this.clock);
             this.uiClockCameraLEDs = mic.ui.Clock(this.clock);
             this.uiClockScanResultPlot2x2 = mic.ui.Clock(this.clock);
             this.uiClockMeasurPointLogPlotter = mic.ui.Clock(this.clock);
-            this.uiClockMADiagnostics = mic.ui.Clock(this.clock);
-            this.uiClockPOCurrent = mic.ui.Clock(this.clock);
+                this.uiClockPOCurrent = mic.ui.Clock(this.clock);
             this.uiClockMfDriftMonitorVibration = mic.ui.Clock(this.clock);
             this.uiClockMfDriftMonitor = mic.ui.Clock(this.clock);
             this.uiClockTuneFluxDensity = mic.ui.Clock(this.clock);
@@ -619,18 +613,9 @@ classdef App < mic.Base
                 'starred' ...
             );
             
-            this.uiScannerMA = bl12014.ui.Scanner(...
-                'cName', 'MA Scanner', ...
+            this.uiMA = bl12014.ui.MA(...
                 'clock', this.clock, ...
-                'uiClock', this.uiClockScannerMA, ...
-                'cDirWaveforms', cDirWaveforms, ...
-                'cDirWaveformsStarred', cDirWaveformsStarred, ...
-                'dOffsetXCamera', 370, ...
-                'dOffsetYCamera', 0, ...
-                'dWidthCamera', 500, ...
-                'dHeightCamera', 500, ...
-                'cIpOfCamera', '192.168.30.26', ...
-                'dScale', 0.67 ... % 0.67 rel amp = sig 1
+                'uiClock', this.uiClockMA ...
             );
         
             
@@ -645,7 +630,7 @@ classdef App < mic.Base
             
             this.uiTuneFluxDensity = bl12014.ui.TuneFluxDensity(...
                 'waferExposureHistory', this.waferExposureHistory, ...
-                'uiScannerMA', this.uiScannerMA, ...
+                'uiScannerMA', this.uiMA.uiScanner, ...
                 'uiScannerM142', this.uiScannerM142, ...
                 'clock', this.clock, ...
                 'uiClock', this.uiClockTuneFluxDensity ...
@@ -671,7 +656,6 @@ classdef App < mic.Base
             );
             this.uiScanResultPlot2x2 = bl12014.ui.ScanResultPlot2x2('clock', this.uiClockScanResultPlot2x2);
             
-            this.uiMADiagnostics = bl12014.ui.MADiagnostics('clock', this.uiClockMADiagnostics);
             this.uiPOCurrent = bl12014.ui.POCurrent('clock', this.uiClockPOCurrent);
             
             this.uiMeasurPointLogPlotter = bl12014.ui.MeasurPointLogPlotter();
@@ -762,12 +746,11 @@ classdef App < mic.Base
             this.uiClockLSIControl.stop();
             this.uiClockLSIAnalyze.stop();
             this.uiClockScannerM142.stop();
-            this.uiClockScannerMA.stop();
+            this.uiClockMA.stop();
             this.uiClockHeightSensorLEDs.stop();
             this.uiClockCameraLEDs.stop();
             this.uiClockScanResultPlot2x2.stop();
             this.uiClockMeasurPointLogPlotter.stop();
-            this.uiClockMADiagnostics.stop();
             this.uiClockPOCurrent.stop();
             this.uiClockMfDriftMonitorVibration.stop();
             this.uiClockMfDriftMonitor.stop();
@@ -787,10 +770,9 @@ classdef App < mic.Base
                      this.uiClockScannerM142.start();
                 case 'M143'
                     this.uiClockM143.start();
-                case 'Pupil Scanner (MA)'
-                    this.uiClockScannerMA.start();
-                case 'MA Diagnostics'
-                    this.uiClockMADiagnostics.start();
+                case 'MA'
+                    this.uiClockMA.start();
+               
                 case 'VIS'
                     this.uiClockVibrationIsolationSystem.start();
                 case 'Drift Monitor Vib'
@@ -855,10 +837,9 @@ classdef App < mic.Base
                      this.uiScannerM142.build(hTab, 10, 30);
                 case 'M143'
                     this.uiM143.build(hTab, 10, 30);
-                case 'Pupil Scanner (MA)'
-                    this.uiScannerMA.build(hTab, 10, 30);
-                case 'MA Diagnostics'
-                    this.uiMADiagnostics.build(hTab, 10, 30);
+                case 'MA'
+                    this.uiMA.build(hTab, 10, 30);
+                
                 case 'VIS'
                     this.uiVibrationIsolationSystem.build(hTab, 10, 30);
                 case 'Drift Monitor Vib'

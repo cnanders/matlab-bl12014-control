@@ -801,8 +801,14 @@ classdef FemTool < mic.Base
             
             switch this.uipPositionType.getSelectedValue()
                 case this.c_POSITION_TYPE_START
-                    this.dX = this.uiePositionX.get() : this.uiePositionStepX.get() : this.uiePositionX.get() + (dNumDose - 1)*this.uiePositionStepX.get();
-                    this.dY = this.uiePositionY.get() : this.uiePositionStepY.get() : this.uiePositionY.get() + (dNumFocus - 1)*this.uiePositionStepY.get();
+                    
+                    dXStart = this.uiePositionX.get();
+                    dYStart = this.uiePositionY.get();
+                    dXEnd =  this.uiePositionX.get() +  (dNumDose - 1)*this.uiePositionStepX.get();
+                    dYEnd = this.uiePositionY.get() + (dNumFocus - 1)*this.uiePositionStepY.get();
+                    
+                    % this.dX = this.uiePositionX.get() : this.uiePositionStepX.get() : this.uiePositionX.get() + (dNumDose - 1)*this.uiePositionStepX.get();
+                    % this.dY = this.uiePositionY.get() : this.uiePositionStepY.get() : this.uiePositionY.get() + (dNumFocus - 1)*this.uiePositionStepY.get();
                 case this.c_POSITION_TYPE_CENTER
                     % Center
                    
@@ -830,10 +836,15 @@ classdef FemTool < mic.Base
                         dYEnd = this.uiePositionY.get() + this.uiePositionStepY.get() * (dNumFocus - 1)/2;
                     end
                     
-                    this.dX = dXStart : this.uiePositionStepX.get() : dXEnd;
-                    this.dY = dYStart : this.uiePositionStepY.get() : dYEnd;
+                   
                     
             end % Switch
+            
+            this.dX = linspace(dXStart, dXEnd, dNumDose);
+            this.dY = linspace(dYStart, dYEnd, dNumFocus);
+
+            %this.dX = dXStart : this.uiePositionStepX.get() : dXEnd;
+            %this.dY = dYStart : this.uiePositionStepY.get() : dYEnd;
             
             if ~isempty(this.dX)
                 cVal = sprintf( ...

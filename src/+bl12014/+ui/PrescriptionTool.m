@@ -239,7 +239,8 @@ classdef PrescriptionTool < mic.Base
             stValue.type = 'setup';
             stValue.reticleX = this.uiReticleTool.dX;
             stValue.reticleY = this.uiReticleTool.dY;
-            stValue.pupilFill = this.uiPupilFillTool.get();
+            
+            % stValue.pupilFill = this.uiPupilFillTool.get();
             
             % Use other states for wafer pos and exposure task FEM
             
@@ -492,11 +493,15 @@ classdef PrescriptionTool < mic.Base
             if (length(cResist) > 10)
                 cResist = cResist(1:10);
             end
+            %{
             
             cIllum = this.uiPupilFillTool.get();
             if (length(cIllum) > 10)
                 cIllum = cIllum(1:10);
             end
+            %}
+            
+            cIllum = 'fix me'
             
            
             c = sprintf('%s__RES_%s__RET_%s_%s__ILLUM_%s__FEM_%1dx%1d', ...

@@ -18,8 +18,7 @@ purge
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
 
-ui = bl12014.ui.Scanner(...
-    'cName', 'ma', ...
+ui = bl12014.ui.MA(...
     'uiClock', uiClock, ...
     'clock', clock ...
 );
@@ -38,10 +37,6 @@ h = figure(...
 );
 
 ui.build(h, 10, 10);
-
-
-% ui.setStarredIlluminationByName('1Pole_off0_rot90_min35_max55_num3_dwell2_xoff0_yoff0_per100_filthz400_dt24.mat');
-
 
 
  
