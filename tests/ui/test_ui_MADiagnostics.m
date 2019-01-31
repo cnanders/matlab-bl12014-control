@@ -33,7 +33,7 @@ h = figure(...
     ] ...
 );
 
-ui.build(h, 10, 10);
+ui.build(h, 100, 100);
 
  
 

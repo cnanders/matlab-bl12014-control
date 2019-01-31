@@ -10,8 +10,7 @@ classdef Scanner < mic.Base
         % These are the UI for activating the hardware that gives the 
         % software real data
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommNPointLC400
+        
         
         % {npoint.ui.LC400 1x1}
         uiNPointLC400
@@ -143,8 +142,7 @@ classdef Scanner < mic.Base
             
             dSep = 10;
            
-            this.uiCommNPointLC400.build(hParent, dLeft, dTop);
-            dTop = dTop + 24 + dSep;
+            
             
             this.uiPupilFillGenerator.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiPupilFillGenerator.dHeight + 10;
@@ -223,31 +221,10 @@ classdef Scanner < mic.Base
         end
         
         
-        function initUiCommNPointLC400(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommNPointLC400 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-nPoint-LC400', this.cName), ...
-                'cLabel', 'nPoint LC400' ...
-            );
         
-        end
         
         function init(this)
             this.msg('init');
-            this.initUiCommNPointLC400();
             this.initUiPupilFillGenerator();
             this.initUiNPointLC400();
             

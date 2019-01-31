@@ -29,6 +29,7 @@ classdef MADiagnostics < mic.Base
         dWidth = 710
         dHeight = 160
         hParent
+        hPanel
         
         dWidthVal = 50
         dWidthName = 140
@@ -82,6 +83,7 @@ classdef MADiagnostics < mic.Base
             this.uiStageWheel.turnOn()
             this.uiStageWheel.syncDestination();
             
+            this.setColorOfBackgroundToDefault();
             
         end
         
@@ -95,29 +97,53 @@ classdef MADiagnostics < mic.Base
             this.uiStageWheel.setDevice([]);
             
             this.lActive = false;
+            
+            this.setColorOfBackgroundToWarning();
         end
         
         function build(this, hParent, dLeft, dTop)
             
-            this.hParent = hParent;
-            dSep = 30;
             
-            this.uiCommNewFocusModel8742.build(this.hParent, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
+            dWidthPanel = 480;
+            dHeightPanel = 120;
+            this.hPanel = uipanel( ...
+                'Parent', hParent, ...
+                'Units', 'pixels', ...
+                'Title', 'MA Diagnostics', ...
+                'Clipping', 'on', ...
+                ...%'BackgroundColor', [200 200 200]./255, ...
+                ...%'BorderType', 'none', ...
+                ...%'BorderWidth',0, ... 
+                'Position', mic.Utils.lt2lb([dLeft dTop dWidthPanel dHeightPanel], hParent)...
+            );
+        
+        
+            dSep = 30;
+            dTop = 20;
+            dLeft = 10;
+            
+            this.uiCommNewFocusModel8742.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + 24 + 10;
                         
-            this.uiStageMAYag.build(this.hParent, dLeft, dTop);
+            this.uiStageMAYag.build(this.hPanel, dLeft, dTop);
             
             dLeftButton = dLeft + 210;
             dWidthButton = 50;
-            this.uiButtonMALeft.build(this.hParent, dLeftButton, dTop, dWidthButton, 24);
-            this.uiButtonMARight.build(this.hParent, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
+            this.uiButtonMALeft.build(this.hPanel, dLeftButton, dTop, dWidthButton, 24);
+            this.uiButtonMARight.build(this.hPanel, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
             dTop = dTop + dSep;
             
-            this.uiStageWheel.build(this.hParent, dLeft, dTop);
-            this.uiButtonWheelLeft.build(this.hParent, dLeftButton, dTop, dWidthButton, 24);
-            this.uiButtonWheelRight.build(this.hParent, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
+            this.uiStageWheel.build(this.hPanel, dLeft, dTop);
+            this.uiButtonWheelLeft.build(this.hPanel, dLeftButton, dTop, dWidthButton, 24);
+            this.uiButtonWheelRight.build(this.hPanel, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
             
             dTop = dTop + dSep;
+            
+            if this.uiCommNewFocusModel8742.get() == true
+                this.setColorOfBackgroundToDefault();
+            else
+                this.setColorOfBackgroundToWarning();
+            end
                         
         end
         
@@ -150,16 +176,36 @@ classdef MADiagnostics < mic.Base
             
             
         end
+        
+        
     end
     
     methods (Access = private)
         
+        %{
          function onFigureCloseRequest(this, src, evt)
             this.msg('MADiagnosticsControl.closeRequestFcn()');
             delete(this.hParent);
             this.hParent = [];
          end
+        %}
         
+         
+         function setColorOfBackgroundToWarning(this)
+            this.setColorOfBackground([1 1 0.85]);
+        end
+        
+        function setColorOfBackgroundToDefault(this)
+            this.setColorOfBackground([0.94 0.94 0.94]);
+        end
+        
+        function setColorOfBackground(this, dColor)
+            if ishandle(this.hPanel)
+                set(this.hPanel, 'BackgroundColor', dColor);
+                
+            end
+            
+        end
          
         
         

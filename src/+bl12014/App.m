@@ -1817,8 +1817,8 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiM142.uiCommNewFocusModel8742.turnOn();
             
             % ScannerM142
-            this.uiApp.uiScannerM142.uiCommNPointLC400.setDevice(gslcCommNPointLC400M142);
-            this.uiApp.uiScannerM142.uiCommNPointLC400.turnOn();
+            this.uiApp.uiScannerM142.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400M142);
+            this.uiApp.uiScannerM142.uiNPointLC400.uiComm.turnOn();
             
             
             % D141
@@ -1841,8 +1841,8 @@ classdef App < mic.Base
             this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
             
             % ScannerMA
-            this.uiApp.uiMA.uiScanner.uiCommNPointLC400.setDevice(gslcCommNPointLC400MA);
-            this.uiApp.uiMA.uiScanner.uiCommNPointLC400.turnOn();
+            this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400MA);
+            this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.turnOn();
             
             % MA Diagnostics
             this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
