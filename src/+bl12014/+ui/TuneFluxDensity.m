@@ -74,6 +74,9 @@ classdef TuneFluxDensity < mic.Base
         scan
         
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
         
@@ -112,6 +115,10 @@ classdef TuneFluxDensity < mic.Base
             
             if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
                 error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();
@@ -396,6 +403,7 @@ classdef TuneFluxDensity < mic.Base
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
 

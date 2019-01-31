@@ -1523,11 +1523,11 @@ classdef App < mic.Base
                     'u16Port', u16Port ...
                 );
                 this.commRigolDG1000Z.idn()
-                this.uiApp.uiBeamline.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                this.uiApp.uiScan.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                this.uiApp.uiTuneFluxDensity.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                % this.uiApp.uiBeamline.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
+                % this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
+                % this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
+                % this.uiApp.uiScan.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
+                % this.uiApp.uiTuneFluxDensity.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
             catch mE
                 
                 this.commRigolDG1000Z = [];
@@ -1541,11 +1541,11 @@ classdef App < mic.Base
         
         function destroyAndDisconnectRigolDG1000Z(this)
             
-            this.uiApp.uiBeamline.uiShutter.disconnectRigolDG1000Z();
-            this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
-            this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
-            this.uiApp.uiScan.uiShutter.disconnectRigolDG1000Z();
-            this.uiApp.uiTuneFluxDensity.uiShutter.disconnectRigolDG1000Z();
+            % this.uiApp.uiBeamline.uiShutter.disconnectRigolDG1000Z();
+            % this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
+            % this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
+            % this.uiApp.uiScan.uiShutter.disconnectRigolDG1000Z();
+            % this.uiApp.uiTuneFluxDensity.uiShutter.disconnectRigolDG1000Z();
             this.commRigolDG1000Z = [];
             
         end
@@ -1618,6 +1618,7 @@ classdef App < mic.Base
                 'fhSetTrue', @this.initAndConnectWago, ...
                 'fhSetFalse', @this.destroyAndDisconnectWago ...
             );
+        
             gslcCommExitSlit = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getExitSlit, ...
                 'fhSetTrue', @this.initAndConnectExitSlit, ...
@@ -1630,11 +1631,13 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectMightex ...
             );
         
+            %{
             gslcCommRigolDG1000Z = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getRigolDG1000Z, ...
                 'fhSetTrue', @this.initAndConnectRigolDG1000Z, ...
                 'fhSetFalse', @this.destroyAndDisconnectRigolDG1000Z ...
             );
+            %}
         
             gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getNewFocusModel8742, ...
@@ -1953,6 +1956,7 @@ classdef App < mic.Base
             this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.setDevice(gslcCommMightex);
             this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.turnOn();
             
+            %{
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.turnOn();
             
@@ -1967,6 +1971,7 @@ classdef App < mic.Base
             
             this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
             this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.turnOn();
+            %}
             
             % Camera LEDs
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);
@@ -1982,7 +1987,7 @@ classdef App < mic.Base
             
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton, ...
-                'hHardware', this.hardware ...
+                'hardware', this.hardware ...
             ); 
         
             

@@ -176,6 +176,9 @@ classdef Beamline < mic.Base
         
         % {mic.Scan 1x1}
         scan
+        
+        % {bl12014.Hardware 1x1}
+        hardware
     end
     
     methods
@@ -194,6 +197,10 @@ classdef Beamline < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();
@@ -765,7 +772,7 @@ classdef Beamline < mic.Base
         
         function initUiDeviceShutter(this)
                         
-            this.uiShutter = bl12014.ui.Shutter('clock', this.clock);
+            this.uiShutter = bl12014.ui.Shutter('clock', this.clock, 'hardware', this.hardware);
             addlistener(this.uiShutter.uiShutter, 'eUnitChange', @this.onUnitChange);
         end
         

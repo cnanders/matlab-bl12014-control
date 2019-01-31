@@ -137,6 +137,9 @@ classdef Scan < mic.Base
         uiReticleAxes
         waferExposureHistory
         
+        
+         % {bl12014.Hardware 1x1}
+        hardware
             
         
     end
@@ -186,6 +189,14 @@ classdef Scan < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
             end
             
             this.init();
@@ -510,6 +521,7 @@ classdef Scan < mic.Base
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
                 'clock', this.clock ...
             );
             

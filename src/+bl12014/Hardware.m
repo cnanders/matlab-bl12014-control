@@ -40,6 +40,8 @@ classdef Hardware < mic.Base
         cTcpipKeithley6482Wafer     = '192.168.20.28'
         cTcpipKeithley6482Reticle   = '192.168.20.28'
         
+        cTcpipRigolDG1000Z = '192.168.20.35'
+        
         
         
     end
@@ -66,7 +68,13 @@ classdef Hardware < mic.Base
         commDeltaTauPowerPmac
         
         % {MFDriftMonitor}
-        commMFDriftMonitor   
+        commMFDriftMonitor 
+        
+        commRigolDG1000Z
+        commRigolDG1000ZVirtual
+        lIsConnectedRigolDG1000Z = false
+        
+        
     end
     
 
@@ -109,6 +117,36 @@ classdef Hardware < mic.Base
         % Setters
         function setClock(this, clock)
             this.clock = clock;
+        end
+        
+        
+        function l = getIsConnectedRigolDG1000Z(this)
+            l = this.lIsConnectedRigolDG1000Z;
+        end
+        
+        function setIsConnectedRigolDG1000Z(this, lVal)
+           this.lIsConnectedRigolDG1000Z = lVal;
+        end
+                
+        function comm = getRigolDG1000Z(this)
+            if this.lIsConnectedRigolDG1000Z
+                if isempty(this.commRigolDG1000Z)
+                   try
+                        u16Port = 5555;
+                        this.commRigolDG1000Z = rigol.DG1000Z(...
+                            'cHost', this.cTcpipRigolDG1000Z, ...
+                            'u16Port', u16Port ...
+                        );
+                        this.commRigolDG1000Z.idn()                       
+                   catch mE
+                        error(getReport(mE));
+                   end
+                    
+                end
+                comm = this.commRigolDG1000Z;
+            else
+                comm = this.commRigolDG1000ZVirtual;
+            end            
         end
         
         
@@ -205,6 +243,9 @@ classdef Hardware < mic.Base
                 @(cVPath) addpath(cVPath));
             mic.Utils.map(this.ceJavaPathLoad, ...
                 @(cVPath) javaaddpath(cVPath), 0);
+            
+            
+            this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
         end
         
   

@@ -50,6 +50,9 @@ classdef Reticle < mic.Base
         hParent
         dDelay = 0.5
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
         
         
     end
@@ -76,6 +79,10 @@ classdef Reticle < mic.Base
             
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             
@@ -330,6 +337,7 @@ classdef Reticle < mic.Base
                 
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
 

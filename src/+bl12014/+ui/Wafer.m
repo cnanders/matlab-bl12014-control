@@ -46,7 +46,8 @@ classdef Wafer < mic.Base
         commDeltaTauPowerPmac = []
         commMfDriftMonitorMiddleware = []
         
-        hardware % needed for MFDriftMonitor integration
+        
+       
         
         waferExposureHistory
         
@@ -65,6 +66,9 @@ classdef Wafer < mic.Base
         clock
         uiClock
         dDelay = 0.5
+        
+         % {bl12014.Hardware 1x1}
+        hardware
         
     end
     
@@ -92,6 +96,10 @@ classdef Wafer < mic.Base
             
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             
@@ -486,6 +494,7 @@ classdef Wafer < mic.Base
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
 
