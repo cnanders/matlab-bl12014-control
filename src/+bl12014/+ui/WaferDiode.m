@@ -5,12 +5,15 @@ classdef WaferDiode < mic.Base
         % {mic.ui.device.GetNumber 1x1}}
         uiCurrent
         
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiComm
+        
     end
     
     properties (SetAccess = private)
         
         dWidth = 450
-        dHeight = 70
+        dHeight = 100
         
         cName = 'WaferDiode'
         
@@ -31,6 +34,9 @@ classdef WaferDiode < mic.Base
         configStageY
         configMeasPointVolts
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
     methods
@@ -44,10 +50,19 @@ classdef WaferDiode < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
         
+        %{
         function connectKeithley6482(this, comm)
             
             device = bl12014.device.GetNumberFromKeithley6482(comm, 2);
@@ -63,7 +78,7 @@ classdef WaferDiode < mic.Base
             
         end
         
-        
+        %}
             
         function turnOn(this)
             this.uiCurrent.turnOn();
@@ -73,12 +88,13 @@ classdef WaferDiode < mic.Base
             this.uiCurrent.turnOff();
         end
         
+        
         function build(this, hParent, dLeft, dTop)
             
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Diode (Keithley 6482)',...
+                'Title', 'Wafer Diode',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -87,11 +103,13 @@ classdef WaferDiode < mic.Base
                 this.dHeight], hParent) ...
             );
         
-			drawnow;            
-
-            dTop = 20;
-            dLeft = 10;
+			dLeft = 0;
+            dTop = 15;
             dSep = 30;
+                       
+            
+            this.uiComm.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
             
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -118,7 +136,32 @@ classdef WaferDiode < mic.Base
     end
     
     methods (Access = private)
-                
+              
+        
+        function initUiComm(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiComm = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', [this.cName, 'comm-keithley-6482-wafer'], ...
+                'fhGet', @() this.hardware.getIsConnectedKeithley6482Wafer(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Wafer(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cLabel', 'Keithley 6482 (Wafer)' ...
+            );
+        
+        end
          
         function initUiCurrent(this)
             
@@ -138,6 +181,9 @@ classdef WaferDiode < mic.Base
                 'dWidthUnit', this.dWidthUnit, ...
                 'dWidthVal', this.dWidthVal, ...
                 'dWidthPadUnit', this.dWidthPadUnit, ...
+                'fhGet', @() this.hardware.getKeithley6482Wafer().read(2), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cName', 'wafer-diode', ...
                 'config', uiConfig, ...
                 'cLabel', 'Current' ...
@@ -149,6 +195,7 @@ classdef WaferDiode < mic.Base
         function init(this)
             this.msg('init()');
             this.initUiCurrent();
+            this.initUiComm();
             
         end
         

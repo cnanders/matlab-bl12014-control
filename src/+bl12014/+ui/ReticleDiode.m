@@ -5,12 +5,15 @@ classdef ReticleDiode < mic.Base
         % {mic.ui.device.GetNumber 1x1}}
         uiCurrent
         
+        % {mic.ui.device.GetSetLogical 1x1}
+        uiComm
+        
     end
     
     properties (SetAccess = private)
         
         dWidth = 600
-        dHeight = 70
+        dHeight = 100
         
         cName = 'ReticleDiode'
         
@@ -30,6 +33,9 @@ classdef ReticleDiode < mic.Base
         configStageY
         configMeasPointVolts
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
     methods
@@ -43,26 +49,20 @@ classdef ReticleDiode < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
         
         
-        function connectKeithley6482(this, comm)
-            
-            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()
-            
-        end
-        
-        
-        function disconnectKeithley6482(this, comm)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-            
-        end
-        
+       
         
         function turnOn(this)
             
@@ -89,15 +89,15 @@ classdef ReticleDiode < mic.Base
                 this.dHeight], hParent) ...
             );
         
-			drawnow;            
-
-            dTop = 20;
-            dLeft = 10;
+			dLeft = 0;
+            dTop = 15;
             dSep = 30;
+            
+            this.uiComm.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
             
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
             
            
             
@@ -141,9 +141,37 @@ classdef ReticleDiode < mic.Base
                 'dWidthVal', this.dWidthVal, ...
                 'dWidthPadUnit', this.dWidthPadUnit, ...
                 'cName', 'reticle-diode', ...
+                'fhGet', @() this.hardware.getKeithley6482Reticle().read(1), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'config', uiConfig, ...
                 'cLabel', 'Current' ...
             );
+        end
+        
+        function initUiComm(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+        
+            this.uiComm = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', [this.cName, 'comm-keithley-6482-reticle'], ...
+                'fhGet', @() this.hardware.getIsConnectedKeithley6482Reticle(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Reticle(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cLabel', 'Keithley 6482 (Reticle)' ...
+            );
+        
         end
         
         
@@ -151,6 +179,7 @@ classdef ReticleDiode < mic.Base
         function init(this)
             this.msg('init()');
             this.initUiCurrent();
+            this.initUiComm();
             
         end
         

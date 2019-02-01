@@ -20,7 +20,6 @@ classdef TuneFluxDensity < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommConnectAll
         uiCommDeltaTauPowerPmac
-        uiCommKeithley6482
         uiCommBL1201CorbaProxy
         
         uiHeightSensorLeds
@@ -125,21 +124,6 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
-        function connectRigolDG1000Z(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDevice(device);
-            this.uiShutter.turnOn();
-                      
-        end
-        
-        function disconnectRigolDG1000Z(this)
-            
-            this.uiShutter.turnOff();
-            this.uiShutter.setDevice([]);
-   
-        end
-       
         
         function connectDeltaTauPowerPmac(this, comm)
                             
@@ -203,8 +187,7 @@ classdef TuneFluxDensity < mic.Base
             this.uiCommDeltaTauPowerPmac.build(hTab, dLeft, dTop);
             dTop = dTop + dSep;
                         
-            this.uiCommKeithley6482.build(hTab, dLeft, dTop);
-            dTop = dTop + dSep;
+            
             
             dWidthTask = 300;
             this.uiSequencePrep.build(hTab, 10, dTop, dWidthTask);
@@ -303,7 +286,6 @@ classdef TuneFluxDensity < mic.Base
             
             delete(this.uiCommConnectAll)
             delete(this.uiCommBL1201CorbaProxy)
-            delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
             
             delete(this.uiStateM142ScanningDefault);
@@ -387,14 +369,14 @@ classdef TuneFluxDensity < mic.Base
             
         
             this.uiDiode = bl12014.ui.WaferDiode(...
-                'cName', [this.cName, 'diode-wafer'], ...-
+                'cName', [this.cName, 'diode-wafer'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
            
             this.initUiCommConnectAll();
             this.initUiCommBL1201CorbaProxy();
             this.initUiCommDeltaTauPowerPmac();
-            this.initUiCommKeithley6482();
             
             this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
             
@@ -547,32 +529,12 @@ classdef TuneFluxDensity < mic.Base
         
         
         
-        function initUiCommKeithley6482(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
         
-            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'keithley-6482-wafer'], ...
-                'cLabel', 'Keithley 6482 (Wafer)' ...
-            );
-        
-        end
         
         
         function l = onGet(this)
             l = this.uiCommBL1201CorbaProxy.get() && ...
                 this.uiCommDeltaTauPowerPmac.get() && ...
-                this.uiCommKeithley6482.get() && ...
                 this.uiExitSlit.uiCommExitSlit.get() && ...
                 this.uiShutter.uiCommRigol.get() && ...
                 this.uiHeightSensorLeds.uiCommMightex.get();
@@ -582,7 +544,6 @@ classdef TuneFluxDensity < mic.Base
             
             this.uiCommBL1201CorbaProxy.set(lVal);
             this.uiCommDeltaTauPowerPmac.set(lVal);
-            this.uiCommKeithley6482.set(lVal);
             this.uiExitSlit.uiCommExitSlit.set(lVal);
             this.uiShutter.uiCommRigol.set(lVal);
             this.uiHeightSensorLeds.uiCommMightex.set(lVal);

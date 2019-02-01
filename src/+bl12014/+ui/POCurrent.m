@@ -31,6 +31,9 @@ classdef POCurrent < mic.Base
         uiButtonClear
         
         dPeriod = 500/1000;
+        
+        % {bl12014.Hardware 1x1}
+        hardware
                        
     end
     
@@ -50,11 +53,15 @@ classdef POCurrent < mic.Base
                 end
             end
             
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
                 
-        
+        %{
         function connectKeithley6482(this, comm)
             
             device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
@@ -70,6 +77,7 @@ classdef POCurrent < mic.Base
             this.uiCurrent.setDevice([]);
             
         end
+        %}
         
                 
         function build(this, hParent, dLeft, dTop)
@@ -242,6 +250,9 @@ classdef POCurrent < mic.Base
                 'cLabel', 'Current', ...
                 'dWidthPadUnit', 25, ...
                 'lShowInitButton', true, ...
+                'fhGet', @() this.hardware.getKeithley6482Wafer().read(1), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'lShowLabels', false ...
             );
         end
@@ -263,6 +274,10 @@ classdef POCurrent < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', 'keithley-6482-wafer-po-current', ...
+                'fhGet', @() this.hardware.getIsConnectedKeithley6482Wafer(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Wafer(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Keithley 6482 (Wafer)' ...
             );
         

@@ -18,7 +18,6 @@ classdef Wafer < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDeltaTauPowerPmac
         % uiCommCxroHeightSensor
-        uiCommKeithley6482
         % uiCommDataTranslationMeasurPoint
         uiCommMfDriftMonitor
         
@@ -264,8 +263,6 @@ classdef Wafer < mic.Base
             dTop = dTop + dSep;
             %}
                         
-            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
             this.uiCommMfDriftMonitor.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
@@ -352,7 +349,6 @@ classdef Wafer < mic.Base
         function delete(this)
             
             delete(this.uiCommMfDriftMonitor)
-            delete(this.uiCommKeithley6482)
             delete(this.uiCommDeltaTauPowerPmac)
            %  delete(this.uiCommCxroHeightSensor)
             % delete(this.uiCommDataTranslationMeasurPoint)
@@ -472,6 +468,7 @@ classdef Wafer < mic.Base
         
             this.uiDiode = bl12014.ui.WaferDiode(...
                 'cName', [this.cName, 'diode-wafer'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
             this.uiPobCapSensors = bl12014.ui.PobCapSensors(...
@@ -488,7 +485,6 @@ classdef Wafer < mic.Base
             % this.initUiCommCxroHeightSensor();
             this.initUiCommDeltaTauPowerPmac();
             this.initUiCommDataTranslationMeasurPoint();
-            this.initUiCommKeithley6482();
             this.initUiCommMfDriftMonitor();
         
             
@@ -621,26 +617,7 @@ classdef Wafer < mic.Base
         end
         %}
         
-        function initUiCommKeithley6482(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-keithley-6482'], ...
-                'cLabel', 'Keithley 6482 (Wafer)' ...
-            );
-        
-        end
+       
         
         
         function onCloseRequestFcn(this, src, evt)

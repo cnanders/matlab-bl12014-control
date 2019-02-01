@@ -17,9 +17,7 @@ classdef Reticle < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDeltaTauPowerPmac
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommKeithley6482
-        
+       
         % {mic.ui.device.GetSetLogical 1x1}
         % uiCommDataTranslationMeasurPoint
         
@@ -153,18 +151,7 @@ classdef Reticle < mic.Base
         
         %}
         
-        %{
-        function connectKeithley6482(this, comm)
-            deviceCh1 = bl12014.device.GetNumberFromKeithley6482(comm, 1);
-            this.uiDiode.uiCurrent.setDevice(deviceCh1);
-            this.uiDiode.uiCurrent.turnOn();
-        end
-        
-        function disconnectKeithley6482(this)
-            this.uiDiode.uiCurrent.turnOff()
-            this.uiDiode.uiCurrent.setDevice([]);
-        end
-        %}
+       
         
         
         function connectDeltaTauPowerPmac(this, comm)
@@ -202,8 +189,7 @@ classdef Reticle < mic.Base
             this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommKeithley6482.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
+           
             
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
@@ -331,6 +317,7 @@ classdef Reticle < mic.Base
         
             this.uiDiode = bl12014.ui.ReticleDiode(...
                 'cName', [this.cName, 'reticle-diode'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
             
@@ -369,7 +356,6 @@ classdef Reticle < mic.Base
         
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDeltaTauPowerPmac();
-            this.initUiCommKeithley6482();
         
             addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);
 
@@ -438,26 +424,7 @@ classdef Reticle < mic.Base
         
         
         
-        function initUiCommKeithley6482(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-keithley-6482'], ...
-                'cLabel', 'Keithley 6482' ...
-            );
-        
-        end
+       
         
        
         

@@ -28,7 +28,8 @@ classdef MA < mic.Base
         uiClock
         
         
-        
+        % {bl12014.Hardware 1x1}
+        hardware
                 
     end
     
@@ -58,6 +59,10 @@ classdef MA < mic.Base
                 error('uiClock must be mic.Clock | mic.ui.Clock');
             end
  
+            
+             if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
                        
             this.init();
         
@@ -147,6 +152,7 @@ classdef MA < mic.Base
             );
         
             this.uiDiagnostics = bl12014.ui.MADiagnostics( ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
             

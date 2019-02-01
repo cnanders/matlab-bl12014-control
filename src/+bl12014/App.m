@@ -87,11 +87,7 @@ classdef App < mic.Base
         % {cxro.met5.HeightSensor 1x1}
         commCxroHeightSensor
         
-        % {keithley.Keithley6482 1x1}
-        commKeithley6482Reticle
         
-        % {keithley.Keithley6482 1x1}
-        commKeithley6482Wafer
         
         % {cxro.bl1201.beamline.BL1201CorbaProxy 1x1}
         commBL1201CorbaProxy
@@ -254,8 +250,6 @@ classdef App < mic.Base
             this.destroyAndDisconnectDataTranslationMeasurPoint();
             this.destroyAndDisconnectDeltaTauPowerPmac();
             
-            this.destroyAndDisconnectKeithley6482Reticle();
-            this.destroyAndDisconnectKeithley6482Wafer();
             this.destroyAndDisconnectMFDriftMonitor();
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
@@ -351,14 +345,9 @@ classdef App < mic.Base
             l = ~isempty(this.comm3GStoreRemotePowerSwitch2);
         end
         
-        function l = getKeithley6482Reticle(this)
-            l = ~isempty(this.commKeithley6482Reticle);
-            
-        end
         
-        function l = getKeithley6482Wafer(this)
-            l = ~isempty(this.commKeithley6482Wafer);
-        end
+        
+       
         
         function l = getCxroHeightSensor(this)
             l = ~isempty(this.commCxroHeightSensor);
@@ -884,53 +873,8 @@ classdef App < mic.Base
         
         
         
-        function initAndConnectKeithley6482Wafer(this)
-            
-            if this.getKeithley6482Wafer()
-                return
-            end
-            
-            try
-                this.commKeithley6482Wafer = keithley.Keithley6482(...
-                    'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
-                    'u16TcpipPort', 4001, ...
-                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
-                );
-            
-                % this.commKeithley6482Wafer.connect()
-                % this.commKeithley6482Wafer.identity()
-            catch mE
-                this.commKeithley6482Wafer = [];
-                cMsg = sprintf('initAndConnectKeithley6482Wafer() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                return
-            end
-            % this.uiApp.uiBeamline.connectKeithley6482(this.commKeithley6482Wafer);
-            this.uiApp.uiWafer.uiDiode.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
-            this.uiApp.uiLSIControl.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
-            this.uiApp.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer); % uses ch1
-            this.uiApp.uiScan.uiPOCurrent.connectKeithley6482(this.commKeithley6482Wafer); % uses ch1
-            
-            this.uiApp.uiTuneFluxDensity.uiDiode.connectKeithley6482(this.commKeithley6482Wafer); % uses ch2
-        end
         
-        function destroyAndDisconnectKeithley6482Wafer(this)
-            
-            if ~this.getKeithley6482Wafer()
-                return
-            end
-            
-            
-            % this.uiApp.uiBeamline.disconnectKeithley6482();
-            this.uiApp.uiWafer.uiDiode.disconnectKeithley6482();
-            this.uiApp.uiTuneFluxDensity.uiDiode.disconnectKeithley6482();
-            this.uiApp.uiLSIControl.disconnectKeithley6482();
-            this.uiApp.uiPOCurrent.disconnectKeithley6482();
-            this.uiApp.uiScan.uiPOCurrent.disconnectKeithley6482();
-            
-            this.commKeithley6482Wafer.delete();
-            this.commKeithley6482Wafer = [];
-        end
+      
         
         
         function initAndConnect3GStoreRemotePowerSwitch1(this)
@@ -981,30 +925,6 @@ classdef App < mic.Base
                         
         end
         
-        function initAndConnectKeithley6482Reticle(this)
-            
-            
-            if this.getKeithley6482Reticle()
-                return
-            end
-               
-            try
-                this.commKeithley6482Reticle = keithley.Keithley6482(...
-                    'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
-                    'u16TcpipPort', 4002, ...
-                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
-                );
-                
-            catch mE
-                this.commKeithley6482Reticle = [];
-                cMsg = sprintf('initAndConnectKeithley6482Reticle() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                return
-            end
-                        
-            this.uiApp.uiReticle.uiDiode.connectKeithley6482(this.commKeithley6482Reticle);
-                        
-        end
         
         function destroyAndDisconnect3GStoreRemotePowerSwitch1(this)
             if ~this.get3GStoreRemotePowerSwitch1()
@@ -1026,17 +946,7 @@ classdef App < mic.Base
         
         
         
-        function destroyAndDisconnectKeithley6482Reticle(this)
-            
-            if ~this.getKeithley6482Reticle()
-                return
-            end
-                            
-            this.uiApp.uiReticle.uiDiode.disconnectKeithley6482();
-            
-            this.commKeithley6482Reticle.delete();
-            this.commKeithley6482Reticle = [];
-        end
+        
         
         function initAndConnectCxroHeightSensor(this)
             
@@ -1726,17 +1636,9 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnect3GStoreRemotePowerSwitch2 ...
             );
         
-            gslcCommKeithley6482Reticle = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getKeithley6482Reticle, ...
-                'fhSetTrue', @this.initAndConnectKeithley6482Reticle, ...
-                'fhSetFalse', @this.destroyAndDisconnectKeithley6482Reticle ...
-            );
+            
         
-            gslcCommKeithley6482Wafer = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getKeithley6482Wafer, ...
-                'fhSetTrue', @this.initAndConnectKeithley6482Wafer, ...
-                'fhSetFalse', @this.destroyAndDisconnectKeithley6482Wafer ...
-            );
+            
         
         
             gslcCommDctCorbaProxy = bl12014.device.GetSetLogicalConnect(...
@@ -1864,17 +1766,9 @@ classdef App < mic.Base
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
             
-            this.uiApp.uiReticle.uiCommKeithley6482.setDevice(gslcCommKeithley6482Reticle)
-            this.uiApp.uiReticle.uiCommKeithley6482.turnOn()
+         
+            
            
-            this.uiApp.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            this.uiApp.uiPOCurrent.uiCommKeithley6482.turnOn();
-            
-            this.uiApp.uiTuneFluxDensity.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            this.uiApp.uiTuneFluxDensity.uiCommKeithley6482.turnOn();
-            
-            this.uiApp.uiScan.uiPOCurrent.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            this.uiApp.uiScan.uiPOCurrent.uiCommKeithley6482.turnOn();
             
             % Wafer
             this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
@@ -1883,8 +1777,6 @@ classdef App < mic.Base
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
 
-            this.uiApp.uiWafer.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer)
-            this.uiApp.uiWafer.uiCommKeithley6482.turnOn()
             
             this.uiApp.uiWafer.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
             this.uiApp.uiWafer.uiCommMfDriftMonitor.turnOn();
@@ -1918,8 +1810,7 @@ classdef App < mic.Base
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
                 this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
                 
-                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.setDevice(gslcCommKeithley6482Wafer);
-                this.uiApp.uiLSIControl.uicommWaferDoseMonitor.turnOn();
+              
 
             catch mE
                 disp('App.m could not connect uiLSIControl');
@@ -1945,8 +1836,7 @@ classdef App < mic.Base
             % Focus Sensor
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.setDevice(gslcCommSmarActRotary);
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.turnOn();
-            this.uiApp.uiFocusSensor.uiCommKeithley6482.setDevice(gslcCommKeithley6482Wafer);
-            this.uiApp.uiFocusSensor.uiCommKeithley6482.turnOn();
+            
             this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
             this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.turnOn();
             

@@ -8,12 +8,16 @@ classdef MADiagnostics < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommNewFocusModel8742
+        
+        uiCommKeithley6482
 
         % {mic.ui.device.GetSetNumber 1x1}
         uiStageMAYag
         
         % {mic.ui.device.GetSetNumber 1x1}
         uiStageWheel
+        % {mic.ui.device.GetNumber 1x1}
+        uiCurrent
         
         uiButtonMALeft
         uiButtonMARight
@@ -26,8 +30,7 @@ classdef MADiagnostics < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 710
-        dHeight = 160
+        
         hParent
         hPanel
         
@@ -43,6 +46,9 @@ classdef MADiagnostics < mic.Base
         
         % {newfocus.Model8742 1x1}
         comm
+        
+        % {bl12014.Hardware 1x1}
+        hardware
         
     end
     
@@ -60,6 +66,14 @@ classdef MADiagnostics < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();
@@ -105,7 +119,7 @@ classdef MADiagnostics < mic.Base
             
             
             dWidthPanel = 480;
-            dHeightPanel = 120;
+            dHeightPanel = 190;
             this.hPanel = uipanel( ...
                 'Parent', hParent, ...
                 'Units', 'pixels', ...
@@ -123,6 +137,9 @@ classdef MADiagnostics < mic.Base
             dLeft = 10;
             
             this.uiCommNewFocusModel8742.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiCommKeithley6482.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 24 + 10;
                         
             this.uiStageMAYag.build(this.hPanel, dLeft, dTop);
@@ -137,7 +154,10 @@ classdef MADiagnostics < mic.Base
             this.uiButtonWheelLeft.build(this.hPanel, dLeftButton, dTop, dWidthButton, 24);
             this.uiButtonWheelRight.build(this.hPanel, dLeftButton + dWidthButton, dTop, dWidthButton, 24);
             
+            
             dTop = dTop + dSep;
+            
+            this.uiCurrent.build(this.hPanel, dLeft, dTop);
             
             if this.uiCommNewFocusModel8742.get() == true
                 this.setColorOfBackgroundToDefault();
@@ -271,7 +291,30 @@ classdef MADiagnostics < mic.Base
             );
         end
         
+        function initUiCommKeithley6482(this)
+            
+             % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
         
+            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 180, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'cName', [this.cName, 'comm-keithley-6482-reticle'], ...
+                'fhGet', @() this.hardware.getIsConnectedKeithley6482Reticle(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Reticle(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cLabel', 'Keithley 6482 (Reticle)' ...
+            );
+        
+        end
         
         
         function initUiCommNewFocusModel8742(this)
@@ -296,14 +339,43 @@ classdef MADiagnostics < mic.Base
         
         end
         
+        function initUiCurrent(this)
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-number', ...
+                'config-reticle-current.json' ...
+            );
+        
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+            
+            this.uiCurrent = mic.ui.device.GetNumber(...
+                'clock', this.clock, ...
+                'lShowLabels', false, ...
+                'dWidthName', 115, ...
+                'dWidthPadUnit', 120, ...
+                'fhGet', @() this.hardware.getKeithley6482Reticle().read(2), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'keithley-6482-reticle'], ...
+                'config', uiConfig, ...
+                'cLabel', 'Current' ...
+            );
+        end
+        
+        
         
 
         function init(this)
             this.msg('init');
             
             this.initUiCommNewFocusModel8742();
+            this.initUiCommKeithley6482();
             this.initUiStageMAYag();
             this.initUiStageWheel();
+            this.initUiCurrent();
             
             this.uiButtonMALeft = mic.ui.common.Button(...
                 'cText', '<<', ...

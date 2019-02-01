@@ -42,6 +42,9 @@ classdef FocusSensor < mic.Base
                       
         clock
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
         
@@ -65,6 +68,12 @@ classdef FocusSensor < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
             this.init();
             
         end
@@ -253,7 +262,11 @@ classdef FocusSensor < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', sprintf('%s-keithley-6482-wafer', this.cName), ...
+                'fhGet', @() this.hardware.getIsConnectedKeithley6482Wafer(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Wafer(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, '-keithley-6482-wafer'], ...
                 'cLabel', 'Keithley 6482 (Wafer)' ...
             );
         

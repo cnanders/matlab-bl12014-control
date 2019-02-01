@@ -63,6 +63,14 @@ classdef Hardware < mic.Base
         
         % {keithley.Keithley6482 1x1}
         commKeithley6482Wafer
+        commKeithley6482WaferVirtual
+        lIsConnectedKeithley6482Wafer = false
+        
+        commKeithley6482Reticle
+        commKeithley6482ReticleVirtual
+        lIsConnectedKeithley6482Reticle = false
+        
+        
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
@@ -159,17 +167,63 @@ classdef Hardware < mic.Base
         end
         
         % WAFER DOSE MONITOR (KEITHLEY 6482)
-        function comm = getKeithleyWafer(this)
-            if isempty(this.commKeithley6482Wafer)
-               this.commKeithley6482Wafer = keithley.Keithley6482(...
-                    'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
-                    'u16TcpipPort', 4001, ...
-                    'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
-                );
-                this.commKeithley6482Wafer.connect()
-            end
-            comm = this.commKeithley6482Wafer;
+        
+        
+        function l = getIsConnectedKeithley6482Wafer(this)
+            l = this.lIsConnectedKeithley6482Wafer;
         end
+        
+        function setIsConnectedKeithley6482Wafer(this, lVal)
+           this.lIsConnectedKeithley6482Wafer = lVal;
+        end
+        
+        function comm = getKeithley6482Wafer(this)
+            
+            if this.lIsConnectedKeithley6482Wafer
+                
+                if isempty(this.commKeithley6482Wafer)
+                   this.commKeithley6482Wafer = keithley.Keithley6482(...
+                        'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
+                        'u16TcpipPort', 4001, ...
+                        'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+                    );
+                    this.commKeithley6482Wafer.connect()
+                end
+                comm = this.commKeithley6482Wafer;
+            else
+                comm = this.commKeithley6482WaferVirtual;
+                
+            end
+        end
+        
+        
+        function l = getIsConnectedKeithley6482Reticle(this)
+            l = this.lIsConnectedKeithley6482Reticle;
+        end
+        
+        function setIsConnectedKeithley6482Reticle(this, lVal)
+           this.lIsConnectedKeithley6482Reticle = lVal;
+        end
+        
+        function comm = getKeithley6482Reticle(this)
+            
+            if this.lIsConnectedKeithley6482Reticle
+                
+                if isempty(this.commKeithley6482Reticle)
+                   this.commKeithley6482Reticle = keithley.Keithley6482(...
+                        'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
+                        'u16TcpipPort', 4002, ...
+                        'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+                    );
+                    this.commKeithley6482Reticle.connect()
+                end
+                comm = this.commKeithley6482Reticle;
+            else
+                comm = this.commKeithley6482ReticleVirtual;
+                
+            end
+        end
+        
         
         % DRIFT MONITOR (%requires a clock)
         function comm = getMFDriftMonitor(this)
@@ -210,9 +264,14 @@ classdef Hardware < mic.Base
         
         
         %% Delete fcns
-        function deleteKeithleyWafer(this)
+        function deleteKeithley6482Wafer(this)
             this.commKeithley6482Wafer.delete();
             this.commKeithley6482Wafer = [];
+        end
+        
+        function deleteKeithley6482Reticle(this)
+            this.commKeithley6482Reticle.delete();
+            this.commKeithley6482Reticle = [];
         end
             
         function deleteMFDriftMonitor(this)
@@ -246,6 +305,9 @@ classdef Hardware < mic.Base
             
             
             this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
+            this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
+            this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
+
         end
         
   
