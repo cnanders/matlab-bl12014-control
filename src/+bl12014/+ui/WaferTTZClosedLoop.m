@@ -28,6 +28,8 @@ classdef WaferTTZClosedLoop < mic.Base
         stConfigDat
         hProgress
         
+        uiSequenceLevelWafer
+        
         uiCLTiltX
         uiCLTiltY
         uiCLZ
@@ -40,7 +42,7 @@ classdef WaferTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 700
+        dWidth = 850
         dHeight = 95       
         cName = 'wafer-coarse-stage-ttz-closed-loop'
         lShowRange = false
@@ -79,6 +81,8 @@ classdef WaferTTZClosedLoop < mic.Base
         
         end
         
+        
+        % DEPRECATED 1/31/19
         function lVal = isLeveled(this)
             
             lVal =  abs(this.stConfigDat.tiltX.value - this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) <= ...
@@ -88,20 +92,20 @@ classdef WaferTTZClosedLoop < mic.Base
                     abs(this.stConfigDat.Z.value - this.uiCLZ.getValCal(this.stConfigDat.Z.unit)) <= ...
                     this.stConfigDat.Z.displayTol;
         end
-        
+         % DEPRECATED 1/31/19
         function lVal = isMissing(this)
             lVal = abs(this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) >= 887000 ||...
                     abs(this.uiCLTiltY.getValCal(this.stConfigDat.tiltY.unit)) >= 887000;
             
         end
-        
+         % DEPRECATED 1/31/19
         function lVal = isDriftMonitorOff(this)
             % as a proxy, we'll detect if the values are zero:
             lVal = this.uiCLTiltX.getValCal('urad') == 0 && ...
                     this.uiCLTiltY.getValCal('urad') == 0 && ...
                     this.uiCLZ.getValCal('nm') == 0;
         end
-        
+         % DEPRECATED 1/31/19
         function updateButtonColor(this)
             if (this.isLeveled())
                 this.uibLevel.setColor([.85, 1, .85]);
@@ -120,7 +124,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
         end
         
-        
+         % DEPRECATED 1/31/19
         function onLevel(this)
             
             if this.isMissing()
@@ -167,7 +171,7 @@ classdef WaferTTZClosedLoop < mic.Base
                                         );
             this.hLevelScan.start();
         end
-        
+         % DEPRECATED 1/31/19
         function setUIFromStoreandGo(this, ui, cAxisName)
             % Load values from config store:
             dVal = this.stConfigDat.(cAxisName).value;
@@ -374,7 +378,10 @@ classdef WaferTTZClosedLoop < mic.Base
 
             
             this.uiCLZ.build(this.hPanel, dLeft, dTop);
-            this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+%             this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+            
+            this.uiSequenceLevelWafer.build(this.hPanel, dLeft + 590, dTop, 225);
+
             
             dTop = dTop + dSep;
             
@@ -509,6 +516,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
             cDirThis = fileparts(mfilename('fullpath'));
             
+            
            
 
             % Init config
@@ -517,11 +525,26 @@ classdef WaferTTZClosedLoop < mic.Base
             % Init button:
             this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Wafer');
             
+            
+            
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
             
-             this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
+            this.uiSequenceLevelWafer = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-task-sequence-level-wafer'], ...
+                'task', bl12014.Tasks.createSequenceLevelWafer(...
+                    [this.cName, 'task-sequence-level-wafer'], ...
+                    this.uiCLTiltX, ...
+                    this.uiCLTiltY, ...
+                    this.uiCLZ, ...
+                    this.stConfigDat, ...
+                    this.clock ...
+                 ), ...
+                'clock', this.uiClock ...
+            );
+            
+            this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
              
         end
         

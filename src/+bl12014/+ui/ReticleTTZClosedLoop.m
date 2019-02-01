@@ -24,6 +24,7 @@ classdef ReticleTTZClosedLoop < mic.Base
         stConfigDat
         hProgress
        
+        uiSequenceLevelReticle
         
         uiCLTiltX
         uiCLTiltY
@@ -37,7 +38,7 @@ classdef ReticleTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 700
+        dWidth = 850
         dHeight = 110        
         cName = 'reticle-coarse-stage-ttz-closed-loop'
         lShowRange = false
@@ -309,8 +310,11 @@ classdef ReticleTTZClosedLoop < mic.Base
 
             
             this.uiCLZ.build(this.hPanel, dLeft, dTop);
-            this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+%             this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
 
+            this.uiSequenceLevelReticle.build(this.hPanel, dLeft + 590, dTop, 225);
+
+                        
             dTop = dTop + dSep;
             
             this.uiCLTiltX.build(this.hPanel, dLeft, dTop);
@@ -456,6 +460,19 @@ classdef ReticleTTZClosedLoop < mic.Base
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
+            
+             this.uiSequenceLevelReticle = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-task-sequence-level-reticle'], ...
+                'task', bl12014.Tasks.createSequenceLevelReticle(...
+                    [this.cName, 'task-sequence-level-reticle'], ...
+                    this.uiCLTiltX, ...
+                    this.uiCLTiltY, ...
+                    this.uiCLZ, ...
+                    this.stConfigDat, ...
+                    this.clock ...
+                 ), ...
+                'clock', this.uiClock ...
+            );
         end
         
         
