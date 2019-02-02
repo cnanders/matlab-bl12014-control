@@ -188,23 +188,15 @@ classdef WaferTTZClosedLoop < mic.Base
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
         % fhIsReadyMotor, dTolearnce
         
-        function device = createCLZdevice(this, commPPMAC, commDriftMonitor)
+        function device = createCLZdevice(this)
+            
             mm2nm           = 1e6;
             
-            
-            % Leverage existing PPMAC device implementation for isReady,
-            % possibly could use the UIs for this too, 
-            deviceCoarseZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
-                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            deviceFineZ = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
-                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
-            
-            
-            fhIsReadyMotor  = @() deviceCoarseZ.isReady() & deviceFineZ.isReady();
+            fhIsReadyMotor  = @() this.uiCoarseZ.isReady() & this.uiFineZ.isReady();
             dTolerance      = this.dZTol;
            
-            fhGetSensor     = @()commDriftMonitor.getSimpleZ();
-            fhGetMotor      = @()deviceFineZ.get() * mm2nm;
+            fhGetSensor     = @() this.hardware.getMFDriftMonitor().getSimpleZ();
+            fhGetMotor      = @() this.uiFineZ.getValCal('mm') * mm2nm;
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
             
@@ -263,18 +255,13 @@ classdef WaferTTZClosedLoop < mic.Base
             
         end
         
-        function device = createCLRxdevice(this,  commPPMAC, commDriftMonitor)
+        function device = createCLRxdevice(this)
             mrad2urad = 1e3;
-            
-            deviceTiltXPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
-                 bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
-            
-            fhGetMotor      = @()deviceTiltXPPMAC.get(); % CNA 2019.02.01 can this be this.uiTiltX.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal);
-            fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltXPPMAC, this.uiTiltX);
+            fhGetMotor      = @() this.uiTiltX.getValCal('urad'); % CNA 2019.02.01 can this be this.uiTiltX.getValCal('urad')?
+            fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
+            fhIsReadyMotor  = @() this.uiTiltX.isReady();
             dTolerance      = this.dTiltXTol;
-            fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 1) * mrad2urad;   
-            
+            fhGetSensor     = @()this.getFreshHSValue(this.hardware.getMFDriftMonitor(), 1) * mrad2urad;   
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
                 this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
@@ -282,9 +269,10 @@ classdef WaferTTZClosedLoop < mic.Base
                 'dDelay', 0.5);
         end
         
-        function device = createCLRydevice(this,  commPPMAC, commDriftMonitor)
+        function device = createCLRydevice(this)
             mrad2urad = 1e3;
             
+            %{
             deviceTiltYPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
                  bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
             
@@ -293,7 +281,14 @@ classdef WaferTTZClosedLoop < mic.Base
             fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltYPPMAC, this.uiTiltY);
             dTolerance      = this.dTiltYTol;
             fhGetSensor     = @()this.getFreshHSValue(commDriftMonitor, 2) * mrad2urad; 
+            %}
             
+            
+            fhGetMotor      = @() this.uiTiltY.getValCal('urad');% CNA 2019.02.01 can this be this.uiTiltY.getValCal('urad')?
+            fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
+            fhIsReadyMotor  = @() this.uiTiltY.isReady();
+            dTolerance      = this.dTiltYTol;
+            fhGetSensor     = @() this.getFreshHSValue(this.hardware.getMFDriftMonitor(), 2) * mrad2urad; 
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
                 this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
@@ -314,46 +309,6 @@ classdef WaferTTZClosedLoop < mic.Base
             ui.setDestCalDisplay(dVal);
             ui.moveToDest();
         end
-        
-        
-        function connect(this, commPPMAC, commDriftMonitor)
-
-            % Represent devices implementations from Closed loop control
-            deviceCLZ  = this.createCLZdevice(commPPMAC, commDriftMonitor);
-            deviceCLRx = this.createCLRxdevice(commPPMAC, commDriftMonitor);
-            deviceCLRy = this.createCLRydevice(commPPMAC, commDriftMonitor);
-            
-            % Set Devices
-            this.uiCLZ.setDevice(deviceCLZ);
-            this.uiCLTiltX.setDevice(deviceCLRx);
-            this.uiCLTiltY.setDevice(deviceCLRy);
-            
-            % Turn on
-            this.uiCLZ.turnOn();
-            this.uiCLTiltX.turnOn();
-            this.uiCLTiltY.turnOn();
-            
-            
-%             this.uiCLZ.syncDestination();
-%             this.uiCLTiltX.syncDestination();
-%             this.uiCLTiltY.syncDestination();
-            
-        end
-        
-        
-        function disconnect(this)
-            
-            this.uiCLZ.turnOff();
-            this.uiCLTiltX.turnOff();
-            this.uiCLTiltY.turnOff();
-                        
-            this.uiCLZ.setDevice([]);
-            this.uiCLTiltX.setDevice([]);
-            this.uiCLTiltY.setDevice([]);
-
-            
-        end
-
         
         function build(this, hParent, dLeft, dTop)
             
@@ -434,7 +389,6 @@ classdef WaferTTZClosedLoop < mic.Base
         
         function initUiZ(this)
             
-
         
          cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -445,6 +399,8 @@ classdef WaferTTZClosedLoop < mic.Base
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
+        
+            device  = this.createCLZdevice();
             
             this.uiCLZ = mic.ui.device.GetSetNumber(...
                 'clock', this.uiClock, ...
@@ -454,6 +410,11 @@ classdef WaferTTZClosedLoop < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @device.get, ...
+                'fhSet', @device.set, ...
+                'fhIsReady', @device.isReady, ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'HS Simple Z' ...
             );
         
@@ -472,6 +433,8 @@ classdef WaferTTZClosedLoop < mic.Base
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
+        
+            device = this.createCLRxdevice();
             
             this.uiCLTiltX = mic.ui.device.GetSetNumber(...
                 'clock', this.uiClock, ...
@@ -481,6 +444,11 @@ classdef WaferTTZClosedLoop < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @device.get, ...
+                'fhSet', @device.set, ...
+                'fhIsReady', @device.isReady, ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'HS Cal Rx' ...
             );
         end
@@ -496,6 +464,8 @@ classdef WaferTTZClosedLoop < mic.Base
             uiConfig = mic.config.GetSetNumber(...
                 'cPath',  cPathConfig ...
             );
+        
+            device = this.createCLRydevice();
             
             this.uiCLTiltY = mic.ui.device.GetSetNumber(...
                 'clock', this.uiClock, ...
@@ -505,6 +475,11 @@ classdef WaferTTZClosedLoop < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @device.get, ...
+                'fhSet', @device.set, ...
+                'fhIsReady', @device.isReady, ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'HS Cal Rx' ...
             );
         end

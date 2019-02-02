@@ -14,17 +14,14 @@ cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
-cDirRigol = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src');
-addpath(cDirRigol)
-
-
-hardware = bl12014.Hardware();
-waferExposureHistory = bl12014.WaferExposureHistory();
-waferExposureHistory.addFakeExposures();
-
 
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
+
+hardware = bl12014.Hardware();
+hardware.setClock(clock);
+waferExposureHistory = bl12014.WaferExposureHistory();
+waferExposureHistory.addFakeExposures();
 
 ui = bl12014.ui.Wafer(...
     'clock', clock, ...

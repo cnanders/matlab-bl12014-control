@@ -78,7 +78,9 @@ classdef Hardware < mic.Base
         lIsConnectedDeltaTauPowerPmac = false
         
         % {MFDriftMonitor}
-        commMFDriftMonitor 
+        commMFDriftMonitor
+        commMFDriftMonitorVirtual
+        lIsConnectedMFDriftMonitor = false
         
         commRigolDG1000Z
         commRigolDG1000ZVirtual
@@ -235,27 +237,36 @@ classdef Hardware < mic.Base
             end
         end
         
+        function l = getIsConnectedMFDriftMonitor(this)
+            l = this.lIsConnectedMFDriftMonitor;
+        end
         
-        % DRIFT MONITOR (%requires a clock)
+        function setIsConnectedMFDriftMonitor(this, lVal)
+           this.lIsConnectedMFDriftMonitor = lVal;
+        end
+        
         function comm = getMFDriftMonitor(this)
-            if isempty(this.jMet5Instruments)
-                this.getjMet5Instruments();
-            end
-            % If first time, establish link with Drift Monitor middleware
-            if isempty(this.commMFDriftMonitor)
-                % Set up drift monitor bridge
-                this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                'jMet5Instruments', this.jMet5Instruments, ...
-                                 'clock', this.clock);
-            end
             
-            comm = this.commMFDriftMonitor;
+            if this.lIsConnectedMFDriftMonitor
+                if isempty(this.jMet5Instruments)
+                    this.getjMet5Instruments();
+                end
+                % If first time, establish link with Drift Monitor middleware
+                if isempty(this.commMFDriftMonitor)
+                    % Set up drift monitor bridge
+                    this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
+                                    'jMet5Instruments', this.jMet5Instruments, ...
+                                     'clock', this.clock);
+                end
+            
+                comm = this.commMFDriftMonitor;
+            else
+                comm = this.commMFDriftMonitorVirtual;
+            end
         end
         
         
-        function comm = getMFDriftMonitorVirtual(~)
-            comm = bl12014.hardwareAssets.virtual.VirtualMFDriftMonitor();
-        end
+        
         
         % LSI HEXAPOD
 %         function comm = getLSIHexapod(this)
@@ -351,6 +362,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
+            this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.VirtualMFDriftMonitor();
 
         end
         
