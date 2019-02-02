@@ -211,7 +211,7 @@ classdef WaferTTZClosedLoop < mic.Base
             dTolerance      = this.dZTol;
            
             fhGetSensor     = @() this.hardware.getMFDriftMonitor().getSimpleZ();
-            fhGetMotor      = @() this.uiFineZ.getValCal('mm') * mm2nm;
+            fhGetMotor      = @() this.uiFineZ.getValCal('nm');
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
             

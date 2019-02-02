@@ -238,31 +238,40 @@ classdef Hardware < mic.Base
         end
         
         function l = getIsConnectedMFDriftMonitor(this)
-            l = this.lIsConnectedMFDriftMonitor;
+            
+            % l = this.lIsConnectedMFDriftMonitor;
+            l = this.getMFDriftMonitor().isConnected();
         end
         
         function setIsConnectedMFDriftMonitor(this, lVal)
-           this.lIsConnectedMFDriftMonitor = lVal;
+           % this.lIsConnectedMFDriftMonitor = lVal;
+           mic.Utils.ternEval(...
+               lVal, ...
+               @() this.getMFDriftMonitor().connect(), ...
+               @() this.getMFDriftMonitor().disconnect() ...
+           )
         end
         
         function comm = getMFDriftMonitor(this)
             
-            if this.lIsConnectedMFDriftMonitor
-                if isempty(this.jMet5Instruments)
-                    this.getjMet5Instruments();
-                end
-                % If first time, establish link with Drift Monitor middleware
-                if isempty(this.commMFDriftMonitor)
-                    % Set up drift monitor bridge
-                    this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                    'jMet5Instruments', this.jMet5Instruments, ...
-                                     'clock', this.clock);
-                end
+            % This one is set up differently than some of the others,
+            % it has virtualization built-in.  That is a little smarter,
+            % actually!
             
-                comm = this.commMFDriftMonitor;
-            else
-                comm = this.commMFDriftMonitorVirtual;
+            if isempty(this.jMet5Instruments)
+                this.getjMet5Instruments();
             end
+            
+            % If first time, establish link with Drift Monitor middleware
+            if isempty(this.commMFDriftMonitor)
+                % Set up drift monitor bridge
+                this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
+                                'jMet5Instruments', this.jMet5Instruments, ...
+                                 'clock', this.clock);
+            end
+
+            comm = this.commMFDriftMonitor;
+            
         end
         
         
@@ -362,7 +371,8 @@ classdef Hardware < mic.Base
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
-            this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
+            % this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
+                        
 
         end
         
