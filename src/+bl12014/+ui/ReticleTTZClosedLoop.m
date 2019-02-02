@@ -55,6 +55,9 @@ classdef ReticleTTZClosedLoop < mic.Base
         hPanel
         
         dWidthName = 70
+        
+        % {bl12014.Hardware 1x1}
+        hardware
     
         
     end
@@ -68,6 +71,18 @@ classdef ReticleTTZClosedLoop < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();
@@ -196,9 +211,9 @@ classdef ReticleTTZClosedLoop < mic.Base
             %}
             
             
-            
+            % CA 2019.02.01
             fhGetMotor      = @() this.uiCoarseZ.getValCal('um');
-            fhSetMotor      = @(dVal)  this.uiCoarseZ.setDestCalAndGo(dVal, 'um');
+            fhSetMotor      = @(dVal) this.uiCoarseZ.setDestCalAndGo(dVal, 'um');
             fhIsReadyMotor  = @() this.uiCoarseZ.isReady();
             dTolerance      = this.dZTol;
             fhGetSensor     = @() this.getCapSensorRxRyZ(1);
@@ -224,7 +239,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             fhGetSensor     = @()this.getCapSensorRxRyZ(2);
             %}
             
-            
+            % CA 2019.02.01
             fhGetMotor      = @() this.uiTiltX.getValCal('urad');
             fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo( dVal, 'urad');
             fhIsReadyMotor  = @() this.uiTiltX.isReady();
@@ -252,6 +267,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             fhGetSensor     = @()this.getCapSensorRxRyZ(3);
             %}
             
+            % CA 2019.02.01
             fhGetMotor      = @() this.uiTiltY.getValCal('urad');
             fhSetMotor      = @(dVal) this.uiTiltY.setDestCalAndGo(dVal, 'urad');
             fhIsReadyMotor  = @() this.uiTiltY.isReady();
@@ -273,45 +289,6 @@ classdef ReticleTTZClosedLoop < mic.Base
             ui.moveToDest();
         end
         
-        
-        function connect(this, commPPMAC)
-
-            % Represent devices implementations from Closed loop control
-            deviceCLZ  = this.createCLZdevice(commPPMAC);
-            deviceCLRx = this.createCLRxdevice(commPPMAC);
-            deviceCLRy = this.createCLRydevice(commPPMAC);
-            
-            % Set Devices
-            this.uiCLZ.setDevice(deviceCLZ);
-            this.uiCLTiltX.setDevice(deviceCLRx);
-            this.uiCLTiltY.setDevice(deviceCLRy);
-            
-            % Turn on
-            this.uiCLZ.turnOn();
-            this.uiCLTiltX.turnOn();
-            this.uiCLTiltY.turnOn();
-            
-            
-%             this.uiCLZ.syncDestination();
-%             this.uiCLTiltX.syncDestination();
-%             this.uiCLTiltY.syncDestination();
-            
-        end
-        
-        
-        function disconnect(this)
-            
-            this.uiCLZ.turnOff();
-            this.uiCLTiltX.turnOff();
-            this.uiCLTiltY.turnOff();
-                        
-            this.uiCLZ.setDevice([]);
-            this.uiCLTiltX.setDevice([]);
-            this.uiCLTiltY.setDevice([]);
-
-            
-        end
-
         
         function build(this, hParent, dLeft, dTop)
             

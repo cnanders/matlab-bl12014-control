@@ -362,7 +362,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
-            this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.VirtualMFDriftMonitor();
+            this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
 
         end
         

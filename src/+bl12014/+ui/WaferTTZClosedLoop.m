@@ -62,6 +62,9 @@ classdef WaferTTZClosedLoop < mic.Base
         hPanel
         
         dWidthName = 70
+        
+        % {bl12014.Hardware 1x1}
+        hardware
     
         
     end
@@ -75,6 +78,18 @@ classdef WaferTTZClosedLoop < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();

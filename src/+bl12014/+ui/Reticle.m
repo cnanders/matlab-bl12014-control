@@ -92,18 +92,6 @@ classdef Reticle < mic.Base
             
         end
           
-        
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            this.ReticleTTZClosedLoop.connect(comm);
-        end
-        
-        function disconnectDeltaTauPowerPmac(this)
-
-            this.ReticleTTZClosedLoop.disconnect();
-        end
-        
-        
                 
         function build(this, hParent, dLeft, dTop)
             this.hParent = hParent;
