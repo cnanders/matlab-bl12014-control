@@ -68,8 +68,7 @@ classdef App < mic.Base
         
         commSmarActRotary
         
-        % {deltaTau.PowerPmac 1x1}
-        commDeltaTauPowerPmac
+        
         
         % {MFDriftMonitor}
         commMFDriftMonitor
@@ -248,7 +247,6 @@ classdef App < mic.Base
             this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
-            this.destroyAndDisconnectDeltaTauPowerPmac();
             
             this.destroyAndDisconnectMFDriftMonitor();
             this.destroyAndDisconnectMicronixMmc103();
@@ -328,10 +326,7 @@ classdef App < mic.Base
             l = ~isempty(this.commGalilM143);
         end
         
-        function l = getDeltaTauPowerPmac(this)
-            l = ~isempty(this.commDeltaTauPowerPmac);
-            
-        end
+        
         
         function l = getDataTranslationMeasurPoint(this)
             l = ~isempty(this.commDataTranslationMeasurPoint);
@@ -668,163 +663,17 @@ classdef App < mic.Base
         
 
         
-        function connectCommDeltaTauPowerPmacToUiLsi(this, comm, ui)
-            
-            % CA returning because this is crashing my reticle and wafer UI
-            
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceWorkingMode = GetSetTextFromDeltaTauPowerPmac(comm, GetSetTextFromDeltaTauPowerPmac.cTYPE_WORKING_MODE);
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
-            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
-            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
-           
-            % Set LSI reticle axis control
-            ui.setReticleAxisDevice(deviceCoarseX, 1);
-            ui.setReticleAxisDevice(deviceCoarseY, 2);
-            ui.setReticleAxisDevice(deviceCoarseZ, 3);
-            ui.setReticleAxisDevice(deviceCoarseTiltX, 4);
-            ui.setReticleAxisDevice(deviceCoarseTiltY, 5);
-            ui.setReticleAxisDevice(deviceFineX, 6);
-            ui.setReticleAxisDevice(deviceFineY, 7);
-            
-            
-            deviceWaferX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
-            deviceWaferY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
-            deviceWaferZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            
-            % Set LSI wafer control
-            ui.setWaferAxisDevice(deviceWaferX, 1);
-            ui.setWaferAxisDevice(deviceWaferY, 2);
-            ui.setWaferAxisDevice(deviceWaferZ, 3);
-        end
-         function connectCommDeltaTauPowerPmacToDM(this, comm, ui)
-            
-            % CA returning because this is crashing my reticle and wafer UI
-            
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Y);
-
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
-
-            % Set dm
-            ui.setWaferAxisDevice(deviceCoarseZ, 1);
-            ui.setWaferAxisDevice(deviceCoarseTiltX, 2);
-            ui.setWaferAxisDevice(deviceCoarseTiltY, 3);
-            
-            ui.setWaferAxisDeviceXY(deviceCoarseX, 1);
-            ui.setWaferAxisDeviceXY(deviceCoarseY, 2);
-            
-         end
+       
+         
         
         
-        function connectCommDeltaTauPowerPmacToUiPowerPmacStatus(this, comm, ui)
-
-            for m = 1 : length(ui.ceceTypes)
-                for n = 1 : length(ui.ceceTypes{m}) 
-                    device = bl12014.device.GetLogicalFromDeltaTauPowerPmac(...
-                        comm, ...
-                        ui.ceceTypes{m}{n}...
-                    );
-                    ui.uiGetLogicals{m}{n}.setDevice(device);
-                    ui.uiGetLogicals{m}{n}.turnOn();
-                    % fprintf('connectCommDeltaTauPowerPmacToUiPowerPmacStatus %s\n', ui.ceceTypes{m}{n});
-                end
-            end
-        end
         
         
-        function initAndConnectDeltaTauPowerPmac(this)
-           
-            
-            if this.getDeltaTauPowerPmac()
-                return
-            end
-            
-            try
-                this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
-                    'cHostname', this.cTcpipDeltaTau ...
-                );
-                this.commDeltaTauPowerPmac.init();
-            catch mE
-                this.commDeltaTauPowerPmac = [];
-                cMsg = sprintf('initAndConnectDeltaTauPowerPmac %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-               
-                return
-            end
-            
-            this.uiApp.uiReticle.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiWafer.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiPowerPmacStatus.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiTuneFluxDensity.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            this.uiApp.uiPowerPmacHydraMotMin.connectDeltaTauPowerPmac(this.commDeltaTauPowerPmac);
-            
-            % RYAN WILL REPLACE
-            this.connectCommDeltaTauPowerPmacToUiLsi(this.commDeltaTauPowerPmac, this.uiApp.uiLSIControl);
-            this.connectCommDeltaTauPowerPmacToDM(this.commDeltaTauPowerPmac, this.uiApp.uiDriftMonitor);
-        end
         
-        function disconnectCommDeltaTauPowerPmacFromUiLsi(this, ui)
-            for k = 1:7
-                ui.disconnectReticleAxisDevice(k);
-            end
-            for k = 1:3
-                ui.disconnectWaferAxisDevice(k);
-            end
-        end
         
-        function disconnectCommDeltaTauPowerPmacFromUiDM(this, ui)
-            for k = 1:3
-                ui.disconnectWaferAxisDevice(k);
-            end
-            for k = 1:2
-                ui.disconnectWaferAxisDeviceXY(k);
-            end
-        end
-
         
-        function destroyAndDisconnectDeltaTauPowerPmac(this)
-
-            this.msg('destroyAndDisconnectDeltaTauPowerPmac', this.u8_MSG_TYPE_INFO);
-            
-            if ~this.getDeltaTauPowerPmac()
-                return
-            end
-                      
-            this.uiApp.uiReticle.disconnectDeltaTauPowerPmac()
-            this.uiApp.uiWafer.disconnectDeltaTauPowerPmac();
-            this.uiApp.uiPowerPmacStatus.disconnectDeltaTauPowerPmac()
-            this.uiApp.uiTuneFluxDensity.disconnectDeltaTauPowerPmac();
-            this.uiApp.uiPowerPmacHydraMotMin.disconnectDeltaTauPowerPmac();
-            
-            % FIXME
-            this.disconnectCommDeltaTauPowerPmacFromUiLsi(this.uiApp.uiLSIControl);
-            this.disconnectCommDeltaTauPowerPmacFromUiDM(this.uiApp.uiDriftMonitor);
-               
-            try
-                this.commDeltaTauPowerPmac.delete();
-                this.commDeltaTauPowerPmac = [];
-            catch mE
-                cMsg = sprintf('destroyAndDisconnectDeltaTauPowerPmac() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-            end
-            
-        end
+        
+        
         
         
         function initAndConnectExitSlit(this)
@@ -1592,12 +1441,7 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectPIMTECamera ...
             );
         
-            gslcCommDeltaTauPowerPmac = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getDeltaTauPowerPmac, ...
-                'fhSetTrue', @this.initAndConnectDeltaTauPowerPmac, ...
-                'fhSetFalse', @this.destroyAndDisconnectDeltaTauPowerPmac ...
-            );
-        
+            
             gslcCommDataTranslationMeasurPoint = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getDataTranslationMeasurPoint, ...
                 'fhSetTrue', @this.initAndConnectDataTranslationMeasurPoint, ...
@@ -1757,22 +1601,10 @@ classdef App < mic.Base
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)
             this.uiApp.uiVibrationIsolationSystem.uiCommGalil.turnOn();
             
-            this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiTuneFluxDensity.uiCommDeltaTauPowerPmac.turnOn();
             
-            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiPowerPmacHydraMotMin.uiCommDeltaTauPowerPmac.turnOn();
             
-            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiReticle.uiCommDeltaTauPowerPmac.turnOn()
             
-         
             
-           
-            
-            % Wafer
-            this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiWafer.uiCommDeltaTauPowerPmac.turnOn()
 
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
@@ -1784,17 +1616,8 @@ classdef App < mic.Base
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
-            % Power PMAC Status
-            this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiPowerPmacStatus.uiCommDeltaTauPowerPmac.turnOn();
             
-            
-            this.uiApp.uiWafer.uiMotMin.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiWafer.uiMotMin.uiCommDeltaTauPowerPmac.turnOn();
-            
-            this.uiApp.uiReticle.uiMotMin.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiReticle.uiMotMin.uiCommDeltaTauPowerPmac.turnOn();
-            
+           
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui            
             
@@ -1807,8 +1630,6 @@ classdef App < mic.Base
     %             this.uiApp.uiLSIControl.uiCommSmarActMcsGoni.turnOn();
                 this.uiApp.uiLSIControl.uiCommPIMTECamera.setDevice(gslcCommPIMTECamera);
                 this.uiApp.uiLSIControl.uiCommPIMTECamera.turnOn();
-                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac);
-                this.uiApp.uiLSIControl.uiCommDeltaTauPowerPmac.turnOn();
                 
               
 
@@ -1818,9 +1639,7 @@ classdef App < mic.Base
             
             % MF drift monitor
             this.uiApp.uiDriftMonitor.uicConnectHexapod.setDevice(gslcCommSmarActSmarPod);
-            this.uiApp.uiDriftMonitor.uicConnectWafer.setDevice(gslcCommDeltaTauPowerPmac);
             this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
-            this.uiApp.uiDriftMonitor.uicConnectWafer.turnOn();
             
             this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
             this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.turnOn();
@@ -1829,16 +1648,12 @@ classdef App < mic.Base
             % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
 
-            this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiTempSensors.uiCommDeltaTauPowerPmac.turnOn()
             
             
             % Focus Sensor
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.setDevice(gslcCommSmarActRotary);
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.turnOn();
             
-            this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.setDevice(gslcCommDeltaTauPowerPmac)
-            this.uiApp.uiFocusSensor.uiCommDeltaTauPowerPmac.turnOn();
             
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.setDevice(gslcCommMightex);
             this.uiApp.uiHeightSensorLEDs.uiCommMightex.turnOn();

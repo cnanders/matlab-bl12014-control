@@ -14,8 +14,10 @@ addpath(genpath(cDirMic));
 purge
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware();
 
 ui = bl12014.ui.ReticleCoarseStage(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 

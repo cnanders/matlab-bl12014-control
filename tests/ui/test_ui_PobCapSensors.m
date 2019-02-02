@@ -14,12 +14,14 @@ addpath(genpath(cDirMic));
 purge
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware();
 
 ui = bl12014.ui.PobCapSensors(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 
-h = figure()
+h = figure();
 ui.build(h, 10, 10);
 
 

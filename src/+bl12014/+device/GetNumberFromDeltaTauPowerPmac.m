@@ -34,13 +34,13 @@ classdef GetNumberFromDeltaTauPowerPmac < mic.interface.device.GetNumber
         function d = get(this)
             switch this.cType
                 case this.cTYPE_RETICLE_CAP_1
-                    d = this.comm.getReticleCap1V();
+                    d = this.comm.getVoltageReticleCap1();
                 case this.cTYPE_RETICLE_CAP_2
-                    d = this.comm.getReticleCap2V();
+                    d = this.comm.getVoltageReticleCap2();
                 case this.cTYPE_RETICLE_CAP_3
-                    d = this.comm.getReticleCap3V();
+                    d = this.comm.getVoltageReticleCap3();
                 case this.cTYPE_RETICLE_CAP_4
-                    d = this.comm.getReticleCap4V();
+                    d = this.comm.getVoltageReticleCap4();
                 case this.cTYPE_WAFER_CAP_1
                     d = this.comm.getAcc28EADCValue(3,0);
                 case this.cTYPE_WAFER_CAP_2

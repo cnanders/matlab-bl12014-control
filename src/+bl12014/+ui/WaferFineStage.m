@@ -23,6 +23,9 @@ classdef WaferFineStage < mic.Base
         dWidthName = 70
        
         lShowRange = true
+        
+        % {bl12014.Hardware 1x1}
+        hardware
     end
     
     methods
@@ -36,28 +39,19 @@ classdef WaferFineStage < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
                
-        function connectDeltaTauPowerPmac(this, comm)
-         
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            
-            deviceZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_FINE_Z);
-            this.uiZ.setDevice(deviceZ);
-            this.uiZ.turnOn();
-            this.uiZ.syncDestination();
 
-        end
-        
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiZ.turnOff();
-            this.uiZ.setDevice([])
-            
-        end
         
         function build(this, hParent, dLeft, dTop)
             
@@ -137,6 +131,12 @@ classdef WaferFineStage < mic.Base
                 'cName', sprintf('%s-z', this.cName), ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getZWaferFine(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setZWaferFine(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Z' ...
             );
         end

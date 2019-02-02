@@ -14,10 +14,11 @@ addpath(genpath(cDirMic));
 purge
 
 clock = mic.Clock('Master');
-
+hardware = bl12014.Hardware();
 
 
 ui = bl12014.ui.PowerPmacStatus(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 

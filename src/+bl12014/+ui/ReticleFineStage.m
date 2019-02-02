@@ -13,7 +13,7 @@ classdef ReticleFineStage < mic.Base
     properties (SetAccess = private)
         
         dWidth = 730
-        dHeight = 85
+        dHeight = 95
         
         cName = 'ReticleFineStage'
         
@@ -33,6 +33,9 @@ classdef ReticleFineStage < mic.Base
         configStageY
         configMeasPointVolts
         
+         % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
     methods
@@ -46,46 +49,22 @@ classdef ReticleFineStage < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
         
         
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            import bl12014.device.GetNumberFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceFineX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_X);
-            deviceFineY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_FINE_Y);
-            
-             % Set Devices 
-            this.uiX.setDevice(deviceFineX);
-            this.uiY.setDevice(deviceFineY);
-            
-            % Turn on
-            this.uiX.turnOn();
-            this.uiY.turnOn();
-            
-            this.uiX.syncDestination();
-            this.uiY.syncDestination();
-            
-
-
-        end
         
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiX.turnOff();
-            this.uiY.turnOff();
-          
-            this.uiX.setDevice([]);
-            this.uiY.setDevice([]);
-            
-                 
-        end
+        
+        
         
         
         function turnOn(this)
@@ -190,6 +169,12 @@ classdef ReticleFineStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getXReticleFine(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setXReticleFine(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleFineXY(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'X' ...
             );
         end
@@ -214,6 +199,12 @@ classdef ReticleFineStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getYReticleFine(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setYReticleFine(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleFineXY(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Y' ...
             );
         end

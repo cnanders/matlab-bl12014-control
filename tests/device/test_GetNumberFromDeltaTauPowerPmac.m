@@ -18,10 +18,10 @@ comm = deltatau.PowerPmac(...
     'cHostname', '192.168.20.23' ...
 );
 comm.init();
-comm.getReticleCap1V()
-comm.getReticleCap2V()
-comm.getReticleCap3V()
-comm.getReticleCap4V()
+comm.getVoltageReticleCap1()
+comm.getVoltageReticleCap2()
+comm.getVoltageReticleCap3()
+comm.getVoltageReticleCap4()
 
 %%
 device = bl12014.device.GetNumberFromDeltaTauPowerPmac(...

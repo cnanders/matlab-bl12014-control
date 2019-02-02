@@ -62,39 +62,7 @@ classdef Shutter < mic.Base
         end
         
         
-        function connectRigolDG1000ZVirtual(this)
-            
-            comm = rigol.DG1000ZVirtual();
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDeviceVirtual(device);
-            
-            device = bl12014.device.GetSetLogicalFromRigolDG1000Z(comm, 1);
-            this.uiOverride.setDeviceVirtual(device);
-                
-        end
-                
-        function connectRigolDG1000Z(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDevice(device);
-            this.uiShutter.turnOn();
-            
-            
-            device = bl12014.device.GetSetLogicalFromRigolDG1000Z(comm, 1);
-            this.uiOverride.setDevice(device);
-            this.uiOverride.turnOn();
-            
-        end
         
-        function disconnectRigolDG1000Z(this)
-            
-            this.uiShutter.turnOff();
-            this.uiShutter.setDevice([]);
-            
-            this.uiOverride.turnOff();
-            this.uiOverride.setDevice([]);
-        end
             
         
         function build(this, hParent, dLeft, dTop)
@@ -256,8 +224,6 @@ classdef Shutter < mic.Base
             this.initUiCommRigol();
             this.initUiShutter();
             this.initUiOverride();
-            
-            this.connectRigolDG1000ZVirtual();
         end
         
         function onFigureCloseRequest(this, src, evt)

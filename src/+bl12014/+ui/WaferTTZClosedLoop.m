@@ -265,7 +265,7 @@ classdef WaferTTZClosedLoop < mic.Base
             deviceTiltXPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
                  bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TIP);
             
-            fhGetMotor      = @()deviceTiltXPPMAC.get();
+            fhGetMotor      = @()deviceTiltXPPMAC.get(); % CNA 2019.02.01 can this be this.uiTiltX.getValCal('urad')?
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltX, dVal);
             fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltXPPMAC, this.uiTiltX);
             dTolerance      = this.dTiltXTol;
@@ -284,7 +284,7 @@ classdef WaferTTZClosedLoop < mic.Base
             deviceTiltYPPMAC = bl12014.device.GetSetNumberFromDeltaTauPowerPmac(commPPMAC, ...
                  bl12014.device.GetSetNumberFromDeltaTauPowerPmac.cAXIS_WAFER_COARSE_TILT);
             
-            fhGetMotor      = @()deviceTiltYPPMAC.get();
+            fhGetMotor      = @()deviceTiltYPPMAC.get();% CNA 2019.02.01 can this be this.uiTiltY.getValCal('urad')?
             fhSetMotor      = @(dVal) this.setDestAndGo(this.uiTiltY, dVal);
             fhIsReadyMotor  = @()this.isPPMACReady(deviceTiltYPPMAC, this.uiTiltY);
             dTolerance      = this.dTiltYTol;

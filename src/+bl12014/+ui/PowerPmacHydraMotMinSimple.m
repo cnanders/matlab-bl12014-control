@@ -39,6 +39,9 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
         uiClock
         dDelay = 0.5
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
         
@@ -62,29 +65,23 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
             
             
         end
-        
-   
-        
-        function connectDeltaTauPowerPmac(this, comm)
-                            
-            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
-            this.uiMotMin.connectDeltaTauPowerPmac(comm);
-            
-        end
-        
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac();
-            this.uiMotMin.disconnectDeltaTauPowerPmac();
-                        
-        end
-        
-        
         
         
         function build(this, hParent, dLeft, dTop)
@@ -203,11 +200,13 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
             
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', [this.cName, 'pmac-working-mode'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
                 'cName', [this.cName, 'ppmac-hydra-mot-min'], ...
+                'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'clock', this.clock ...
             );

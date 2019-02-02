@@ -22,6 +22,9 @@ classdef LsiCoarseStage < mic.Base
         hPanel
         dWidthName = 70
         lShowRange = true
+        
+        % {bl12014.Hardware 1x1}
+        hardware
     end
     
     methods
@@ -35,30 +38,19 @@ classdef LsiCoarseStage < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
         
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            
-            deviceX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_LSI_COARSE_X);
-            this.uiX.setDevice(deviceX);
-            this.uiX.turnOn();
-            this.uiX.syncDestination();
 
-            
-        end
-        
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiX.turnOff();
-            this.uiX.setDevice([]);
-           
-        end
         
         
         function build(this, hParent, dLeft, dTop)
@@ -83,7 +75,6 @@ classdef LsiCoarseStage < mic.Base
             
             this.uiX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
                      
             
         end
@@ -136,9 +127,15 @@ classdef LsiCoarseStage < mic.Base
             this.uiX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
-                'cName', sprintf('%s-z', this.cName), ...
+                'cName', sprintf('%s-x', this.cName), ...
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getXLsiCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setXLsiCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedLsiCoarseX(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'X' ...
             );
         end

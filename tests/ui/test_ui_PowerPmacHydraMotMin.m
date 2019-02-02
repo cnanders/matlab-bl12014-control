@@ -1,4 +1,8 @@
- [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+try 
+    purge
+end
+
+[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
 cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
@@ -11,13 +15,13 @@ cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control'
 addpath(genpath(cDirMic));
 
 
-purge
-
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
+hardware = bl12014.Hardware();
 
 ui = bl12014.ui.PowerPmacHydraMotMin(...
     'cName', 'test', ...
+    'hardware', hardware, ...
     'uiClock', uiClock, ...
     'clock', clock ...
 );

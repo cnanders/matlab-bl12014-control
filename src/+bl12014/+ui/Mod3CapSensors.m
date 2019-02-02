@@ -43,6 +43,9 @@ classdef Mod3CapSensors < mic.Base
         configStageY
         configMeasPointVolts
         
+         % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
     methods
@@ -56,6 +59,14 @@ classdef Mod3CapSensors < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
@@ -66,61 +77,7 @@ classdef Mod3CapSensors < mic.Base
             
         end
         
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            import bl12014.device.GetNumberFromDeltaTauPowerPmac
-            
-            deviceCap1 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_RETICLE_CAP_1);
-            deviceCap2 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_RETICLE_CAP_2);
-            deviceCap3 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_RETICLE_CAP_3);
-            deviceCap4 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_RETICLE_CAP_4);
-            
-            this.uiCap1.setDevice(deviceCap1);
-            this.uiCap2.setDevice(deviceCap2);
-            this.uiCap3.setDevice(deviceCap3);
-            this.uiCap4.setDevice(deviceCap4);
-            
-            this.uiCap1.turnOn();
-            this.uiCap2.turnOn();
-            this.uiCap3.turnOn();
-            this.uiCap4.turnOn();
-        end
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiCap1.turnOff();
-            this.uiCap2.turnOff();
-            this.uiCap3.turnOff();
-            this.uiCap4.turnOff();
-            
-            this.uiCap1.setDevice([]);
-            this.uiCap2.setDevice([]);
-            this.uiCap3.setDevice([]);
-            this.uiCap4.setDevice([]);
-        end
-        
-        
-        function turnOn(this)
-            
-            this.uiCap1.turnOn();
-            this.uiCap2.turnOn();
-            this.uiCap3.turnOn();
-            this.uiCap4.turnOn();
-            
-            
-            
-            
-        end
-        
-        function turnOff(this)
-            this.uiCap1.turnOff();
-            this.uiCap2.turnOff();
-            this.uiCap3.turnOff();
-            this.uiCap4.turnOff();
-            
-            
-            
-        end
+       
         
         function build(this, hParent, dLeft, dTop)
             
@@ -264,6 +221,9 @@ classdef Mod3CapSensors < mic.Base
                 'dWidthPadUnit', this.dWidthPadUnit, ...
                 'cName', 'mod3-cap-sensor-1', ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getVoltageReticleCap1(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '1' ...
             );
         end
@@ -289,6 +249,9 @@ classdef Mod3CapSensors < mic.Base
                 'cName', 'mod3-cap-sensor-2', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getVoltageReticleCap2(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '2' ...
             );
         end
@@ -314,6 +277,9 @@ classdef Mod3CapSensors < mic.Base
                 'cName', 'mod3-cap-sensor-3', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getVoltageReticleCap3(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '3' ...
             );
         end
@@ -339,6 +305,9 @@ classdef Mod3CapSensors < mic.Base
                 'cName', 'mod3-cap-sensor-4', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getVoltageReticleCap4(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '4' ...
             );
         end

@@ -111,83 +111,18 @@ classdef Wafer < mic.Base
             
         end
         
-        %{
-        function connectDataTranslationMeasurPoint(this, comm)
-            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 9);
-            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 10);
-            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 11);
-            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 12);
-        
-            this.uiPobCapSensors.uiCap1.setDevice(deviceCap1);
-            this.uiPobCapSensors.uiCap2.setDevice(deviceCap2);
-            this.uiPobCapSensors.uiCap3.setDevice(deviceCap3);
-            this.uiPobCapSensors.uiCap4.setDevice(deviceCap4);
-            
-            this.uiPobCapSensors.uiCap1.turnOn();
-            this.uiPobCapSensors.uiCap2.turnOn();
-            this.uiPobCapSensors.uiCap3.turnOn();
-            this.uiPobCapSensors.uiCap4.turnOn();
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this)
 
-            this.uiPobCapSensors.uiCap1.turnOff();
-            this.uiPobCapSensors.uiCap2.turnOff();
-            this.uiPobCapSensors.uiCap3.turnOff();
-            this.uiPobCapSensors.uiCap4.turnOff();
-            
-            this.uiPobCapSensors.uiCap1.setDevice([]);
-            this.uiPobCapSensors.uiCap2.setDevice([]);
-            this.uiPobCapSensors.uiCap3.setDevice([]);
-            this.uiPobCapSensors.uiCap4.setDevice([]);
-                
-        end
-        %}
-        
-        
-        function connectRigolDG1000Z(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDevice(device);
-            this.uiShutter.turnOn();
-                      
-        end
-        
-        function disconnectRigolDG1000Z(this)
-            
-            this.uiShutter.turnOff();
-            this.uiShutter.setDevice([]);
-   
-        end
-       
-        
         function connectDeltaTauPowerPmac(this, comm)
                             
             this.commDeltaTauPowerPmac = comm;
-            
             this.connectClosedLoop();
             
-            this.uiPobCapSensors.connectDeltaTauPowerPmac(comm);
-            this.uiLsiCoarseStage.connectDeltaTauPowerPmac(comm);
-            this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
-            this.uiFineStage.connectDeltaTauPowerPmac(comm);
-            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
-            this.uiMotMin.connectDeltaTauPowerPmac(comm);
-            this.uiMotMinSimple.connectDeltaTauPowerPmac(comm);
         end
         
         
         function disconnectDeltaTauPowerPmac(this)
             
             this.disconnectClosedLoop();
-            
-            this.uiPobCapSensors.disconnectDeltaTauPowerPmac()
-            this.uiLsiCoarseStage.disconnectDeltaTauPowerPmac();
-            this.uiCoarseStage.disconnectDeltaTauPowerPmac();
-            this.uiFineStage.disconnectDeltaTauPowerPmac();
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac();
-            this.uiMotMin.disconnectDeltaTauPowerPmac();
-            this.uiMotMinSimple.disconnectDeltaTauPowerPmac();
             this.commDeltaTauPowerPmac = [];
                         
         end
@@ -204,18 +139,7 @@ classdef Wafer < mic.Base
             if ~isempty(this.commDeltaTauPowerPmac) && ...
                ~isempty(this.commMfDriftMonitorMiddleware)
                 
-%                 this.uiHeightSensorZClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-%                     this.commDeltaTauPowerPmac, ...
-%                     this.commMfDriftMonitorMiddleware ...
-%                 )
-%                 this.uiHeightSensorRxClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-%                     this.commDeltaTauPowerPmac, ...
-%                     this.commMfDriftMonitorMiddleware ...
-%                 )
-%                 this.uiHeightSensorRyClosedLoop.connectDeltaTauPowerPmacAndDriftMonitor(...
-%                     this.commDeltaTauPowerPmac, ...
-%                     this.commMfDriftMonitorMiddleware ...
-%                 )
+
                 this.uiHeightSensorZClosedLoopCoarse.connectDeltaTauPowerPmacAndDriftMonitor(...
                     this.commDeltaTauPowerPmac, ...
                     this.commMfDriftMonitorMiddleware ...
@@ -230,10 +154,7 @@ classdef Wafer < mic.Base
         end
         
         function disconnectClosedLoop(this)
-            
-%             this.uiHeightSensorZClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-%             this.uiHeightSensorRxClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
-%             this.uiHeightSensorRyClosedLoop.disconnectDeltaTauPowerPmacAndDriftMonitor();
+
             this.uiHeightSensorZClosedLoopCoarse.disconnectDeltaTauPowerPmacAndDriftMonitor();
             this.uiWaferTTZClosedLoop.disconnect();
             
@@ -392,28 +313,33 @@ classdef Wafer < mic.Base
             
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', [this.cName, 'pmac-working-mode'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
                 'cName', [this.cName, 'power-pmac-hydra-mot-min'], ...
+                'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'clock', this.clock ...
             );
         
             this.uiMotMinSimple = bl12014.ui.PowerPmacHydraMotMinSimple(...
                 'cName', [this.cName, 'power-pmac-hydra-mot-min-simple'], ...
+                'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'clock', this.clock ...
             );
         
             this.uiCoarseStage = bl12014.ui.WaferCoarseStage(...
                 'cName', [this.cName, 'wafer-coarse-stage'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
             this.uiLsiCoarseStage = bl12014.ui.LsiCoarseStage(...
                 'cName', [this.cName, 'lsi-coarse-stage'], ...
+                'hardware', this.hardware', ...
                 'clock', this.uiClock ...
             );
         
@@ -422,6 +348,7 @@ classdef Wafer < mic.Base
             
             this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'cName', [this.cName, 'wafer-fine-stage'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
@@ -449,6 +376,7 @@ classdef Wafer < mic.Base
         
             this.uiHeightSensorZClosedLoopCoarse = bl12014.ui.HeightSensorZClosedLoopCoarse( ...
                 'clock', this.uiClock, ...
+                'hardware', this.hardware, ...
                 'lShowZWafer', false, ...
                 'cName', [this.cName, 'hs-z-closed-loop-coarse'] ...
             );
@@ -458,6 +386,7 @@ classdef Wafer < mic.Base
             % sensors
             this.uiWaferTTZClosedLoop = bl12014.ui.WaferTTZClosedLoop( ...
                 'clock',        this.clock, ...
+                'hardware', this.hardware, ...
                 'uiClock',      this.uiClock, ...
                 'cName', [this.cName, 'wafer-z-tiltX-tiltY-closed-loop'], ...
                 'uiTiltX',      this.uiCoarseStage.uiTiltX, ...
@@ -473,6 +402,7 @@ classdef Wafer < mic.Base
             );
             this.uiPobCapSensors = bl12014.ui.PobCapSensors(...
                 'cName', [this.cName, 'pob-cap-sensors'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         

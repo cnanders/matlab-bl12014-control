@@ -24,7 +24,7 @@ classdef PobCapSensors < mic.Base
     properties (SetAccess = private)
         
        dWidth = 320
-        dHeight = 135
+        dHeight = 140
         
         cName = 'POB Cap Sensors'
         
@@ -44,6 +44,9 @@ classdef PobCapSensors < mic.Base
         configStageY
         configMeasPointVolts
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
     end
     
     methods
@@ -57,65 +60,16 @@ classdef PobCapSensors < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
-        end
-        
-        
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            import bl12014.device.GetNumberFromDeltaTauPowerPmac
-            
-            deviceCap1 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_WAFER_CAP_1);
-            deviceCap2 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_WAFER_CAP_2);
-            deviceCap3 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_WAFER_CAP_3);
-            deviceCap4 = GetNumberFromDeltaTauPowerPmac( comm, GetNumberFromDeltaTauPowerPmac.cTYPE_WAFER_CAP_4);
-            
-            this.uiCap1.setDevice(deviceCap1);
-            this.uiCap2.setDevice(deviceCap2);
-            this.uiCap3.setDevice(deviceCap3);
-            this.uiCap4.setDevice(deviceCap4);
-            
-            this.uiCap1.turnOn();
-            this.uiCap2.turnOn();
-            this.uiCap3.turnOn();
-            this.uiCap4.turnOn();
-        end
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiCap1.turnOff();
-            this.uiCap2.turnOff();
-            this.uiCap3.turnOff();
-            this.uiCap4.turnOff();
-            
-            this.uiCap1.setDevice([]);
-            this.uiCap2.setDevice([]);
-            this.uiCap3.setDevice([]);
-            this.uiCap4.setDevice([]);
-        end
-        
-        
-        function turnOn(this)
-            
-            this.uiCap1.turnOn();
-            this.uiCap2.turnOn();
-            this.uiCap3.turnOn();
-            this.uiCap4.turnOn();
-            
-            
-            
-            
-        end
-        
-        function turnOff(this)
-            this.uiCap1.turnOff();
-            this.uiCap2.turnOff();
-            this.uiCap3.turnOff();
-            this.uiCap4.turnOff();
-            
-            
-            
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -310,6 +264,9 @@ classdef PobCapSensors < mic.Base
                 'dWidthPadUnit', this.dWidthPadUnit, ...
                 'cName', 'pob-cap-sensor-1', ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getAcc28EADCValue(3,0), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '1' ...
             );
         end
@@ -335,6 +292,9 @@ classdef PobCapSensors < mic.Base
                 'cName', 'pob-cap-sensor-2', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getAcc28EADCValue(3,1), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '2' ...
             );
         end
@@ -360,6 +320,9 @@ classdef PobCapSensors < mic.Base
                 'cName', 'pob-cap-sensor-3', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getAcc28EADCValue(3,2), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '3' ...
             );
         end
@@ -385,6 +348,9 @@ classdef PobCapSensors < mic.Base
                 'cName', 'pob-cap-sensor-4', ...
                 'lShowLabels', false, ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getAcc28EADCValue(3,3), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', '4' ...
             );
         end

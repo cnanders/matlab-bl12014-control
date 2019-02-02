@@ -54,43 +54,43 @@
             
             switch this.cAxis
                 case this.cMOT_MIN_WCX
-                    d = this.comm.getWaferCoarseXMotMin();
+                    d = this.comm.getMotMinWaferCoarseX();
                 case this.cMOT_MIN_WCY
-                    d = this.comm.getWaferCoarseYMotMin();
+                    d = this.comm.getMotMinWaferCoarseY();
                 case this.cMOT_MIN_RCX
-                    d = this.comm.getReticleCoarseXMotMin();
+                    d = this.comm.getMotMinReticleCoarseX();
                 case this.cMOT_MIN_RCY
-                    d = this.comm.getReticleCoarseYMotMin();  
+                    d = this.comm.getMotMinReticleCoarseY();  
                 case this.cMOT_MIN_LSIX
-                    d = this.comm.getLsiCoarseXMotMin();     
+                    d = this.comm.getMotMinLsiCoarseX();     
                 case this.cAXIS_WAFER_COARSE_X
-                    d = this.comm.getWaferCoarseX();
+                    d = this.comm.getXWaferCoarse();
                 case this.cAXIS_WAFER_COARSE_Y
-                    d = this.comm.getWaferCoarseY();
+                    d = this.comm.getYWaferCoarse();
                 case this.cAXIS_WAFER_COARSE_Z
-                    d = this.comm.getWaferCoarseZ();
+                    d = this.comm.getZWaferCoarse();
                 case this.cAXIS_WAFER_COARSE_TIP
-                    d = this.comm.getWaferCoarseTip();
+                    d = this.comm.getTiltXWaferCoarse();
                 case this.cAXIS_WAFER_COARSE_TILT
-                    d = this.comm.getWaferCoarseTilt();
+                    d = this.comm.getTiltYWaferCoarse();
                 case this.cAXIS_WAFER_FINE_Z
-                    d = this.comm.getWaferFineZ();
+                    d = this.comm.getZWaferFine();
                 case this.cAXIS_LSI_COARSE_X
-                    d = this.comm.getLsiCoarseX();
+                    d = this.comm.getXLsiCoarse();
                 case this.cAXIS_RETICLE_COARSE_X
-                    d = this.comm.getReticleCoarseX();
+                    d = this.comm.getXReticleCoarse();
                 case this.cAXIS_RETICLE_COARSE_Y
-                    d = this.comm.getReticleCoarseY();
+                    d = this.comm.getYReticleCoarse();
                 case this.cAXIS_RETICLE_COARSE_Z
-                    d = this.comm.getReticleCoarseZ();
+                    d = this.comm.getZReticleCoarse();
                 case this.cAXIS_RETICLE_COARSE_TIP
-                    d = this.comm.getReticleCoarseTip();
+                    d = this.comm.getTiltXReticleCoarse();
                 case this.cAXIS_RETICLE_COARSE_TILT
-                    d = this.comm.getReticleCoarseTilt();
+                    d = this.comm.getTiltYReticleCoarse();
                 case this.cAXIS_RETICLE_FINE_X
-                    d = this.comm.getReticleFineX();
+                    d = this.comm.getXReticleFine();
                 case this.cAXIS_RETICLE_FINE_Y
-                    d = this.comm.getReticleFineY();
+                    d = this.comm.getYReticleFine();
             end
                     
         end
@@ -121,33 +121,33 @@
                     this.comm.command(cCmd); 
                     
                 case this.cAXIS_WAFER_COARSE_X
-                    this.comm.setWaferCoarseX(dVal);
+                    this.comm.setXWaferCoarse(dVal);
                 case this.cAXIS_WAFER_COARSE_Y
-                    this.comm.setWaferCoarseY(dVal);
+                    this.comm.setYWaferCoarse(dVal);
                 case this.cAXIS_WAFER_COARSE_Z
-                    this.comm.setWaferCoarseZ(dVal);
+                    this.comm.setZWaferCoarse(dVal);
                 case this.cAXIS_WAFER_COARSE_TIP
-                    this.comm.setWaferCoarseTip(dVal);
+                    this.comm.setTiltXWaferCoarse(dVal);
                 case this.cAXIS_WAFER_COARSE_TILT
-                    this.comm.setWaferCoarseTilt(dVal);
+                    this.comm.setTiltYWaferCoarse(dVal);
                 case this.cAXIS_WAFER_FINE_Z
-                    this.comm.setWaferFineZ(dVal);
+                    this.comm.setZWaferFine(dVal);
                 case this.cAXIS_LSI_COARSE_X
-                    this.comm.setLsiCoarseX(dVal);
+                    this.comm.setXLsiCoarse(dVal);
                 case this.cAXIS_RETICLE_COARSE_X
-                    this.comm.setReticleCoarseX(dVal);
+                    this.comm.setXReticleCoarse(dVal);
                 case this.cAXIS_RETICLE_COARSE_Y
-                    this.comm.setReticleCoarseY(dVal);
+                    this.comm.setYReticleCoarse(dVal);
                 case this.cAXIS_RETICLE_COARSE_Z
-                    this.comm.setReticleCoarseZ(dVal);
+                    this.comm.setZReticleCoarse(dVal);
                 case this.cAXIS_RETICLE_COARSE_TIP
-                    this.comm.setReticleCoarseTip(dVal);
+                    this.comm.setTiltXReticleCoarse(dVal);
                 case this.cAXIS_RETICLE_COARSE_TILT
-                    this.comm.setReticleCoarseTilt(dVal);
+                    this.comm.setTiltYReticleCoarse(dVal);
                 case this.cAXIS_RETICLE_FINE_X
-                    this.comm.setReticleFineX(dVal);
+                    this.comm.setXReticleFine(dVal);
                 case this.cAXIS_RETICLE_FINE_Y
-                    this.comm.setReticleFineY(dVal);
+                    this.comm.setYReticleFine(dVal);
             end
         end
         
@@ -170,7 +170,7 @@
                     this.cAXIS_WAFER_COARSE_TIP, ...
                     this.cAXIS_WAFER_COARSE_TILT ...
                     }
-                    l = ~this.comm.getWaferCoarseXYZTipTiltStarted();
+                    l = ~this.comm.getIsStartedWaferCoarseXYZTipTilt();
                 case { ...
                    this.cAXIS_RETICLE_COARSE_X, ...
                    this.cAXIS_RETICLE_COARSE_Y, ...
@@ -178,16 +178,16 @@
                    this.cAXIS_RETICLE_COARSE_TIP, ...
                    this.cAXIS_RETICLE_COARSE_TILT, ...
                     }
-                    l = ~this.comm.getReticleCoarseXYZTipTiltStarted(); 
+                    l = ~this.comm.getIsStartedReticleCoarseXYZTipTilt(); 
                 case this.cAXIS_WAFER_FINE_Z
-                    l = ~this.comm.getWaferFineZStarted();  
+                    l = ~this.comm.getIsStartedWaferFineZ();  
                 case { ...
                         this.cAXIS_RETICLE_FINE_X, ...
                         this.cAXIS_RETICLE_FINE_Y ...
                      }
-                    l = ~this.comm.getReticleFineXYStarted();
+                    l = ~this.comm.getIsStartedReticleFineXY();
                 case this.cAXIS_LSI_COARSE_X
-                    l = ~this.comm.getLSICoarseXStarted();
+                    l = ~this.comm.getIsStartedLsiCoarseX();
             end
             
             

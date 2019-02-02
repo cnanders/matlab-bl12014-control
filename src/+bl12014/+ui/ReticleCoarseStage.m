@@ -52,8 +52,9 @@ classdef ReticleCoarseStage < mic.Base
         configStageY
         configMeasPointVolts
         
-        % CHEATING HACK
-        commDeltaTauPowerPmac
+        
+        % {bl12014.Hardware 1x1}
+        hardware
 
         
     end
@@ -69,76 +70,16 @@ classdef ReticleCoarseStage < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
-        end
-        
-        function connectDeltaTauPowerPmac(this, comm)
-            
-            import bl12014.device.GetSetNumberFromDeltaTauPowerPmac
-            import bl12014.device.GetSetTextFromDeltaTauPowerPmac
-            import bl12014.device.GetNumberFromDeltaTauPowerPmac
-            
-            % Devices
-            deviceCoarseX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_X);
-            deviceCoarseY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Y);
-            deviceCoarseZ = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_Z);
-            deviceCoarseTiltX = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TIP);
-            deviceCoarseTiltY = GetSetNumberFromDeltaTauPowerPmac(comm, GetSetNumberFromDeltaTauPowerPmac.cAXIS_RETICLE_COARSE_TILT);
-            
-             % Set Devices 
-            this.uiX.setDevice(deviceCoarseX);
-            this.uiY.setDevice(deviceCoarseY);
-            this.uiZ.setDevice(deviceCoarseZ);
-            this.uiTiltX.setDevice(deviceCoarseTiltX);
-            this.uiTiltY.setDevice(deviceCoarseTiltY);
-            
-            % Turn on
-            this.uiX.turnOn();
-            this.uiY.turnOn();
-            this.uiZ.turnOn();
-            this.uiTiltX.turnOn();
-            this.uiTiltY.turnOn();
-            
-            
-            this.uiX.syncDestination();
-            this.uiY.syncDestination();
-            this.uiZ.syncDestination();
-            this.uiTiltX.syncDestination();
-            this.uiTiltY.syncDestination();
-            
-            % CHEATING HACK
-            % store a reference to comm so it can be used when loading
-            % from stores
-            % Is it a cheating hack?
-            % If you think hard, you realize that a device is created,
-            % The device has a reference to the comm
-            % The then passed in to the UI. The UI has a reference to the
-            % the device, which has a refernce to the he comm, so this
-            % class, which has a reference to the ui, can access the comm
-            % at this.uiX.getDevice().comm  Although, technically most
-            % devices are supposed to make comm a private property
-            
-            this.commDeltaTauPowerPmac = comm;
-
-            
-        end
-        
-        
-        function disconnectDeltaTauPowerPmac(this)
-            
-            this.uiX.turnOff();
-            this.uiY.turnOff();
-            this.uiZ.turnOff();
-            this.uiTiltX.turnOff();
-            this.uiTiltY.turnOff();
-            
-            this.uiX.setDevice([]);
-            this.uiY.setDevice([]);
-            this.uiZ.setDevice([]);
-            this.uiTiltX.setDevice([]);
-            this.uiTiltY.setDevice([]);
-                    
         end
         
         
@@ -277,6 +218,12 @@ classdef ReticleCoarseStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getXReticleCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'X' ...
             );
         end
@@ -301,6 +248,12 @@ classdef ReticleCoarseStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getYReticleCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setYReticleCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Y' ...
             );
         end
@@ -325,6 +278,12 @@ classdef ReticleCoarseStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getZReticleCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setZReticleCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Z' ...
             );
         end
@@ -350,6 +309,12 @@ classdef ReticleCoarseStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getTiltXReticleCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setTiltXReticleCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Tilt X' ...
             );
         end
@@ -374,6 +339,12 @@ classdef ReticleCoarseStage < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
+                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getTiltYReticleCoarse(), ...
+                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setTiltYReticleCoarse(dVal), ...
+                'fhIsReady', @() ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt(), ...
+                'fhStop', @() this.hardware.getDeltaTauPowerPmac().stopAll(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Tilt Y' ...
             );
         end
@@ -418,24 +389,23 @@ classdef ReticleCoarseStage < mic.Base
         % Set recalled values into your app
         function onUiPositionRecallerSet(this, dValues)
             
-            % This is a cheat / hack of the MIC
+           
             
-            % Update the UI destinations
+             % Update the UI destinations
+            
             this.uiX.setDestRaw(dValues(1));
             this.uiY.setDestRaw(dValues(2));
             this.uiZ.setDestRaw(dValues(3));
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
-            % Update the destinations of CS1 on the PPMAC
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS2X=%1.6f;', dValues(1)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS2Y=%1.6f;', dValues(2)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS2Z=%1.6f;', dValues(3)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS2A=%1.6f;', dValues(4)));
-            this.commDeltaTauPowerPmac.command(sprintf('DestCS2B=%1.6f;', dValues(5)));
-            
-            % Command PPMAC to have CS1 go to all destinations
-            this.commDeltaTauPowerPmac.command('CommandCode=24');
+            this.hardware.getDeltaTauPowerPmac().setXYZTiltXTiltYReticleCoarse(...
+                dValues(1), ...
+                dValues(2), ...
+                dValues(3), ...
+                dValues(4), ...
+                dValues(5) ...
+            );
             
         end
         

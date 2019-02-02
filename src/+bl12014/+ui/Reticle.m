@@ -91,89 +91,15 @@ classdef Reticle < mic.Base
             this.init();
             
         end
-        
-        function connectRigolDG1000Z(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDevice(device);
-            this.uiShutter.turnOn();
-                      
-        end
-        
-        function disconnectRigolDG1000Z(this)
-            
-            this.uiShutter.turnOff();
-            this.uiShutter.setDevice([]);
-   
-        end
-        
-        
-        %{
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            % 2018.09.15 Mod3 Cap Sensors Now come From PPMAC
-
-            return
-            
-            deviceCap1 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 5);
-            deviceCap2 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 6);
-            deviceCap3 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 7);
-            deviceCap4 = GetNumberFromDataTranslationMeasurPoint(comm, GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, 8);
-            
-            this.uiMod3CapSensors.uiCap1.setDevice(deviceCap1);
-            this.uiMod3CapSensors.uiCap2.setDevice(deviceCap2);
-            this.uiMod3CapSensors.uiCap3.setDevice(deviceCap3);
-            this.uiMod3CapSensors.uiCap4.setDevice(deviceCap4);
-            
-            this.uiMod3CapSensors.uiCap1.turnOn();
-            this.uiMod3CapSensors.uiCap2.turnOn();
-            this.uiMod3CapSensors.uiCap3.turnOn();
-            this.uiMod3CapSensors.uiCap4.turnOn();
-            
-            
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this)
-            
-            % 2018.09.15 Mod3 Cap Sensors Now come From PPMAC
-            
-            return
-            this.uiMod3CapSensors.uiCap1.turnOff();
-            this.uiMod3CapSensors.uiCap2.turnOff();
-            this.uiMod3CapSensors.uiCap3.turnOff();
-            this.uiMod3CapSensors.uiCap4.turnOff();
-            
-            this.uiMod3CapSensors.uiCap1.setDevice([]);
-            this.uiMod3CapSensors.uiCap2.setDevice([]);
-            this.uiMod3CapSensors.uiCap3.setDevice([]);
-            this.uiMod3CapSensors.uiCap4.setDevice([]);
-        end
-        
-        %}
-        
-       
-        
+          
         
         function connectDeltaTauPowerPmac(this, comm)
             
-            this.uiFineStage.connectDeltaTauPowerPmac(comm);
-            this.uiCoarseStage.connectDeltaTauPowerPmac(comm);
-            this.uiMod3CapSensors.connectDeltaTauPowerPmac(comm)
-            this.uiWorkingMode.connectDeltaTauPowerPmac(comm);
-            this.uiMotMin.connectDeltaTauPowerPmac(comm);
-            this.uiMotMinSimple.connectDeltaTauPowerPmac(comm);
-
             this.ReticleTTZClosedLoop.connect(comm);
         end
         
         function disconnectDeltaTauPowerPmac(this)
 
-            this.uiFineStage.disconnectDeltaTauPowerPmac();
-            this.uiCoarseStage.disconnectDeltaTauPowerPmac();
-            this.uiMod3CapSensors.disconnectDeltaTauPowerPmac()
-            this.uiWorkingMode.disconnectDeltaTauPowerPmac(); 
-            this.uiMotMin.disconnectDeltaTauPowerPmac();
-            this.uiMotMinSimple.disconnectDeltaTauPowerPmac();
             this.ReticleTTZClosedLoop.disconnect();
         end
         
@@ -213,11 +139,13 @@ classdef Reticle < mic.Base
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            this.uiDiode.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.ReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.ReticleTTZClosedLoop.dHeight + dPad;
+            
+            this.uiDiode.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiDiode.dHeight + dPad;
+            
             
             dLeft = 600;
             this.uiMod3CapSensors.build(this.hParent, dLeft, dTop);
@@ -291,27 +219,32 @@ classdef Reticle < mic.Base
             
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', [this.cName, 'pmac-working-mode'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...
                 'cName', [this.cName, 'power-pmac-hydra-mot-min'], ...
+                'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'clock', this.clock ...
             );
         
             this.uiMotMinSimple = bl12014.ui.PowerPmacHydraMotMinSimple(...
                 'cName', [this.cName, 'power-pmac-hydra-mot-min-simple'], ...
+                'hardware', this.hardware, ...
                 'clock', this.clock, ...
                 'uiClock', this.uiClock ...
             );
             this.uiCoarseStage = bl12014.ui.ReticleCoarseStage(...
                 'cName', [this.cName, 'reticle-coarse-stage'], ...
+                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
                        
             this.uiFineStage = bl12014.ui.ReticleFineStage(...
                 'cName', [this.cName, 'reticle-fine-stage'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
@@ -341,11 +274,13 @@ classdef Reticle < mic.Base
             );
         
             this.uiMod3CapSensors = bl12014.ui.Mod3CapSensors(...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
         
             this.ReticleTTZClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
                 'clock',        this.clock, ...
+                'hardware', this.hardware, ...
                 'uiClock',      this.uiClock, ...
                 'cName', [this.cName, 'reticle-z-tiltX-tiltY-closed-loop'], ...
                 'uiTiltX',      this.uiCoarseStage.uiTiltX, ...

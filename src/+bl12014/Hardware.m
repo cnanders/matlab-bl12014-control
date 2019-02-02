@@ -74,6 +74,8 @@ classdef Hardware < mic.Base
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
+        commDeltaTauPowerPmacVirtual
+        lIsConnectedDeltaTauPowerPmac = false
         
         % {MFDriftMonitor}
         commMFDriftMonitor 
@@ -89,22 +91,7 @@ classdef Hardware < mic.Base
     
     properties (Access = private)
         
-        % {char 1xm} - base directory for configuration and library files
-        % for cwcork's cxro.met5.Instruments class
         
-        % Hardware will load the following paths and genpaths on init:
-        ceGenpathLoad = { ...
-            fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor',    ...
-                        'github', 'cnanders', 'matlab-keithley-6482', 'src')    ...
-            }
-%         ceGenpathLoad = {}
-        cePathLoad = { ...
-            }
-        
-        ceJavaPathLoad = { ...
-            fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor',    ...
-                        'cwcork', 'Met5Instruments.jar')                        ...
-            }
     end
     
         
@@ -168,6 +155,30 @@ classdef Hardware < mic.Base
         
         % WAFER DOSE MONITOR (KEITHLEY 6482)
         
+        function l = getIsConnectedDeltaTauPowerPmac(this)
+            l = this.lIsConnectedDeltaTauPowerPmac;
+        end
+        
+        function setIsConnectedDeltaTauPowerPmac(this, lVal)
+           this.lIsConnectedDeltaTauPowerPmac = lVal;
+        end
+        
+        function comm = getDeltaTauPowerPmac(this)
+            
+            if this.lIsConnectedDeltaTauPowerPmac
+                
+                if isempty(this.commDeltaTauPowerPmac)
+                   this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
+                        'cHostname', this.cTcpipDeltaTau ...
+                    );
+                    this.commDeltaTauPowerPmac.init();
+                end
+                comm = this.commDeltaTauPowerPmac;
+            else
+                comm = this.commDeltaTauPowerPmacVirtual;
+                
+            end
+        end
         
         function l = getIsConnectedKeithley6482Wafer(this)
             l = this.lIsConnectedKeithley6482Wafer;
@@ -295,18 +306,51 @@ classdef Hardware < mic.Base
         %% Init  functions
         % Initializes directories and any helper classes 
         function init(this)
+            
+            % {char 1xm} - base directory for configuration and library files
+            % for cwcork's cxro.met5.Instruments class
+
+            % Hardware will load the following paths and genpaths on init:
+
+            cDirThis = fileparts(mfilename('fullpath'));
+            cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
+            cDirVendor = mic.Utils.path2canonical(cDirVendor);
+            
+            ceGenpathLoad = { ...
+                fullfile(cDirVendor, 'github', 'awojdyla', 'matlab-datatranslation-measurpoint', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-micronix-mmc-103', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-newfocus-model-8742', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-hex', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-ieee', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-keithley-6482', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-3gstore-remote-power-switch', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-mightex-led-controller', 'src'), ...
+            };
+        
+            cePathLoad = {};
+
+            ceJavaPathLoad = { ...
+                fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'), ...
+            };
+
+
             % Init path
-            mic.Utils.map(this.ceGenpathLoad, ...
+            mic.Utils.map(ceGenpathLoad, ...
                 @(cVPath) addpath(genpath(cVPath)));
-            mic.Utils.map(this.cePathLoad, ...
+            mic.Utils.map(cePathLoad, ...
                 @(cVPath) addpath(cVPath));
-            mic.Utils.map(this.ceJavaPathLoad, ...
+            mic.Utils.map(ceJavaPathLoad, ...
                 @(cVPath) javaaddpath(cVPath), 0);
             
             
             this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
+            this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
 
         end
         
