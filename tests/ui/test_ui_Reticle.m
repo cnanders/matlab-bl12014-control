@@ -19,11 +19,13 @@ cDirRigol = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', '
 addpath(cDirRigol)
 
 
+hardware = bl12014.Hardware();
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
 
 
 ui = bl12014.ui.Reticle(...
+    'hardware', hardware, ...
     'clock', clock, ...
     'uiClock', uiClock ...
 );

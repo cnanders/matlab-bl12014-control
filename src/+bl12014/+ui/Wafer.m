@@ -147,13 +147,15 @@ classdef Wafer < mic.Base
             
             
             dLeft = 10;
-            dTop = 220;
+            dTop = 180;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
+            %{
             this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
+            %}
             
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
@@ -196,7 +198,7 @@ classdef Wafer < mic.Base
             %}
             
             dLeft = 1000;
-            dTop = 280;
+            dTop = 180;
             this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
             
