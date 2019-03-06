@@ -27,13 +27,13 @@ hardware = bl12014.Hardware();
 waferExposureHistory = bl12014.WaferExposureHistory();
 waferExposureHistory.addFakeExposures();
 
-
+%{
 cTcpipDeltaTau = '192.168.20.23';
 commDeltaTauPowerPmac = deltatau.PowerPmac(...
     'cHostname', cTcpipDeltaTau ...
 );
 commDeltaTauPowerPmac.init();
-
+%}
 
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
@@ -59,7 +59,6 @@ h = figure(...
 );
 
 ui.build(h, 10, 10);
-ui.connectDeltaTauPowerPmac(commDeltaTauPowerPmac)
 
 
  

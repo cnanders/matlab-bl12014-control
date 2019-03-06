@@ -19,23 +19,19 @@ javaaddpath(fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
 
-cTcpipDeltaTau = '192.168.20.23';
-commDeltaTauPowerPmac = deltatau.PowerPmac(...
-    'cHostname', cTcpipDeltaTau ...
-);
-commDeltaTauPowerPmac.init();
-
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware();
 
 ui = bl12014.ui.PowerPmacWorkingMode(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 
-h = figure();
+h = figure()
 ui.build(h, 10, 10);
+hardware.setIsConnectedDeltaTauPowerPmac(true)
 
-ui.connectDeltaTauPowerPmac(commDeltaTauPowerPmac)
 
 
  

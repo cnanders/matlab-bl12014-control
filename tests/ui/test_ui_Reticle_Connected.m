@@ -23,7 +23,7 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-co
 addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
 
 % hardware = bl12014.Hardware();
-
+%{
 cTcpipDeltaTau = '192.168.20.23';
 commDeltaTauPowerPmac = deltatau.PowerPmac(...
     'cHostname', cTcpipDeltaTau ...
@@ -32,14 +32,39 @@ commDeltaTauPowerPmac.init();
 
 
 clock = mic.Clock('Master');
+%}
+
+cDirRigol = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src');
+addpath(cDirRigol)
+
+
+hardware = bl12014.Hardware();
+clock = mic.Clock('Master');
+uiClock = mic.ui.Clock(clock);
+
 
 ui = bl12014.ui.Reticle(...
-    'clock', clock ...
+    'hardware', hardware, ...
+    'clock', clock, ...
+    'uiClock', uiClock ...
 );
 
-ui.build();
-ui.connectDeltaTauPowerPmac(commDeltaTauPowerPmac)
 
+dWidth = 1650;
+dHeight = 900;
+
+
+dScreenSize = get(0, 'ScreenSize');
+h = figure(...
+    'Position', [ ...
+        (dScreenSize(3) - dWidth)/2 ...
+        (dScreenSize(4) - dHeight)/2 ...
+        dWidth ...
+        dHeight ...
+    ] ...
+);
+
+ui.build(h, 10, 10);
 
  
 

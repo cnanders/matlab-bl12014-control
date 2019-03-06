@@ -71,6 +71,9 @@ classdef Hardware < mic.Base
         lIsConnectedKeithley6482Reticle = false
         
         
+        commDataTranslation
+        commDataTranslationVirtual
+        lIsConnectedDataTranslation = false
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
@@ -153,6 +156,34 @@ classdef Hardware < mic.Base
                 this.jMet5Instruments = cxro.met5.Instruments(this.cDirMet5InstrumentsConfig);
             end
             comm = this.jMet5Instruments;
+        end
+        
+        function l = getIsConnectedDataTranslation(this)
+            l = this.lIsConnectedDataTranslation;
+        end
+        
+        function setIsConnectedDataTranslation(this, lVal)
+           this.lIsConnectedDataTranslation = lVal;
+        end
+        
+        function comm = getDataTranslation(this)
+            
+            if this.lIsConnectedDataTranslation
+                
+                if isempty(this.commDataTranslation)
+                   this.commDataTranslation = datatranslation.MesasurPoint(this.cTcpipDataTranslation);
+                    
+                    % Connect the instrument through TCP/IP
+                    this.commDataTranslation.connect();
+
+                    % Enable readout on protected channels
+                    this.commDataTranslation.enable();
+                end
+                comm = this.commDataTranslation;
+            else
+                comm = this.commDataTranslationVirtual;
+                
+            end
         end
         
         % WAFER DOSE MONITOR (KEITHLEY 6482)
@@ -371,6 +402,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
+            this.commDataTranslation = datatranslation.MeasurPointVirtual();
             % this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
                         
 
