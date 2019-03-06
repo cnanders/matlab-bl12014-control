@@ -16,7 +16,23 @@ cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control'
 addpath(genpath(cDirMic));
 
 ui = bl12014.ui.MeasurPointLogPlotter();
-ui.build();
+
+
+dWidth = 1650;
+dHeight = 900;
+
+
+dScreenSize = get(0, 'ScreenSize');
+h = figure(...
+    'Position', [ ...
+        (dScreenSize(3) - dWidth)/2 ...
+        (dScreenSize(4) - dHeight)/2 ...
+        dWidth ...
+        dHeight ...
+    ] ...
+);
+
+ui.build(h, 10, 10);
 
 
  
