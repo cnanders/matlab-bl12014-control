@@ -41,8 +41,11 @@ function  appendValuesToLogFile(mp, cPath )
         channels = 20 : 23;
         readings = [readings mp.measure_temperature_rtd(channels, 'PT1000')];
         
-        channels = 24: 31;
+        channels = 24 : 31;
         readings = [readings mp.measure_temperature_rtd(channels, 'PT100')];
+        
+        channels = 32 : 47;
+        readings = [readings mp.measure_voltage(channels)];
         
         % Cannot use this original code because it assumes the default
         % sensor type, which cannot be stored on hardware, afaik

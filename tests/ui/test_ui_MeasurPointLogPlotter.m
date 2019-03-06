@@ -15,11 +15,18 @@ cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
 addpath(genpath(cDirMic));
 
-ui = bl12014.ui.MeasurPointLogPlotter();
+hardware = bl12014.Hardware();
+clock = mic.Clock('Master');
+uiClock = mic.ui.Clock(clock);
+
+ui = bl12014.ui.MeasurPointLogPlotter(...
+    'hardware', hardware, ...
+    'uiClock', uiClock ...
+);
 
 
 dWidth = 1650;
-dHeight = 900;
+dHeight = 960;
 
 
 dScreenSize = get(0, 'ScreenSize');
