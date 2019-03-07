@@ -474,7 +474,13 @@ classdef LogPlotter < mic.Base
             
             % Update text values
             % First column is the serial date, so skip it
+            
+            [dRows, dCols] = size(this.dData);
             for n = 1 : length(this.uiTextValues)
+                
+                if n + 1 > dCols
+                    continue
+                end
                 cVal = sprintf('%1.2f', this.dData(end, n + 1));
                 this.uiTextValues(n).set(cVal);
             end
@@ -485,6 +491,10 @@ classdef LogPlotter < mic.Base
             % column of data
             
             dChannelsToPlot = this.getChannelsToPlot();
+            
+            % Support legacy log files that may not have as many
+            % columns as are now possible.
+            dChannelsToPlot(dChannelsToPlot > dCols) = [];
             
 
             if length(dChannelsToPlot) == 0
