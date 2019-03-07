@@ -234,7 +234,7 @@ classdef MFDriftMonitor < mic.Base
             
             % Instantiate drift monitor immediately, although don't connect
             % yet
-            this.apiDriftMonitor = this.hardware.getMFDriftMonitor();
+            this.apiDriftMonitor = this.hardware.getMfDriftMonitorMiddleware();
             
             
             % Init DriftMonitor Hardware comm (connect button)

@@ -54,6 +54,18 @@ classdef MFDriftMonitor < handle
             u32 = this.u32Capacity;
         end
         
+        % Returns approximate Optical Power for all axes.
+        % @return {double 4x1}
+        function d = dmiGetAxesOpticalPower(this)
+            d = randn(4, 1) * 0.1 + 5;
+        end
+            
+        % Returns approximate Optical DC Power for all axes.
+        % @return {double 4x1}
+        function d = dmiGetAxesOpticalPowerDC(this)
+            d = randn(4, 1) * 0.1 + 5;
+        end
+        
         
     end
     

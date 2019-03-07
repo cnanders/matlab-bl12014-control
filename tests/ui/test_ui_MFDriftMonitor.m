@@ -21,9 +21,9 @@ hardware = bl12014.Hardware();
 % 
 % switch cMode
 %     case 'virtual'
-%         APIDriftMonitor     = hardware.getMFDriftMonitorVirtual();
+%         APIDriftMonitor     = hardware.getMfDriftMonitorMiddlewareVirtual();
 %     case 'real'
-%         APIDriftMonitor     = hardware.getMFDriftMonitor();
+%         APIDriftMonitor     = hardware.getMfDriftMonitorMiddleware();
 %         APIHexapod          = hardware.getLSIHexapod();
 % end
 

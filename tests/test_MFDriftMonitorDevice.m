@@ -16,7 +16,7 @@ addpath(genpath(cDirMic));
 
 % Hardware is exposed in the main app
 hardware = bl12014.Hardware();
-apiDriftMonitor = hardware.getMFDriftMonitor();
+apiDriftMonitor = hardware.getMfDriftMonitorMiddleware();
 
 % Instantiate a HS device accessor:
 HSDevice = bl12014.device.GetNumberFromSimpleHeightSensorZ(apiDriftMonitor);

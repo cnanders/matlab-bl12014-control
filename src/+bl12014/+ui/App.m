@@ -36,7 +36,7 @@ classdef App < mic.Base
         uiHeightSensorLEDs
         uiCameraLEDs
         uiScanResultPlot2x2
-        uiMeasurPointLogPlotter
+        uiLogPlotter
         uiPOCurrent
         uiMfDriftMonitorVibration
         uiButtonListClockTasks
@@ -67,7 +67,7 @@ classdef App < mic.Base
         uiClockHeightSensorLEDs
         uiClockCameraLEDs
         uiClockScanResultPlot2x2
-        uiClockMeasurPointLogPlotter
+        uiClockLogPlotter
         uiClockPOCurrent
         uiClockMfDriftMonitorVibration
         uiClockMfDriftMonitor
@@ -98,7 +98,7 @@ classdef App < mic.Base
             'PPMAC Status', ....
             'PPMAC Hydra Mot Min', ...
             'Camera LEDs', ...
-            'MeasurPoint Log', ...
+            'Log Plotter', ...
             'Height Sensor LEDs', ...
             'Network Status', ...
             '2x2 Plotter' ...
@@ -295,8 +295,8 @@ classdef App < mic.Base
            switch cTab
                case 'Beamline'
                     this.uiBeamline.updateAxesCrosshair(this.hFigureNew);
-               case 'MeasurPoint Log'
-                    this.uiMeasurPointLogPlotter.setTextPlotXPlotYBasedOnAxesCurrentPoint(this.hFigureNew);
+               case 'Log Plotter'
+                    this.uiLogPlotter.setTextPlotXPlotYBasedOnAxesCurrentPoint(this.hFigureNew);
            end
            
         end
@@ -360,8 +360,7 @@ classdef App < mic.Base
             delete(this.uiPowerPmacStatus);
             delete(this.uiPowerPmacHydraMotMin);
             
-            % Delete the clock
-            delete(this.clock);
+            
                        
         end 
         
@@ -380,7 +379,7 @@ classdef App < mic.Base
                 'uiReticle', ...
                 'uiWafer', ...
                 'uiScanResultPlot2x2', ...
-                'uiMeasurPointLogPlotter', ...
+                'uiLogPlotter', ...
                 'uiMfDriftMonitorVibration', ...
              };
             
@@ -499,8 +498,6 @@ classdef App < mic.Base
         
         function init(this)
             
-            this.clock = mic.Clock('Master');
-            
             this.waferExposureHistory = bl12014.WaferExposureHistory();
             
             % Initialize cell of function handle callbacks for each tab of 
@@ -517,8 +514,7 @@ classdef App < mic.Base
                 'ceTabNames',  this.cecTabs ...
             );
                                    
-            % Set clock, required for drift monitor middle layer
-            this.hardware.setClock(this.clock);  
+            
             
             this.uiClockNetworkCommunication = mic.ui.Clock(this.clock);
             this.uiClockBeamline = mic.ui.Clock(this.clock);
@@ -539,7 +535,7 @@ classdef App < mic.Base
             this.uiClockHeightSensorLEDs = mic.ui.Clock(this.clock);
             this.uiClockCameraLEDs = mic.ui.Clock(this.clock);
             this.uiClockScanResultPlot2x2 = mic.ui.Clock(this.clock);
-            this.uiClockMeasurPointLogPlotter = mic.ui.Clock(this.clock);
+            this.uiClockLogPlotter = mic.ui.Clock(this.clock);
                 this.uiClockPOCurrent = mic.ui.Clock(this.clock);
             this.uiClockMfDriftMonitorVibration = mic.ui.Clock(this.clock);
             this.uiClockMfDriftMonitor = mic.ui.Clock(this.clock);
@@ -603,7 +599,10 @@ classdef App < mic.Base
                 'uiClock', this.uiClockPowerPmacHydraMotMin ...
             );
             
-            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration('clock', this.uiClockMfDriftMonitorVibration);
+            this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration(...
+                'hardware', this.hardware, ...
+                'clock', this.uiClockMfDriftMonitorVibration ...
+            );
             this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.uiClockVibrationIsolationSystem);
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.uiClockTempSensors);
             this.uiFocusSensor = bl12014.ui.FocusSensor(...
@@ -676,7 +675,10 @@ classdef App < mic.Base
                 'hardware', this.hardware ...
             );
             
-            this.uiMeasurPointLogPlotter = bl12014.ui.MeasurPointLogPlotter();
+            this.uiLogPlotter = bl12014.ui.LogPlotter(...
+                'hardware', this.hardware, ...
+                'uiClock', this.uiClockLogPlotter ...
+            );
             
             addlistener(this.uiScan.uiPrescriptionTool.uiFemTool, 'eSizeChange', @this.onFemToolSizeChange);
             addlistener(this.uiScan.uiPrescriptionTool, 'eNew', @this.onPrescriptionToolNew);
@@ -768,7 +770,7 @@ classdef App < mic.Base
             this.uiClockHeightSensorLEDs.stop();
             this.uiClockCameraLEDs.stop();
             this.uiClockScanResultPlot2x2.stop();
-            this.uiClockMeasurPointLogPlotter.stop();
+            this.uiClockLogPlotter.stop();
             this.uiClockPOCurrent.stop();
             this.uiClockMfDriftMonitorVibration.stop();
             this.uiClockMfDriftMonitor.stop();
@@ -817,8 +819,8 @@ classdef App < mic.Base
                     this.uiClockScanResultPlot2x2.start();
                 case 'Height Sensor LEDs'
                     this.uiClockHeightSensorLEDs.start();
-                case 'MeasurPoint Log'
-                    this.uiClockMeasurPointLogPlotter.start();
+                case 'Log Plotter'
+                    this.uiClockLogPlotter.start();
                 case 'Network Status'
                     this.uiClockNetworkCommunication.start();
                 case 'Tune Flux Density'
@@ -857,7 +859,6 @@ classdef App < mic.Base
                     this.uiM143.build(hTab, 10, 30);
                 case 'MA'
                     this.uiMA.build(hTab, 10, 30);
-                
                 case 'VIS'
                     this.uiVibrationIsolationSystem.build(hTab, 10, 30);
                 case 'Drift Monitor Vib'
@@ -882,8 +883,8 @@ classdef App < mic.Base
                     this.uiScanResultPlot2x2.build(hTab, 10, 30);
                 case 'Height Sensor LEDs'
                     this.uiHeightSensorLEDs.build(hTab, 10, 30);
-                case 'MeasurPoint Log'
-                    this.uiMeasurPointLogPlotter.build(hTab, 10, 10);
+                case 'Log Plotter'
+                    this.uiLogPlotter.build(hTab, 10, 10);
                 case 'Network Status'
                     this.uiNetworkCommunication.build(hTab, 10, 10);
                 case 'Tune Flux Density'

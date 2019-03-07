@@ -35,7 +35,7 @@ zWafer = GetSetNumberFromDeltaTauPowerPmac(...
 
 % Hardware is exposed in the main app
 hardware = bl12014.Hardware();
-apiDriftMonitor = hardware.getMFDriftMonitor();
+apiDriftMonitor = hardware.getMfDriftMonitorMiddleware();
 
 % Instantiate a HS device accessor:
 zHeightSensor = bl12014.device.GetNumberFromSimpleHeightSensorZ(apiDriftMonitor);

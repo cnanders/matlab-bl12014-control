@@ -75,7 +75,6 @@ classdef Logger < mic.Base
     
         % Destructor
         function delete(this)
-            
             if this.clock.has(this.id())
                 this.clock.remove(this.id())
             end
@@ -123,25 +122,33 @@ classdef Logger < mic.Base
 
             try
                 fid = fopen(cPath, 'w');
-                % Write the header
+                
+                %% Header general info
                 [tc, rtd, volt] = this.hardware.getDataTranslation().channelType();
                 fprintf(fid, '# Hardware configuration:\n');
                 fprintf(fid, '# TC sensor channels = %s\n', num2str(tc,'%1.0f '));
                 fprintf(fid, '# RTD sensor channels = %s\n', num2str(rtd,'%1.0f '));
                 fprintf(fid, '# Volt sensor channels = %s\n', num2str(volt,'%1.0f '));
 
-                % write column headers
+                %% Header
+                
                 fprintf(fid, '# serialdate,');
-                % write channel names
-
+                
+                % datatranslation measurpoint (dtmp) channels
                 channels = 0 : 47;
                 for n = 1 : length(channels)
                     fprintf(fid, 'ch %1.0f,', channels(n));
                 end
+                
+                % dmi power
+                fprintf(fid, 'dmi1,dmi2,dmi3,dmi4,dmiDC1,dmiDC2,dmiDC3,dmiDC4,');
+                
                 fprintf(fid, '\n');
 
+                %% Subheader
+                
                 % write sensor types
-                fprintf(fid, '# sensor type ,');
+                fprintf(fid, '# ,');
                 channels = 0 : 7;
                 for n = channels
                     fprintf(fid, 'J,');
@@ -166,12 +173,14 @@ classdef Logger < mic.Base
                 for n = channels
                     fprintf(fid, 'PT100,');
                 end
-                fprintf(fid, '\n');
                 
                 channels = 32 : 47;
                 for n = channels
-                    fprintf(fid, 'NA,');
+                    fprintf(fid, ' ,');
                 end
+                
+                
+                
                 fprintf(fid, '\n');
 
                 
@@ -240,6 +249,9 @@ classdef Logger < mic.Base
                 % channel_list = 0 : 47; % channels are zero-indexed, 48 channels
                 % [readings, channel_map] = this.hardware.getDataTranslation().measure_multi(channel_list);
 
+                readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
+                readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
+                
                 for n = 1 : length(readings)
                     fprintf(fid, '%1.8f,', readings(n));
                     fprintf('%1.8f,', readings(n));

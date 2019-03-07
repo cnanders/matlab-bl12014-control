@@ -1,4 +1,4 @@
-classdef MeasurPointLogPlotter < mic.Base
+classdef LogPlotter < mic.Base
     
     % rcs
     
@@ -53,7 +53,15 @@ classdef MeasurPointLogPlotter < mic.Base
             '44 - Volts', ...
             '45 - Volts', ...
             '46 - Volts', ...
-            '47 - Volts' ...
+            '47 - Volts', ...
+            'DMI 1', ...
+            'DMI 2', ...
+            'DMI 3', ...
+            'DMI 4', ...
+            'DMI DC 1', ...
+            'DMI DC 2', ...
+            'DMI DC 3', ...
+            'DMI DC 4' ... 
         };
        
     end
@@ -63,7 +71,7 @@ classdef MeasurPointLogPlotter < mic.Base
         dWidth              = 1600;
         dHeight             = 960;
        
-    
+        cName = 'log-plotter-'
     end
     
     properties (Access = private)
@@ -110,7 +118,7 @@ classdef MeasurPointLogPlotter < mic.Base
         hardware
         
         % {mic.clock 1x1}
-        clock
+        % clock
         
         % {mic.ui.clock 1x1}
         uiClock
@@ -128,7 +136,7 @@ classdef MeasurPointLogPlotter < mic.Base
     methods
         
         
-        function this = MeasurPointLogPlotter(varargin)
+        function this = LogPlotter(varargin)
             
             
             for k = 1 : 2: length(varargin)
@@ -244,6 +252,7 @@ classdef MeasurPointLogPlotter < mic.Base
             dLeft = 10;
             dTop = 10;
             
+            %{
             this.uiButtonRefresh.build(...
                 this.hParent, ...
                 dLeft, ...
@@ -252,6 +261,7 @@ classdef MeasurPointLogPlotter < mic.Base
                 24 ...
             );
             dLeft = dLeft + 120;
+            %}
             
             this.uiButtonFile.build(...
                 this.hParent, ...
@@ -273,7 +283,7 @@ classdef MeasurPointLogPlotter < mic.Base
         
             dTop = 50;
             dLeft = this.dWidth - 400;
-            dWidth = 220;
+            dWidth = 240;
             
             dItemsPerCol = 32;
             for n = 1 : length(this.uiCheckboxes)
@@ -562,9 +572,14 @@ classdef MeasurPointLogPlotter < mic.Base
             this.initUiTextPlotX();
             this.initUiTextPlotY();
             
+            % update plot every 5 seconds
+            this.uiClock.add(@this.onClock, this.id(), 5);
+            
         end
         
-        
+        function onClock(this)
+             this.loadFileAndPlot();
+        end
         
         
         function buildAxes(this)

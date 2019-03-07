@@ -2,6 +2,7 @@ try
     purge
 end
 
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % bl12014 pkg
@@ -11,20 +12,22 @@ addpath(genpath(cDirBl12014));
 % dependencies
 cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 
+cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
+addpath(genpath(cDirMic));
 
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'cnanderson')));
-
-clock = mic.Clock('Master');
 hardware = bl12014.Hardware();
+clock = mic.Clock('Master');
+uiClock = mic.ui.Clock(clock);
 
-ui = bl12014.ui.MfDriftMonitorVibration(...
+ui = bl12014.ui.LogPlotter(...
     'hardware', hardware, ...
-    'clock', clock ...
+    'uiClock', uiClock ...
 );
 
+
 dWidth = 1650;
-dHeight = 900;
+dHeight = 960;
+
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
@@ -37,5 +40,8 @@ h = figure(...
 );
 
 ui.build(h, 10, 10);
+
+
  
 
+% ui.setFile('C:\Users\metmatlab\Documents\MATLAB\matlab-bl12014-control\src\save\fem-scans\20180524-131704__PRE_20180524-131505__RES_Fuji-1201E__RET_name1_R1C2__ILLUM_.__FEM_7x20\result.json');

@@ -56,10 +56,5 @@ app = bl12014.App(...
     'cDirMet5InstrumentsConfig', cDirMet5InstrumentsConfig ...
 );
 app.build();
-
-% Start the logger
-try 
-    test_MeasurPointLogger
-end
  
 

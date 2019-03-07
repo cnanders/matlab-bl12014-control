@@ -271,6 +271,9 @@ classdef MfDriftMonitorVibration < mic.Base
         dRawOfHeightSensor = zeros(24, 1);
         dRawOfDmi = zeros(4, 1);
         
+        % { bl12014.Hardware 1x1}
+        hardware
+        
         
     end
     
@@ -286,27 +289,21 @@ classdef MfDriftMonitorVibration < mic.Base
                 end
             end
             
-            this.device = bl12014.hardwareAssets.virtual.MFDriftMonitor();
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            if ~isa(this.clock, 'mic.Clock') && ...
+                ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock or mic.ui.Clock');
+            end
+            
+            
             this.init();
         
         end
         
-       
-        
-        % @param { < cxro.met5.device.mfdriftmonitorI 1x1}
-        function connectMfDriftMonitor(this, comm)
-            
-            % this.uiCommMfDriftMonitor.set(true);
-            this.device = comm;
-            
-        end
-        
-        
-        function disconnectMfDriftMonitor(this)
-            % this.uiCommMfDriftMonitor.set(false);
-            this.device = bl12014.hardwareAssets.virtual.MFDriftMonitor();
-        end
-        
+              
         function buildFigure(this)
             
             dScreenSize = get(0, 'ScreenSize');
@@ -780,7 +777,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 return
             end
             
-            this.samples = this.device.getSampleData(this.uiEditNumOfSamples.get());
+            this.samples = this.hardware.getMfDriftMonitor().getSampleData(this.uiEditNumOfSamples.get());
             
             this.dZ = this.getHeightSensorZFromSampleData(this.samples);
             this.dXY = this.getDmiPositionFromSampleData(this.samples);
@@ -795,7 +792,7 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         function saveLastNSamplesToFile(this, numSamples, cPath)
-            this.saveSamplesToFile(this.device.getSampleData(numSamples), cPath);
+            this.saveSamplesToFile(this.hardware.getMfDriftMonitor().getSampleData(numSamples), cPath);
         end
         
         function updateTexts(this)
@@ -1758,7 +1755,11 @@ classdef MfDriftMonitorVibration < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', sprintf('%s-mf-drift-monitor-comm', this.cName), ...
+                'fhGet', @() this.hardware.getIsConnectedMfDriftMonitor(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedMfDriftMonitor(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, '-mf-drift-monitor-comm'], ...
                 'cLabel', 'Mf Drift Monitor' ...
             );
         

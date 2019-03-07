@@ -2,7 +2,7 @@
 %
 % Every hardware communication requires the addition of four things:
 %
-% 1) Corresponding "comm" property (e.g., commMFDriftMonitor) represeting
+% 1) Corresponding "comm" property (e.g., commMfDriftMonitorMiddleware) represeting
 % the stored handle to the hardware component
 %
 % 2) Getter function: should return the comm if it is already initialized,
@@ -81,13 +81,18 @@ classdef Hardware < mic.Base
         lIsConnectedDeltaTauPowerPmac = false
         
         % {MFDriftMonitor}
-        commMFDriftMonitor
-        commMFDriftMonitorVirtual
-        lIsConnectedMFDriftMonitor = false
+        commMfDriftMonitorMiddleware
+        commMfDriftMonitorMiddlewareVirtual
+        lIsConnectedMfDriftMonitorMiddleware = false
         
         commRigolDG1000Z
         commRigolDG1000ZVirtual
         lIsConnectedRigolDG1000Z = false
+        
+        
+        commMfDriftMonitor
+        commMfDriftMonitorVirtual
+        lIsConnectedMfDriftMonitor = false
         
         
     end
@@ -119,6 +124,40 @@ classdef Hardware < mic.Base
             this.clock = clock;
         end
         
+        %% MF Drift Monitor (different than MfDriftMonitor Middleware
+        
+        function l = getIsConnectedMfDriftMonitor(this)
+            l = this.lIsConnectedMfDriftMonitor;
+        end
+        
+        function setIsConnectedMfDriftMonitor(this, lVal)
+           this.lIsConnectedMfDriftMonitor = lVal;
+        end
+                
+        function comm = getMfDriftMonitor(this)
+            if this.lIsConnectedMfDriftMonitor
+                if isempty(this.commMfDriftMonitor)
+                    
+                   if isempty(this.jMet5Instruments)
+                        this.getjMet5Instruments();
+                   end
+            
+                   try
+                        this.commMfDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
+                        this.commMfDriftMonitor.connect();
+                   catch mE
+                        error(getReport(mE));
+                   end
+                    
+                end
+                comm = this.commMfDriftMonitor;
+            else
+                comm = this.commMfDriftMonitorVirtual;
+            end            
+        end
+        
+        
+        %% Rigol DG1000Z
         
         function l = getIsConnectedRigolDG1000Z(this)
             l = this.lIsConnectedRigolDG1000Z;
@@ -171,7 +210,7 @@ classdef Hardware < mic.Base
             if this.lIsConnectedDataTranslation
                 
                 if isempty(this.commDataTranslation)
-                   this.commDataTranslation = datatranslation.MesasurPoint(this.cTcpipDataTranslation);
+                   this.commDataTranslation = datatranslation.MeasurPoint(this.cTcpipDataTranslation);
                     
                     % Connect the instrument through TCP/IP
                     this.commDataTranslation.connect();
@@ -213,6 +252,10 @@ classdef Hardware < mic.Base
             end
         end
         
+        
+        
+        %% Keithley6482Wafer
+        
         function l = getIsConnectedKeithley6482Wafer(this)
             l = this.lIsConnectedKeithley6482Wafer;
         end
@@ -240,6 +283,7 @@ classdef Hardware < mic.Base
             end
         end
         
+        %% Keithley6482Reticle
         
         function l = getIsConnectedKeithley6482Reticle(this)
             l = this.lIsConnectedKeithley6482Reticle;
@@ -268,22 +312,27 @@ classdef Hardware < mic.Base
             end
         end
         
-        function l = getIsConnectedMFDriftMonitor(this)
+        %% MfDriftMonitorMiddleware 
+        % This is a layer on top of MfDriftMonitor that is exposed
+        % from met5instruments in java that has a 
+        % different interface
+        
+        function l = getIsConnectedMfDriftMonitorMiddleware(this)
             
-            % l = this.lIsConnectedMFDriftMonitor;
-            l = this.getMFDriftMonitor().isConnected();
+            % l = this.lIsConnectedMfDriftMonitorMiddleware;
+            l = this.getMfDriftMonitorMiddleware().isConnected();
         end
         
-        function setIsConnectedMFDriftMonitor(this, lVal)
-           % this.lIsConnectedMFDriftMonitor = lVal;
+        function setIsConnectedMfDriftMonitorMiddleware(this, lVal)
+           % this.lIsConnectedMfDriftMonitorMiddleware = lVal;
            mic.Utils.ternEval(...
                lVal, ...
-               @() this.getMFDriftMonitor().connect(), ...
-               @() this.getMFDriftMonitor().disconnect() ...
+               @() this.getMfDriftMonitorMiddleware().connect(), ...
+               @() this.getMfDriftMonitorMiddleware().disconnect() ...
            )
         end
-        
-        function comm = getMFDriftMonitor(this)
+                
+        function comm = getMfDriftMonitorMiddleware(this)
             
             % This one is set up differently than some of the others,
             % it has virtualization built-in.  That is a little smarter,
@@ -294,14 +343,14 @@ classdef Hardware < mic.Base
             end
             
             % If first time, establish link with Drift Monitor middleware
-            if isempty(this.commMFDriftMonitor)
+            if isempty(this.commMfDriftMonitorMiddleware)
                 % Set up drift monitor bridge
-                this.commMFDriftMonitor     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
+                this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
                                 'jMet5Instruments', this.jMet5Instruments, ...
                                  'clock', this.clock);
             end
 
-            comm = this.commMFDriftMonitor;
+            comm = this.commMfDriftMonitorMiddleware;
             
         end
         
@@ -313,7 +362,7 @@ classdef Hardware < mic.Base
 %             if isempty(this.jMet5Instruments)
 %                 this.getjMet5Instruments();
 %             end
-%             if isempty(this.commMFDriftMonitor)
+%             if isempty(this.commMfDriftMonitorMiddleware)
 %                 CWCHexapod  = this.jMet5Instruments.getLsiHexapod();
 %                 % Hexapod bridge, not usually necessary
 %                 this.commLSIHexapod 	=  bl12014.hardwareAssets.middleware.CXROJavaStageAPI(...
@@ -337,7 +386,7 @@ classdef Hardware < mic.Base
         end
             
         function deleteMFDriftMonitor(this)
-            this.commMFDriftMonitor.disconnect();
+            this.commMfDriftMonitorMiddleware.disconnect();
         end
         
         function deleteLSIHexapod(this)
@@ -403,7 +452,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
-            % this.commMFDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
+            this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
                         
 
         end

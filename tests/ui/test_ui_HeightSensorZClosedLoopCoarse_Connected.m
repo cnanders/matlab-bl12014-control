@@ -21,7 +21,7 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppma
 
 % Hardware is exposed in the main app
 hardware = bl12014.Hardware();
-commDriftMonitor = hardware.getMFDriftMonitor();
+commDriftMonitor = hardware.getMfDriftMonitorMiddleware();
 
 clock = mic.Clock('Master');
 

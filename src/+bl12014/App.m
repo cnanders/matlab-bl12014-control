@@ -42,7 +42,14 @@ classdef App < mic.Base
     
 	properties
         
+        % {bl12015.Logger 1x1}
+        logger
+        
+        % {bl12014.Hardware 1x1}
         hardware
+        
+        % {mic.Clock 1x1}
+        clock
         
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
@@ -70,11 +77,7 @@ classdef App < mic.Base
         
         
         
-        % {MFDriftMonitor}
-        commMFDriftMonitor
-        commMfDriftMonitorMiddleware % created by hardware.getMFDriftMonitor()
-        
-        % {dataTranslation.MeasurPoint 1x1}
+         % {dataTranslation.MeasurPoint 1x1}
         commDataTranslationMeasurPoint
         
         % {npoint.LC400 1x1}
@@ -204,7 +207,12 @@ classdef App < mic.Base
            
             this.msg('bl12014.App.delete', this.u8_MSG_TYPE_INFO);
             this.destroyAndDisconnectAll();
+            
             delete(this.uiApp)
+            delete(this.logger);
+            
+            % Delete the clock
+            delete(this.clock);
             
         end
         
@@ -361,9 +369,7 @@ classdef App < mic.Base
             l = ~isempty(this.commDctCorbaProxy);
         end
         
-        function l = getMFDriftMonitor(this)
-            l = ~isempty(this.commMFDriftMonitor);
-        end
+        
         
         function l = getNPointLC400M142(this)
             l = ~isempty(this.commNPointLC400M142);
@@ -1122,70 +1128,9 @@ classdef App < mic.Base
             
         end
         
-        function initAndConnectMFDriftMonitor(this)
-            
-            this.msg('initAndConnectMFDriftMonitor', ...
-                this.u8_MSG_TYPE_INFO ...
-            );
         
-            if this.getMFDriftMonitor()
-                return
-            end
-            
-            try
-                
-                % The high-speed analysis tool CA built uses the direct
-                % Java class that Met5Instruments exposes
-                
-                this.initAndConnectMet5Instruments();
-                this.commMFDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
-                this.commMFDriftMonitor.connect();
-                
-                % Create an instance of Ryan's Drift Monitor Middleware and
-                % connect it.  The closed loop stuff in the wafer UI needs
-                % it
-                
-                this.commMfDriftMonitorMiddleware = this.hardware.getMFDriftMonitor();
-                this.commMfDriftMonitorMiddleware.connect();
-         
-            catch mE
-                this.commMFDriftMonitor = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-               
-                return;
-            end
-            
-     
-            this.uiApp.uiMfDriftMonitorVibration.connectMfDriftMonitor(this.commMFDriftMonitor);
-            this.uiApp.uiWafer.connectMfDriftMonitorMiddleware(this.commMfDriftMonitorMiddleware);
-            
-            % Here connect any UIs that use this
-            
-%             this.uiApp.uiMFDriftMonitor.setDevice(this.commMFDriftMonitor);
-%             this.uiApp.uiMFDriftMonitor.turnOn();
-            
-        end
         
-        function destroyAndDisconnectMFDriftMonitor(this)
-            
-            this.msg('destroyAndConnectMFDriftMonitor', ...
-                this.u8_MSG_TYPE_INFO ...
-            );
-        
-            if ~this.getMFDriftMonitor()
-                return
-            end
-            
-            this.uiApp.uiMfDriftMonitorVibration.disconnectMfDriftMonitor();
-            this.uiApp.uiWafer.disconnectMfDriftMonitorMiddleware();
-            
-            this.commMFDriftMonitor.disconnect();
-            this.commMFDriftMonitor = [];
-            
-            this.commMfDriftMonitorMiddleware.disconnect();
-            this.commMfDriftMonitorMiddleware = [];
-        end
-        
+       
         
         function initAndConnectNPointLC400MA(this)
             
@@ -1610,9 +1555,7 @@ classdef App < mic.Base
             % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
 
             
-            this.uiApp.uiWafer.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
-            this.uiApp.uiWafer.uiCommMfDriftMonitor.turnOn();
-
+           
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
             
@@ -1641,9 +1584,6 @@ classdef App < mic.Base
             this.uiApp.uiDriftMonitor.uicConnectHexapod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
             
-            this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.setDevice(gslcCommMFDriftMonitor);
-            this.uiApp.uiMfDriftMonitorVibration.uiCommMfDriftMonitor.turnOn();
-        
             
             % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
             % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
@@ -1688,10 +1628,23 @@ classdef App < mic.Base
         
         function init(this)
             
+            this.clock = mic.Clock('bl12014-control');
+            
             this.hardware = bl12014.Hardware();
+            
+            % Set clock, required for drift monitor middle layer
+            this.hardware.setClock(this.clock); 
+            this.hardware.setIsConnectedDataTranslation(true); % force real hardware
+            this.hardware.setIsConnectedMfDriftMonitor(true); % force real hardware
+            
+            this.logger = bl12014.Logger(...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
             
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton, ...
+                'clock', this.clock, ...
                 'hardware', this.hardware ...
             ); 
         

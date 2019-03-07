@@ -210,7 +210,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhIsReadyMotor  = @() this.uiCoarseZ.isReady() & this.uiFineZ.isReady();
             dTolerance      = this.dZTol;
            
-            fhGetSensor     = @() this.hardware.getMFDriftMonitor().getSimpleZ();
+            fhGetSensor     = @() this.hardware.getMfDriftMonitorMiddleware().getSimpleZ();
             fhGetMotor      = @() this.uiFineZ.getValCal('nm');
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
@@ -276,7 +276,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
             fhIsReadyMotor  = @() this.uiTiltX.isReady();
             dTolerance      = this.dTiltXTol;
-            fhGetSensor     = @()this.getFreshHSValue(this.hardware.getMFDriftMonitor(), 1) * mrad2urad;   
+            fhGetSensor     = @()this.getFreshHSValue(this.hardware.getMfDriftMonitorMiddleware(), 1) * mrad2urad;   
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
                 this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
@@ -303,7 +303,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
             fhIsReadyMotor  = @() this.uiTiltY.isReady();
             dTolerance      = this.dTiltYTol;
-            fhGetSensor     = @() this.getFreshHSValue(this.hardware.getMFDriftMonitor(), 2) * mrad2urad; 
+            fhGetSensor     = @() this.getFreshHSValue(this.hardware.getMfDriftMonitorMiddleware(), 2) * mrad2urad; 
             
             device = mic.device.GetSetNumberFromClosedLoopControl(...
                 this.uiClock, fhGetSensor, fhGetMotor, fhSetMotor, fhIsReadyMotor, dTolerance,...
