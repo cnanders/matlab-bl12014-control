@@ -97,7 +97,45 @@ classdef Logger < mic.Base
             fprintf('TC   sensor channels = %s\n',num2str(tc,'%1.0f '))
             fprintf('RTD  sensor channels = %s\n',num2str(rtd,'%1.0f '))
             fprintf('Volt sensor channels = %s\n',num2str(volt,'%1.0f '))
+                        
+            channels = 0 : 7;
+            for n = channels
+               this.hardware.getDataTranslation().setSensorType(n, 'J');
+            end
 
+            channels = 8 : 15;
+            for n = channels
+                this.hardware.getDataTranslation().setSensorType(n, 'PT1000');
+            end
+
+            channels = 16 : 19;
+            for n = channels
+                this.hardware.getDataTranslation().setSensorType(n, 'PT100');
+            end
+
+            channels = 20 : 23;
+            for n = channels
+               this.hardware.getDataTranslation().setSensorType(n, 'PT1000');
+            end
+
+            channels = 24 : 31;
+            for n = channels
+                this.hardware.getDataTranslation().setSensorType(n, 'PT100');
+            end
+
+            channels = 32 : 47;
+            for n = channels
+                this.hardware.getDataTranslation().setSensorType(n, 'V');
+            end
+            
+            this.hardware.getDataTranslation().setScanList(0:47);
+            this.hardware.getDataTranslation().setScanPeriod(0.1);
+            % Make sure buffer only large enough for storing each value
+            % once. Need 4 bytes per value
+            this.hardware.getDataTranslation().setSizeOfScanBuffer(4 * 48); 
+            this.hardware.getDataTranslation().initiateScan();
+            % this.hardware.getDataTranslation().abortScan();
+            this.hardware.getDataTranslation().clearBytesAvailable();
             this.clock.add(@this.onClock, this.id(), 5);
             
         end
@@ -209,6 +247,10 @@ classdef Logger < mic.Base
             end
 
 
+            if this.hardware.getDataTranslation().getIsBusy()
+                return
+            end
+            
             % open file in append mode
             fid = fopen(cPath, 'a');
 
@@ -217,14 +259,13 @@ classdef Logger < mic.Base
             % https://www.mathworks.com/help/exlink/convert-dates-between-microsoft-excel-and-matlab.html
 
             fprintf('logging: ');
-
             fprintf(fid, '%1.8f,', now - 693960);
             fprintf('%1.8f,', now - 693960);
-
 
             readings = [];
             try
 
+                %{
                 channels = 0 : 7;
                 readings = [readings this.hardware.getDataTranslation().measure_temperature_tc(channels, 'J')];
 
@@ -242,13 +283,10 @@ classdef Logger < mic.Base
 
                 channels = 32 : 47;
                 readings = [readings this.hardware.getDataTranslation().measure_voltage(channels)];
-
-                % Cannot use this original code because it assumes the default
-                % sensor type, which cannot be stored on hardware, afaik
-
-                % channel_list = 0 : 47; % channels are zero-indexed, 48 channels
-                % [readings, channel_map] = this.hardware.getDataTranslation().measure_multi(channel_list);
-
+                %}
+                
+                readings = [readings this.hardware.getDataTranslation().getScanData()];
+                
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
                 

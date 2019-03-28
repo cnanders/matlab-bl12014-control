@@ -1914,6 +1914,8 @@ classdef Scan < mic.Base
             st.z_wafer_coarse_mm = this.uiWafer.uiCoarseStage.uiZ.getValCal('mm');
             st.tilt_x_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltX.getValCal('urad');
             st.tilt_y_wafer_coarse_urad = this.uiWafer.uiCoarseStage.uiTiltY.getValCal('urad');
+            
+            % TODO add mfdriftmon middleware foce update call
             st.tilt_x_wafer_height_sensor_urad = this.uiWafer.uiWaferTTZClosedLoop.uiCLTiltX.getValCal('urad');
             st.tilt_y_wafer_height_sensor_urad = this.uiWafer.uiWaferTTZClosedLoop.uiCLTiltY.getValCal('urad');
             
@@ -1933,6 +1935,7 @@ classdef Scan < mic.Base
             
             st.z_wafer_fine_nm = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
             st.z_height_sensor_nm = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal('nm');
+            % st.z_height_sensor_cal_nm = this.hardware.getMfDriftMonitorMiddleware.
             
             
             % VIS
@@ -1952,6 +1955,8 @@ classdef Scan < mic.Base
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
+            
+            st.temp_c_po_m2_0200 = this.hardware.getDataTranslation().measure_temperature_rtd(31, 'PT100');
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
         end

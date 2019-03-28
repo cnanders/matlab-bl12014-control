@@ -256,7 +256,6 @@ classdef App < mic.Base
             this.destroyAndDisconnectCxroHeightSensor();
             this.destroyAndDisconnectDataTranslationMeasurPoint();
             
-            this.destroyAndDisconnectMFDriftMonitor();
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
             this.destroyAndDisconnectNewFocusModel8742MA();
@@ -1466,14 +1465,7 @@ classdef App < mic.Base
                 'fhSetTrue', @this.initAndConnectGalilD142, ...
                 'fhSetFalse', @this.destroyAndDisconnectGalilD142 ...
             );
-        
-        
-            gslcCommMFDriftMonitor = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getMFDriftMonitor, ...
-                'fhSetTrue', @this.initAndConnectMFDriftMonitor, ...
-                'fhSetFalse', @this.destroyAndDisconnectMFDriftMonitor ...
-            );
-        
+                    
 
             %this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
             %this.uiApp.uiBeamline.uiShutter.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
@@ -1626,6 +1618,7 @@ classdef App < mic.Base
         end
         
         
+        
         function init(this)
             
             this.clock = mic.Clock('bl12014-control');
@@ -1636,7 +1629,7 @@ classdef App < mic.Base
             this.hardware.setClock(this.clock); 
             this.hardware.setIsConnectedDataTranslation(true); % force real hardware
             this.hardware.setIsConnectedMfDriftMonitor(true); % force real hardware
-            
+                        
             this.logger = bl12014.Logger(...
                 'hardware', this.hardware, ...
                 'clock', this.clock ...

@@ -71,7 +71,7 @@ classdef MFDriftMonitor < mic.Base
     
     properties (SetAccess = private)
         
-        dGraphUpdatePeriod = 0.5
+        dGraphUpdatePeriod = 1
         
         % Channels to display, set these variables to a subset of this list
         % to show less channels
@@ -80,7 +80,7 @@ classdef MFDriftMonitor < mic.Base
         dDMI
         dDMIScanningTime
         dHS
-        dHSScanningTime
+        dGraphTimeSteps
         % Number of samples that are averaged
         dNumAve = 10
         
@@ -914,7 +914,12 @@ classdef MFDriftMonitor < mic.Base
                     end
                 end
                 this.dHS(1:length(this.dHeightSensorDisplayChannels),end+1)=HSValue; 
-                this.dHSScanningTime(end+1)=length(this.dHSScanningTime)*this.uieUpdateInterval.get();
+                if isempty(this.dGraphTimeSteps)
+                    this.dGraphTimeSteps = 0;
+                else
+                    this.dGraphTimeSteps(end+1)=this.dGraphTimeSteps(end) + this.dGraphUpdatePeriod;
+                end
+                
                 for k=1:length(this.dHeightSensorDisplayChannels)
                     if this.uicbHeightSensorChannels{k}.get()
                         plotHS(end+1,:)=this.dHS(k,:);
@@ -931,7 +936,7 @@ classdef MFDriftMonitor < mic.Base
                 if strcmp(this.uitgMode.getSelectedTabName(), 'Monitor')
                     % Plot dmi
                     if ~isempty(plotDMI)
-                        plot(this.haDMI, this.dDMIScanningTime,plotDMI);legend(this.haDMI,lgdDMI, 'location', 'southwest');
+                        plot(this.haDMI, this.dGraphTimeSteps,plotDMI);legend(this.haDMI,lgdDMI, 'location', 'southwest');
                     end
                     this.haDMI.Title.String = 'DMI trace';
                     this.haDMI.XLabel.String = 'Scan Time (s)';
@@ -939,7 +944,7 @@ classdef MFDriftMonitor < mic.Base
                     
                     % Plot HS
                     if ~isempty(plotHS)
-                        plot(this.haHS, this.dHSScanningTime,plotHS);legend(this.haHS,lgdHS, 'location', 'southwest');
+                        plot(this.haHS, this.dGraphTimeSteps,plotHS);legend(this.haHS,lgdHS, 'location', 'southwest');
                     end
                     this.haHS.Title.String = 'Height sensor trace';
                     this.haHS.XLabel.String = 'Scan Time (s)';
@@ -948,9 +953,9 @@ classdef MFDriftMonitor < mic.Base
                 
                 % Plot on wafer level if tab is active
 %                 if strcmp(this.uitgMode.getSelectedTabName(), 'Wafer-level')
-%                     plot(this.haLevelMonitors{1}, this.dHSScanningTime, dZVals, 'k');
-%                     plot(this.haLevelMonitors{2}, this.dHSScanningTime, dRxVals, 'k');
-%                     plot(this.haLevelMonitors{3}, this.dHSScanningTime, dRyVals, 'k');
+%                     plot(this.haLevelMonitors{1}, this.dGraphTimeSteps, dZVals, 'k');
+%                     plot(this.haLevelMonitors{2}, this.dGraphTimeSteps, dRxVals, 'k');
+%                     plot(this.haLevelMonitors{3}, this.dGraphTimeSteps, dRyVals, 'k');
 %                     
 %                     this.haLevelMonitors{1}.NextPlot = 'add';
 %                     this.haLevelMonitors{2}.NextPlot = 'add';
@@ -968,8 +973,8 @@ classdef MFDriftMonitor < mic.Base
 %                     dRyH = dRyTarget + this.dHS_RTOL/2;
 %                     dRyL = dRyTarget - this.dHS_RTOL/2;
 %                     
-%                     dFirstIdx = this.dHSScanningTime(1);
-%                     dLastIdx = this.dHSScanningTime(end);
+%                     dFirstIdx = this.dGraphTimeSteps(1);
+%                     dLastIdx = this.dGraphTimeSteps(end);
 %                     
 %                     % Plot centerline
 %                     plot(this.haLevelMonitors{1}, [dFirstIdx, dLastIdx], dZTarget*[1, 1], 'g');
@@ -1026,7 +1031,7 @@ classdef MFDriftMonitor < mic.Base
                     
                 case {this.uibClearHS, this.uibClearLevelPlots}
                     this.dHS=[];
-                    this.dHSScanningTime=[];
+                    this.dGraphTimeSteps=[];
                 case this.uibResetDMI
                     this.apiDriftMonitor.setDMIZero();
             end

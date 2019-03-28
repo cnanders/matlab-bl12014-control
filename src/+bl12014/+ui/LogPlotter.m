@@ -54,10 +54,10 @@ classdef LogPlotter < mic.Base
             '45 - Volts', ...
             '46 - Volts', ...
             '47 - Volts', ...
-            'DMI 1', ...
-            'DMI 2', ...
-            'DMI 3', ...
-            'DMI 4', ...
+            'DMI AC 1', ...
+            'DMI AC 2', ...
+            'DMI AC 3', ...
+            'DMI AC 4', ...
             'DMI DC 1', ...
             'DMI DC 2', ...
             'DMI DC 3', ...
@@ -91,6 +91,8 @@ classdef LogPlotter < mic.Base
         
         uiTextPlotX
         uiTextPlotY
+        
+        uiToggleLive
         
         % storage for handles returned by plot()
         hLines
@@ -252,7 +254,7 @@ classdef LogPlotter < mic.Base
             dLeft = 10;
             dTop = 10;
             
-            %{
+            
             this.uiButtonRefresh.build(...
                 this.hParent, ...
                 dLeft, ...
@@ -261,7 +263,7 @@ classdef LogPlotter < mic.Base
                 24 ...
             );
             dLeft = dLeft + 120;
-            %}
+            
             
             this.uiButtonFile.build(...
                 this.hParent, ...
@@ -278,6 +280,14 @@ classdef LogPlotter < mic.Base
                 dLeft, ...
                 dTop, ...
                 1200, ...
+                24 ...
+            );
+        
+            this.uiToggleLive.build(...
+                this.hParent, ...
+                1200, ...
+                dTop, ...
+                200, ...
                 24 ...
             );
         
@@ -560,8 +570,40 @@ classdef LogPlotter < mic.Base
             end
             
         end
+        
+        function onToggleLive(this, src, evt)
+            
+            if this.uiToggleLive.get()
+                
+                % Switch to live mode
+                
+                this.dData = []; % purge dData
+                
+                if this.uiClock.has(this.id())
+                    this.uiClock.remove(this.id())
+                end
+                
+                this.uiClock.add(@this.onClockLive, this.id(), 1)
+                
+            else
+                % Switch to log file mode
+                 if this.uiClock.has(this.id())
+                    this.uiClock.remove(this.id())
+                 end
+                 this.loadFileAndPlot();   
+                 % this.uiClock.add(@this.onClock, this.id(), 5 * 60);                
+                
+            end
+            
+        end
             
         function init(this)
+            
+            this.uiToggleLive = mic.ui.common.Toggle(...
+                'cTextTrue', 'Stop Live Trace (Show Log File)', ...
+                'cTextFalse', 'Show Fast Live Trace', ...
+                'fhDirectCallback', @this.onToggleLive ...
+            );
             
             this.uiButtonFile = mic.ui.common.Button(...
                 'cText', 'Choose File', ...
@@ -583,9 +625,70 @@ classdef LogPlotter < mic.Base
             this.initUiTextPlotY();
             
             % update plot every 5 seconds
-            this.uiClock.add(@this.onClock, this.id(), 5);
+            % this.uiClock.add(@this.onClock, this.id(), 5 * 60);
             
         end
+        
+        function appendLatestReadingToData(this)
+            
+            % See bl12014.Logger.m - the first value is expected to be an Excel-corrected
+            % timestamp since the log files are built to be easily read
+            % by Excel
+            
+            if this.hardware.getDataTranslation().getIsBusy()
+                
+                fprintf('bl12014.ui.LogPlotter.appendLatestReadingToData() returning DT is busy!\n');
+                return
+            end
+            
+            
+            readings = now - 693960;
+            
+            try
+
+                %{
+                channels = 0 : 7;
+                readings = [readings this.hardware.getDataTranslation().measure_temperature_tc(channels, 'J')];
+
+                channels = 8 : 15;
+                readings = [readings this.hardware.getDataTranslation().measure_temperature_rtd(channels, 'PT1000')];
+
+                channels = 16 : 19;
+                readings = [readings this.hardware.getDataTranslation().measure_temperature_rtd(channels, 'PT100')];
+
+                channels = 20 : 23;
+                readings = [readings this.hardware.getDataTranslation().measure_temperature_rtd(channels, 'PT1000')];
+
+                channels = 24 : 31;
+                readings = [readings this.hardware.getDataTranslation().measure_temperature_rtd(channels, 'PT100')];
+
+                channels = 32 : 47;
+                readings = [readings this.hardware.getDataTranslation().measure_voltage(channels)];
+                %}
+                
+                readings = [readings this.hardware.getDataTranslation().getScanData()];
+
+                % DMI power
+                readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
+                readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
+                
+                this.dData(end + 1, :) = readings;
+            
+            catch
+                
+            end
+            
+            
+        end
+        
+        
+        function onClockLive(this)
+            
+            this.appendLatestReadingToData();
+            this.plotData();
+            
+        end
+        
         
         function onClock(this)
              this.loadFileAndPlot();

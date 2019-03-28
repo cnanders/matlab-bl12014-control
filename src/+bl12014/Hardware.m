@@ -342,13 +342,25 @@ classdef Hardware < mic.Base
                 this.getjMet5Instruments();
             end
             
-            % If first time, establish link with Drift Monitor middleware
+           
+            
+            
             if isempty(this.commMfDriftMonitorMiddleware)
-                % Set up drift monitor bridge
+                this.setIsConnectedMfDriftMonitor(true);
+                comm = this.getMfDriftMonitor();
                 this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                'jMet5Instruments', this.jMet5Instruments, ...
+                                'commMFDriftMonitor', comm, ...
                                  'clock', this.clock);
             end
+            
+ 
+%             % If first time, establish link with Drift Monitor middleware
+%             if isempty(this.commMfDriftMonitorMiddleware)
+%                 % Set up drift monitor bridge
+%                 this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
+%                                 'jMet5Instruments', this.jMet5Instruments, ...
+%                                  'clock', this.clock);
+%             end
 
             comm = this.commMfDriftMonitorMiddleware;
             

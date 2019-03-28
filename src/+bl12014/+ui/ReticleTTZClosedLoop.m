@@ -479,7 +479,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             % Init button:
             this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', 'Level Reticle');
             
-             this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
+%              this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
             
             this.initUiZ();
             this.initUiTiltX();

@@ -45,8 +45,8 @@ classdef MFDriftMonitor < mic.Base
         % Handle to the MFDriftMonitor java interface
         javaAPI
         
-        % Handle to met5instruments
-        jMet5Instruments
+        % Handle to mfdriftmonitor
+        commMFDriftMonitor
 
         % Number of samples to average
         dNumSampleAverage = 25
@@ -121,11 +121,11 @@ classdef MFDriftMonitor < mic.Base
         
         function connect(this)
             if isempty(this.javaAPI)
-                this.javaAPI = this.jMet5Instruments.getMfDriftMonitor();
+                this.javaAPI = this.commMFDriftMonitor;
             end
-            if ~this.isConnected()
-                this.javaAPI.connect();
-            end
+%             if ~this.isConnected()
+%                 this.javaAPI.connect();
+%             end
             
             this.setDMIZero();
             
@@ -146,15 +146,17 @@ classdef MFDriftMonitor < mic.Base
                 this.clock.remove(this.id());
             end
             
+           
             if(this.lHasOwnClock )
                 this.clock.stop();
                 delete(this.clock);
                 fprintf('Deleting MFDriftMonitorClock');
             end
+           
             
-            if this.isConnected()
-                this.javaAPI.disconnect();
-            end
+%             if this.isConnected()
+%                 this.javaAPI.disconnect();
+%             end
             
             this.javaAPI = [];
         end
