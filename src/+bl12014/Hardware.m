@@ -42,6 +42,8 @@ classdef Hardware < mic.Base
         
         cTcpipRigolDG1000Z = '192.168.20.35'
         
+        cTcpipWebSwitchVis = '192.168.20.32';
+        cTcpipWebSwitchBeamline = '192.168.10.32';
         
         
     end
@@ -94,6 +96,16 @@ classdef Hardware < mic.Base
         commMfDriftMonitorVirtual
         lIsConnectedMfDriftMonitor = false
         
+        commWebSwitchBeamline
+        commWebSwitchBeamlineVirtual
+        lIsConnectedWebSwitchBeamline = false
+        
+        commWebSwitchVis
+        commWebSwitchVisVirtual
+        lIsConnectedWebSwitchVis = false
+        
+        
+        
         
     end
     
@@ -124,7 +136,63 @@ classdef Hardware < mic.Base
             this.clock = clock;
         end
         
-        %% MF Drift Monitor (different than MfDriftMonitor Middleware
+        
+        
+        %% WebSwitch (Beamline)
+        function l = getIsConnectedWebSwitchBeamline(this)
+            l = this.lIsConnectedWebSwitchBeamline;
+        end
+        
+        function setIsConnectedWebSwitchBeamline(this, lVal)
+           this.lIsConnectedWebSwitchBeamline = lVal;
+        end
+                
+        function comm = getWebSwitchBeamline(this)
+            if this.lIsConnectedWebSwitchBeamline
+                if isempty(this.commWebSwitchBeamline)
+                   try
+                        this.commWebSwitchBeamline = controlbyweb.WebSwitch(...
+                            'cHost', this.cTcpipWebSwitchBeamline ...
+                        );
+                   catch mE
+                        error(getReport(mE));
+                   end
+                    
+                end
+                comm = this.commWebSwitchBeamline;
+            else
+                comm = this.commWebSwitchBeamlineVirtual;
+            end            
+        end
+        
+        %% WebSwitch (VIS)
+        function l = getIsConnectedWebSwitchVis(this)
+            l = this.lIsConnectedWebSwitchVis;
+        end
+        
+        function setIsConnectedWebSwitchVis(this, lVal)
+           this.lIsConnectedWebSwitchVis = lVal;
+        end
+                
+        function comm = getWebSwitchVis(this)
+            if this.lIsConnectedWebSwitchVis
+                if isempty(this.commWebSwitchVis)
+                   try
+                        this.commWebSwitchVis = controlbyweb.WebSwitch(...
+                            'cHost', this.cTcpipWebSwitchVis ...
+                        );
+                   catch mE
+                        error(getReport(mE));
+                   end
+                    
+                end
+                comm = this.commWebSwitchVis;
+            else
+                comm = this.commWebSwitchVisVirtual;
+            end            
+        end
+        
+        %% MF Drift Monitor (different than MfDriftMonitor Middleware)
         
         function l = getIsConnectedMfDriftMonitor(this)
             l = this.lIsConnectedMfDriftMonitor;
@@ -441,6 +509,7 @@ classdef Hardware < mic.Base
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-3gstore-remote-power-switch', 'src'), ...
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src'), ...
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-mightex-led-controller', 'src'), ...
+                fullfile(cDirVendor, 'github', 'cnanders', 'matlab-controlbyweb-webswitch', 'src'), ...
             };
         
             cePathLoad = {};
@@ -466,7 +535,8 @@ classdef Hardware < mic.Base
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
                         
-
+            this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
+            this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
         end
         
   

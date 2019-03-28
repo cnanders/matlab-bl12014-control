@@ -44,6 +44,16 @@ hardware = bl12014.Hardware();
 
 [tc, rtd, volt] = hardware.getDataTranslation().channelType()
 
+%{
 hardware.setIsConnectedMfDriftMonitor(true);
 hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()
 hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()
+%}
+
+
+hardware.getWebSwitchBeamline().turnOnRelay1()
+hardware.getWebSwitchBeamline().turnOnRelay2()
+hardware.getWebSwitchBeamline().isOnRelay1()
+hardware.getWebSwitchBeamline().isOnRelay2()
+
+

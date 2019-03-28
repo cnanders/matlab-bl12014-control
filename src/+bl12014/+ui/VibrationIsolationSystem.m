@@ -9,6 +9,7 @@ classdef VibrationIsolationSystem < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommGalil
         uiCommDataTranslation
+        uiCommWebSwitch
        
         % {mic.ui.device.GetSetNumber 1x1}
         uiStage1
@@ -39,13 +40,16 @@ classdef VibrationIsolationSystem < mic.Base
         uiTextTiltX
         uiTextTiltY
         
+        % { mic.ui.device.GetSetLogical 1x1}
+        uiPower
+        
     end
     
     properties (Access = private)
         
         clock
         dWidth = 1120
-        dHeight = 330
+        dHeight = 350
         hPanel
         
         dWidthNameMotor = 160
@@ -61,6 +65,9 @@ classdef VibrationIsolationSystem < mic.Base
         dWidthUnitTemp = 100
                 
         dWidthButton = 55
+        
+        % {bl12014.Hardware 1x1}
+        hardware
 
     end
     
@@ -79,6 +86,15 @@ classdef VibrationIsolationSystem < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             
             this.init();
         
@@ -347,11 +363,23 @@ classdef VibrationIsolationSystem < mic.Base
             dSep = 30;
             
                        
+            
+            this.uiCommWebSwitch.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiPower.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + 15 + dSep;
+            
+            
             this.uiCommGalil.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
+            
             this.uiCommDataTranslation.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
+            
+           
+            
                        
             this.uiStage1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep + 15;
@@ -383,7 +411,7 @@ classdef VibrationIsolationSystem < mic.Base
             dTop = dTopStart;
             dLeft = 90;
             dSep = 30;
-            dTop = dTop + 15 + dSep + dSep;
+            dTop = dTop + 15 * 2 + dSep * 4;
             
             
             this.uiEncoder1.build(this.hPanel, dLeft, dTop);
@@ -404,7 +432,7 @@ classdef VibrationIsolationSystem < mic.Base
             dTop = dTopStart;
             dLeft = 570;
             dSep = 30;
-            dTop = dTop + 15 + dSep + dSep;
+            dTop = dTop + 15 * 2 + dSep * 4;
             
             this.uiTemp1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -722,6 +750,8 @@ classdef VibrationIsolationSystem < mic.Base
         
         end
         
+        
+        
         function initUiCommDataTranslation(this)
             
             
@@ -741,6 +771,64 @@ classdef VibrationIsolationSystem < mic.Base
                 'lShowInitButton', false, ...
                 'cName', sprintf('%s-data-translation-measur-point', this.cName), ...
                 'cLabel', 'Data Translsation MeasurPoint' ...
+            );
+        
+        end
+        
+        function initUiCommWebSwitch(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Disconnect', ...
+                'cTextFalse', 'Connect' ...
+            };
+
+            this.uiCommWebSwitch = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'cLabelName', '', ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getIsConnectedWebSwitchVis(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedWebSwitchVis(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'comm-webswitch'], ...
+                'cLabel', 'WebSwitch (Remote Power)' ...
+            );
+        
+        end
+        
+        function initUiPower(this)
+            
+            
+            % Configure the mic.ui.common.Toggle instance
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Turn Off VIS', ...
+                'cTextFalse', 'Turn On VIS' ...
+            };
+
+            this.uiPower = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'cLabelName', '', ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'dWidthName', 130, ...
+                'lShowLabels', false, ...
+                'lShowDevice', false, ...
+                'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getWebSwitchVis().isOnRelay1(), ...
+                'fhSet', @(lVal) mic.Utils.ternEval(...
+                   lVal, ...
+                   @() this.hardware.getWebSwitchVis().turnOnRelay1(), ...
+                   @() this.hardware.getWebSwitchVis().turnOffRelay1() ...
+                ), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'power'], ...
+                'cLabel', 'VIS Power' ...
             );
         
         end
@@ -822,6 +910,9 @@ classdef VibrationIsolationSystem < mic.Base
             
             this.initUiCommGalil();
             this.initUiCommDataTranslation();
+            this.initUiCommWebSwitch();
+            
+            this.initUiPower();
             
             this.initUiStage1();
             this.initUiStage2();
