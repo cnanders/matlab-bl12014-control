@@ -43,7 +43,7 @@ classdef Hardware < mic.Base
         cTcpipRigolDG1000Z = '192.168.20.35'
         
         cTcpipWebSwitchVis = '192.168.20.32';
-        cTcpipWebSwitchBeamline = '192.168.10.32';
+        cTcpipWebSwitchBeamline = '192.168.10.30';
         
         
     end
@@ -99,6 +99,10 @@ classdef Hardware < mic.Base
         commWebSwitchBeamline
         commWebSwitchBeamlineVirtual
         lIsConnectedWebSwitchBeamline = false
+        
+        commWebSwitchEndstation
+        commWebSwitchEndstationVirtual
+        lIsConnectedWebSwitchEndstation = false
         
         commWebSwitchVis
         commWebSwitchVisVirtual
@@ -162,6 +166,34 @@ classdef Hardware < mic.Base
                 comm = this.commWebSwitchBeamline;
             else
                 comm = this.commWebSwitchBeamlineVirtual;
+            end            
+        end
+        
+        
+        %% WebSwitch (Endstation)
+        function l = getIsConnectedWebSwitchEndstation(this)
+            l = this.lIsConnectedWebSwitchEndstation;
+        end
+        
+        function setIsConnectedWebSwitchEndstation(this, lVal)
+           this.lIsConnectedWebSwitchEndstation = lVal;
+        end
+                
+        function comm = getWebSwitchEndstation(this)
+            if this.lIsConnectedWebSwitchEndstation
+                if isempty(this.commWebSwitchEndstation)
+                   try
+                        this.commWebSwitchEndstation = controlbyweb.WebSwitch(...
+                            'cHost', this.cTcpipWebSwitchEndstation ...
+                        );
+                   catch mE
+                        error(getReport(mE));
+                   end
+                    
+                end
+                comm = this.commWebSwitchEndstation;
+            else
+                comm = this.commWebSwitchEndstationVirtual;
             end            
         end
         
@@ -536,6 +568,7 @@ classdef Hardware < mic.Base
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
                         
             this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
+            this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
         end
         
