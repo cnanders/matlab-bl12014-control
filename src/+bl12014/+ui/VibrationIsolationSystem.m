@@ -87,8 +87,8 @@ classdef VibrationIsolationSystem < mic.Base
                 end
             end
             
-            if ~isa(this.clock, 'mic.Clock')
-                error('clock must be mic.Clock');
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
             end
             
             if ~isa(this.hardware, 'bl12014.Hardware')

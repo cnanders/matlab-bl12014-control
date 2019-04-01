@@ -352,7 +352,7 @@ classdef WaferCoarseStage < mic.Base
             this.uiTiltX.setDestRaw(dValues(4));
             this.uiTiltY.setDestRaw(dValues(5));
             
-            return; % TEMPORARY
+            % return; % TEMPORARY
             
             this.hardware.getDeltaTauPowerPmac().setXYZTiltXTiltYWaferCoarse(...
                 dValues(1), ...

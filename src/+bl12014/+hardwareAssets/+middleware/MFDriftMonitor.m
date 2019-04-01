@@ -191,6 +191,8 @@ classdef MFDriftMonitor < mic.Base
                     this.u8FitModel = this.u8FITMODEL_CUBIC_FIT;
                 case this.u8FITMODEL_CUBIC_INTERPOLATION
                     this.u8FitModel = this.u8FITMODEL_CUBIC_INTERPOLATION;
+                case this.u8FITMODEL_LINEAR_FIT
+                    this.u8FitModel = this.u8FITMODEL_LINEAR_FIT;
             end
         end
         

@@ -220,6 +220,9 @@ classdef App < mic.Base
             this.buildNew();
             % this.onUiTabGroup();
             
+            % LSIControl is built separately now
+%             this.uiLSIControl.build();
+            
         end
         
         function buildNew(this)
@@ -427,6 +430,10 @@ classdef App < mic.Base
                 this.load(st);
             end
         end
+        
+        function listClockTasks(this)
+            this.onListClockTasks();
+        end
 
     end
     
@@ -603,7 +610,10 @@ classdef App < mic.Base
                 'hardware', this.hardware, ...
                 'clock', this.uiClockMfDriftMonitorVibration ...
             );
-            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem('clock', this.uiClockVibrationIsolationSystem);
+            this.uiVibrationIsolationSystem = bl12014.ui.VibrationIsolationSystem(...
+                'clock', this.uiClockVibrationIsolationSystem, ...
+                'hardware', this.hardware ...
+            );
             this.uiTempSensors = bl12014.ui.TempSensors('clock', this.uiClockTempSensors);
             this.uiFocusSensor = bl12014.ui.FocusSensor(...
                 'hardware', this.hardware, ...
@@ -633,7 +643,7 @@ classdef App < mic.Base
             
             % LSI UIs exist separately.  Check if exists first though
             % because not guaranteed to have this repo:
-            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.uiClockLSIControl, ...
+            this.uiLSIControl = lsicontrol.ui.LSI_Control('clock', this.clock, ... % eventually provide a uiClock but it has a scan
                                                            'hardware', this.hardware);
             this.uiLSIAnalyze = lsianalyze.ui.LSI_Analyze();
             this.uiDriftMonitor = bl12014.ui.MFDriftMonitor(...

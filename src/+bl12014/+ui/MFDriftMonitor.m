@@ -721,6 +721,10 @@ classdef MFDriftMonitor < mic.Base
             dVal = regexprep(this.cLastCalibrationPath, '\', '/');
         end
         
+        function setModelType(this, dVal)
+            this.apiDriftMonitor.setModelType(dVal);
+        end
+        
         
         function setWaferLoadCoordinates(this, dVal)
             this.uieZTarget.set(dVal(1));

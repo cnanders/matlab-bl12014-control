@@ -138,7 +138,6 @@ classdef WaferTTZClosedLoop < mic.Base
             end
             
         end
-        
          % DEPRECATED 1/31/19
         function onLevel(this)
             
@@ -196,13 +195,9 @@ classdef WaferTTZClosedLoop < mic.Base
         end
         
         
-      
-        
-        
         % Need to construct req function handles for GSNFromCLC device
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
         % fhIsReadyMotor, dTolearnce
-        
         function device = createCLZdevice(this)
             
             mm2nm           = 1e6;
@@ -300,7 +295,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
             
             fhGetMotor      = @() this.uiTiltY.getValCal('urad');% CNA 2019.02.01 can this be this.uiTiltY.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
+            fhSetMotor      = @(dVal) this.uiTiltY.setDestCalAndGo(dVal, 'urad');
             fhIsReadyMotor  = @() this.uiTiltY.isReady();
             dTolerance      = this.dTiltYTol;
             fhGetSensor     = @() this.getFreshHSValue(this.hardware.getMfDriftMonitorMiddleware(), 2) * mrad2urad; 
@@ -446,7 +441,8 @@ classdef WaferTTZClosedLoop < mic.Base
             );
         
             uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
+                'cPath',  cPathConfig, ...
+                'dDelay', 1.5 ...
             );
         
             device = this.createCLRxdevice();
@@ -477,7 +473,8 @@ classdef WaferTTZClosedLoop < mic.Base
             );
         
             uiConfig = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
+                'cPath',  cPathConfig, ...
+                'dDelay', 1.5 ...
             );
         
             device = this.createCLRydevice();
@@ -495,7 +492,7 @@ classdef WaferTTZClosedLoop < mic.Base
                 'fhIsReady', @device.isReady, ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
-                'cLabel', 'HS Cal Rx' ...
+                'cLabel', 'HS Cal Ry' ...
             );
         end
         

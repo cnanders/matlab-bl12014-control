@@ -89,7 +89,7 @@ classdef ReticleTTZClosedLoop < mic.Base
         
         end
         
-        
+        % DEPRECATED 1/31/19
         function lVal = isLeveled(this)
             
             lVal =  abs(this.stConfigDat.tiltX.value - this.uiCLTiltX.getValCal(this.stConfigDat.tiltX.unit)) <= ...
@@ -99,7 +99,7 @@ classdef ReticleTTZClosedLoop < mic.Base
                     abs(this.stConfigDat.Z.value - this.uiCLZ.getValCal(this.stConfigDat.Z.unit)) <= ...
                     this.stConfigDat.Z.displayTol;
         end
-        
+        % DEPRECATED 1/31/19
         function lVal = isMissing(this)
             lVal = this.uiCapSensors.uiCap3.getValCal('V') < -9.99 || ...
                 this.uiCapSensors.uiCap2.getValCal('V') < -9.99 ;
@@ -107,8 +107,7 @@ classdef ReticleTTZClosedLoop < mic.Base
          
             
         end
-        
-        
+        % DEPRECATED 1/31/19
         function updateButtonColor(this)
             if (this.isLeveled())
                 this.uibLevel.setColor([.85, 1, .85]);
@@ -122,9 +121,7 @@ classdef ReticleTTZClosedLoop < mic.Base
             end
             
         end
-        
-        
-        
+        % DEPRECATED 1/31/19
          function onLevel(this)
              
             if this.isMissing()
@@ -166,7 +163,7 @@ classdef ReticleTTZClosedLoop < mic.Base
                                         );
             this.hLevelScan.start();
         end
-        
+        % DEPRECATED 1/31/19
         function setUIFromStoreandGo(this, ui, cAxisName)
             % Load values from config store:
             dVal = this.stConfigDat.(cAxisName).value;

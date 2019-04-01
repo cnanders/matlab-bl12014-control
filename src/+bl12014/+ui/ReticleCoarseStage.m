@@ -388,9 +388,7 @@ classdef ReticleCoarseStage < mic.Base
         
         % Set recalled values into your app
         function onUiPositionRecallerSet(this, dValues)
-            
-           
-            
+                        
              % Update the UI destinations
             
             this.uiX.setDestRaw(dValues(1));
