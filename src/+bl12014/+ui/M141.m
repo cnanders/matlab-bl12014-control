@@ -34,12 +34,14 @@ classdef M141 < mic.Base
         
         hPanel
         
+        % {bl12014.Hardware 1x1}
+        hardware
         
     end
     
     properties (SetAccess = private)
         
-        cName = 'm141'
+        cName = 'm141-'
     end
     
     methods
@@ -51,6 +53,15 @@ classdef M141 < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
             end
             
             this.init();
@@ -95,27 +106,7 @@ classdef M141 < mic.Base
             
         end
         
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
 
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                32 ...
-            );
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()
-            
-        end
-        
-        
-        
-        function disconnectDataTranslationMeasurPoint(this, comm)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-            
-        end
         
         
         
@@ -261,6 +252,12 @@ classdef M141 < mic.Base
         end
         
         
+        function d = getCurrent(this)
+            % channel 32
+            dData = this.hardware.getDataTranslation().getScanData();
+            d = dData(32 + 1);
+        end
+        
         function initUiCurrent(this)
             
             cPathConfig = fullfile(...
@@ -275,12 +272,15 @@ classdef M141 < mic.Base
         
             this.uiCurrent = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
-                'cName', sprintf('%s-current', this.cName), ...
+                'cName', [this.cName, 'current'], ... 
                 'config', uiConfig, ...
                 'cLabel', 'Current', ...
                 'dWidthPadUnit', 277, ...
                 'lShowInitButton', true, ...
-                'lShowLabels', false ...
+                'lShowLabels', false, ...
+                'fhGet', @() this.getCurrent(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true ...
             );
         end
         
@@ -300,7 +300,11 @@ classdef M141 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-m141', ...
+                'fhGet', @() this.hardware.getIsConnectedDataTranslation(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedDataTranslation(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'data-translation-measur-point'], ...
                 'cLabel', 'Data Trans MeasurPoint' ...
             );
         

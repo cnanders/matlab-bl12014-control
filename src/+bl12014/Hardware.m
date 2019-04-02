@@ -314,6 +314,9 @@ classdef Hardware < mic.Base
                     
                     % Connect the instrument through TCP/IP
                     this.commDataTranslation.connect();
+                    
+                    % Log the identity
+                    this.commDataTranslation.idn()
 
                     % Enable readout on protected channels
                     this.commDataTranslation.enable();

@@ -32,7 +32,7 @@ classdef ReticleCoarseStage < mic.Base
     properties (SetAccess = private)
         
         dWidth = 950
-        dHeight = 160
+        dHeight = 200
         
         cName = 'ReticleCoarseStage'
         
@@ -80,6 +80,15 @@ classdef ReticleCoarseStage < mic.Base
             
             this.init();
         
+        end
+        
+        function syncDestinations(this)
+            this.uiX.syncDestination();
+            this.uiY.syncDestination();
+            this.uiZ.syncDestination();
+            this.uiTiltX.syncDestination();
+            this.uiTiltY.syncDestination();
+            
         end
         
         
@@ -140,7 +149,7 @@ classdef ReticleCoarseStage < mic.Base
             dLeft = 590;
             dTop = 15;
             dWidth = 360;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 145);
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 190);
             
             
 

@@ -51,6 +51,8 @@ classdef Wafer < mic.Base
         waferExposureHistory
         
         uiMotMinSimple
+        
+        uiButtonSyncDestinations
     end
     
     properties (SetAccess = private)
@@ -66,7 +68,7 @@ classdef Wafer < mic.Base
         uiClock
         dDelay = 0.5
         
-         % {bl12014.Hardware 1x1}
+        % {bl12014.Hardware 1x1}
         hardware
         
     end
@@ -111,6 +113,22 @@ classdef Wafer < mic.Base
             
         end
         
+        
+        
+        function syncDestinations(this)
+            this.uiCoarseStage.uiX.syncDestination();
+            this.uiCoarseStage.uiY.syncDestination();
+            this.uiCoarseStage.uiZ.syncDestination();
+            this.uiCoarseStage.uiTiltX.syncDestination();
+            this.uiCoarseStage.uiTiltY.syncDestination();
+            this.uiFineStage.uiZ.syncDestination();
+            this.uiWaferTTZClosedLoop.uiCLTiltX.syncDestination();
+            this.uiWaferTTZClosedLoop.uiCLTiltY.syncDestination();
+            this.uiWaferTTZClosedLoop.uiCLZ.syncDestination();
+            
+        end
+        
+        
         function build(this, hParent, dLeft, dTop)
                     
             this.hParent = hParent;
@@ -121,6 +139,8 @@ classdef Wafer < mic.Base
             this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
+
+            
             %{
             this.uiCommCxroHeightSensor.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
@@ -130,7 +150,7 @@ classdef Wafer < mic.Base
             this.uiCommMfDriftMonitor.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            
+                        this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -360,7 +380,6 @@ classdef Wafer < mic.Base
         
             % this.initUiCommCxroHeightSensor();
             this.initUiCommDeltaTauPowerPmac();
-            this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommMfDriftMonitor();
         
             
@@ -385,6 +404,11 @@ classdef Wafer < mic.Base
                 'dHeight', dHeight ...
             );
         
+        
+            this.uiButtonSyncDestinations = mic.ui.common.Button(...
+                'fhOnClick', @(src, evt) this.syncDestinations(), ...
+                'cText', 'Sync Destinations' ...
+            );
             
         
             
@@ -393,29 +417,7 @@ classdef Wafer < mic.Base
 
         end
         
-        function initUiCommDataTranslationMeasurPoint(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-        %{
-            this.uiCommDataTranslationMeasurPoint = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-wafer', ...
-                'cLabel', 'DataTrans MeasurPoint' ...
-            );
-            %}
         
-        end
         
         function initUiCommDeltaTauPowerPmac(this)
             
@@ -433,7 +435,10 @@ classdef Wafer < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'fhGet', @() this.hardware.getIsConnectedDeltaTauPowerPmac(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
+                'fhSet', @(lVal) mic.Utils.evalAll(...
+                    @() this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
+                    @() this.syncDestinations() ...
+                ), ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'comm-delta-tau-power-pmac'], ...
@@ -458,7 +463,10 @@ classdef Wafer < mic.Base
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'cName', [this.cName, 'comm-mf-drift-monitor'], ...
                 'fhGet', @() this.hardware.getIsConnectedMfDriftMonitorMiddleware(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedMfDriftMonitorMiddleware(lVal), ...
+                'fhSet', @(lVal) mic.Utils.evalAll(...
+                    @() this.hardware.setIsConnectedMfDriftMonitorMiddleware(lVal), ...
+                    @() this.syncDestinations() ...
+                ), ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cLabel', 'MfDriftMon MIDDLEWARE'...
@@ -506,6 +514,7 @@ classdef Wafer < mic.Base
             this.msg('ReticleControl.closeRequestFcn()');
             this.hParent = [];
         end
+
         
         
     end % private

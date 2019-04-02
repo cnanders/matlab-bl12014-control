@@ -3,7 +3,8 @@ classdef CameraLEDs < mic.Base
     properties
         
         
-        uiCommWebSwitchBeamline
+        uiCommWebSwitch1
+        uiCommWebSwitch2
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiComm3GStoreRemotePowerSwitch1
@@ -27,6 +28,9 @@ classdef CameraLEDs < mic.Base
         dHeight = 230
         hParent
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
         
     end
     
@@ -44,6 +48,14 @@ classdef CameraLEDs < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
             end
             
             this.init();
@@ -116,7 +128,7 @@ classdef CameraLEDs < mic.Base
 %             dTop = dTop + dSep;
 
 
-             this.uiCommWebSwitchBeamline.build(this.hParent, dLeft, dTop);
+             this.uiCommWebSwitch1.build(this.hParent, dLeft, dTop);
                 dTop = dTop + dSep;
             
             this.uiComm3GStoreRemotePowerSwitch2.build(this.hParent, dLeft, dTop);
@@ -348,7 +360,7 @@ classdef CameraLEDs < mic.Base
                 'cTextFalse', 'Connect' ...
             };
 
-            this.uiCommWebSwitch2 = mic.ui.device.GetSetLogical(...
+            this.uiCommWebSwitch1 = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
                 'cLabelName', '', ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
@@ -361,7 +373,7 @@ classdef CameraLEDs < mic.Base
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'comm-webswitch-beamline'], ...
-                'cLabel', 'WebSwitch (BL)' ...
+                'cLabel', 'WebSwitch (Beamline)' ...
             );
         
         end
@@ -388,7 +400,7 @@ classdef CameraLEDs < mic.Base
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'comm-webswitch-endstation'], ...
-                'cLabel', 'WebSwitch (ES)' ...
+                'cLabel', 'WebSwitch (Endstation)' ...
             );
         
         end

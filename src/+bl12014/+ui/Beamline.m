@@ -117,7 +117,10 @@ classdef Beamline < mic.Base
         % {cell of struct} storage of state during each acquire
         ceValues
         
+        % {mic.Clock 1x1}
         clock
+        % {mic.Clock | mic.ui.Clock 1x1}
+        uiClock
         
         cDirThis
         % {char 1xm} - full path to the src directory of this application
@@ -199,8 +202,17 @@ classdef Beamline < mic.Base
                 end
             end
             
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
             end
             
             this.init();
@@ -244,38 +256,6 @@ classdef Beamline < mic.Base
             this.uiExitSlit.disconnectExitSlit();
 
         end
-        
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-           import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-            
-            this.uiM141.connectDataTranslationMeasurPoint(comm);
-            this.uiD141.connectDataTranslationMeasurPoint(comm);
-            this.uiD142.connectDataTranslationMeasurPoint(comm);
-           
-
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this)
-            
-            %{
-            this.uiM141.uiCurrent.turnOff();
-            this.uiM141.uiCurrent.setDevice([]);
-            
-            this.uiD141.uiCurrent.turnOff();
-            this.uiD141.uiCurrent.setDevice([]);
-            
-            this.uiD142.uiCurrent.turnOff();
-            this.uiD142.uiCurrent.setDevice([]);
-            %}
-            
-            
-            this.uiM141.disconnectDataTranslationMeasurPoint();
-            this.uiD141.disconnectDataTranslationMeasurPoint();
-            this.uiD142.disconnectDataTranslationMeasurPoint();
-        end
-        
-        
         
         function connectRigolDG1000Z(this, comm)
             
@@ -757,7 +737,7 @@ classdef Beamline < mic.Base
             );
             
             this.uiUndulatorGap = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'dWidthPadName', this.dWidthPadName, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -772,7 +752,7 @@ classdef Beamline < mic.Base
         
         function initUiDeviceShutter(this)
                         
-            this.uiShutter = bl12014.ui.Shutter('clock', this.clock, 'hardware', this.hardware);
+            this.uiShutter = bl12014.ui.Shutter('clock', this.uiClock, 'hardware', this.hardware);
             addlistener(this.uiShutter.uiShutter, 'eUnitChange', @this.onUnitChange);
         end
         
@@ -790,7 +770,7 @@ classdef Beamline < mic.Base
             );
             
             this.uiGratingTiltX = mic.ui.device.GetSetNumber(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'lShowLabels', false, ...
                 'lShowInitButton', true, ...
                 'dWidthName', this.dWidthUiDeviceName, ...
@@ -951,7 +931,7 @@ classdef Beamline < mic.Base
             this.initUiCommDctCorbaProxy();
             this.initUiCommBL1201CorbaProxy();
                         
-            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.clock);
+            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
             
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
             this.initUiDeviceShutter(); % DCT Corba Proxy
@@ -969,10 +949,19 @@ classdef Beamline < mic.Base
             this.initUiTextPlotX();
             this.initUiTextPlotY();
             
-            this.uiM141 = bl12014.ui.M141('clock', this.clock);
-            this.uiD141 = bl12014.ui.D141('clock', this.clock);
-            this.uiM142 = bl12014.ui.M142('clock', this.clock);
-            this.uiD142 = bl12014.ui.D142('clock', this.clock);
+            this.uiM141 = bl12014.ui.M141(...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
+            );
+            this.uiD141 = bl12014.ui.D141( ...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
+            );
+            this.uiM142 = bl12014.ui.M142('clock', this.uiClock);
+            this.uiD142 = bl12014.ui.D142(...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
+            );
         end
          
         function onFigureCloseRequest(this, src, evt)
@@ -1977,7 +1966,7 @@ classdef Beamline < mic.Base
             };
 
             this.uiCommDctCorbaProxy = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -1999,7 +1988,7 @@ classdef Beamline < mic.Base
             };
 
             this.uiCommBL1201CorbaProxy = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...
@@ -2024,7 +2013,7 @@ classdef Beamline < mic.Base
             };
         
             this.uiCommGalilD142 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'ceVararginCommandToggle', ceVararginCommandToggle, ...
                 'dWidthName', this.dWidthNameComm, ...
                 'lShowLabels', false, ...

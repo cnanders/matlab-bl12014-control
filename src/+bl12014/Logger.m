@@ -128,15 +128,14 @@ classdef Logger < mic.Base
                 this.hardware.getDataTranslation().setSensorType(n, 'V');
             end
             
+            this.hardware.getDataTranslation()
+            
             this.hardware.getDataTranslation().setScanList(0:47);
             this.hardware.getDataTranslation().setScanPeriod(0.1);
-            % Make sure buffer only large enough for storing each value
-            % once. Need 4 bytes per value
-            this.hardware.getDataTranslation().setSizeOfScanBuffer(4 * 48); 
             this.hardware.getDataTranslation().initiateScan();
             % this.hardware.getDataTranslation().abortScan();
             this.hardware.getDataTranslation().clearBytesAvailable();
-            this.clock.add(@this.onClock, this.id(), 5);
+            this.clock.add(@this.onClock, this.id(), 30);
             
         end
         

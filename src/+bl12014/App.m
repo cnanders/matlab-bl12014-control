@@ -23,7 +23,6 @@ classdef App < mic.Base
         cTcpipSmarActLSIGoni = '192.168.20.24'
         cTcpipSmarActLSIHexapod = '192.168.20.25'
         cTcpipSmarActFocusMonitor = '192.168.20.26'
-        cTcpipDataTranslation = '192.168.20.27'
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
         cTcpipNewFocusMA = '192.168.20.31'
@@ -76,9 +75,7 @@ classdef App < mic.Base
         commSmarActRotary
         
         
-        
-         % {dataTranslation.MeasurPoint 1x1}
-        commDataTranslationMeasurPoint
+       
         
         % {npoint.LC400 1x1}
         commNPointLC400M142
@@ -254,7 +251,6 @@ classdef App < mic.Base
             
             this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
-            this.destroyAndDisconnectDataTranslationMeasurPoint();
             
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
@@ -335,9 +331,7 @@ classdef App < mic.Base
         
         
         
-        function l = getDataTranslationMeasurPoint(this)
-            l = ~isempty(this.commDataTranslationMeasurPoint);
-        end
+        
         
         function l = get3GStoreRemotePowerSwitch1(this)
             l = ~isempty(this.comm3GStoreRemotePowerSwitch1);
@@ -583,50 +577,7 @@ classdef App < mic.Base
         end
         
         
-        function initAndConnectDataTranslationMeasurPoint(this)
-            
-            
-            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-                        
-            if this.getDataTranslationMeasurPoint()
-                return
-            end
-                        
-            try
-                this.commDataTranslationMeasurPoint = datatranslation.MeasurPoint(this.cTcpipDataTranslation);
-                
-                % Connect the instrument through TCP/IP
-                this.commDataTranslationMeasurPoint.connect();
-
-                % Enable readout on protected channels
-                this.commDataTranslationMeasurPoint.enable();
-                
-            catch mE
-                this.commDataTranslationMeasurPoint = [];
-                cMsg = sprintf('initAndConnectDataTranslationMeasurPoint() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
-               
-                return
-            end
-            
-            
-            %{
-            TC   sensor channels = 00 01 02 03 04 05 06 07
-            RTD  sensor channels = 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-            Volt sensor channels = 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
-            %}
-            
-
-            
-            this.uiApp.uiBeamline.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            this.uiApp.uiM143.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            
-            %this.uiApp.uiReticle.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            %this.uiApp.uiWafer.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            %this.uiApp.uiTempSensors.connectDataTranslationMeasurPoint(this.commDataTranslationMeasurPoint);
-            
-        end
+       
         
         function destroyAndDisconnectWago(this)
             
@@ -644,27 +595,7 @@ classdef App < mic.Base
         end
         
         
-        function destroyAndDisconnectDataTranslationMeasurPoint(this)
-            
-            this.msg(...
-                'destroyAndDisconnectDataTranslationMeasurPoint', ...
-                this.u8_MSG_TYPE_INFO ...
-            );
-                    
-            if ~this.getDataTranslationMeasurPoint()
-                return
-            end
-            
-            this.uiApp.uiBeamline.disconnectDataTranslationMeasurPoint();
-
-            this.uiApp.uiM143.disconnectDataTranslationMeasurPoint();
-            %this.uiApp.uiReticle.disconnectDataTranslationMeasurPoint();
-            %this.uiApp.uiWafer.disconnectDataTranslationMeasurPoint();
-            %this.uiApp.uiTempSensors.disconnectDataTranslationMeasurPoint();
-                        
-            this.commDataTranslationMeasurPoint.delete();
-            this.commDataTranslationMeasurPoint = [];
-        end
+        
         
 
         
@@ -1386,11 +1317,7 @@ classdef App < mic.Base
             );
         
             
-            gslcCommDataTranslationMeasurPoint = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getDataTranslationMeasurPoint, ...
-                'fhSetTrue', @this.initAndConnectDataTranslationMeasurPoint, ...
-                'fhSetFalse', @this.destroyAndDisconnectDataTranslationMeasurPoint ...
-            );
+            
         
             
             gslcCommNPointLC400M142 = bl12014.device.GetSetLogicalConnect(...
@@ -1493,8 +1420,6 @@ classdef App < mic.Base
             % M141
             this.uiApp.uiBeamline.uiM141.uiCommSmarActMcsM141.setDevice(gslcCommSmarActMcsM141);
             this.uiApp.uiBeamline.uiM141.uiCommSmarActMcsM141.turnOn();
-            this.uiApp.uiBeamline.uiM141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            this.uiApp.uiBeamline.uiM141.uiCommDataTranslationMeasurPoint.turnOn();
             
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
@@ -1508,8 +1433,6 @@ classdef App < mic.Base
             
             
             % D141
-            this.uiApp.uiBeamline.uiD141.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            this.uiApp.uiBeamline.uiD141.uiCommDataTranslationMeasurPoint.turnOn()
             this.uiApp.uiBeamline.uiD141.uiCommWago.setDevice(gslcCommWago);
             this.uiApp.uiBeamline.uiD141.uiCommWago.turnOn();
             
@@ -1517,14 +1440,10 @@ classdef App < mic.Base
             % D142
             this.uiApp.uiBeamline.uiD142.uiCommGalil.setDevice(gslcCommGalilD142);
             this.uiApp.uiBeamline.uiD142.uiCommGalil.turnOn();
-            this.uiApp.uiBeamline.uiD142.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            this.uiApp.uiBeamline.uiD142.uiCommDataTranslationMeasurPoint.turnOn()
             
             % M143
             this.uiApp.uiM143.uiCommGalil.setDevice(gslcCommGalilM143)
             this.uiApp.uiM143.uiCommGalil.turnOn();
-            this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
-            this.uiApp.uiM143.uiCommDataTranslationMeasurPoint.turnOn();
             
             % ScannerMA
             this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400MA);
@@ -1543,8 +1462,6 @@ classdef App < mic.Base
             
             
 
-            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint);
-            % this.uiApp.uiWafer.uiCommDataTranslationMeasurPoint.turnOn()
 
             
            
@@ -1576,9 +1493,6 @@ classdef App < mic.Base
             this.uiApp.uiDriftMonitor.uicConnectHexapod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
             
-            
-            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.setDevice(gslcCommDataTranslationMeasurPoint)
-            % this.uiApp.uiTempSensors.uiCommDataTranslationMeasurPoint.turnOn()
 
             
             
@@ -1611,8 +1525,11 @@ classdef App < mic.Base
             %}
             
             % Camera LEDs
+            %{
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.setDevice(gslcComm3GStoreRemotePowerSwitch1);
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch1.turnOn();
+            %}
+            
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch2.setDevice(gslcComm3GStoreRemotePowerSwitch2);
             this.uiApp.uiCameraLEDs.uiComm3GStoreRemotePowerSwitch2.turnOn();
         end

@@ -361,20 +361,19 @@ classdef Scan < mic.Base
             
             this.hParent = hParent;
             
-            
             this.uiPrescriptionTool.build(hParent, dLeft, dTop);
             
             this.uibAddToWafer.build(...
                 hParent, ...
                 dLeft + 10, ...
-                dTop + this.uiPrescriptionTool.dHeight - 40, ...
+                dTop + this.uiPrescriptionTool.dHeight + 10, ...
                 200, ...
                 this.dHeightButton);
             
             
             this.buildPanelAdded()
             
-            dTop = 500;
+            dTop = 580;
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
             this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 20, 400);

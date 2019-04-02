@@ -17,6 +17,8 @@ classdef D141 < mic.Base
         
     end
     
+    
+    
     properties (Access = private)
         
         clock
@@ -27,6 +29,14 @@ classdef D141 < mic.Base
         configStageY
         configMeasPointVolts
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
+    end
+    
+    properties (SetAccess = private)
+        
+        cName = 'd141-'
     end
     
     methods
@@ -38,6 +48,15 @@ classdef D141 < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
             end
             
             this.init();
@@ -61,22 +80,9 @@ classdef D141 < mic.Base
             
            
         
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                33 ...
-            );
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()
-        end
+
        
-        function disconnectDataTranslationMeasurPoint(this)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-        end
+        
         
         function build(this, hParent, dLeft, dTop)
             
@@ -162,6 +168,12 @@ classdef D141 < mic.Base
                 'cLabel', 'Stage Y' ...
             );
         
+         end
+        
+         function d = getCurrent(this)
+            % channel 33 on hardware zero-indexed
+            dData = this.hardware.getDataTranslation().getScanData();
+            d = dData(33 + 1);
         end
         
         
@@ -180,12 +192,15 @@ classdef D141 < mic.Base
         
             this.uiCurrent = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
-                'cName', 'measur-point-d141-diode', ...
+                'cName', [this.cName, 'measur-point'], ...
                 'config', uiConfig, ...
                 'cLabel', 'MeasurPoint', ...
                 'lShowInitButton', true, ...
                 'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
+                'lShowLabels', false, ...
+                'fhGet', @() this.getCurrent(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true ...
             );
         end
         
@@ -207,7 +222,11 @@ classdef D141 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-d141', ...
+                'fhGet', @() this.hardware.getIsConnectedDataTranslation(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedDataTranslation(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'data-translation-measur-point'], ...
                 'cLabel', 'DataTrans MeasurPoint' ...
             );
         
@@ -229,7 +248,7 @@ classdef D141 < mic.Base
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
                 'cName', 'wago-d141', ...
-                'cLabel', 'Wago' ...
+                'cLabel', 'Wago (Insert/Remove)' ...
             );
         
         end

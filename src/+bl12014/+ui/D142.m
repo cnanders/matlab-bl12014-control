@@ -26,6 +26,14 @@ classdef D142 < mic.Base
         configStageY
         configMeasPointVolts
         
+         % {bl12014.Hardware 1x1}
+        hardware
+        
+    end
+    
+    properties (SetAccess = private)
+        
+        cName = 'd142-'
     end
     
     methods
@@ -37,6 +45,15 @@ classdef D142 < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+            end
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
             end
             
             this.init();
@@ -56,23 +73,7 @@ classdef D142 < mic.Base
             this.uiStageY.setDevice([]);
         end
        
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-            import bl12014.device.GetNumberFromDataTranslationMeasurPoint
 
-            device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                34 ...
-            );
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()
-        end
-        
-        function disconnectDataTranslationMeasurPoint(this, comm)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-        end
         
         
         function build(this, hParent, dLeft, dTop)
@@ -154,6 +155,11 @@ classdef D142 < mic.Base
             );
         end
         
+        function d = getCurrent(this)
+            % channel 34 on hardware zero-indexed
+            dData = this.hardware.getDataTranslation().getScanData();
+            d = dData(34 + 1);
+        end
         
         function initCurrent(this)
             
@@ -174,7 +180,10 @@ classdef D142 < mic.Base
                 'cLabel', 'MeasurPoint', ...
                 'lShowInitButton', true, ...
                 'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
+                'lShowLabels', false, ...
+                'fhGet', @() this.getCurrent(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true ...
             );
         end
         
@@ -194,7 +203,11 @@ classdef D142 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', 'data-translation-measur-point-d142', ...
+                'fhGet', @() this.hardware.getIsConnectedDataTranslation(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedDataTranslation(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'data-translation-measur-point'], ...
                 'cLabel', 'DataTrans MeasurPoint' ...
             );
         

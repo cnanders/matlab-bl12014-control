@@ -22,7 +22,7 @@ classdef Reticle < mic.Base
         % uiCommDataTranslationMeasurPoint
         
         
-        ReticleTTZClosedLoop
+        uiReticleZTTClosedLoop
         
         uiCoarseStage
         uiFineStage
@@ -33,6 +33,8 @@ classdef Reticle < mic.Base
         uiMotMin
         uiShutter
         uiMotMinSimple
+        
+        uiButtonSyncDestinations
         
     end
     
@@ -92,7 +94,21 @@ classdef Reticle < mic.Base
             
         end
           
-                
+        
+        
+        function syncDestinations(this)
+            this.uiCoarseStage.uiX.syncDestination();
+            this.uiCoarseStage.uiY.syncDestination();
+            this.uiCoarseStage.uiZ.syncDestination();
+            this.uiCoarseStage.uiTiltX.syncDestination();
+            this.uiCoarseStage.uiTiltY.syncDestination();
+            this.uiFineStage.uiX.syncDestination();
+            this.uiFineStage.uiY.syncDestination();
+            this.uiReticleZTTClosedLoop.uiCLTiltX.syncDestination();
+            this.uiReticleZTTClosedLoop.uiCLTiltY.syncDestination();
+            this.uiReticleZTTClosedLoop.uiCLZ.syncDestination();
+        end
+        
         function build(this, hParent, dLeft, dTop)
             this.hParent = hParent;
 
@@ -103,6 +119,8 @@ classdef Reticle < mic.Base
             this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
+            
+            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
            
             
             %{
@@ -128,8 +146,8 @@ classdef Reticle < mic.Base
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
             
-            this.ReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.ReticleTTZClosedLoop.dHeight + dPad;
+            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
             
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
@@ -178,7 +196,7 @@ classdef Reticle < mic.Base
             st = struct();
             st.uiCoarseStage = this.uiCoarseStage.save();
             st.uiFineStage = this.uiFineStage.save();
-%             st.ReticleTTZClosedLoop = this.ReticleTTZClosedLoop.save();
+%             st.ReticleTTZClosedLoop = this.uiReticleZTTClosedLoop.save();
             
         end
         
@@ -266,7 +284,7 @@ classdef Reticle < mic.Base
                 'clock', this.uiClock ...
             );
         
-            this.ReticleTTZClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
+            this.uiReticleZTTClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
                 'clock',        this.clock, ...
                 'hardware', this.hardware, ...
                 'uiClock',      this.uiClock, ...
@@ -279,6 +297,11 @@ classdef Reticle < mic.Base
         
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDeltaTauPowerPmac();
+            
+            this.uiButtonSyncDestinations = mic.ui.common.Button(...
+                'fhOnClick', @(src, evt) this.syncDestinations(), ...
+                'cText', 'Sync Destinations' ...
+            );
         
             addlistener(this.uiAxes, 'eClickField', @this.onUiAxesClickField);
 
@@ -339,16 +362,20 @@ classdef Reticle < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getIsConnectedDeltaTauPowerPmac(), ...
+                'fhSet', @(lVal) mic.Utils.evalAll(...
+                    @() this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
+                    @() this.syncDestinations() ...
+                ), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'comm-delta-tau-power-pmac'], ...
                 'cLabel', 'DeltaTau Power PMAC' ...
             );
         
         end
         
-        
-        
-       
-        
+
        
         
         function onUiAxesClickField(this, src, evt)

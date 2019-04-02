@@ -28,11 +28,13 @@ classdef M143 < mic.Base
         configStageY
         configMeasPointVolts
         
+        % {bl12014.Hardware 1x1}
+        hardware
     end
     
     properties (SetAccess = private)
         
-        cName = 'm143'
+        cName = 'm143-'
  
     end
     
@@ -47,27 +49,20 @@ classdef M143 < mic.Base
                 end
             end
             
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            
             this.init();
         
         end
         
-        function connectDataTranslationMeasurPoint(this, comm)
-            
-           import bl12014.device.GetNumberFromDataTranslationMeasurPoint
-
-           device = GetNumberFromDataTranslationMeasurPoint(...
-                comm, ...
-                GetNumberFromDataTranslationMeasurPoint.cTYPE_VOLTAGE, ...
-                35 ...
-            );
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()     
-        end
         
-        function disconnectDataTranslationMeasurPoint(this)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-        end
         
         
         function connectGalil(this, comm)
@@ -160,6 +155,11 @@ classdef M143 < mic.Base
             );
         end
         
+        function d = getCurrent(this)
+            % channel 35 on hardware zero-indexed
+            dData = this.hardware.getDataTranslation().getScanData();
+            d = dData(35 + 1);
+        end
         
         function initCurrent(this)
             
@@ -179,7 +179,10 @@ classdef M143 < mic.Base
                 'config', uiConfig, ...
                 'cLabel', 'Current', ...
                 'dWidthPadUnit', 277, ...
-                'lShowLabels', false ...
+                'lShowLabels', false, ...
+                'fhGet', @() this.getCurrent(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true ...
             );
         end
         
@@ -199,7 +202,11 @@ classdef M143 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', sprintf('%s-data-translation-measur-point', this.cName), ...
+                 'fhGet', @() this.hardware.getIsConnectedDataTranslation(), ...
+                'fhSet', @(lVal) this.hardware.setIsConnectedDataTranslation(lVal), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'data-translation-measur-point'], ...
                 'cLabel', 'DataTrans MeasurPoint' ...
             );
         

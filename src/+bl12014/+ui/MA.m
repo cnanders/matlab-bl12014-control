@@ -140,7 +140,7 @@ classdef MA < mic.Base
             
             dSizeX = 1288;
             dSizeY = 728;
-            dOffsetX = 200 ; % 350;
+            dOffsetX = 100 ; % 350;
             dOffsetY = 0;
             this.uiGigECamera = bl12014.ui.GigECamera( ...
                 'fhProcess', @this.processImageFrame, ...
