@@ -1123,13 +1123,13 @@ classdef Scan < mic.Base
                             this.stScanSetContract.(cField).lAchieved = true;
                         	
                             if lDebug
-                                this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                %this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
  
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('%s %s is still setting to %1.3f', cFn, cField, stValue.(cField)), this.u8_MSG_TYPE_SCAN);
+                                %this.msg(sprintf('%s %s is still setting to %1.3f', cFn, cField, stValue.(cField)), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
@@ -1137,7 +1137,7 @@ classdef Scan < mic.Base
                     else
                         % need to move and hasn't been issued.
                         if lDebug
-                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            %this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         lOut = false;
