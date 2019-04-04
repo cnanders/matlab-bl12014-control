@@ -18,11 +18,13 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z
 
 clock = mic.Clock('master');
 hardware = bl12014.Hardware();
+uiClock = mic.ui.Clock(clock);
 
-uiReticle = bl12014.ui.Reticle('clock', clock);
-uiWafer = bl12014.ui.Wafer('clock', clock, 'hardware', hardware);
-uiShutter = bl12014.ui.Shutter('clock', clock);
-uiBeamline = bl12014.ui.Beamline('clock', clock);  
+
+uiReticle = bl12014.ui.Reticle('clock', clock, 'hardware', hardware, 'uiClock', uiClock);
+uiWafer = bl12014.ui.Wafer('clock', clock, 'hardware', hardware, 'uiClock', uiClock);
+uiShutter = bl12014.ui.Shutter('clock', clock, 'hardware', hardware, 'uiClock', uiClock);
+uiBeamline = bl12014.ui.Beamline('clock', clock, 'hardware', hardware, 'uiClock', uiClock);  
 
 waferExposureHistory = bl12014.WaferExposureHistory();
 waferExposureHistory.addFakeExposures();

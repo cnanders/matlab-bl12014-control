@@ -1545,7 +1545,7 @@ classdef App < mic.Base
             
             % Set clock, required for drift monitor middle layer
             this.hardware.setClock(this.clock); 
-            this.hardware.setIsConnectedDataTranslation(true); % force real hardware
+%             this.hardware.setIsConnectedDataTranslation(true); % force real hardware
             this.hardware.setIsConnectedMfDriftMonitor(true); % force real hardware
                         
             this.logger = bl12014.Logger(...

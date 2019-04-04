@@ -28,7 +28,7 @@ ui = bl12014.ui.Reticle(...
 );
 
 dWidth = 1650;
-dHeight = 900;
+dHeight = 1000;
 
 
 dScreenSize = get(0, 'ScreenSize');
