@@ -152,8 +152,8 @@ classdef Reticle < mic.Base
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
 
-            this.uiReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiReticleTTZClosedLoop.dHeight + dPad;
+            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
             
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
