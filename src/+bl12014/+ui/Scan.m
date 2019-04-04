@@ -1102,8 +1102,8 @@ classdef Scan < mic.Base
                                lReady =     isempty(stValue.waferZ) || ...
                                             ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
                                             ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
-                                            ... this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice.isReady();
-                                            abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
+                                            this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                                            ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                
                             case 'workingMode'
 

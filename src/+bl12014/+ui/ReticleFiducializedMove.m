@@ -331,11 +331,12 @@ classdef ReticleFiducializedMove < mic.Base
             vXY = [dFidY2 - dFidY1; dFidX2 - dFidX1];
             vRC = [dFidR1 - dFidR2; dFidC2 - dFidC1] * this.dCellLength;
             
-            dAng = acos(vXY'*vRC/sqrt((vXY'*vXY)*(vRC'*vRC)));
+            dAng = -acos(vXY'*vRC/sqrt((vXY'*vXY)*(vRC'*vRC)));
             
+
+            mag = @(x) sqrt(x'*x);
             
-%             this.T = [sin(dAng), cos(dAng); cos(dAng), -sin(dAng)];
-            this.T = [cos(-dAng), -sin(-dAng); sin(dAng), -cos(-dAng)] * this.dCellLength;
+            this.T = [[-sin(dAng); -cos(dAng)],[cos(dAng); -sin(dAng)]] * this.dCellLength * mag(vXY)/mag(vRC);
                 
             this.fhRC2XY = @(rc) this.T * (rc - [dFidR1; dFidC1]) + [dFidX1; dFidY1];
             this.fhXY2RC = @(xy) ((this.T) \ (xy - [dFidX1; dFidY1])) + [dFidR1; dFidC1]; 
