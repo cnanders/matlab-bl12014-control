@@ -163,20 +163,46 @@ classdef Scanner < mic.Base
             delete(this.uiPupilFillGenerator);
             
             
-        end  
+        end 
+        
+        
+        function cec = getSaveLoadProps(this)
+            cec = {...
+                'uiPupilFillGenerator', ...
+                'uiNPointLC400' ...
+             };
+        end
         
         
         function st = save(this)
-            st = struct();
-            st.uiPupilFillGenerator = this.uiPupilFillGenerator.save();
+             cecProps = this.getSaveLoadProps();
             
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
         end
         
         function load(this, st)
-            if isfield(st, 'uiPupilFillGenerator') 
-                this.uiPupilFillGenerator.load(st.uiPupilFillGenerator);
+                        
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
             end
+            
         end
+        
+        
         
     end
     

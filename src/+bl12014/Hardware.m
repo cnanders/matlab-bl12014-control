@@ -133,6 +133,8 @@ classdef Hardware < mic.Base
     
         % Destructor
         function delete(this)
+            % Put all of the disconnect functions here
+            this.disconnectDeltaTauPowerPmac();
         end
         
         % Setters
@@ -328,31 +330,48 @@ classdef Hardware < mic.Base
             end
         end
         
-        % WAFER DOSE MONITOR (KEITHLEY 6482)
+        %% Power Pmac
+        
+        function connectDeltaTauPowerPmac(this)
+            this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
+                'cHostname', this.cTcpipDeltaTau ...
+            );
+            if ~this.commDeltaTauPowerPmac.init();
+                this.disconnectDeltaTauPowerPmac();
+            end
+            
+        end
+        
+        function disconnectDeltaTauPowerPmac(this)
+            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+                % this.commDeltaTauPowerPmac.disconnect();
+                this.commDeltaTauPowerPmac = []; % calls delete() which calls disconnect
+            end
+        end
         
         function l = getIsConnectedDeltaTauPowerPmac(this)
-            l = this.lIsConnectedDeltaTauPowerPmac;
+            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+                l = true;
+            else
+                l = false;
+            end
         end
+        
         
         function setIsConnectedDeltaTauPowerPmac(this, lVal)
            this.lIsConnectedDeltaTauPowerPmac = lVal;
         end
         
+        
         function comm = getDeltaTauPowerPmac(this)
             
-            if this.lIsConnectedDeltaTauPowerPmac
-                
-                if isempty(this.commDeltaTauPowerPmac)
-                   this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
-                        'cHostname', this.cTcpipDeltaTau ...
-                    );
-                    this.commDeltaTauPowerPmac.init();
-                end
-                comm = this.commDeltaTauPowerPmac;
-            else
-                comm = this.commDeltaTauPowerPmacVirtual;
-                
+            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+                comm = this.commDeltaTauPowerPmac; 
+                return;
             end
+            
+            comm = this.commDeltaTauPowerPmacVirtual;
+            
         end
         
         
@@ -374,7 +393,7 @@ classdef Hardware < mic.Base
                 if isempty(this.commKeithley6482Wafer)
                    this.commKeithley6482Wafer = keithley.Keithley6482(...
                         'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
-                        'u16TcpipPort', 4001, ...
+                        'u16TcpipPort', 4002, ...
                         'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                     );
                     this.commKeithley6482Wafer.connect()
@@ -403,7 +422,7 @@ classdef Hardware < mic.Base
                 if isempty(this.commKeithley6482Reticle)
                    this.commKeithley6482Reticle = keithley.Keithley6482(...
                         'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
-                        'u16TcpipPort', 4002, ...
+                        'u16TcpipPort', 4001, ...
                         'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
                     );
                     this.commKeithley6482Reticle.connect()

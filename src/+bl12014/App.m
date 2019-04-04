@@ -207,6 +207,7 @@ classdef App < mic.Base
             
             delete(this.uiApp)
             delete(this.logger);
+            delete(this.hardware);
             
             % Delete the clock
             delete(this.clock);

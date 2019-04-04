@@ -27,6 +27,13 @@ classdef Scan < mic.Base
         dWidthPanelBorder = 0
         
         dColorFigure = [200 200 200]./255
+        
+        dToleranceReticleX = 0.01 % mm
+        dToleranceReticleY = 0.01 % mm
+        dToleranceWaferX = 0.01 % mm
+        dToleranceWaferY = 0.01 % mm
+        dToleranceWaferZ = 5 % nm
+
 
         
     end
@@ -575,8 +582,7 @@ classdef Scan < mic.Base
                 'waferX', ...
                 'waferY', ...
                 'waferZ' ...
-                'workingModeStart', ...
-                'workingModeEnd', ...
+                'workingMode', ...
             };
 
             for n = 1 : length(ceFields)
@@ -692,7 +698,7 @@ classdef Scan < mic.Base
             
             % build strings:
             cFEMSize        = sprintf('[%d(F) X %d(D)]', stRecipe.fem.u8FocusNum, stRecipe.fem.u8DoseNum);
-            ceWaferID        = regexp(cFile, '(?<=\\)\d+\-\d+','match');
+            ceWaferID        = regexp(cFile, '(?<=\\)\w*\d+\-\d+','match');
             cWaferID        = ceWaferID{1};
             cFocusString    = sprintf('%g / %g', stRecipe.fem.dFocusCenter, stRecipe.fem.dFocusStep);
             cDoseString     = sprintf('%g / %g', stRecipe.fem.dDoseCenter, stRecipe.fem.dDoseStep);
@@ -882,18 +888,11 @@ classdef Scan < mic.Base
                                 
                 switch cField
                     
-                    case 'workingModeStart'
+                    case 'workingMode'
                         
-                        this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeStart); 
+                        this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(stValue.workingMode); 
                         this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
-                        this.stScanSetContract.workingModeStart.lIssued = true;
-            
-                    case 'workingModeEnd'
-                        
-                        
-                        this.uiWafer.uiWorkingMode.uiWorkingMode.setDest(stValue.workingModeEnd)
-                        this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
-                        this.stScanSetContract.workingModeEnd.lIssued = true;
+                        this.stScanSetContract.workingMode.lIssued = true;
                                     
                     case 'waferX'
                         
@@ -1084,34 +1083,33 @@ classdef Scan < mic.Base
                                 % FIX ME
                                 lReady = true;
                             case 'reticleX'
-                                lReady = this.uiReticle.uiCoarseStage.uiX.getDevice().isReady();
+                                lReady =    isempty(stValue.reticleX) ||...
+                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
+                                            abs(this.uiReticle.uiCoarseStage.uiX.getValCal(stUnit.reticleX) - stValue.reticleX) <= this.dToleranceReticleX;
                             case 'reticleY'
-                                lReady = this.uiReticle.uiCoarseStage.uiY.getDevice().isReady();
+                                lReady =    isempty(stValue.reticleY) || ...
+                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
+                                            abs(this.uiReticle.uiCoarseStage.uiY.getValCal(stUnit.reticleY) - stValue.reticleY) <= this.dToleranceReticleY;
                             case 'waferX'
-                                lReady = this.uiWafer.uiCoarseStage.uiX.getDevice().isReady();
+                                lReady =    isempty(stValue.waferX) || ...
+                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
+                                            abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3 - stValue.waferX) <= this.dToleranceWaferX;
                             case 'waferY'
-                                lReady = this.uiWafer.uiCoarseStage.uiY.getDevice().isReady();
+                                lReady =    isempty(stValue.waferY) || ...
+                                            ...~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
+                                            abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3 - stValue.waferY) <= this.dToleranceWaferY;
                             case 'waferZ'
-                               % lReady = this.uiWafer.uiFineStage.uiZ.getDevice().isReady();
-                               lReady = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                               lReady =     isempty(stValue.waferZ) || ...
+                                            ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
+                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
+                                            ... this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice.isReady();
+                                            abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                
-                            case 'workingModeEnd'
+                            case 'workingMode'
+
+                                lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;                               
                                 
-                                % mic.device.GetSetText don't support
-                                % isReady() method.
-                                lReady = ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeEnd))) || ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), num2str(stValue.workingModeEnd));                                
-                                
-                            case 'workingModeStart'
-                                
-                                % mic.device.GetSetText don't support
-                                % isReady() method.
-                                % bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeStart))
-                                
-                                lReady = ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), bl12014.device.GetSetTextFromDeltaTauPowerPmac.getWorkingModeString(str2num(stValue.workingModeStart))) || ...
-                                    strcmpi(this.uiWafer.uiWorkingMode.uiWorkingMode.get(), num2str(stValue.workingModeStart));
+                            
                                 
                             otherwise
                                 
@@ -1131,7 +1129,7 @@ classdef Scan < mic.Base
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('%s %s is still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('%s %s is still setting to %1.3f', cFn, cField, stValue.(cField)), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
@@ -1192,10 +1190,6 @@ classdef Scan < mic.Base
             );
             % Trigger the shutter UI
             this.uiShutter.uiShutter.moveToDest();
-            
-            
-                 
-            
             
            
             this.stScanAcquireContract.shutter.lIssued = true;
@@ -1524,93 +1518,20 @@ classdef Scan < mic.Base
             
             % Shutter
             
-            if ~this.uiShutter.uiShutter.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiShutter.id());
+            if ~this.hardware.getIsConnectedRigolDG1000Z()
+                cMsg = sprintf('%s\n%s', cMsg, 'Rigol DG100Z (Shutter Signal Generator)');
             end
             
-            % Reticle Coarse Stage
-            
-            if ~this.uiReticle.uiCoarseStage.uiX.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiCoarseStage.uiX.id());
+            % PPMAC
+            if ~this.hardware.getIsConnectedDeltaTauPowerPmac()
+                cMsg = sprintf('%s\n%s', cMsg, 'PPMAC (Reticle + Wafer Stages)');
             end
             
-            if ~this.uiReticle.uiCoarseStage.uiY.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiCoarseStage.uiY.id());
+            % MF Drift Monitor Middleware
+            if ~this.hardware.getIsConnectedMfDriftMonitorMiddleware()
+                cMsg = sprintf('%s\n%s', cMsg, 'MF Drift Monitor Middleware (Height Sensor + DMI)');
             end
-            
-            if ~this.uiReticle.uiCoarseStage.uiZ.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiCoarseStage.uiZ.id());
-            end
-            
-            if ~this.uiReticle.uiCoarseStage.uiTiltX.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiCoarseStage.uiTiltX.id());
-            end
-            
-            if ~this.uiReticle.uiCoarseStage.uiTiltY.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiCoarseStage.uiTiltY.id());
-            end
-            
-            % Reticle Fine Stage
-            
-            if ~this.uiReticle.uiFineStage.uiX.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiFineStage.uiX.id());
-            end
-            
-            if ~this.uiReticle.uiFineStage.uiY.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.uiFineStage.uiY.id());
-            end
-            
-            % Wafer Coarse Stage
-            
-            if ~this.uiWafer.uiCoarseStage.uiX.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiCoarseStage.uiX.id());
-            end
-            
-            if ~this.uiWafer.uiCoarseStage.uiY.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiCoarseStage.uiY.id());
-            end
-            
-            if ~this.uiWafer.uiCoarseStage.uiZ.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiCoarseStage.uiZ.id());
-            end
-            
-            if ~this.uiWafer.uiCoarseStage.uiTiltX.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiCoarseStage.uiTiltX.id());
-            end
-            
-            if ~this.uiWafer.uiCoarseStage.uiTiltY.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiCoarseStage.uiTiltY.id());
-            end
-            
-            % Wafer Fine Stage
-            
-            %{
-            if ~this.uiWafer.uiFineStage.uiZ.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiFineStage.uiZ.id());
-            end
-            %}
-            
-%              if ~this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.isActive() 
-%                 cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.id());
-%             end
-            
-            
-            %{
-            if ~this.uiReticle.mod3.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiReticle.mod3.id());
-            end
-            %}
 
-            
-            %{
-            if ~this.uiWafer.hs.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiWafer.hs.id());
-            end
-            if ~this.uiPupilFill.np.isActive()
-                cMsg = sprintf('%s\n%s', cMsg, this.uiPupilFill.np.id());
-            end
-            %}
-            
             if ~strcmp(cMsg, '')
                 
                 cQuestion   = sprintf( ...
@@ -1955,7 +1876,10 @@ classdef Scan < mic.Base
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
             st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
             
-            st.temp_c_po_m2_0200 = this.hardware.getDataTranslation().measure_temperature_rtd(31, 'PT100');
+            
+            % st.temp_c_po_m2_0200 = this.hardware.getDataTranslation().measure_temperature_rtd(31, 'PT100');
+            dData = this.hardware.getDataTranslation().getScanData();
+            st.temp_c_po_m2_0200 = dData(31 + 1);
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
         end

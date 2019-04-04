@@ -76,7 +76,7 @@ classdef MA < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             this.uiScanner.build(hParent, dLeft, dTop);
-            this.uiGigECamera.build(hParent, dLeft + 1250, dTop, 480);
+            % this.uiGigECamera.build(hParent, dLeft + 1250, dTop, 480);
             this.uiDiagnostics.build(hParent, dLeft + 1250, 600);
             
         end

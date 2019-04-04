@@ -255,7 +255,7 @@ classdef PrescriptionTool < mic.Base
             nMid = ceil(length(this.uiFemTool.dFocus)/2);
             
             stValue = struct();
-            stValue.workingModeStart = '5'; 
+            stValue.workingMode = 5; % allow xy move
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
 
@@ -281,7 +281,7 @@ classdef PrescriptionTool < mic.Base
 
             % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
             stValue = struct();
-            stValue.workingModeEnd = '4'; 
+            stValue.workingMode = 4; % drift closed loop for exposure
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
 
@@ -310,7 +310,7 @@ classdef PrescriptionTool < mic.Base
                 
                 % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                 stValue = struct();
-                stValue.workingModeStart = '5'; 
+                stValue.workingMode = 5; % allow xy move
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
 
@@ -338,7 +338,7 @@ classdef PrescriptionTool < mic.Base
                                            
                     % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue = struct();
-                    stValue.workingModeStart = '5'; 
+                    stValue.workingMode = 5; % allow xy move
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
@@ -364,7 +364,7 @@ classdef PrescriptionTool < mic.Base
                     
                     % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue = struct();
-                    stValue.workingModeEnd = '4'; 
+                    stValue.workingMode = 4; % Drift closed loop for exposure
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
@@ -402,7 +402,7 @@ classdef PrescriptionTool < mic.Base
             % Set to run at the end
             % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
             stValue = struct();
-            stValue.workingModeEnd = '5'; 
+            stValue.workingMode = 5; % Allow xy move
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
                     
@@ -414,8 +414,7 @@ classdef PrescriptionTool < mic.Base
             stUnit.reticleX = 'mm';
             stUnit.reticleY = 'mm';
             stUnit.pupilFill = 'n/a';
-            stUnit.workingModeStart = 'n/a';
-            stUnit.workingModeEnd = 'n/a';
+            stUnit.workingMode = 'n/a';
             
             stRecipe = struct();
             stRecipe.process = this.uiProcessTool.save();
