@@ -151,14 +151,9 @@ classdef Reticle < mic.Base
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            
-<<<<<<< HEAD
-            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
-=======
+
             this.uiReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiReticleTTZClosedLoop.dHeight + dPad;
->>>>>>> 7bb90fa199788ad98bf157a40138f33944bac113
             
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
@@ -206,13 +201,8 @@ classdef Reticle < mic.Base
         function st = save(this)
             st = struct();
             st.uiCoarseStage = this.uiCoarseStage.save();
-<<<<<<< HEAD
-            st.uiFineStage = this.uiFineStage.save();
-%             st.ReticleTTZClosedLoop = this.uiReticleZTTClosedLoop.save();
-            
-=======
+
             st.uiFineStage = this.uiFineStage.save();            
->>>>>>> 7bb90fa199788ad98bf157a40138f33944bac113
         end
         
         function load(this, st)
@@ -299,11 +289,7 @@ classdef Reticle < mic.Base
                 'clock', this.uiClock ...
             );
         
-<<<<<<< HEAD
             this.uiReticleZTTClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
-=======
-            this.uiReticleTTZClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
->>>>>>> 7bb90fa199788ad98bf157a40138f33944bac113
                 'clock',        this.clock, ...
                 'hardware', this.hardware, ...
                 'uiClock',      this.uiClock, ...
