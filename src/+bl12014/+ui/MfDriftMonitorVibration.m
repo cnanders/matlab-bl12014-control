@@ -12,7 +12,7 @@ classdef MfDriftMonitorVibration < mic.Base
         dWidth = 1710
         dHeight = 980
         
-        dHeightList = 150
+        dHeightList = 250
         
         dWidthAxes = 1100
         dHeightAxes = 225

@@ -3,7 +3,7 @@ classdef Reticle < mic.Base
     properties (Constant)
       
         dWidth      = 1830
-        dHeight     = 790
+        dHeight     = 900
         
     end
     
@@ -23,6 +23,8 @@ classdef Reticle < mic.Base
         
         
         uiReticleZTTClosedLoop
+
+        uiReticleFiducializedMove
         
         uiCoarseStage
         uiFineStage
@@ -137,15 +139,19 @@ classdef Reticle < mic.Base
             this.uiMotMinSimple.build(this.hParent, 750, dTop);
 
             dLeft = 10;
-            dTop = 220;
+            dTop = 170;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
+            this.uiReticleFiducializedMove.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiReticleFiducializedMove.dHeight + dPad;
+            
+            
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
             
-            
+
             this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
             
@@ -195,9 +201,8 @@ classdef Reticle < mic.Base
         function st = save(this)
             st = struct();
             st.uiCoarseStage = this.uiCoarseStage.save();
-            st.uiFineStage = this.uiFineStage.save();
-%             st.ReticleTTZClosedLoop = this.uiReticleZTTClosedLoop.save();
-            
+
+            st.uiFineStage = this.uiFineStage.save();            
         end
         
         function load(this, st)
@@ -294,6 +299,13 @@ classdef Reticle < mic.Base
                 'uiCoarseZ',    this.uiCoarseStage.uiZ, ...
                 'uiCapSensors', this.uiMod3CapSensors...
             );
+        
+            this.uiReticleFiducializedMove = bl12014.ui.ReticleFiducializedMove(...
+                'clock',        this.uiClock, ...
+                'hardware', this.hardware ...
+            );
+        
+        
         
             this.initUiCommDataTranslationMeasurPoint();
             this.initUiCommDeltaTauPowerPmac();

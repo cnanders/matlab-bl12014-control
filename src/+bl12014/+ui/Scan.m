@@ -393,6 +393,10 @@ classdef Scan < mic.Base
         
         function delete(this)
             
+            this.uiReticleAxes = [];
+            this.uiWaferAxes = [];
+            this.uiPOCurrent = [];
+            
             this.msg('delete');
             % Clean up clock tasks
             
@@ -1102,8 +1106,8 @@ classdef Scan < mic.Base
                                lReady =     isempty(stValue.waferZ) || ...
                                             ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
                                             ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
-                                            ... this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice.isReady();
-                                            abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
+                                            this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                                            ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                
                             case 'workingMode'
 
@@ -1179,6 +1183,14 @@ classdef Scan < mic.Base
             
             % Pre-exp pause.  xVal prop will return type double
             % pause(stValue.task.pausePreExpose);
+            
+            dTimeStart = tic;
+            dTimeElapsed = 0;
+            while dTimeElapsed < 10
+                dTimeElapsed = toc(dTimeStart);
+                pause(1);
+                fprintf('bl12014.ui.Scan.onScanAcquire() pausing %1.0f s of 10s\n', dTimeElapsed);
+            end
 
             % Calculate the exposure time
             dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
@@ -1747,6 +1759,7 @@ classdef Scan < mic.Base
             % then add current row
             dShot =  stValue.task.femRows * (stValue.task.femCol - 1) + stValue.task.femRow;
                 
+            %{
             c = sprintf(...
                 [...
                     '%03d-', ...
@@ -1760,6 +1773,20 @@ classdef Scan < mic.Base
                 stValue.task.femRow, ...
                 datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local') ...
             );
+            %}
+        
+            c = sprintf(...
+                [...
+                    '%s-', ...
+                    'dose%02d-', ...
+                    'focus%02d-', ...
+                    '1kHz-DMI-HS-data.txt' ...
+                ], ...
+                datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), ...
+                stValue.task.femCol, ...
+                stValue.task.femRow ...
+            );
+        
         end
         
         function c = getDirScan(this)

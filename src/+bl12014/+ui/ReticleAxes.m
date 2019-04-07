@@ -147,7 +147,7 @@ classdef ReticleAxes < mic.Base
         % can determine this experimentally 
         
         dXChiefRay = -42/1000
-        dYChiefRay = 3.42/1000
+        dYChiefRay = 3.42/1000 - 0.7/1000; % added 2019.04.03
         
         % These get set relative to dX/YChiefRay in constructor
         dXCap1 = 0
@@ -314,6 +314,10 @@ classdef ReticleAxes < mic.Base
         function delete(this)
             
             this.msg('delete');
+            if isvalid(this.clock) && ...
+               this.clock.has(this.id())
+                this.clock.remove(this.id());
+            end
             
         end
         
