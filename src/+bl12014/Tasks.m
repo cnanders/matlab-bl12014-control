@@ -91,6 +91,7 @@ classdef Tasks < mic.Base
             end
            
             cNameOfRecipe = 'Annular-40-80.mat'; % testing
+            cNameOfRecipe = 'Tune-Flux-Density-Ring.mat'; % testing
             
             [cDir] = fileparts(mfilename('fullpath'));
             
@@ -446,9 +447,10 @@ classdef Tasks < mic.Base
                 error('clock must be mic.Clock');
             end
             
+            % Fiducializatoin from 2019.04.04
             ceTasks = {...
-                mic.Task.fromUiGetSetNumber(ui.uiX, 64.2, 0.1, 'mm', 'Reticle Coarse X'), ...
-                mic.Task.fromUiGetSetNumber(ui.uiY, 19.78, 0.1, 'mm', 'Reticle Coarse Y'), ...
+                mic.Task.fromUiGetSetNumber(ui.uiX, 64.38, 0.1, 'mm', 'Reticle Coarse X'), ...
+                mic.Task.fromUiGetSetNumber(ui.uiY, 19.785, 0.1, 'mm', 'Reticle Coarse Y'), ...
                 ... %mic.Task.fromUiGetSetNumber(ui.uiZ, 0, 0.01, 'mm', 'Reticle Coarse Z') ...
             };
             
