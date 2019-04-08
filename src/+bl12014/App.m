@@ -13,7 +13,7 @@ classdef App < mic.Base
         cTcpipNewFocus = '192.168.10.23'
         cTcpipGalilD142 = '192.168.10.24'
         cTcpipGalilM143 = '192.168.10.25'
-        cTcpipWago = '192.168.10.26'
+        
         
         % Endstation 1 Subnet
         cTcpipLc400MA = '192.168.20.20'
@@ -56,8 +56,7 @@ classdef App < mic.Base
         % {rigol.DG1000Z 1x1}
         commRigolDG1000Z
         
-        % {modbus 1x1}
-        commWago
+        
         
         
         % {cxro.common.device.motion.Stage 1x1}
@@ -264,9 +263,7 @@ classdef App < mic.Base
         % Getters return logical if the COMM class exists.  Used by
         % GetSetLogicalConnect instances
         
-        function l = getWago(this)
-            l = ~isempty(this.commWago);
-        end
+        
         
         function l = getExitSlit(this)
             l = ~isempty(this.commExitSlit);
@@ -495,48 +492,12 @@ classdef App < mic.Base
             this.commPIMTECamera = [];
         end
         
-        function initAndConnectWago(this)
-            
-            if this.getWago()
-                return
-            end
-                        
-            try
-                % Requires instrument control toolbox
-                cTransport = 'tcpip';
-                this.commWago = modbus(cTransport, this.cTcpipWago, ...
-                    'Timeout', 5 ...
-                );
-                
-            catch mE
-                this.commWago = [];
-                cMsg = sprintf('initAndConnectWago() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiD141.connectWago(this.commWago);
-            
-        end
+        
         
         
        
         
-        function destroyAndDisconnectWago(this)
-            
-            this.msg(...
-                'destroyAndDisconnectWago', ...
-                this.u8_MSG_TYPE_INFO ...
-            );
-                    
-            if ~this.getWago()
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiD141.disconnectWago();
-            
-        end
+       
         
         
         
@@ -1157,11 +1118,7 @@ classdef App < mic.Base
         
         function initGetSetLogicalConnects(this)
             
-            gslcCommWago = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getWago, ...
-                'fhSetTrue', @this.initAndConnectWago, ...
-                'fhSetFalse', @this.destroyAndDisconnectWago ...
-            );
+            
         
             gslcCommExitSlit = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getExitSlit, ...
@@ -1301,9 +1258,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
             
-            
-            
-                        
+                                    
             this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
             this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.turnOn()
             
@@ -1313,7 +1268,6 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiCommGalilD142.setDevice(gslcCommGalilD142);
             this.uiApp.uiBeamline.uiCommGalilD142.turnOn()
             
-
             
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
@@ -1324,11 +1278,6 @@ classdef App < mic.Base
             % ScannerM142
             this.uiApp.uiScannerM142.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400M142);
             this.uiApp.uiScannerM142.uiNPointLC400.uiComm.turnOn();
-            
-            
-            % D141
-            this.uiApp.uiBeamline.uiD141.uiCommWago.setDevice(gslcCommWago);
-            this.uiApp.uiBeamline.uiD141.uiCommWago.turnOn();
             
             
             % D142

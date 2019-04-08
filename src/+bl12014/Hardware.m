@@ -27,6 +27,7 @@ classdef Hardware < mic.Base
         cTcpipNewFocus              = '192.168.10.23'
         cTcpipGalilD142             = '192.168.10.24'
         cTcpipGalilM143             = '192.168.10.25'
+        cTcpipWago                  = '192.168.10.26'
         
         % Endstation 1 Subnet
         cTcpipLc400MA               = '192.168.20.20'
@@ -103,6 +104,12 @@ classdef Hardware < mic.Base
         
         commSmarActM141
         commSmarActM141Virtual
+        
+        commWagoD141
+        commWagoD141Virtual
+        
+        commExitSlit
+        commExitSlitVirtual
                 
     end
     
@@ -514,7 +521,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482Wafer = [];
         end
         
-        function connectKeithley6482Wafer(this, lVal)
+        function connectKeithley6482Wafer(this)
             
             if this.getIsConnectedKeithley6482Wafer()
                 return
@@ -539,6 +546,95 @@ classdef Hardware < mic.Base
             comm = this.commKeithley6482WaferVirtual;
                 
         end
+        
+        %% WagoD141
+        
+        function l = getIsConnectedWagoD141(this)
+            if isa(this.commWagoD141, 'bl12014.hardwareAssets.WagoIO750')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectWagoD141(this)
+            if this.getIsConnectedWagoD141()
+                this.commWagoD141 = [];
+            end
+        end
+        
+        function connectWagoD141(this)
+            
+            try
+                % modbus requires instrument control toolbox
+                
+                this.commWagoD141 = bl12014.hardwareAssets.WagoD141(...
+                    'cHost', this.cTcpipWago ...
+                );
+            
+            catch mE
+                
+                % Will crash the app, but gives lovely stack trace.
+                error(getReport(mE));
+                
+                this.commWagoD141 = [];
+                
+            end
+            
+        end
+        
+        function comm = getWagoD141(this)
+            
+            if this.getIsConnectedWagoD141()
+                comm = this.commWagoD141;
+                return
+            end
+                
+            comm = this.commWagoD141Virtual;
+                
+        end
+        
+        
+        %% ExitSlit
+        
+        function l = getIsConnectedExitSlit(this)
+            if isa(this.commExitSlit, 'bl12014.hardwareAssets.WagoIO750')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectExitSlit(this)
+            if this.getIsConnectedExitSlit()
+                this.commExitSlit = [];
+            end
+        end
+        
+        function connectExitSlit(this)
+            
+            this.commExitSlit = bl12pico_slits;
+            [e,estr] = this.commExitSlit.checkServer();
+            if e
+                this.commExitSlit = [];
+                error('Problem attaching to pico server');
+            end
+            
+        end
+        
+        function comm = getExitSlit(this)
+            
+            if this.getIsConnectedExitSlit()
+                comm = this.commExitSlit;
+                return
+            end
+                
+            comm = this.commExitSlitVirtual;
+                
+        end
+        
+        
+        
         
         
         
@@ -743,6 +839,8 @@ classdef Hardware < mic.Base
             
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();
+            this.commExitSlitVirtual = 
         end
         
   
