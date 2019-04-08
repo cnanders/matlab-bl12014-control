@@ -19,8 +19,9 @@ classdef GetSetNumberFromMightexUniversalLedController < mic.interface.device.Ge
         end
         
         function d = get(this)
-            st = this.comm.getChannelData(this.u8Channel);
-            d = st.Normal_CurrentSet;
+            % st = this.comm.getChannelData(this.u8Channel);
+            % d = st.Normal_CurrentSet;
+            d = this.comm.getCurrentNormalModeCached(this.u8Channel);
         end
         
         function set(this, dVal)
