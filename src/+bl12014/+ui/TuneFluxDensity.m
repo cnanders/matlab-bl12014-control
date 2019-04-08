@@ -19,8 +19,6 @@ classdef TuneFluxDensity < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommConnectAll
-        uiCommDeltaTauPowerPmac
-        uiCommBL1201CorbaProxy
         
         uiHeightSensorLeds
 
@@ -174,9 +172,6 @@ classdef TuneFluxDensity < mic.Base
             this.uiCommConnectAll.build(hTab, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiCommDeltaTauPowerPmac.build(hTab, dLeft, dTop);
-            dTop = dTop + dSep;
-                        
             
             
             dWidthTask = 300;
@@ -211,10 +206,6 @@ classdef TuneFluxDensity < mic.Base
             dTop = dTop + this.uiExitSlit.dHeight + dPad;
             
             
-            this.uiCommBL1201CorbaProxy.build(hTab, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            
             this.uiUndulatorGap.build(hTab, dLeft, dTop);
             dTop = dTop + 24 + dPad;
             
@@ -247,25 +238,7 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
-        function connectBL1201CorbaProxy(this, comm)
-            deviceUndulatorGap = bl12014.device.GetSetNumberFromBL1201CorbaProxy(...
-                comm, ...
-                bl12014.device.GetSetNumberFromBL1201CorbaProxy.cDEVICE_UNDULATOR_GAP ...
-            );
-            
-            
-            this.uiUndulatorGap.setDevice(deviceUndulatorGap)
-            this.uiUndulatorGap.turnOn()
-            this.uiUndulatorGap.syncDestination()
-
-            
-        end
         
-        function disconnectBL1201CorbaProxy(this, comm)
-            this.uiUndulatorGap.turnOff()
-            this.uiUndulatorGap.setDevice([])
-            
-        end
                         
         
         %% Destructor
@@ -275,8 +248,6 @@ classdef TuneFluxDensity < mic.Base
         function delete(this)
             
             delete(this.uiCommConnectAll)
-            delete(this.uiCommBL1201CorbaProxy)
-            delete(this.uiCommDeltaTauPowerPmac)
             
             delete(this.uiStateM142ScanningDefault);
             delete(this.uiStateMAScanningAnnular3585);
@@ -367,8 +338,6 @@ classdef TuneFluxDensity < mic.Base
             );
            
             this.initUiCommConnectAll();
-            this.initUiCommBL1201CorbaProxy();
-            this.initUiCommDeltaTauPowerPmac();
             
             this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
             
@@ -496,31 +465,7 @@ classdef TuneFluxDensity < mic.Base
         
         
         
-        function initUiCommDeltaTauPowerPmac(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'delta-tau-power-pmac-wafer'], ...
-                'fhGet', @() this.hardware.getIsConnectedDeltaTauPowerPmac(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'DeltaTau Power PMAC' ...
-            );
-        
-        end
-        
+       
         
         
         
@@ -529,17 +474,14 @@ classdef TuneFluxDensity < mic.Base
         
         
         function l = onGet(this)
-            l = this.uiCommBL1201CorbaProxy.get() && ...
-                this.uiCommDeltaTauPowerPmac.get() && ...
-                this.uiExitSlit.uiCommExitSlit.get() && ...
+            l = this.uiExitSlit.uiCommExitSlit.get() && ...
                 this.uiShutter.uiCommRigol.get() && ...
                 this.uiHeightSensorLeds.uiCommMightex.get();
         end
         
         function onSet(this, lVal)
             
-            this.uiCommBL1201CorbaProxy.set(lVal);
-            this.uiCommDeltaTauPowerPmac.set(lVal);
+
             this.uiExitSlit.uiCommExitSlit.set(lVal);
             this.uiShutter.uiCommRigol.set(lVal);
             this.uiHeightSensorLeds.uiCommMightex.set(lVal);
@@ -571,27 +513,7 @@ classdef TuneFluxDensity < mic.Base
         
         end
         
-        function initUiCommBL1201CorbaProxy(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommBL1201CorbaProxy = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'bl1201-corba-proxy'], ...
-                'cLabel', 'BL1201 Corba Proxy' ...
-            );
         
-        end
         
         function initUiDeviceUndulatorGap(this)
             
@@ -610,6 +532,12 @@ classdef TuneFluxDensity < mic.Base
                 'lShowLabels', false, ...
                 'dWidthName', 150, ...
                 ... % 'dWidthUnit', this.dWidthUiDeviceUnit, ...
+                'fhGet', @() this.hardware.getBL1201CorbaProxy().SCA_getIDGap(), ...
+                'fhSet', @(dVal) this.hardware.getBL1201CorbaProxy().SCA_setIDGap(dVal), ...
+                'fhIsReady', @() ~this.hardware.getBL1201CorbaProxy().SCA_getIDMotionComplete(), ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'gap-of-undulator'], ...
                 'config', uiConfig, ...
                 'cLabel', 'Undulator Gap' ...

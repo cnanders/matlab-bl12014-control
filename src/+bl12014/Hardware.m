@@ -66,26 +66,20 @@ classdef Hardware < mic.Base
         % {keithley.Keithley6482 1x1}
         commKeithley6482Wafer
         commKeithley6482WaferVirtual
-        lIsConnectedKeithley6482Wafer = false
         
         commKeithley6482Reticle
         commKeithley6482ReticleVirtual
-        lIsConnectedKeithley6482Reticle = false
-        
         
         commDataTranslation
         commDataTranslationVirtual
-        lIsConnectedDataTranslation = false
         
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
         commDeltaTauPowerPmacVirtual
-        lIsConnectedDeltaTauPowerPmac = false
         
         % {MFDriftMonitor}
         commMfDriftMonitorMiddleware
         commMfDriftMonitorMiddlewareVirtual
-        lIsConnectedMfDriftMonitorMiddleware = false
         
         commRigolDG1000Z
         commRigolDG1000ZVirtual
@@ -94,23 +88,22 @@ classdef Hardware < mic.Base
         
         commMfDriftMonitor
         commMfDriftMonitorVirtual
-        lIsConnectedMfDriftMonitor = false
         
         commWebSwitchBeamline
         commWebSwitchBeamlineVirtual
-        lIsConnectedWebSwitchBeamline = false
         
         commWebSwitchEndstation
         commWebSwitchEndstationVirtual
-        lIsConnectedWebSwitchEndstation = false
         
         commWebSwitchVis
         commWebSwitchVisVirtual
-        lIsConnectedWebSwitchVis = false
         
+        commBL1201CorbaProxy
+        commBL1201CorbaProxyVirtual
         
-        
-        
+        commSmarActM141
+        commSmarActM141Virtual
+                
     end
     
 
@@ -146,25 +139,33 @@ classdef Hardware < mic.Base
         
         %% WebSwitch (Beamline)
         function l = getIsConnectedWebSwitchBeamline(this)
-            l = this.lIsConnectedWebSwitchBeamline;
+           
+            if isa(this.commWebSwitchBeamline, 'controlbyweb.WebSwitch')
+                l = true;
+                return;
+                
+            end
+
+            l = false;
         end
         
-        function setIsConnectedWebSwitchBeamline(this, lVal)
-           this.lIsConnectedWebSwitchBeamline = lVal;
+        function connectWebSwitchBeamline(this)
+            
+            try
+                this.commWebSwitchBeamline = controlbyweb.WebSwitch(...
+                    'cHost', this.cTcpipWebSwitchBeamline ...
+                );
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectWebSwitchBeamline(this)
+            this.commWebSwitchBeamline = [];
         end
                 
         function comm = getWebSwitchBeamline(this)
-            if this.lIsConnectedWebSwitchBeamline
-                if isempty(this.commWebSwitchBeamline)
-                   try
-                        this.commWebSwitchBeamline = controlbyweb.WebSwitch(...
-                            'cHost', this.cTcpipWebSwitchBeamline ...
-                        );
-                   catch mE
-                        error(getReport(mE));
-                   end
-                    
-                end
+            if this.getIsConnectedWebSwitchBeamline()
                 comm = this.commWebSwitchBeamline;
             else
                 comm = this.commWebSwitchBeamlineVirtual;
@@ -174,25 +175,33 @@ classdef Hardware < mic.Base
         
         %% WebSwitch (Endstation)
         function l = getIsConnectedWebSwitchEndstation(this)
-            l = this.lIsConnectedWebSwitchEndstation;
+           
+            if isa(this.commWebSwitchEndstation, 'controlbyweb.WebSwitch')
+                l = true;
+                return;
+                
+            end
+
+            l = false;
         end
         
-        function setIsConnectedWebSwitchEndstation(this, lVal)
-           this.lIsConnectedWebSwitchEndstation = lVal;
+        function connectWebSwitchEndstation(this)
+            
+            try
+                this.commWebSwitchEndstation = controlbyweb.WebSwitch(...
+                    'cHost', this.cTcpipWebSwitchEndstation ...
+                );
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectWebSwitchEndstation(this)
+            this.commWebSwitchEndstation = [];
         end
                 
         function comm = getWebSwitchEndstation(this)
-            if this.lIsConnectedWebSwitchEndstation
-                if isempty(this.commWebSwitchEndstation)
-                   try
-                        this.commWebSwitchEndstation = controlbyweb.WebSwitch(...
-                            'cHost', this.cTcpipWebSwitchEndstation ...
-                        );
-                   catch mE
-                        error(getReport(mE));
-                   end
-                    
-                end
+            if this.getIsConnectedWebSwitchEndstation()
                 comm = this.commWebSwitchEndstation;
             else
                 comm = this.commWebSwitchEndstationVirtual;
@@ -201,94 +210,201 @@ classdef Hardware < mic.Base
         
         %% WebSwitch (VIS)
         function l = getIsConnectedWebSwitchVis(this)
-            l = this.lIsConnectedWebSwitchVis;
+           
+            if isa(this.commWebSwitchVis, 'controlbyweb.WebSwitch')
+                l = true;
+                return;
+                
+            end
+
+            l = false;
         end
         
-        function setIsConnectedWebSwitchVis(this, lVal)
-           this.lIsConnectedWebSwitchVis = lVal;
+        function connectWebSwitchVis(this)
+            
+            try
+                this.commWebSwitchVis = controlbyweb.WebSwitch(...
+                    'cHost', this.cTcpipWebSwitchVis ...
+                );
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectWebSwitchVis(this)
+            this.commWebSwitchVis = [];
         end
                 
         function comm = getWebSwitchVis(this)
-            if this.lIsConnectedWebSwitchVis
-                if isempty(this.commWebSwitchVis)
-                   try
-                        this.commWebSwitchVis = controlbyweb.WebSwitch(...
-                            'cHost', this.cTcpipWebSwitchVis ...
-                        );
-                   catch mE
-                        error(getReport(mE));
-                   end
-                    
-                end
+            if this.getIsConnectedWebSwitchVis()
                 comm = this.commWebSwitchVis;
             else
                 comm = this.commWebSwitchVisVirtual;
             end            
         end
         
+        %% BL1201 Cobra Proxy
+        
+        
+        
+        
+        function l = getIsConnectedBL1201CorbaProxy(this)
+           
+            if isa(this.commBL1201CorbaProxy, 'cxro.bl1201.beamline.BL1201CorbaProxy')
+                l = true;
+                return;
+            end
+
+            l = false;
+        end
+        
+        function connectBL1201CorbaProxy(this)
+            
+            try
+                this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectBL1201CorbaProxy(this)
+            this.commBL1201CorbaProxy = [];
+        end
+                
+        function comm = getBL1201CorbaProxy(this)
+            if this.getIsConnectedBL1201CorbaProxy()
+                comm = this.commBL1201CorbaProxy;
+            else
+                comm = this.commBL1201CorbaProxyVirtual;
+            end            
+        end
+        
+        
         %% MF Drift Monitor (different than MfDriftMonitor Middleware)
         
         function l = getIsConnectedMfDriftMonitor(this)
-            l = this.lIsConnectedMfDriftMonitor;
+           
+            if isa(this.commMfDriftMonitor, 'cxro.met5.device.mfdriftmonitor.MfDriftMonitorCorbaProxy')
+                l = true;
+            else
+                l = false;
+            end
+
         end
         
-        function setIsConnectedMfDriftMonitor(this, lVal)
-           this.lIsConnectedMfDriftMonitor = lVal;
+        function connectMfDriftMonitor(this)
+            if isempty(this.jMet5Instruments)
+                this.getjMet5Instruments();
+           end
+
+           try
+                this.commMfDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
+                this.commMfDriftMonitor.connect();
+           catch mE
+                error(getReport(mE));
+           end
         end
-                
+        
+        function disconnectMfDriftMonitor(this)
+            this.commMfDriftMonitor = [];
+        end
+         
         function comm = getMfDriftMonitor(this)
-            if this.lIsConnectedMfDriftMonitor
-                if isempty(this.commMfDriftMonitor)
-                    
-                   if isempty(this.jMet5Instruments)
-                        this.getjMet5Instruments();
-                   end
-            
-                   try
-                        this.commMfDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
-                        this.commMfDriftMonitor.connect();
-                   catch mE
-                        error(getReport(mE));
-                   end
-                    
-                end
+            if this.getIsConnectedMfDriftMonitor()
                 comm = this.commMfDriftMonitor;
-            else
-                comm = this.commMfDriftMonitorVirtual;
-            end            
+                return;
+            end
+            comm = this.commMfDriftMonitorVirtual;
         end
         
         
         %% Rigol DG1000Z
         
         function l = getIsConnectedRigolDG1000Z(this)
-            l = this.lIsConnectedRigolDG1000Z;
+           
+            if isa(this.commRigolDG1000Z, 'rigol.DG1000Z')
+                l = true;
+                return;
+            end
+            l = false;
         end
         
-        function setIsConnectedRigolDG1000Z(this, lVal)
-           this.lIsConnectedRigolDG1000Z = lVal;
+        function connectRigolDG1000Z(this)
+            try
+                u16Port = 5555;
+                this.commRigolDG1000Z = rigol.DG1000Z(...
+                    'cHost', this.cTcpipRigolDG1000Z, ...
+                    'u16Port', u16Port ...
+                );
+                this.commRigolDG1000Z.idn()                       
+           catch mE
+                error(getReport(mE));
+           end
         end
-                
+        
+        function disconnectRigolDG1000Z(this)
+            this.commRigolDG1000Z = [];
+        end
+                        
         function comm = getRigolDG1000Z(this)
-            if this.lIsConnectedRigolDG1000Z
-                if isempty(this.commRigolDG1000Z)
-                   try
-                        u16Port = 5555;
-                        this.commRigolDG1000Z = rigol.DG1000Z(...
-                            'cHost', this.cTcpipRigolDG1000Z, ...
-                            'u16Port', u16Port ...
-                        );
-                        this.commRigolDG1000Z.idn()                       
-                   catch mE
-                        error(getReport(mE));
-                   end
-                    
-                end
+            if this.getIsConnectedRigolDG1000Z()
                 comm = this.commRigolDG1000Z;
             else
                 comm = this.commRigolDG1000ZVirtual;
             end            
         end
+        
+        
+        %% SmarAct M141
+        
+        function l = getIsConnectedSmarActM141(this)
+           
+            if isa(this.commSmarActM141, 'cxro.common.device.motion.Stage')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectSmarActM141(this)
+            
+            this.getjMet5Instruments();
+             try
+                
+                this.commSmarActM141 = this.jMet5Instruments.getM141Stage();
+                this.commSmarActM141.reset();
+                this.commSmarActM141.initializeAxes().get();
+                this.commSmarActM141.moveAxisAbsolute(0, 0);
+
+%{
+                % 3/13 (RHM): for now let's reset stage and reinitialize, but
+                % eventually let's pull this out to somewhere in the ui
+                
+                
+                %}
+                
+            catch mE
+                
+                error(getReport(mE));
+            end
+        end
+        
+        function disconnectSmarActM141(this)
+             if this.getIsConnectedSmarActM141()
+                 this.commSmarActM141.disconnect();
+             end
+            this.commSmarActM141 = [];
+        end
+                        
+        function comm = getSmarActM141(this)
+            if this.getIsConnectedSmarActM141()
+                comm = this.commSmarActM141;
+            else
+                comm = this.commSmarActM141Virtual;
+            end            
+        end
+        
+        
         
         
         %% Getters
@@ -299,40 +415,48 @@ classdef Hardware < mic.Base
             comm = this.jMet5Instruments;
         end
         
-        function l = getIsConnectedDataTranslation(this)
-            l = this.lIsConnectedDataTranslation;
-        end
         
-        function setIsConnectedDataTranslation(this, lVal)
-           this.lIsConnectedDataTranslation = lVal;
+        %% Data Translation Measur Point
+        
+        function l = getIsConnectedDataTranslation(this)
+            if isa(this.commDataTranslation, 'datatranslation.MeasurPoint')
+                l = true;
+            else
+                l = false;
+            end
         end
         
         function comm = getDataTranslation(this)
             
-            if this.lIsConnectedDataTranslation
-                
-                if isempty(this.commDataTranslation)
-                   this.commDataTranslation = datatranslation.MeasurPoint(this.cTcpipDataTranslation);
-                    
-                    % Connect the instrument through TCP/IP
-                    this.commDataTranslation.connect();
-                    
-                    % Log the identity
-                    this.commDataTranslation.idn()
-
-                    % Enable readout on protected channels
-                    this.commDataTranslation.enable();
-                end
+            if this.getIsConnectedDataTranslation()
                 comm = this.commDataTranslation;
             else
                 comm = this.commDataTranslationVirtual;
-                
             end
         end
+        
+        function  connectDataTranslation(this)
+            
+            this.commDataTranslation = datatranslation.MeasurPoint(this.cTcpipDataTranslation);
+            this.commDataTranslation.connect();
+            this.commDataTranslation.idn()
+            this.commDataTranslation.enable();
+                
+        end
+        
+        function disconnectDataTranslation(this)
+            this.commDataTranslation = [];
+        end
+        
         
         %% Power Pmac
         
         function connectDeltaTauPowerPmac(this)
+            
+            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+                return
+            end
+            
             this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
                 'cHostname', this.cTcpipDeltaTau ...
             );
@@ -379,59 +503,85 @@ classdef Hardware < mic.Base
         %% Keithley6482Wafer
         
         function l = getIsConnectedKeithley6482Wafer(this)
-            l = this.lIsConnectedKeithley6482Wafer;
+            if isa(this.commKeithley6482Wafer, 'keithley.Keithley6482')
+                l = true;
+            else
+                l = false;
+            end
         end
         
-        function setIsConnectedKeithley6482Wafer(this, lVal)
-           this.lIsConnectedKeithley6482Wafer = lVal;
+        function disconnectKeithley6482Wafer(this)
+            this.commKeithley6482Wafer = [];
+        end
+        
+        function connectKeithley6482Wafer(this, lVal)
+            
+            if this.getIsConnectedKeithley6482Wafer()
+                return
+            end
+            
+            this.commKeithley6482Wafer = keithley.Keithley6482(...
+                'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
+                'u16TcpipPort', 4002, ...
+                'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+            );
+            this.commKeithley6482Wafer.connect()
+            
         end
         
         function comm = getKeithley6482Wafer(this)
             
-            if this.lIsConnectedKeithley6482Wafer
-                
-                if isempty(this.commKeithley6482Wafer)
-                   this.commKeithley6482Wafer = keithley.Keithley6482(...
-                        'cTcpipHost', this.cTcpipKeithley6482Wafer, ...
-                        'u16TcpipPort', 4002, ...
-                        'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
-                    );
-                    this.commKeithley6482Wafer.connect()
-                end
+            if this.getIsConnectedKeithley6482Wafer()
                 comm = this.commKeithley6482Wafer;
-            else
-                comm = this.commKeithley6482WaferVirtual;
-                
+                return
             end
+                
+            comm = this.commKeithley6482WaferVirtual;
+                
         end
+        
+        
         
         %% Keithley6482Reticle
         
         function l = getIsConnectedKeithley6482Reticle(this)
-            l = this.lIsConnectedKeithley6482Reticle;
+            if isa(this.commKeithley6482Reticle, 'keithley.Keithley6482')
+                l = true;
+            else
+                l = false;
+            end
         end
         
-        function setIsConnectedKeithley6482Reticle(this, lVal)
-           this.lIsConnectedKeithley6482Reticle = lVal;
+        function disconnectKeithley6482Reticle(this)
+            if this.getIsConnectedKeithley6482Reticle()
+                this.commKeithley6482Reticle = [];
+            end
+        end
+        
+        function connectKeithley6482Reticle(this, lVal)
+            
+            if this.getIsConnectedKeithley6482Reticle()
+                return
+            end
+            
+            this.commKeithley6482Reticle = keithley.Keithley6482(...
+                'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
+                'u16TcpipPort', 4001, ...
+                'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
+            );
+            this.commKeithley6482Reticle.connect()
+            
         end
         
         function comm = getKeithley6482Reticle(this)
             
-            if this.lIsConnectedKeithley6482Reticle
-                
-                if isempty(this.commKeithley6482Reticle)
-                   this.commKeithley6482Reticle = keithley.Keithley6482(...
-                        'cTcpipHost', this.cTcpipKeithley6482Reticle, ...
-                        'u16TcpipPort', 4001, ...
-                        'cConnection', keithley.Keithley6482.cCONNECTION_TCPCLIENT ...
-                    );
-                    this.commKeithley6482Reticle.connect()
-                end
+            if this.getIsConnectedKeithley6482Reticle()
                 comm = this.commKeithley6482Reticle;
-            else
-                comm = this.commKeithley6482ReticleVirtual;
-                
+                return
             end
+                
+            comm = this.commKeithley6482ReticleVirtual;
+                
         end
         
         %% MfDriftMonitorMiddleware 
@@ -440,18 +590,16 @@ classdef Hardware < mic.Base
         % different interface
         
         function l = getIsConnectedMfDriftMonitorMiddleware(this)
-            
-            % l = this.lIsConnectedMfDriftMonitorMiddleware;
             l = this.getMfDriftMonitorMiddleware().isConnected();
         end
         
-        function setIsConnectedMfDriftMonitorMiddleware(this, lVal)
-           % this.lIsConnectedMfDriftMonitorMiddleware = lVal;
-           mic.Utils.ternEval(...
-               lVal, ...
-               @() this.getMfDriftMonitorMiddleware().connect(), ...
-               @() this.getMfDriftMonitorMiddleware().disconnect() ...
-           )
+        function connectMfDriftMonitorMiddleware(this, lVal)
+           this.getMfDriftMonitorMiddleware().connect();
+           
+        end
+        
+        function disconnectMfDriftMonitorMiddleware(this, lVal)
+           this.getMfDriftMonitorMiddleware().disconnect();
         end
                 
         function comm = getMfDriftMonitorMiddleware(this)
@@ -468,7 +616,7 @@ classdef Hardware < mic.Base
             
             
             if isempty(this.commMfDriftMonitorMiddleware)
-                this.setIsConnectedMfDriftMonitor(true);
+                this.connectMfDriftMonitor();
                 comm = this.getMfDriftMonitor();
                 this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
                                 'commMFDriftMonitor', comm, ...
@@ -592,6 +740,9 @@ classdef Hardware < mic.Base
             this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
+            
+            this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
+            this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
         end
         
   

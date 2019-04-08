@@ -15,6 +15,8 @@ classdef App < mic.Base
         
         
         waferExposureHistory
+        
+        uiHardware
         uiNetworkCommunication
         uiBeamline
         uiShutter
@@ -47,6 +49,7 @@ classdef App < mic.Base
         clock
         
         % { mic.ui.Clock 1x1}
+        uiClockHardware
         uiClockNetworkCommunication
         uiClockBeamline
         uiClockShutter
@@ -83,6 +86,7 @@ classdef App < mic.Base
     properties (Access = private)
         
         cecTabs = {...
+            'Hardware', ...
             'Beamline', ...
             'Field Scanner (M142)', ...
             'M143', ...
@@ -273,6 +277,13 @@ classdef App < mic.Base
                 this.clock.add(@this.onClock, this.id(), this.dDelay);
             end
             
+            % Build the first tab.
+            
+            cTab = 'Hardware';
+            this.lIsTabBuilt(strcmp(cTab, this.cecTabs)) = true;
+            hTab = this.uiTabGroup.getTabByName(cTab);
+            this.uiHardware.build(hTab, 10, 10);
+            
             
         end
         
@@ -344,6 +355,7 @@ classdef App < mic.Base
             end
             
             % Delete the device UI controls
+            this.uiHardware = [];
             delete(this.uiBeamline)
             delete(this.uiNetworkCommunication)
             delete(this.uiM143)
@@ -523,7 +535,7 @@ classdef App < mic.Base
             );
                                    
             
-            
+            this.uiClockHardware = mic.ui.Clock(this.clock);
             this.uiClockNetworkCommunication = mic.ui.Clock(this.clock);
             this.uiClockBeamline = mic.ui.Clock(this.clock);
             this.uiClockM143 = mic.ui.Clock(this.clock);
@@ -552,6 +564,10 @@ classdef App < mic.Base
             
             this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.uiClockNetworkCommunication);
             
+            
+           
+        
+        
             this.uiBeamline = bl12014.ui.Beamline(...
                 'clock', this.clock, ...
                 'uiClock', this.uiClockBeamline, ...
@@ -724,6 +740,12 @@ classdef App < mic.Base
                 'cText', 'List Clock Tasks', ...
                 'fhOnClick', @this.onListClockTasks ...
             );
+        
+            this.uiHardware = bl12014.ui.Hardware(...
+                'uiApp', this, ...
+                'uiClock', this.uiClockHardware, ...
+                'hardware', this.hardware ...
+            );
 
         end
         
@@ -768,6 +790,7 @@ classdef App < mic.Base
         
         function stopAllUiClocks(this)
             
+            this.uiClockHardware.stop();
             this.uiClockNetworkCommunication.stop();
             this.uiClockBeamline.stop();
             this.uiClockM143.stop();
@@ -840,6 +863,8 @@ classdef App < mic.Base
                     this.uiClockLogPlotter.start();
                 case 'Network Status'
                     this.uiClockNetworkCommunication.start();
+                case 'Hardware'
+                    this.uiClockHardware.start();
                 case 'Tune Flux Density'
                     this.uiClockTuneFluxDensity.start();
                     
@@ -904,6 +929,8 @@ classdef App < mic.Base
                     this.uiLogPlotter.build(hTab, 10, 10);
                 case 'Network Status'
                     this.uiNetworkCommunication.build(hTab, 10, 10);
+                case 'Hardware'
+                    this.uiHardware.build(hTab, 10, 10);
                 case 'Tune Flux Density'
                     this.uiTuneFluxDensity.build(hTab, 10, 10);
                     

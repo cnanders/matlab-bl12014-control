@@ -2,10 +2,6 @@ classdef Shutter < mic.Base
     
     properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommRigol
-        
-        
         % {bl12014.device.ShutterVirtual}
         deviceVirtual
         
@@ -85,8 +81,6 @@ classdef Shutter < mic.Base
             dSep = 30;
                        
             
-            this.uiCommRigol.build(hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
             
             this.uiShutter.build(hPanel, dLeft, dTop);
             % dTop = dTop + 15 + dSep;
@@ -145,30 +139,7 @@ classdef Shutter < mic.Base
         end
         
         
-        function initUiCommRigol(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
         
-            this.uiCommRigol = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-rigol'], ...
-                'fhGet', @() this.hardware.getIsConnectedRigolDG1000Z(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedRigolDG1000Z(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'Rigol DG1000Z' ...
-            );
-        
-        end
         
         
          function initUiShutter(this)
@@ -211,17 +182,9 @@ classdef Shutter < mic.Base
         
             % this.uiShutter.setDeviceVirtual(this.deviceVirtual);
         end
-        
-        function initDeviceShutterVirtual(this)
-            this.deviceVirtual = bl12014.device.ShutterVirtual();
-        end
-        
-        
+                
         function init(this)
             this.msg('init()');
-            
-            % this.initDeviceShutterVirtual();
-            this.initUiCommRigol();
             this.initUiShutter();
             this.initUiOverride();
         end

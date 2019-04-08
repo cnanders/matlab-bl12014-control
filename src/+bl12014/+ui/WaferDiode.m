@@ -106,10 +106,7 @@ classdef WaferDiode < mic.Base
 			dLeft = 0;
             dTop = 15;
             dSep = 30;
-                       
-            
-            this.uiComm.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
+                      
             
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -136,32 +133,7 @@ classdef WaferDiode < mic.Base
     end
     
     methods (Access = private)
-              
-        
-        function initUiComm(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiComm = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-keithley-6482-wafer'], ...
-                'fhGet', @() this.hardware.getIsConnectedKeithley6482Wafer(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Wafer(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'Keithley 6482 (Wafer)' ...
-            );
-        
-        end
+                      
          
         function initUiCurrent(this)
             
@@ -195,7 +167,6 @@ classdef WaferDiode < mic.Base
         function init(this)
             this.msg('init()');
             this.initUiCurrent();
-            this.initUiComm();
             
         end
         

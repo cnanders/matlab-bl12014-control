@@ -59,8 +59,6 @@ classdef App < mic.Base
         % {modbus 1x1}
         commWago
         
-        % {cxro.common.device.motion.Stage 1x1}
-        commSmarActMcsM141
         
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsGoni
@@ -86,10 +84,6 @@ classdef App < mic.Base
         % {cxro.met5.HeightSensor 1x1}
         commCxroHeightSensor
         
-        
-        
-        % {cxro.bl1201.beamline.BL1201CorbaProxy 1x1}
-        commBL1201CorbaProxy
         
         % {cxro.bl1201.dct.DctCorbaProxy 1x1}
         commDctCorbaProxy
@@ -250,7 +244,6 @@ classdef App < mic.Base
             
             this.msg('destroyAndDisconnectAll', this.u8_MSG_TYPE_INFO);
             
-            this.destroyAndDisconnectBL1201CorbaProxy();
             this.destroyAndDisconnectCxroHeightSensor();
             
             this.destroyAndDisconnectMicronixMmc103();
@@ -259,7 +252,6 @@ classdef App < mic.Base
             this.destroyAndDisconnectNPointLC400M142();
             this.destroyAndDisconnectNPointLC400MA();
             this.destroyAndDisconnectSmarActMcsGoni();
-            this.destroyAndDisconnectSmarActMcsM141();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
             this.destroyAndDisconnect3GStoreRemotePowerSwitch1();
@@ -288,9 +280,7 @@ classdef App < mic.Base
             l = ~isempty(this.commNewFocusModel8742MA);
         end
         
-        function l = getSmarActMcsM141(this)
-            l =  ~isempty(this.commSmarActMcsM141);
-        end
+
         
         function l = getSmarActMcsGoni(this)
             l = ~isempty(this.commSmarActMcsGoni);
@@ -355,9 +345,7 @@ classdef App < mic.Base
             l = ~isempty(this.commMightex1) && ~isempty(this.commMightex2);
         end
         
-        function l = getBL1201CorbaProxy(this)
-            l = ~isempty(this.commBL1201CorbaProxy);
-        end
+        
         
         function l = getDctCorbaProxy(this)
             l = ~isempty(this.commDctCorbaProxy);
@@ -374,54 +362,9 @@ classdef App < mic.Base
             l = ~isempty(this.commNPointLC400MA);
         end
         
-        function initAndConnectSmarActMcsM141(this)
-                        
-            if this.getSmarActMcsM141()
-                return
-            end
-            
-            if strcmp(questdlg('This will re-initialize M141 and set to 0 (out). Proceed with reset?', ...
-                'M141 Reset Warning', ...
-                'Yes','No','No'), 'No')
-                return
-            end
-            
-            try
-                this.initAndConnectMet5Instruments();
-                this.commSmarActMcsM141 = this.jMet5Instruments.getM141Stage();
-                
-                % 3/13 (RHM): for now let's reset stage and reinitialize, but
-                % eventually let's pull this out to somewhere in the ui
-                this.commSmarActMcsM141.reset();
-                this.commSmarActMcsM141.initializeAxes().get();
-                
-                this.commSmarActMcsM141.moveAxisAbsolute(0, 0);
-            catch mE
-                
-                cMsg = sprintf('initAndConnectSmarActMcsM141() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                this.commSmarActMcsM141 = [];
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiM141.connectSmarActMcs(this.commSmarActMcsM141);
-            this.uiApp.uiBeamline.uiM141.connectSmarActMcs(this.commSmarActMcsM141);
-            
-        end
         
         
-        function destroyAndDisconnectSmarActMcsM141(this)
-            
-            if ~this.getSmarActMcsM141()
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiM141.disconnectSmarActMcs();
-            this.uiApp.uiBeamline.uiM141.disconnectSmarActMcs();
-            
-            this.commSmarActMcsM141.disconnect();
-            this.commSmarActMcsM141 = [];
-        end
+       
         
         
         function initAndConnectSmarActRotary(this)
@@ -795,40 +738,6 @@ classdef App < mic.Base
         end
         
         
-        function initAndConnectBL1201CorbaProxy(this)
-            
-            if this.getBL1201CorbaProxy()
-                return
-            end
-            
-            try
-                this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
-                % this.commBL1201CorbaProxy.serverStatus() 2018.02.10 not
-                % working
-            catch mE
-                this.commBL1201CorbaProxy = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                return;
-            end
-            
-            this.uiApp.uiBeamline.connectBL1201CorbaProxy(this.commBL1201CorbaProxy);
-            this.uiApp.uiTuneFluxDensity.connectBL1201CorbaProxy(this.commBL1201CorbaProxy);
-        end
-        
-        function destroyAndDisconnectBL1201CorbaProxy(this)
-            
-            this.msg('destroyAndDisconnectBL1201CorbaProxy', this.u8_MSG_TYPE_INFO);
-            
-            if ~this.getBL1201CorbaProxy()
-                return
-            end
-            
-            this.uiApp.uiBeamline.disconnectBL1201CorbaProxy();
-            this.uiApp.uiTuneFluxDensity.disconnectBL1201CorbaProxy();
-
-            % this.commBL1201CorbaProxy.delete();
-            this.commBL1201CorbaProxy = [];
-        end
         
         function initAndConnectNewFocusModel8742(this)
             
@@ -1287,11 +1196,7 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectNewFocusModel8742MA ...
             );
         
-            gslcCommSmarActMcsM141 = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getSmarActMcsM141, ...
-                'fhSetTrue', @this.initAndConnectSmarActMcsM141, ...
-                'fhSetFalse', @this.destroyAndDisconnectSmarActMcsM141 ...
-            );
+           
         
             gslcCommSmarActRotary = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getSmarActRotary, ...
@@ -1363,11 +1268,7 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectDctCorbaProxy ...
             );
         
-            gslcCommBL1201CorbaProxy = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getBL1201CorbaProxy, ...
-                'fhSetTrue', @this.initAndConnectBL1201CorbaProxy, ...
-                'fhSetFalse', @this.destroyAndDisconnectBL1201CorbaProxy ...
-            );
+            
         
             gslcCommMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getMicronixMmc103, ...
@@ -1395,18 +1296,12 @@ classdef App < mic.Base
             );
                     
 
-            %this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
-            %this.uiApp.uiBeamline.uiShutter.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy);
             
             % Beamline
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
             
-            this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy)
-            this.uiApp.uiBeamline.uiCommBL1201CorbaProxy.turnOn()
             
-            this.uiApp.uiTuneFluxDensity.uiCommBL1201CorbaProxy.setDevice(gslcCommBL1201CorbaProxy)
-            this.uiApp.uiTuneFluxDensity.uiCommBL1201CorbaProxy.turnOn()
             
                         
             this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
@@ -1418,9 +1313,7 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiCommGalilD142.setDevice(gslcCommGalilD142);
             this.uiApp.uiBeamline.uiCommGalilD142.turnOn()
             
-            % M141
-            this.uiApp.uiBeamline.uiM141.uiCommSmarActMcsM141.setDevice(gslcCommSmarActMcsM141);
-            this.uiApp.uiBeamline.uiM141.uiCommSmarActMcsM141.turnOn();
+
             
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
@@ -1545,8 +1438,8 @@ classdef App < mic.Base
             
             % Set clock, required for drift monitor middle layer
             this.hardware.setClock(this.clock); 
-            this.hardware.setIsConnectedDataTranslation(true); % force real hardware
-            this.hardware.setIsConnectedMfDriftMonitor(true); % force real hardware
+            this.hardware.connectDataTranslation(); % force real hardware
+            this.hardware.connectMfDriftMonitor(); % force real hardware
                         
             this.logger = bl12014.Logger(...
                 'hardware', this.hardware, ...

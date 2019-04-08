@@ -64,16 +64,7 @@ classdef ReticleDiode < mic.Base
         
        
         
-        function turnOn(this)
-            
-            this.uiCurrent.turnOn();            
-            
-        end
-        
-        function turnOff(this)
-            this.uiCurrent.turnOff();           
-            
-        end
+       
         
         function build(this, hParent, dLeft, dTop)
             
@@ -92,9 +83,6 @@ classdef ReticleDiode < mic.Base
 			dLeft = 0;
             dTop = 15;
             dSep = 30;
-            
-            this.uiComm.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
             
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -149,37 +137,13 @@ classdef ReticleDiode < mic.Base
             );
         end
         
-        function initUiComm(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
         
-            this.uiComm = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-keithley-6482-reticle'], ...
-                'fhGet', @() this.hardware.getIsConnectedKeithley6482Reticle(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Reticle(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'Keithley 6482 (Reticle)' ...
-            );
-        
-        end
         
         
         
         function init(this)
             this.msg('init()');
             this.initUiCurrent();
-            this.initUiComm();
             
         end
         
