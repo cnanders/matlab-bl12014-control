@@ -22,7 +22,6 @@ classdef App < mic.Base
         uiShutter
         uiTuneFluxDensity
         uiM143
-
         uiVibrationIsolationSystem
         uiReticle
         uiWafer
@@ -354,26 +353,61 @@ classdef App < mic.Base
                 delete(this.hFigure);
             end
             
-            % Delete the device UI controls
+            
             this.uiHardware = [];
-            delete(this.uiBeamline)
-            delete(this.uiNetworkCommunication)
-            delete(this.uiM143)
-            delete(this.uiVibrationIsolationSystem)
-            delete(this.uiReticle)
-            delete(this.uiWafer)
-            delete(this.uiPOCurrent)
-            delete(this.uiMA)
-            delete(this.uiScannerM142)
-            delete(this.uiScan) 
-            delete(this.uiTempSensors)
-            delete(this.uiFocusSensor)
-            delete(this.uiHeightSensorLEDs)
-            delete(this.uiCameraLEDs)
-            delete(this.uiScanResultPlot2x2)
-            delete(this.uiMfDriftMonitorVibration);
-            delete(this.uiPowerPmacStatus);
-            delete(this.uiPowerPmacHydraMotMin);
+            this.uiNetworkCommunication = [];
+            this.uiBeamline = [];
+            this.uiShutter = [];
+            this.uiTuneFluxDensity = [];
+            this.uiM143 = [];
+            this.uiVibrationIsolationSystem = [];
+            this.uiReticle = [];
+            this.uiWafer = [];
+            this.uiPowerPmacStatus = [];
+            this.uiScan = [];
+            this.uiTempSensors = [];
+            this.uiFocusSensor = [];
+            this.uiDriftMonitor = [];
+            this.uiLSIControl = [];
+            this.uiLSIAnalyze = [];
+            this.uiScannerM142 = [];
+            this.uiMA = [];
+            this.uiHeightSensorLEDs = [];
+            this.uiCameraLEDs = [];
+            this.uiScanResultPlot2x2 = [];
+            this.uiLogPlotter = [];
+            this.uiPOCurrent = [];
+            this.uiMfDriftMonitorVibration = [];
+            this.uiButtonListClockTasks = [];
+            this.uiPowerPmacHydraMotMin = [];
+
+            this.uiClockHardware = [];
+            this.uiClockNetworkCommunication = [];
+            this.uiClockBeamline = [];
+            this.uiClockShutter = [];
+            this.uiClockM143 = [];
+            this.uiClockVibrationIsolationSystem = [];
+            this.uiClockReticle = [];
+            this.uiClockWafer = [];
+            this.uiClockPowerPmacStatus = [];
+            this.uiClockPrescriptionTool = [];
+            this.uiClockScan = [];
+            this.uiClockTempSensors = [];
+            this.uiClockFocusSensor = [];
+            this.uiClockDriftMonitor = [];
+            this.uiClockLSIControl = [];
+            this.uiClockLSIAnalyze = [];
+            this.uiClockScannerM142 = [];
+            this.uiClockMA = [];
+            this.uiClockHeightSensorLEDs = [];
+            this.uiClockCameraLEDs = [];
+            this.uiClockScanResultPlot2x2 = [];
+            this.uiClockLogPlotter = [];
+            this.uiClockPOCurrent = [];
+            this.uiClockMfDriftMonitorVibration = [];
+            this.uiClockMfDriftMonitor = [];
+            this.uiClockTuneFluxDensity = [];
+            this.uiClockPowerPmacHydraMotMin = [];
             
             
                        

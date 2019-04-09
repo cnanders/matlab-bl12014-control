@@ -284,24 +284,36 @@ classdef Beamline < mic.Base
             this.buildAxes();
             
             dTop = 20;
-            dSep = 30;
+            dSep = 10;
             
-                        
-            this.uiGratingTiltX.build(hParent, dLeft + 820, dTop);
-            dTop = dTop + dSep;
+            dOffsetLeft = 820;  
             
-            this.uiUndulatorGap.build(hParent, dLeft + 820, dTop);
-            dTop = dTop + dSep;
+            this.uiUndulatorGap.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + 24 + dSep;
+            
+            this.uiGratingTiltX.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + 24 + dSep;
+            
+            this.uiExitSlit.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiExitSlit.dHeight + dSep;
            
-            this.uiShutter.build(hParent, dLeft + 820, dTop);
-
             
-            this.uiM141.build(hParent, dLeft + 820, dTop + 120);
-            this.uiD141.build(hParent, dLeft + 820, dTop + 370);
-            this.uiM142.build(hParent, dLeft + 820, dTop + 540);
-            this.uiD142.build(hParent, 10, 600);
+            this.uiM141.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiM141.dHeight + dSep;
             
-            this.uiExitSlit.build(hParent, 10, 800);
+            this.uiD141.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiD141.dHeight + dSep;
+            
+            this.uiM142.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiM142.dHeight + dSep;
+            
+            this.uiD142.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiD142.dHeight + dSep;
+            
+            this.uiShutter.build(hParent, dLeft + dOffsetLeft, dTop);
+            dTop = dTop + this.uiShutter.dHeight + dSep;
+            
+            
                         
             
         end

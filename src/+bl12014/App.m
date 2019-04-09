@@ -77,9 +77,6 @@ classdef App < mic.Base
         % {npoint.LC400 1x1}
         commNPointLC400MA
         
-        % {cxro.met5.HeightSensor 1x1}
-        commCxroHeightSensor
-        
         
         % {cxro.bl1201.dct.DctCorbaProxy 1x1}
         commDctCorbaProxy
@@ -189,11 +186,15 @@ classdef App < mic.Base
             this.destroyAndDisconnectAll();
             
             
-            this.logger = [];
-            delete(this.hardware);
-            delete(this.uiApp);
-            % Delete the clock
-            % delete(this.clock);
+            this.logger.delete();
+            this.uiApp.delete();
+            
+            % uiApp uses hardware so delete hardware after
+            this.hardware.delete();
+            
+            % hardware uses clock so delete clock after
+            % uiApp uses clock
+            % this.clock = [];
             
         end
         
@@ -232,9 +233,7 @@ classdef App < mic.Base
         function destroyAndDisconnectAll(this)
             
             this.msg('destroyAndDisconnectAll', this.u8_MSG_TYPE_INFO);
-            
-            this.destroyAndDisconnectCxroHeightSensor();
-            
+                        
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
             this.destroyAndDisconnectNewFocusModel8742MA();
@@ -292,12 +291,6 @@ classdef App < mic.Base
             
         end
         
-       
-        
-        
-        
-        
-        
         function l = get3GStoreRemotePowerSwitch1(this)
             l = ~isempty(this.comm3GStoreRemotePowerSwitch1);
         end
@@ -305,16 +298,7 @@ classdef App < mic.Base
         function l = get3GStoreRemotePowerSwitch2(this)
             l = ~isempty(this.comm3GStoreRemotePowerSwitch2);
         end
-        
-        
-        
-       
-        
-        function l = getCxroHeightSensor(this)
-            l = ~isempty(this.commCxroHeightSensor);
-            
-        end
-        
+                
         function l = getMightex(this)
             l = ~isempty(this.commMightex1) && ~isempty(this.commMightex2);
         end
@@ -571,36 +555,6 @@ classdef App < mic.Base
         
         
         
-        function initAndConnectCxroHeightSensor(this)
-            
-            if this.getCxroHeightSensor()
-                return
-            end
-               
-            try
-                this.commCxroHeightSensor = cxro.met5.HeightSensor();
-            catch mE
-                this.commCxroHeightSensor = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                return
-            end
-            
-            % Wafer
-            
-        end
-        
-        function destroyAndDisconnectCxroHeightSensor(this)
-            
-            this.msg('destroyAndDisconnectCxroHeightSensor', this.u8_MSG_TYPE_INFO);
-            if ~this.getCxroHeightSensor()
-                return
-            end
-            
-            % Wafer
-            
-            this.commCxroHeightSensor.delete();
-            this.commCxroHeightSensor = [];
-        end
         
         function initAndConnectDctCorbaProxy(this)
             
@@ -1034,12 +988,7 @@ classdef App < mic.Base
             );
             
             
-            gslcCommCxroHeightSensor = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getCxroHeightSensor, ...
-                'fhSetTrue', @this.initAndConnectCxroHeightSensor, ...
-                'fhSetFalse', @this.destroyAndDisconnectCxroHeightSensor ...
-            );
-        
+           
             gslcComm3GStoreRemotePowerSwitch1 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.get3GStoreRemotePowerSwitch1 , ...
                 'fhSetTrue', @this.initAndConnect3GStoreRemotePowerSwitch1 , ...
@@ -1108,10 +1057,6 @@ classdef App < mic.Base
             
             
            
-            % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)
-            % this.uiApp.uiWafer.uiCommCxroHeightSensor.turnOn()
-            
-            
            
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui            

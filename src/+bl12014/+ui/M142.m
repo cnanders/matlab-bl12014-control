@@ -36,7 +36,6 @@ classdef M142 < mic.Base
         
         clock
         dWidth = 690
-        dHeight = 255
         
         dWidthName = 140
         dWidthPadName = 29
@@ -50,6 +49,8 @@ classdef M142 < mic.Base
     properties (SetAccess = private)
         
         cName = 'm142'
+                dHeight = 255
+
     end
     
     methods
@@ -197,6 +198,27 @@ classdef M142 < mic.Base
         end
         
         function delete(this)
+            
+            % {mic.ui.device.GetSetLogical 1x1}
+            this.uiCommNewFocusModel8742 = [];
+
+            % {mic.ui.device.GetSetLogical 1x1}
+            this.uiCommMicronixMmc103 = [];
+
+            % {mic.ui.device.GetSetNumber 1x1}
+            this.uiStageX = [];
+
+            % {mic.ui.device.GetSetNumber 1x1}
+            this.uiStageTiltX = [];
+
+            % {mic.ui.device.GetSetNumber 1x1}
+            this.uiStageTiltYMf = [];
+
+            % {mic.ui.device.GetSetNumber 1x1}
+            this.uiStageTiltYMfr = [];
+
+            % {mic.ui.device.GetSetNumber 1x1}
+            this.uiStageTiltZMfr = [];
             
            
         end    
@@ -375,7 +397,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', sprintf('%s-newfocus-model-8742', this.cName), ...
+                'cName', sprintf('%s-comm-newfocus-model-8742', this.cName), ...
                 'cLabel', 'NewFocus 8742' ...
             );
         
@@ -396,7 +418,7 @@ classdef M142 < mic.Base
                 'lShowLabels', false, ...
                 'lShowDevice', false, ...
                 'lShowInitButton', false, ...
-                'cName', sprintf('%s-micronix-mmc-103', this.cName), ...
+                'cName', sprintf('%s-comm-micronix-mmc-103', this.cName), ...
                 'cLabel', 'NPort 5150A -> Micronix MMC 103' ...
             );
         

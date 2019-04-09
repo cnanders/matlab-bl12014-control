@@ -48,7 +48,7 @@ classdef ExitSlit < mic.Base
         
         cName = 'exit-slit'
         dWidth = 670
-        dHeight = 160
+        dHeight = 140
         
         % {bl12014.Hardware 1x1}
         hardware
@@ -139,7 +139,8 @@ classdef ExitSlit < mic.Base
 
             this.uiGap.build(this.hPanel, dLeft, dTop);
           
-            dTop = 100;
+            dTop = 70;
+            
             dLeftCol1 = 0;
             dLeftCol2 = 350;
             dSep = 30;
@@ -148,7 +149,7 @@ classdef ExitSlit < mic.Base
             dTop = dTop + dSep;
             
             this.uiStage2.build(this.hPanel, dLeftCol1, dTop);
-            dTop = 100;
+            dTop = 70;
             
             this.uiStage3.build(this.hPanel, dLeftCol2, dTop);
             dTop = dTop + dSep;

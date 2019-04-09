@@ -25,7 +25,7 @@ classdef M141 < mic.Base
         
         clock
         dWidth = 590
-        dHeight = 225
+        
         
         configStageY
         configMeasPointVolts
@@ -40,6 +40,7 @@ classdef M141 < mic.Base
     properties (SetAccess = private)
         
         cName = 'm141-'
+        dHeight = 150
     end
     
     methods

@@ -18,7 +18,6 @@ classdef D142 < mic.Base
         
         clock
         dWidth = 590
-        dHeight = 165
         hPanel
         
         configStageY
@@ -32,6 +31,7 @@ classdef D142 < mic.Base
     properties (SetAccess = private)
         
         cName = 'd142-'
+        dHeight = 90
     end
     
     methods

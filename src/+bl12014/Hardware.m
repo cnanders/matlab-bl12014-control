@@ -960,8 +960,18 @@ classdef Hardware < mic.Base
                 fullfile(cDirVendor, 'cnanderson'), ...
             };
         
+             mic.Utils.map(...
+                ceGenpathLoad, ...
+                @(cVPath) addpath(genpath(cVPath))...
+             );
+        
             cePathLoad = {};
+            mic.Utils.map(...
+                cePathLoad, ...
+                @(cVPath) addpath(cVPath));
 
+            
+            % Java
             ceJavaPathLoad = { ...
                 fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'), ...
                 ... BL 12.0.1 Exit Slit
@@ -978,14 +988,10 @@ classdef Hardware < mic.Base
                 fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'), ...
             };
 
-
-            % Init path
-            mic.Utils.map(ceGenpathLoad, ...
-                @(cVPath) addpath(genpath(cVPath)));
-            mic.Utils.map(cePathLoad, ...
-                @(cVPath) addpath(cVPath));
-            mic.Utils.map(ceJavaPathLoad, ...
-                @(cVPath) javaaddpath(cVPath), 0);
+            mic.Utils.map(...
+                ceJavaPathLoad, ...
+                @(cPath) this.addJavaPathIfNecessary(cPath), ...
+                0);
             
             
             this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
@@ -1009,7 +1015,20 @@ classdef Hardware < mic.Base
   
         
         
-  
+        function addJavaPathIfNecessary(this, cPath)
+            cecPaths = javaclasspath('-dynamic');
+            
+            if ~isempty(cecPaths)
+                ceMatches = mic.Utils.filter(cecPaths, @(cVal) strcmpi(cVal, cPath));
+                if ~isempty(ceMatches)
+                    return
+                end
+            end
+            
+            fprintf('bl12014.hardware.addJavaPathIfNecessary adding:\n%s\n', cPath);
+            javaaddpath(cPath);
+            
+        end
         
         
                 

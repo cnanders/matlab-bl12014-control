@@ -16,7 +16,7 @@ classdef Shutter < mic.Base
     
     properties (SetAccess = private)
         
-        dHeight = 100 
+        dHeight = 60 
         
         cName = 'shutter'
 
