@@ -110,6 +110,15 @@ classdef Hardware < mic.Base
         
         commExitSlit
         commExitSlitVirtual
+        
+        commGalilD142
+        commGalilD142Virtual
+        
+        commGalilM143
+        commGalilM143Virtual
+        
+        commGalilVis
+        commGalilVisVirtual
                 
     end
     
@@ -550,7 +559,7 @@ classdef Hardware < mic.Base
         %% WagoD141
         
         function l = getIsConnectedWagoD141(this)
-            if isa(this.commWagoD141, 'bl12014.hardwareAssets.WagoIO750')
+            if isa(this.commWagoD141, 'bl12014.hardwareAssets.WagoD141')
                 l = true;
             else
                 l = false;
@@ -598,7 +607,7 @@ classdef Hardware < mic.Base
         %% ExitSlit
         
         function l = getIsConnectedExitSlit(this)
-            if isa(this.commExitSlit, 'bl12014.hardwareAssets.WagoIO750')
+            if isa(this.commExitSlit, 'bl12pico_slits')
                 l = true;
             else
                 l = false;
@@ -613,7 +622,7 @@ classdef Hardware < mic.Base
         
         function connectExitSlit(this)
             
-            this.commExitSlit = bl12pico_slits;
+            this.commExitSlit = bl12pico_slits();
             [e,estr] = this.commExitSlit.checkServer();
             if e
                 this.commExitSlit = [];
@@ -635,9 +644,6 @@ classdef Hardware < mic.Base
         
         
         
-        
-        
-        
         %% Keithley6482Reticle
         
         function l = getIsConnectedKeithley6482Reticle(this)
@@ -654,7 +660,7 @@ classdef Hardware < mic.Base
             end
         end
         
-        function connectKeithley6482Reticle(this, lVal)
+        function connectKeithley6482Reticle(this)
             
             if this.getIsConnectedKeithley6482Reticle()
                 return
@@ -680,6 +686,148 @@ classdef Hardware < mic.Base
                 
         end
         
+        
+        %% GalilD142
+        
+        function l = getIsConnectedGalilD142(this)
+            if isa(this.commGalilD142, 'cxro.common.device.motion.Stage')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectGalilD142(this)
+            if this.getIsConnectedGalilD142()
+                this.commGalilD142.disconnect();
+                this.commGalilD142 = [];
+            end
+        end
+        
+        function connectGalilD142(this)
+            
+            if this.getIsConnectedGalilD142()
+                return
+            end
+
+            try
+                this.getjMet5Instruments();
+                this.commGalilD142 = this.jMet5Instruments.getDiag142Stage();
+                this.commGalilD142.connect();
+            catch mE
+                this.commGalilD142 = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
+            end
+            
+        end
+        
+        function comm = getGalilD142(this)
+            
+            if this.getIsConnectedGalilD142()
+                comm = this.commGalilD142;
+                return
+            end
+                
+            comm = this.commGalilD142Virtual;
+                
+        end
+        
+        
+        %% GalilM143
+        
+        function l = getIsConnectedGalilM143(this)
+            if isa(this.commGalilM143, 'cxro.common.device.motion.Stage')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectGalilM143(this)
+            if this.getIsConnectedGalilM143()
+                this.commGalilM143.disconnect();
+                this.commGalilM143 = [];
+            end
+        end
+        
+        function connectGalilM143(this)
+            
+            if this.getIsConnectedGalilM143()
+                return
+            end
+
+            try
+                this.getjMet5Instruments();
+                this.commGalilM143 = this.jMet5Instruments.getM143Stage();
+                this.commGalilM143.connect();
+            catch mE
+                this.commGalilM143 = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
+            end
+            
+        end
+        
+        function comm = getGalilM143(this)
+            
+            if this.getIsConnectedGalilM143()
+                comm = this.commGalilM143;
+                return
+            end
+                
+            comm = this.commGalilM143Virtual;
+                
+        end
+        
+        
+        
+        %% GalilM143
+        
+        function l = getIsConnectedGalilVis(this)
+            if isa(this.commGalilVis, 'cxro.common.device.motion.Stage')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectGalilVis(this)
+            if this.getIsConnectedGalilVis()
+                this.commGalilVis.disconnect();
+                this.commGalilVis = [];
+            end
+        end
+        
+        function connectGalilVis(this)
+            
+            if this.getIsConnectedGalilVis()
+                return
+            end
+
+            try
+                this.getjMet5Instruments();
+                this.commGalilVis = this.jMet5Instruments.getVisStage();
+                this.commGalilVis.connect();
+            catch mE
+                this.commGalilVis = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
+            end
+            
+        end
+        
+        function comm = getGalilVis(this)
+            
+            if this.getIsConnectedGalilVis()
+                comm = this.commGalilVis;
+                return
+            end
+                
+            comm = this.commGalilVisVirtual;
+                
+        end
+        
         %% MfDriftMonitorMiddleware 
         % This is a layer on top of MfDriftMonitor that is exposed
         % from met5instruments in java that has a 
@@ -689,12 +837,12 @@ classdef Hardware < mic.Base
             l = this.getMfDriftMonitorMiddleware().isConnected();
         end
         
-        function connectMfDriftMonitorMiddleware(this, lVal)
+        function connectMfDriftMonitorMiddleware(this)
            this.getMfDriftMonitorMiddleware().connect();
            
         end
         
-        function disconnectMfDriftMonitorMiddleware(this, lVal)
+        function disconnectMfDriftMonitorMiddleware(this)
            this.getMfDriftMonitorMiddleware().disconnect();
         end
                 
@@ -808,12 +956,26 @@ classdef Hardware < mic.Base
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src'), ...
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-mightex-led-controller', 'src'), ...
                 fullfile(cDirVendor, 'github', 'cnanders', 'matlab-controlbyweb-webswitch', 'src'), ...
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3'), ...
+                fullfile(cDirVendor, 'cnanderson'), ...
             };
         
             cePathLoad = {};
 
             ceJavaPathLoad = { ...
                 fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'), ...
+                ... BL 12.0.1 Exit Slit
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOCorbaProxy.jar'), ...
+                ... BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
+                fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'), ...
+                ... BL 12.0.1 Shutter
+                fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'), ...
+                ... Java SSH2 Communication With DeltaTau Power PMAC Motion Controller (uses JSch)
+                ... needed by github/cnanders/matlab-deltatau-ppmac-met5
+                fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'), ...
+                ... Java utility to check if a network device (host + port) is reachable
+                ... Used by GetLogicalPing
+                fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'), ...
             };
 
 
@@ -832,15 +994,16 @@ classdef Hardware < mic.Base
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
-                        
             this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
-            
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();
-            this.commExitSlitVirtual = 
+            this.commExitSlitVirtual = bl12014.hardwareAssets.virtual.BL12PicoExitSlit();
+            this.commGalilD142Virtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commGalilM143Virtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
         end
         
   

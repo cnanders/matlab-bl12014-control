@@ -2,8 +2,7 @@ classdef MfDriftMonitorVibration < mic.Base
     
     properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommMfDriftMonitor
+        
                         
     end
     
@@ -718,10 +717,6 @@ classdef MfDriftMonitorVibration < mic.Base
             dTop = 20;
             dLeft = 10;
             dSep = 30;
-            
-            this.uiCommMfDriftMonitor.build(this.hParent, dLeft, dTop);
-            dTop = dTop + 5 + dSep;
-            
             
             dTop = dTop + 30;
             this.uiTogglePlayPause.build(this.hParent, dLeft, dTop, 100, 24);
@@ -1739,32 +1734,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
                 
-        function initUiCommMfDriftMonitor(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommMfDriftMonitor = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'fhGet', @() this.hardware.getIsConnectedMfDriftMonitor(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedMfDriftMonitor(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cName', [this.cName, '-mf-drift-monitor-comm'], ...
-                'cLabel', 'Mf Drift Monitor' ...
-            );
-        
-        end
-        
+       
         function onClock(this, src, evt)
             
             this.update();
@@ -2005,7 +1975,6 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function init(this)
             this.msg('init()');
-            this.initUiCommMfDriftMonitor();
             
             % Axes tab group:
             this.uiTabGroupAxes = mic.ui.common.Tabgroup(...

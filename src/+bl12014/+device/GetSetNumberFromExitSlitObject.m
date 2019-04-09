@@ -18,8 +18,8 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
     
     properties (Access = private)
         
-        % { see vendor/pnaulleau/bl12-exit-slit}
-        comm
+        % {function_handle 1x1} returns instance vendor/pnaulleau/bl12-exit-slit
+        fhGetComm
         
         % {char 1xm} see cPROP_*
         cProp
@@ -31,29 +31,30 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
     
     methods
         
-        function this = GetSetNumberFromExitSlitObject(comm, cProp)
-            this.comm = comm;
+        function this = GetSetNumberFromExitSlitObject(fhGetComm, cProp)
+            this.fhGetComm = fhGetComm;
             this.cProp = cProp;
 
         end
         
         function d = get(this)
             
+            comm = this.fhGetComm();
             switch this.cProp
                 case this.cPROP_GAP
-                    [slit,e,estr] = this.comm.getSlitGap();
+                    [slit,e,estr] = comm.getSlitGap();
                     d = slit.gap;
                 case this.cPROP_MOTOR_UPPER_IN
-                    [pos, e, estr] = this.comm.getPos(4);
+                    [pos, e, estr] = comm.getPos(4);
                     d = pos;
                 case this.cPROP_MOTOR_LOWER_IN
-                    [pos, e, estr] = this.comm.getPos(5);
+                    [pos, e, estr] = comm.getPos(5);
                     d = pos;
                 case this.cPROP_MOTOR_UPPER_OUT
-                    [pos, e, estr] = this.comm.getPos(6);
+                    [pos, e, estr] = comm.getPos(6);
                     d = pos;
                 case this.cPROP_MOTOR_LOWER_OUT
-                    [pos, e, estr] = this.comm.getPos(7);
+                    [pos, e, estr] = comm.getPos(7);
                     d = pos;
             end
         end
@@ -61,29 +62,32 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
         function set(this, dVal)
             % fprintf('bl12014.device.GetSetNumberFromExitSlitObject.set(%1.3f)\n', dVal);
             
+            comm = this.fhGetComm();
             switch this.cProp
                 case this.cPROP_GAP
             
-                    [e,estr] = this.comm.setSlitGap(dVal);
+                    [e,estr] = comm.setSlitGap(dVal);
                 case this.cPROP_MOTOR_UPPER_IN
-                    [ret, e, estr]= this.comm.moveto(4, dVal);
+                    [ret, e, estr]= comm.moveto(4, dVal);
                 case this.cPROP_MOTOR_LOWER_IN
-                    [ret, e, estr]= this.comm.moveto(5, dVal);
+                    [ret, e, estr]= comm.moveto(5, dVal);
                 case this.cPROP_MOTOR_UPPER_OUT
-                    [ret, e, estr]= this.comm.moveto(6, dVal);
+                    [ret, e, estr]= comm.moveto(6, dVal);
                 case this.cPROP_MOTOR_LOWER_OUT
-                    [ret, e, estr]= this.comm.moveto(7, dVal);
+                    [ret, e, estr]= comm.moveto(7, dVal);
                     
             end
         end
         
         function l = isReady(this)
             
-            [s,e,estr] = this.comm.getState();
+            comm = this.fhGetComm();
+            
+            [s,e,estr] = comm.getState();
             
             switch this.cProp
                 case this.cPROP_GAP
-                   l = this.comm.CLstatus == 0;
+                   l = comm.CLstatus == 0;
                 case this.cPROP_MOTOR_UPPER_IN
                    l = ~(s == 4 || s == 104);
                 case this.cPROP_MOTOR_LOWER_IN
@@ -94,10 +98,10 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
                     l = ~(s == 7 || s == 107);
             end
             %{
-            [pos4,e,estr]=this.comm.getPosRaw(4);
-            [pos5,e,estr]=this.comm.getPosRaw(5);
-            [pos6,e,estr]=this.comm.getPosRaw(6);
-            [pos7,e,estr]=this.comm.getPosRaw(7);
+            [pos4,e,estr]=comm.getPosRaw(4);
+            [pos5,e,estr]=comm.getPosRaw(5);
+            [pos6,e,estr]=comm.getPosRaw(6);
+            [pos7,e,estr]=comm.getPosRaw(7);
             fprintf('raw pos (4, 5, 6, 7) = (%1.0f, %1.0f, %1.0f, %1.0f)\n', ...
                 pos4, ...
                 pos5, ...
@@ -108,9 +112,10 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
         end
         
         function stop(this)
-           % [e,estr]= this.comm.stopAll();
+           % [e,estr]= this.fhGetComm().stopAll();
             
-           [e,estr]= this.comm.abortAll();
+           comm = this.fhGetComm()
+           [e,estr]= comm.abortAll();
         end
         
         function initialize(this)

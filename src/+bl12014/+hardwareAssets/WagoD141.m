@@ -28,9 +28,9 @@ classdef WagoD141 < handle
         function this = WagoD141(varargin)
             
             for k = 1 : 2: length(varargin)
-                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                this.msg(sprintf('passed in %s', varargin{k}));
                 if this.hasProp( varargin{k})
-                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.msg(sprintf('settting %s', varargin{k}));
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end

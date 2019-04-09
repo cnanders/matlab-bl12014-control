@@ -21,6 +21,18 @@ classdef Stage < handle
             
         end
         
+        
+        % @param {uint8 1x1} - zero-indexed axis
+        % @return {double 1x1}
+        function d = getAxisAnalog(this, u8Axis)
+            if length(this.dVals) < (u8Axis + 1)
+                d = 0;
+            else
+                d = this.dVals(u8Axis + 1);
+            end
+        end
+        
+        
         % @param {uint8 1x1} - zero-indexed axis
         % @return {double 1x1}
         function d = getAxisPosition(this, u8Axis)

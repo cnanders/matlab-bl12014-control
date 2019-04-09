@@ -11,13 +11,10 @@ classdef App < mic.Base
         cTcpipMicronix = '192.168.10.21'
         cTcpipLc400M142 = '192.168.10.22'
         cTcpipNewFocus = '192.168.10.23'
-        cTcpipGalilD142 = '192.168.10.24'
-        cTcpipGalilM143 = '192.168.10.25'
         
         
         % Endstation 1 Subnet
         cTcpipLc400MA = '192.168.20.20'
-        % cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
         cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
         cTcpipSmarActLSIGoni = '192.168.20.24'
@@ -106,18 +103,11 @@ classdef App < mic.Base
         % M142 + M142R common x
         commMicronixMmc103
         
-        % {cxro.common.device.motion.Stage}
-        commGalilD142
         
-        % {cxro.common.device.motion.Stage}
-        commGalilM143
         
-        % {cxro.common.device.motion.Stage}
-        commGalilVis
         
-        % see vendor/pnaulleau/bl12-exit-slits/readme.txt
-        commExitSlit
         
+
         % Since uses dll, this will be true or false
         commMightex1
         commMightex2
@@ -198,12 +188,12 @@ classdef App < mic.Base
             this.msg('bl12014.App.delete', this.u8_MSG_TYPE_INFO);
             this.destroyAndDisconnectAll();
             
-            delete(this.uiApp)
-            delete(this.logger);
-            delete(this.hardware);
             
+            this.logger = [];
+            delete(this.hardware);
+            delete(this.uiApp);
             % Delete the clock
-            delete(this.clock);
+            % delete(this.clock);
             
         end
         
@@ -265,9 +255,6 @@ classdef App < mic.Base
         
         
         
-        function l = getExitSlit(this)
-            l = ~isempty(this.commExitSlit);
-        end
         
         function l = getNewFocusModel8742(this)
             l = ~isempty(this.commNewFocusModel8742);
@@ -305,17 +292,7 @@ classdef App < mic.Base
             
         end
         
-        function l = getGalilD142(this)
-            l = ~isempty(this.commGalilD142);
-        end
-        
-        function l = getGalilVIS(this)
-            l = ~isempty(this.commGalilVis);
-        end
-        
-        function l = getGalilM143(this)
-            l = ~isempty(this.commGalilM143);
-        end
+       
         
         
         
@@ -516,50 +493,6 @@ classdef App < mic.Base
         
         
         
-        
-        function initAndConnectExitSlit(this)
-            
-            if this.getExitSlit()
-                return
-            end
-            
-            try
-                % [this.commExitSlit, e] = bl12pico_attach();
-                this.commExitSlit = bl12pico_slits;
-                [e,estr] = this.commExitSlit.checkServer();
-                if e
-                    this.commExitSlit = [];
-                    error('Problem attaching to pico server');
-                    return;
-                end
-            catch mE
-                this.commExitSlit = [];
-                cMsg = sprintf('initAndConnectExitSlit() %s', mE.message);
-                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
-                
-               
-                return;
-            end
-                        
-            this.uiApp.uiBeamline.connectExitSlit(this.commExitSlit);
-            this.uiApp.uiBeamline.uiExitSlit.connectExitSlit(this.commExitSlit);
-            this.uiApp.uiTuneFluxDensity.uiExitSlit.connectExitSlit(this.commExitSlit);
-        end
-        
-        function destroyAndDisconnectExitSlit(this)
-            
-            if ~this.getExitSlit()
-                return
-            end
-            
-            
-            this.uiApp.uiBeamline.disconnectExitSlit();
-            this.uiApp.uiBeamline.uiExitSlit.disconnectExitSlit();
-            this.uiApp.uiTuneFluxDensity.uiExitSlit.disconnectExitSlit();
-            
-            % this.commExitSlit.delete();
-            this.commExitSlit = [];
-        end
         
         
         
@@ -776,102 +709,12 @@ classdef App < mic.Base
         end
         
         
-        function initAndConnectGalilD142(this)
-            
-            if this.getGalilD142()
-                return
-            end
-            
-            try
-                this.initAndConnectMet5Instruments();
-                this.commGalilD142 = this.jMet5Instruments.getDiag142Stage();
-                this.commGalilD142.connect();
-            catch mE
-                this.commGalilD142 = [];
-                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
-               
-            end
-            
-            
-            this.uiApp.uiBeamline.uiD142.connectGalil(this.commGalilD142);
-            this.uiApp.uiBeamline.connectGalil(this.commGalilD142);
-            
-        end
-        
-        function destroyAndDisconnectGalilD142(this)
-            if ~this.getGalilD142()
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiD142.disconnectGalil()
-            this.uiApp.uiBeamline.disconnectGalil();
-            
-            this.commGalilD142.disconnect();
-            this.commGalilD142 = [];
-            
-        end
-        
-        function initAndConnectGalilM143(this)
-            if this.getGalilM143()
-                return
-            end
-            
-            try
-                this.initAndConnectMet5Instruments();
-                this.commGalilM143 = this.jMet5Instruments.getM143Stage();
-                this.commGalilM143.connect();
-            catch mE
-                this.commGalilM143 = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-            end
-            
-            this.uiApp.uiM143.connectGalil(this.commGalilM143);
-            
-            
-        end
-        
-        function destroyAndDisconnectGalilM143(this)
-            if ~this.getGalilM143()
-                return
-            end
-            
-            this.uiApp.uiM143.disconnectGalil()
-            
-            this.commGalilM143.disconnect();
-            this.commGalilM143 = [];
-            
-        end
         
         
-        function initAndConnectGalilVIS(this)
-            if this.getGalilVIS()
-                return
-            end
-            
-            try
-                this.initAndConnectMet5Instruments();
-                this.commGalilVis = this.jMet5Instruments.getVisStage();
-                this.commGalilVis.connect();
-            catch mE
-                this.commGalilVis = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-            end
-
-            this.uiApp.uiVibrationIsolationSystem.connectGalil(this.commGalilVis)
-            
-        end
         
-        function destroyAndDisconnectGalilVIS(this)
-            if ~this.getGalilVIS()
-                return
-            end
-            
-            this.uiApp.uiVibrationIsolationSystem.disconnectGalil();
-            
-            this.commGalilVis.disconnect(); 
-            this.commGalilVis = [];
-            
-        end
+        
+        
+        
         
         function initAndConnectMicronixMmc103(this)
             
@@ -1120,12 +963,7 @@ classdef App < mic.Base
             
             
         
-            gslcCommExitSlit = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getExitSlit, ...
-                'fhSetTrue', @this.initAndConnectExitSlit, ...
-                'fhSetFalse', @this.destroyAndDisconnectExitSlit ...
-            );
-        
+           
             gslcCommMightex = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getMightex, ...
                 'fhSetTrue', @this.initAndConnectMightex, ...
@@ -1234,40 +1072,16 @@ classdef App < mic.Base
             );
         
         
-            gslcCommGalilM143 = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getGalilM143, ...
-                'fhSetTrue', @this.initAndConnectGalilM143, ...
-                'fhSetFalse', @this.destroyAndDisconnectGalilM143 ...
-            );
-        
-            gslcCommGalilVIS = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getGalilVIS, ...
-                'fhSetTrue', @this.initAndConnectGalilVIS, ...
-                'fhSetFalse', @this.destroyAndDisconnectGalilVIS ...
-            );
-        
-            gslcCommGalilD142 = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getGalilD142, ...
-                'fhSetTrue', @this.initAndConnectGalilD142, ...
-                'fhSetFalse', @this.destroyAndDisconnectGalilD142 ...
-            );
-                    
+           
 
             
             % Beamline
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
             this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
             
-                                    
-            this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
-            this.uiApp.uiBeamline.uiExitSlit.uiCommExitSlit.turnOn()
-            
-            this.uiApp.uiTuneFluxDensity.uiExitSlit.uiCommExitSlit.setDevice(gslcCommExitSlit);
-            this.uiApp.uiTuneFluxDensity.uiExitSlit.uiCommExitSlit.turnOn()
+
                         
-            this.uiApp.uiBeamline.uiCommGalilD142.setDevice(gslcCommGalilD142);
-            this.uiApp.uiBeamline.uiCommGalilD142.turnOn()
-            
+           
             
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
@@ -1280,13 +1094,7 @@ classdef App < mic.Base
             this.uiApp.uiScannerM142.uiNPointLC400.uiComm.turnOn();
             
             
-            % D142
-            this.uiApp.uiBeamline.uiD142.uiCommGalil.setDevice(gslcCommGalilD142);
-            this.uiApp.uiBeamline.uiD142.uiCommGalil.turnOn();
             
-            % M143
-            this.uiApp.uiM143.uiCommGalil.setDevice(gslcCommGalilM143)
-            this.uiApp.uiM143.uiCommGalil.turnOn();
             
             % ScannerMA
             this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400MA);
@@ -1296,16 +1104,8 @@ classdef App < mic.Base
             this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
             this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.turnOn();
             
-            % Vibration Isolation System
-            this.uiApp.uiVibrationIsolationSystem.uiCommGalil.setDevice(gslcCommGalilVIS)
-            this.uiApp.uiVibrationIsolationSystem.uiCommGalil.turnOn();
             
             
-            
-            
-            
-
-
             
            
             % this.uiApp.uiWafer.uiCommCxroHeightSensor.setDevice(gslcCommCxroHeightSensor)

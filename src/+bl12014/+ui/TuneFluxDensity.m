@@ -339,7 +339,9 @@ classdef TuneFluxDensity < mic.Base
            
             this.initUiCommConnectAll();
             
-            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
+            this.uiExitSlit = bl12014.ui.ExitSlit(...
+                'hardware', this.hardware, ...
+                'clock', this.uiClock);
             
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
         

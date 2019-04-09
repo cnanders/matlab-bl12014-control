@@ -1,6 +1,10 @@
 classdef BL12PicoExitSlit < handle
     % Class for bl12pico slit control
     
+    properties (SetAccess = public, GetAccess = public)
+        CLstatus = 0
+    end
+    
     properties (Access = private)
         
         % 1 2 3 4

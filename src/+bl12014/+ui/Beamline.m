@@ -904,7 +904,9 @@ classdef Beamline < mic.Base
             this.initUiCommGalil();
             this.initUiCommDctCorbaProxy();
                         
-            this.uiExitSlit = bl12014.ui.ExitSlit('clock', this.uiClock);
+            this.uiExitSlit = bl12014.ui.ExitSlit(...
+                'hardware', this.hardware, ...
+                'clock', this.uiClock);
             
             this.initUiDeviceUndulatorGap(); % BL1201 Corba Proxy
             this.initUiDeviceShutter(); % DCT Corba Proxy

@@ -58,18 +58,7 @@ classdef D142 < mic.Base
         
         end
         
-        function connectGalil(this, comm)
-            device = bl12014.device.GetSetNumberFromStage(comm, 0);
-            this.uiStageY.setDevice(device);
-            this.uiStageY.turnOn();
-            this.uiStageY.syncDestination();
-            
-        end
         
-        function disconnectGalil(this)
-            this.uiStageY.turnOff();
-            this.uiStageY.setDevice([]);
-        end
        
 
         
@@ -91,9 +80,7 @@ classdef D142 < mic.Base
             dLeft = 0;
             dTop = 15;
             dSep = 30;
-                        
-            this.uiCommGalil.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
+                       
             
             
             this.uiStageY.build(this.hPanel, dLeft, dTop);
@@ -147,15 +134,21 @@ classdef D142 < mic.Base
                 'cName', 'd142-stage-y', ...
                 'config', uiConfig, ...
                 'lShowInitButton', true, ...
+                'fhGet', @() this.hardware.getGalilD142().getAxisPosition(0), ...
+                'fhSet', @(dVal) this.hardware.getGalilD142().moveAxisAbsolute(0, dVal), ...
+                'fhIsReady', @() this.hardware.getGalilD142().getAxisIsReady(0), ...
+                'fhStop', @() this.hardware.getGalilD142().stopAxisMove(0), ...
+                'fhInitialize', @() mic.Utils.evalAll(...
+                    @() this.hardware.getGalilD142().initializeAxis(0) ...
+                ), ... % wrap because fhInitialize doesn't expect a return but initializeAxis returns something
+                'fhIsInitialized', @() this.hardware.getGalilD142.getAxisIsInitialized(0), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'Stage Y' ...
             );
         end
         
-        function d = getCurrent(this)
-            % channel 34 on hardware zero-indexed
-            dData = this.hardware.getDataTranslation().getScanData();
-            d = dData(34 + 1);
-        end
+        
         
         function initCurrent(this)
             
@@ -184,33 +177,11 @@ classdef D142 < mic.Base
         end
         
         
-        
-        function initUiCommGalil(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiCommGalil = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', 'galil-d142', ...
-                'cLabel', 'Galil' ...
-            );
-        
-        end
-        
+                
         function init(this)
             this.msg('init()');
             this.initStageY();
             this.initCurrent();
-            this.initUiCommGalil();
         end
         
        
