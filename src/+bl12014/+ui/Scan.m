@@ -375,6 +375,8 @@ classdef Scan < mic.Base
            dLeft = 200;
            dSep = 30;
            
+           this.uiTextReticleField.build(this.hPanelAdded, dLeft, dTop, 300, 24);
+           dTop = dTop + dSep;
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
@@ -413,9 +415,7 @@ classdef Scan < mic.Base
             this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 20, 400);
             this.uiPOCurrent.build(this.hParent, 840, dTop);
             
-            this.uiTextReticleField = mic.ui.common.Text(...
-                'cVal', 'Reticle Field: Fix Me' ...
-            );
+            
           
         end
         
@@ -656,6 +656,17 @@ classdef Scan < mic.Base
                 'clock', this.uiClock ...
             );
         
+        
+        
+            this.uiTextReticleField = mic.ui.common.Text(...
+                'cVal', 'Reticle Field: [--, --]' ...
+            );
+        
+            this.clock.add(...
+                @this.updateTextReticleField, ...
+                [this.id(), '-update-text-reticle-field'], ...
+                1 ...
+            );
         
         try
             this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
@@ -1274,7 +1285,7 @@ classdef Scan < mic.Base
             
             dTimeStart = tic;
             dTimeElapsed = 0;
-            while dTimeElapsed < 10
+            while dTimeElapsed < 5
                 dTimeElapsed = toc(dTimeStart);
                 pause(1);
                 fprintf('bl12014.ui.Scan.onScanAcquire() pausing %1.0f s of 10s\n', dTimeElapsed);
@@ -2023,6 +2034,52 @@ classdef Scan < mic.Base
             
         end
         
+        function updateTextReticleField(this, src, evt)
+            
+            dRow = this.uiReticle.uiReticleFiducializedMove.uiRow.getValCalDisplay();
+            dCol = this.uiReticle.uiReticleFiducializedMove.uiCol.getValCalDisplay();
+            
+    
+            
+            if ~isnumeric(dRow) || ...
+               ~isscalar(dRow) || ...
+               ~isnumeric(dCol) || ...
+               ~isscalar(dCol)
+                return
+            end
+            
+            dErrorRow = dRow - round(dRow);
+            dErrorCol = dCol - round(dCol);
+            
+            if abs(dErrorRow) < 0.01
+                dRow = round(dRow);
+            end
+            if abs(dErrorCol) < 0.01
+                dCol = round(dCol);
+            end
+            
+            cNameOfField = 'Unknown';
+            try
+                cNameOfField = bl12014.getNameOfReticleField(...
+                    'row', dRow, ...
+                    'col', dCol ...
+                );
+                
+            catch mE
+                
+                
+            end
+            
+            cVal = sprintf(...
+                'Retile Field: [row %1.1f, col %1.1f] = %s', ...
+                dRow, ...
+                dCol, ...
+                cNameOfField ...
+           );
+           this.uiTextReticleField.set(cVal);
+            
+            
+        end
                           
 
     end 
