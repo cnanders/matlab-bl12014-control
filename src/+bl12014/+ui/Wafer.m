@@ -144,7 +144,7 @@ classdef Wafer < mic.Base
                         
             
            
-            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
+            % this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -153,11 +153,12 @@ classdef Wafer < mic.Base
             % this.hs.build(this.hParent, dPad, dTop);
             
             dTop = 10;
-            dLeft = 290;
+            dLeft = 10;
+            this.uiMotMinSimple.build(this.hParent, dLeft, dTop);
             
+            dLeft = 350;
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             % this.uiMotMin.build(this.hParent, 800, 10);
-            this.uiMotMinSimple.build(this.hParent, 750, 10);
             
             
             dLeft = 10;
@@ -192,13 +193,13 @@ classdef Wafer < mic.Base
             this.uiWaferTTZClosedLoop.build(this.hParent, dLeft, dTop)
             
             
-            
-            dTop = dTop + this.uiWaferTTZClosedLoop.dHeight + dPad;
-            
             dLeft = 650;
             this.uiPobCapSensors.build(this.hParent, dLeft, dTop);
              
             dTopDiode = dTop;
+            
+            dTop = dTop + this.uiWaferTTZClosedLoop.dHeight + dPad;
+
             dLeft = 10;
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;

@@ -6,7 +6,6 @@ classdef TuneFluxDensity < mic.Base
         dWidth      = 700 %1295
         dHeight     = 730
         
-        dWidthNameComm = 100;
         dPeriodOfScan = 0.5;
         cNameOfConfigFile = 'tune-flux-density-coordinates.json'
     end
@@ -17,8 +16,6 @@ classdef TuneFluxDensity < mic.Base
         % These are the UI for activating the hardware that gives the 
         % software real data
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommConnectAll
         
         uiHeightSensorLeds
 
@@ -167,13 +164,7 @@ classdef TuneFluxDensity < mic.Base
             dTop = 15;
             dSep = 30;
             dPad = 10;
-            
                         
-            this.uiCommConnectAll.build(hTab, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            
-            
             dWidthTask = 300;
             this.uiSequencePrep.build(hTab, 10, dTop, dWidthTask);
             dTop = dTop + dSep;
@@ -246,9 +237,7 @@ classdef TuneFluxDensity < mic.Base
         
         
         function delete(this)
-            
-            delete(this.uiCommConnectAll)
-            
+                        
             delete(this.uiStateM142ScanningDefault);
             delete(this.uiStateMAScanningAnnular3585);
             delete(this.uiStateReticleAtClearField);
@@ -313,6 +302,7 @@ classdef TuneFluxDensity < mic.Base
         
             this.uiHeightSensorLeds = bl12014.ui.HeightSensorLEDs(...
                 'cName', [this.cName, 'height-sensor-leds'], ...
+                'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
             
@@ -337,7 +327,6 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.uiClock ...
             );
            
-            this.initUiCommConnectAll();
             
             this.uiExitSlit = bl12014.ui.ExitSlit(...
                 'hardware', this.hardware, ...
@@ -409,7 +398,7 @@ classdef TuneFluxDensity < mic.Base
                     this.uiHeightSensorLeds, ...
                     this.clock ...
                 ), ...
-                'lShowButton', false, ...
+                'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
         
@@ -442,7 +431,7 @@ classdef TuneFluxDensity < mic.Base
                     this.uiScannerM142.uiNPointLC400, ...
                     this.clock ...
                 ), ...
-                'lShowButton', false, ...
+                'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
         
@@ -475,45 +464,11 @@ classdef TuneFluxDensity < mic.Base
         
         
         
-        function l = onGet(this)
-            l = this.uiExitSlit.uiCommExitSlit.get() && ...
-                this.uiShutter.uiCommRigol.get() && ...
-                this.uiHeightSensorLeds.uiCommMightex.get();
-        end
         
-        function onSet(this, lVal)
-            
-
-            this.uiExitSlit.uiCommExitSlit.set(lVal);
-            this.uiShutter.uiCommRigol.set(lVal);
-            this.uiHeightSensorLeds.uiCommMightex.set(lVal);
-        end
         
-        function initUiCommConnectAll(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
+       
         
-            
-            this.uiCommConnectAll = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'connect-all'], ...
-                'lUseFunctionCallbacks', true, ...
-                'fhIsVirtual', @() false, ...
-                'fhGet', @this.onGet, ...
-                'fhSet', @this.onSet, ...
-                'cLabel', 'All' ...
-            );
-        
-        end
+       
         
         
         

@@ -78,6 +78,16 @@ classdef ExitSlit < mic.Base
         
         end
         
+        function syncDestinations(this)
+            this.uiStage1.syncDestination();
+            this.uiStage2.syncDestination();
+            this.uiStage3.syncDestination();
+            this.uiStage4.syncDestination();
+            this.uiGap.syncDestination();
+            
+        end
+        
+        
         function cec = getSaveLoadProps(this)
             
            cec = {...

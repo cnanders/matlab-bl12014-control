@@ -11,11 +11,7 @@ classdef HeightSensorLEDs < mic.Base
         ui6
         
         uiPositionRecaller
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommMightex
-        
-        
+
         
     end
     
@@ -24,7 +20,7 @@ classdef HeightSensorLEDs < mic.Base
         dWidth = 900
         dHeight = 220
         
-        cName = 'Height Sensor LEDs'
+        cName = 'height-sensor-leds-'
         
         lShowStores = false
         lShowZero = false
@@ -43,6 +39,9 @@ classdef HeightSensorLEDs < mic.Base
         dWidthUnit = 80
         dWidthVal = 75
         dWidthPadUnit = 25 % 280
+        
+        % {bl12014.Hardware 1x1}
+        hardware
 
         
     end
@@ -59,31 +58,61 @@ classdef HeightSensorLEDs < mic.Base
                 end
             end
             
+            
+%             if ~isa(this.clock, 'mic.Clock')
+%                 error('clock must be mic.Clock');
+%             end
+            
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
+            %{
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
+            %}
+            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
             this.init();
         
         end
         
+        function syncDestinations(this)
+            
+            this.ui1.syncDestination();
+            this.ui2.syncDestination();
+            this.ui3.syncDestination();
+            this.ui4.syncDestination();
+            this.ui5.syncDestination();
+             this.ui6.syncDestination();
+             
+        end
+       
+        %{
         function connectMightex2(this, comm)
             
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm, 1);
             this.ui1.setDevice(device);
             this.ui1.turnOn();
-            this.ui1.syncDestination();
+            
             
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,2);
             this.ui2.setDevice(device);
             this.ui2.turnOn();
-            this.ui2.syncDestination();
+            
             
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,3);
             this.ui3.setDevice(device);
             this.ui3.turnOn();
-            this.ui3.syncDestination();
+            
             
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,4);
             this.ui4.setDevice(device);
             this.ui4.turnOn();
-            this.ui4.syncDestination();
+            
             
         end
         
@@ -92,47 +121,19 @@ classdef HeightSensorLEDs < mic.Base
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,1);
             this.ui5.setDevice(device);
             this.ui5.turnOn();
-            this.ui5.syncDestination();
+            
             
             device = bl12014.device.GetSetNumberFromMightexUniversalLedController(comm,2);
             this.ui6.setDevice(device);
             this.ui6.turnOn();
-            this.ui6.syncDestination();
+           
         end
+        %}
         
-        
-        function disconnectMightex2(this)
-            
-            this.ui1.turnOff();
-            this.ui1.setDevice([]);
-            
-            this.ui2.turnOff();
-            this.ui2.setDevice([]);
-            
-            this.ui3.turnOff();
-            this.ui3.setDevice([]);
-            
-            this.ui4.turnOff();
-            this.ui4.setDevice([]);
-            
-            
-        end
-        
-        function disconnectMightex1(this)
-            
-            this.ui5.turnOff();
-            this.ui5.setDevice([]);
-            
-            this.ui6.turnOff();
-            this.ui6.setDevice([]);
-        end
-        
-        
+         
 
         function build(this, hParent, dLeft, dTop)
-            
-            hParent;
-            
+                        
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
@@ -149,9 +150,6 @@ classdef HeightSensorLEDs < mic.Base
             dLeft = 10;
             dSep = 24;
             
-            
-            this.uiCommMightex.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + 5 + dSep;
             
             this.ui1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -171,7 +169,7 @@ classdef HeightSensorLEDs < mic.Base
             this.ui6.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 500
+            dLeft = 500; 
             
             this.uiPositionRecaller.build(this.hPanel, dLeft, 40, 380, 170);
             
@@ -205,6 +203,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Channel = 1;
             this.ui1 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -216,6 +215,12 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex2().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex2().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'z 5:30 (1)' ...
             );
         end
@@ -232,6 +237,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+        u8Channel = 2;
             this.ui2 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -244,6 +250,12 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex2().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex2().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'z 9:30 (2)' ...
             );
         end
@@ -260,6 +272,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+        u8Channel = 3;
             this.ui3 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -272,6 +285,12 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex2().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex2().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'z 1:30 (3)' ...
             );
         end
@@ -288,6 +307,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Channel = 4;
             this.ui4 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -300,6 +320,12 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex2().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex2().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'ang 0:30 (4)' ...
             );
         end
@@ -316,6 +342,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Channel = 1;
             this.ui5 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -328,6 +355,12 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex1().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex1().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'ang 4:30 (5)' ...
             );
         end
@@ -344,6 +377,7 @@ classdef HeightSensorLEDs < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Channel = 2;
             this.ui6 = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -356,32 +390,16 @@ classdef HeightSensorLEDs < mic.Base
                 'lShowStores', this.lShowStores, ...
                 'lShowZero', this.lShowZero, ...
                 'lShowRel', this.lShowRel, ...
+                'fhGet', @() this.hardware.getMightex1().getCurrentNormalModeCached(u8Channel), ...
+                'fhSet', @(dVal) this.hardware.getMightex1().setNormalModeCurrent(u8Channel, dVal), ...
+                'fhIsReady', @() true, ...
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'ang 8:30 (6)' ...
             );
         end
-        
-        
-        function initUiCommMightex(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
 
-            this.uiCommMightex = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'comm-mightex'], ...
-                'cLabel', 'Mightex LED Controllers' ...
-            );
-        
-        end
         
         function initUiPositionRecaller(this)
             
@@ -397,10 +415,7 @@ classdef HeightSensorLEDs < mic.Base
             );
         end
         
-       
-        
-        
-        
+ 
         function init(this)
             this.msg('init()');
             this.initUi1();
@@ -409,8 +424,9 @@ classdef HeightSensorLEDs < mic.Base
             this.initUi4();
             this.initUi5();
             this.initUi6();
-            this.initUiCommMightex();
             this.initUiPositionRecaller();
+            
+            this.syncDestinations();
             
             
         end

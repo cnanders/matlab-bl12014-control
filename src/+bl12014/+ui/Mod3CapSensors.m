@@ -22,10 +22,10 @@ classdef Mod3CapSensors < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 390
+        dWidth = 320
         dHeight = 140
         
-        cName = 'Mod3 Cap Sensors'
+        cName = 'mod3-cap-sensors'
         
     end
     
@@ -35,9 +35,9 @@ classdef Mod3CapSensors < mic.Base
         
         hPanel
         
-        dWidthName = 40
+        dWidthName = 20
         dWidthUnit = 80
-        dWidthVal = 75
+        dWidthVal = 50
         dWidthPadUnit = 5
         
         configStageY
@@ -84,7 +84,7 @@ classdef Mod3CapSensors < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Mod3 Cap Sensors (PPMAC) 10V = 1 um (near gap); -10V = 3 um',...
+                'Title', 'Mod3 Cap Sensors 10V = 1 um (near gap); -10V = 3 um',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -112,7 +112,7 @@ classdef Mod3CapSensors < mic.Base
             dTop = dTop + dSep;
             
             dTop = 20;
-            dLeft = 325;
+            dLeft = 230;
             
              this.uiTextZ.build(this.hPanel, dLeft, dTop, 100, 24);
              dTop = dTop + 40;

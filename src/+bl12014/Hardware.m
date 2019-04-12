@@ -119,6 +119,18 @@ classdef Hardware < mic.Base
         
         commGalilVis
         commGalilVisVirtual
+        
+        commMightex1
+        commMightex1Virtual
+        
+        commMightex2
+        commMightex2Virtual
+        
+        commNPointM142
+        commNPointM142Virtrual
+        
+        commNPointMA
+        commNPointMAVirtual
                 
     end
     
@@ -375,7 +387,9 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedSmarActM141(this)
            
-            if isa(this.commSmarActM141, 'cxro.common.device.motion.Stage')
+            if isa(this.commSmarActM141, 'cxro.common.device.motion.Stage') && ...
+               this.commSmarActM141.isConnected() && ...
+               this.commSmarActM141.getAxesIsInitialized()
                 l = true;
                 return;
             end
@@ -388,6 +402,9 @@ classdef Hardware < mic.Base
              try
                 
                 this.commSmarActM141 = this.jMet5Instruments.getM141Stage();
+                
+                
+                % this.commSmarActM141.connect();
                 this.commSmarActM141.reset();
                 this.commSmarActM141.initializeAxes().get();
                 this.commSmarActM141.moveAxisAbsolute(0, 0);
@@ -417,6 +434,92 @@ classdef Hardware < mic.Base
                 comm = this.commSmarActM141;
             else
                 comm = this.commSmarActM141Virtual;
+            end            
+        end
+        
+        
+        %% Mightex Universal LED Controller (1)
+        
+        function l = getIsConnectedMightex1(this)
+           
+            if isa(this.commMightex1, 'mightex.UniversalLedController')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectMightex1(this)
+            
+            try 
+                this.commMightex1 = mightex.UniversalLedController(...
+                    'u8DeviceIndex', 0 ...
+                );
+                this.commMightex1.init();
+                
+            catch mE
+                
+                this.commMightex1 = [];
+                error(getReport(mE));
+            end
+            
+        end
+        
+        function disconnectMightex1(this)
+             if this.getIsConnectedMightex1()
+                 this.commMightex1.disconnect();
+             end
+            this.commMightex1 = [];
+        end
+                        
+        function comm = getMightex1(this)
+            if this.getIsConnectedMightex1()
+                comm = this.commMightex1;
+            else
+                comm = this.commMightex1Virtual;
+            end            
+        end
+        
+        
+        %% Mightex Universal LED Controller (2)
+        
+        function l = getIsConnectedMightex2(this)
+           
+            if isa(this.commMightex2, 'mightex.UniversalLedController')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectMightex2(this)
+            
+            try 
+                this.commMightex2 = mightex.UniversalLedController(...
+                    'u8DeviceIndex', 1 ...
+                );
+                this.commMightex2.init();
+                
+            catch mE
+                
+                this.commMightex2 = [];
+                error(getReport(mE));
+            end
+            
+        end
+        
+        function disconnectMightex2(this)
+             if this.getIsConnectedMightex2()
+                 this.commMightex2.disconnect();
+             end
+            this.commMightex2 = [];
+        end
+                        
+        function comm = getMightex2(this)
+            if this.getIsConnectedMightex2()
+                comm = this.commMightex2;
+            else
+                comm = this.commMightex2Virtual;
             end            
         end
         
@@ -690,7 +793,8 @@ classdef Hardware < mic.Base
         %% GalilD142
         
         function l = getIsConnectedGalilD142(this)
-            if isa(this.commGalilD142, 'cxro.common.device.motion.Stage')
+            if isa(this.commGalilD142, 'cxro.common.device.motion.Stage') && ...
+               this.commGalilD142.isConnected()
                 l = true;
             else
                 l = false;
@@ -737,7 +841,8 @@ classdef Hardware < mic.Base
         %% GalilM143
         
         function l = getIsConnectedGalilM143(this)
-            if isa(this.commGalilM143, 'cxro.common.device.motion.Stage')
+            if isa(this.commGalilM143, 'cxro.common.device.motion.Stage') && ...
+               this.commGalilM143.isConnected()
                 l = true;
             else
                 l = false;
@@ -785,7 +890,8 @@ classdef Hardware < mic.Base
         %% GalilM143
         
         function l = getIsConnectedGalilVis(this)
-            if isa(this.commGalilVis, 'cxro.common.device.motion.Stage')
+            if isa(this.commGalilVis, 'cxro.common.device.motion.Stage') && ...
+               this.commGalilVis.isConnected()
                 l = true;
             else
                 l = false;
@@ -825,6 +931,82 @@ classdef Hardware < mic.Base
             end
                 
             comm = this.commGalilVisVirtual;
+                
+        end
+        
+        
+        %% NPoint (MA)
+        
+        function l = getIsConnectedNPointMA(this)
+            if isa(this.commNPointMA, 'npoint.LC400')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectNPointMA(this)
+            if this.getIsConnectedNPointMA()
+                this.commNPointMA.delete();
+            end
+            
+            this.commNPointMA = [];
+        end
+        
+        function connectNPointMA(this)
+            this.commNPointMA = npoint.LC400(...
+                'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
+                'cTcpipHost', this.cTcpipLc400MA, ...
+                'u16TcpipPort', 23 ...
+            );
+        end
+        
+        function comm = getNPointMA(this)
+            
+            if this.getIsConnectedNPointMA()
+                comm = this.commNPointMA;
+                return
+            end
+                
+            comm = this.commNPointMAVirtual;
+                
+        end
+        
+        
+        %% NPoint (M142)
+        
+        function l = getIsConnectedNPointM142(this)
+            if isa(this.commNPointM142, 'npoint.LC400')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectNPointM142(this)
+            if this.getIsConnectedNPointM142()
+                this.commNPointM142.delete();
+            end
+            
+            this.commNPointM142 = [];
+        end
+        
+        function connectNPointM142(this)
+            this.commNPointM142 = npoint.LC400(...
+                'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
+                'cTcpipHost', this.cTcpipLc400M142, ...
+                'u16TcpipPort', 23 ...
+            );
+        end
+        
+        function comm = getNPointM142(this)
+            
+            if this.getIsConnectedNPointM142()
+                comm = this.commNPointM142;
+                return
+            end
+                
+            comm = this.commNPointM142Virtual;
                 
         end
         
@@ -973,7 +1155,7 @@ classdef Hardware < mic.Base
             
             % Java
             ceJavaPathLoad = { ...
-                fullfile(cDirVendor, 'cwcork', 'Met5Instruments.jar'), ...
+                fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.1.4.jar'), ...
                 ... BL 12.0.1 Exit Slit
                 fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOCorbaProxy.jar'), ...
                 ... BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
@@ -1010,6 +1192,12 @@ classdef Hardware < mic.Base
             this.commGalilD142Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commGalilM143Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
+            
+            this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
+            this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();
+            
+            this.commNPointM142Virtrual = npoint.LC400Virtual();
+            this.commNPointMAVirtual = npoint.LC400Virtual();
         end
         
   

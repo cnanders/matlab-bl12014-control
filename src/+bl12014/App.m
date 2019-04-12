@@ -70,14 +70,7 @@ classdef App < mic.Base
         
         
        
-        
-        % {npoint.LC400 1x1}
-        commNPointLC400M142
-        
-        % {npoint.LC400 1x1}
-        commNPointLC400MA
-        
-        
+                
         % {cxro.bl1201.dct.DctCorbaProxy 1x1}
         commDctCorbaProxy
         
@@ -105,9 +98,6 @@ classdef App < mic.Base
         
         
 
-        % Since uses dll, this will be true or false
-        commMightex1
-        commMightex2
         
         % {threegstore.RemotePowerSwitch}
         % github.com/cnanders/matlab-3gstore-remote-power-switch
@@ -127,11 +117,7 @@ classdef App < mic.Base
     
     properties (Access = private)
         
-        cPathDllMightex
-        cPathHeaderMightex
-        
-        
-        
+                
         % {bl12014.Comm 1x1}
         comm
         
@@ -164,10 +150,7 @@ classdef App < mic.Base
             
             [cDirThis] = fileparts(mfilename('fullpath'));
 
-            cDirMightex = fullfile(cDirThis, '..', '..', 'src', 'vendor', 'mightex');
-            this.cPathDllMightex =  fullfile(cDirMightex, 'Mightex_LEDDriver_SDK.dll');
-            this.cPathHeaderMightex = fullfile(cDirMightex, 'Mightex_LEDDriver_SDK.h');
-            
+
             this.init();
             
             
@@ -237,14 +220,11 @@ classdef App < mic.Base
             this.destroyAndDisconnectMicronixMmc103();
             this.destroyAndDisconnectNewFocusModel8742();
             this.destroyAndDisconnectNewFocusModel8742MA();
-            this.destroyAndDisconnectNPointLC400M142();
-            this.destroyAndDisconnectNPointLC400MA();
             this.destroyAndDisconnectSmarActMcsGoni();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
             this.destroyAndDisconnect3GStoreRemotePowerSwitch1();
             this.destroyAndDisconnect3GStoreRemotePowerSwitch2();
-            this.destroyAndDisconnectMightex();
             this.destroyAndDisconnectMet5Instruments();
 
         end
@@ -299,9 +279,7 @@ classdef App < mic.Base
             l = ~isempty(this.comm3GStoreRemotePowerSwitch2);
         end
                 
-        function l = getMightex(this)
-            l = ~isempty(this.commMightex1) && ~isempty(this.commMightex2);
-        end
+
         
         
         
@@ -311,14 +289,7 @@ classdef App < mic.Base
         
         
         
-        function l = getNPointLC400M142(this)
-            l = ~isempty(this.commNPointLC400M142);
-            
-        end
         
-        function l = getNPointLC400MA(this)
-            l = ~isempty(this.commNPointLC400MA);
-        end
         
         
         
@@ -730,85 +701,13 @@ classdef App < mic.Base
         
        
         
-        function initAndConnectNPointLC400MA(this)
-            
-            if this.getNPointLC400MA()
-                return
-            end
-            
-            try
-                
-                this.commNPointLC400MA = npoint.LC400(...
-                    'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
-                    'cTcpipHost', this.cTcpipLc400MA, ...
-                    'u16TcpipPort', 23 ...
-                );
-            
-                
-            catch mE
-                this.commNPointLC400MA = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-               
-                return;
-            end
-            
-            this.uiApp.uiMA.uiScanner.connectNPointLC400(this.commNPointLC400MA);
-            
-        end
         
-        function destroyAndDisconnectNPointLC400MA(this)
-            
-            if ~this.getNPointLC400MA()
-                return
-            end
-
-            this.uiApp.uiMA.uiScanner.disconnectNPointLC400();
-            
-            this.commNPointLC400MA.delete();
-            this.commNPointLC400MA = [];
-        end
         
-        function initAndConnectNPointLC400M142(this)
-            
-
-            if this.getNPointLC400M142()
-                return
-            end
-            
-            try
-                this.commNPointLC400M142 = npoint.LC400(...
-                    'cConnection', npoint.LC400.cCONNECTION_TCPCLIENT, ...
-                    'cTcpipHost', this.cTcpipLc400M142, ...
-                    'u16TcpipPort', 23 ...
-                );
         
-                
-            catch mE
-                this.commNPointLC400M142 = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                                
-                 
-                return;
-            end
-            
-            
-            this.uiApp.uiScannerM142.connectNPointLC400(this.commNPointLC400M142);
-            
-            
-            
-        end
         
-        function destroyAndDisconnectNPointLC400M142(this)
-            
-            if ~this.getNPointLC400M142()
-                return
-            end
-            
-            this.uiApp.uiScannerM142.disconnectNPointLC400();
-            
-            this.commNPointLC400M142.delete();
-            this.commNPointLC400M142 = [];
-        end
+        
+        
+        
         
         
         function initAndConnectRigolDG1000Z(this)
@@ -854,75 +753,13 @@ classdef App < mic.Base
         
         
         
-        function initAndConnectMightex(this)
-            
-            if this.getMightex()
-                return
-            end
-            
-            try 
-                this.commMightex1 = mightex.UniversalLedController(...
-                    'u8DeviceIndex', 0 ...
-                );
-                this.commMightex1.init();
-                this.uiApp.uiHeightSensorLEDs.connectMightex1(this.commMightex1);
-                this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.connectMightex1(this.commMightex1);
-            catch mE
-                
-                this.commMightex1 = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                
-            end
-            
-            
-            try 
-                
-                this.commMightex2 = mightex.UniversalLedController(...
-                    'u8DeviceIndex', 1 ...
-                );
-                this.commMightex2.init();
-                this.uiApp.uiHeightSensorLEDs.connectMightex2(this.commMightex2);
-                this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.connectMightex2(this.commMightex2);
-            catch mE
-                
-                this.commMightex2 = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                
-            end
-            
-            
-            
-        end
-        
-        
-        function destroyAndDisconnectMightex(this)
-            
-            % Disconnect UI
-            this.uiApp.uiHeightSensorLEDs.disconnectMightex1();
-            this.uiApp.uiHeightSensorLEDs.disconnectMightex2();
-            
-            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.disconnectMightex1();
-            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.disconnectMightex2();
-            
-            % this.commMightex1.disconnect();
-            % this.commMightex2.disconnect();
-            
-            this.commMightex1 = [];
-            this.commMightex2 = [];
-            
-        end
+       
             
         
         function initGetSetLogicalConnects(this)
             
             
-        
-           
-            gslcCommMightex = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getMightex, ...
-                'fhSetTrue', @this.initAndConnectMightex, ...
-                'fhSetFalse', @this.destroyAndDisconnectMightex ...
-            );
+
         
             %{
             gslcCommRigolDG1000Z = bl12014.device.GetSetLogicalConnect(...
@@ -975,18 +812,7 @@ classdef App < mic.Base
             
         
             
-            gslcCommNPointLC400M142 = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNPointLC400M142, ...
-                'fhSetTrue', @this.initAndConnectNPointLC400M142, ...
-                'fhSetFalse', @this.destroyAndDisconnectNPointLC400M142 ...
-            );
-        
-            gslcCommNPointLC400MA = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNPointLC400MA, ...
-                'fhSetTrue', @this.initAndConnectNPointLC400MA, ...
-                'fhSetFalse', @this.destroyAndDisconnectNPointLC400MA ...
-            );
-            
+           
             
            
             gslcComm3GStoreRemotePowerSwitch1 = bl12014.device.GetSetLogicalConnect(...
@@ -1038,16 +864,10 @@ classdef App < mic.Base
             this.uiApp.uiBeamline.uiM142.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742);
             this.uiApp.uiBeamline.uiM142.uiCommNewFocusModel8742.turnOn();
             
-            % ScannerM142
-            this.uiApp.uiScannerM142.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400M142);
-            this.uiApp.uiScannerM142.uiNPointLC400.uiComm.turnOn();
             
             
             
             
-            % ScannerMA
-            this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.setDevice(gslcCommNPointLC400MA);
-            this.uiApp.uiMA.uiScanner.uiNPointLC400.uiComm.turnOn();
             
             % MA Diagnostics
             this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
@@ -1088,12 +908,8 @@ classdef App < mic.Base
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.setDevice(gslcCommSmarActRotary);
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.turnOn();
             
-            
-            this.uiApp.uiHeightSensorLEDs.uiCommMightex.setDevice(gslcCommMightex);
-            this.uiApp.uiHeightSensorLEDs.uiCommMightex.turnOn();
-            
-            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.setDevice(gslcCommMightex);
-            this.uiApp.uiTuneFluxDensity.uiHeightSensorLeds.uiCommMightex.turnOn();
+
+
             
             %{
             this.uiApp.uiBeamline.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);

@@ -104,7 +104,7 @@ classdef GetSetNumberFromBL1201CorbaProxy < mic.interface.device.GetSetNumber
                     % do nothing
                     
                 case this.cDEVICE_GRATING_TILT_X
-                    this.lMonoIsInitialized = this.comm.Mono_FindIndex()
+                    this.lMonoIsInitialized = this.comm.Mono_FindIndex();
                     
                 
             end

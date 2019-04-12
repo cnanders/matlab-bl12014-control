@@ -70,15 +70,11 @@ classdef Beamline < mic.Base
         
         
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommBL1201CorbaProxy
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiCommDctCorbaProxy % Previous DCT shutter driver
         
         
-        % {mic.ui.device.GetSetLogical 1x1} 
-        uiCommGalilD142
         
         
         % {mic.ui.device.GetSetNumber 1x1}
@@ -485,9 +481,7 @@ classdef Beamline < mic.Base
             % delete(this.deviceShutterVirtual)
             
             
-            delete(this.uiCommBL1201CorbaProxy)
             delete(this.uiCommDctCorbaProxy)
-            delete(this.uiCommGalilD142)
             delete(this.uiExitSlit)
             delete(this.uiUndulatorGap)
             delete(this.uiShutter)
@@ -758,7 +752,8 @@ classdef Beamline < mic.Base
                 'fhSet', @(dVal) this.hardware.getBL1201CorbaProxy().Mono_MoveRaw(dVal), ...
                 'fhIsReady', @() logical(this.hardware.getBL1201CorbaProxy().Mono_MotionCompleteRaw(50)), ...
                 'fhStop', @() this.hardware.getBL1201CorbaProxy().Mono_StopMove(), ...
-                'fhIndex', @() this.hardware.getBL1201CorbaProxy().Mono_FindIndex(), ...
+                'fhInitialize', @() this.hardware.getBL1201CorbaProxy().Mono_FindIndex(), ...
+                'fhIsInitialized', @() false, ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', 'beamline-grating-tilt-x', ...
@@ -913,7 +908,6 @@ classdef Beamline < mic.Base
         function init(this)
             this.msg('init()');
             
-            this.initUiCommGalil();
             this.initUiCommDctCorbaProxy();
                         
             this.uiExitSlit = bl12014.ui.ExitSlit(...
@@ -1292,7 +1286,7 @@ classdef Beamline < mic.Base
                         stTask.type = this.cScanAcquireTypeD142Current;
                 end
                 
-                stTask.pause = 0.1;
+                stTask.pause = 0.25;
                 
                 stValue.task = stTask;
                 ceValues{u8Count} = stValue;
@@ -1654,7 +1648,7 @@ classdef Beamline < mic.Base
             end
             
             % Execute the acquisition
-            
+                        
             switch stTask.type
                 
                 case this.cScanAcquireTypeM141Current
@@ -1971,26 +1965,7 @@ classdef Beamline < mic.Base
         
         
         
-        function initUiCommGalil(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiCommGalilD142 = mic.ui.device.GetSetLogical(...
-                'clock', this.uiClock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', this.dWidthNameComm, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-galil-d142', this.cName), ...
-                'cLabel', 'Galil' ...
-            );
-        
-        end
+       
         
         
         

@@ -93,6 +93,7 @@ classdef Logger < mic.Base
             
             % Show all MeasurePoint channel hardware types (These cannot be set)
             [tc, rtd, volt] = this.hardware.getDataTranslation().channelType();
+            fprintf('bl12014.Logger.init():\n');
             fprintf('DataTranslation MeasurPoint Hardware configuration:\n');
             fprintf('TC   sensor channels = %s\n',num2str(tc,'%1.0f '))
             fprintf('RTD  sensor channels = %s\n',num2str(rtd,'%1.0f '))
@@ -127,8 +128,6 @@ classdef Logger < mic.Base
             for n = channels
                 this.hardware.getDataTranslation().setSensorType(n, 'V');
             end
-            
-            this.hardware.getDataTranslation()
             
             this.hardware.getDataTranslation().setScanList(0:47);
             this.hardware.getDataTranslation().setScanPeriod(0.1);

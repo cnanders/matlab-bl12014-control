@@ -26,7 +26,7 @@ classdef Shutter < mic.Base
     properties (Access = private)
         
         clock
-        dWidth = 540
+        dWidth = 460
         configStageY
         configMeasPointVolts
         

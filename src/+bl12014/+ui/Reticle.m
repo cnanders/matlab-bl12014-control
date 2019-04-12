@@ -113,7 +113,7 @@ classdef Reticle < mic.Base
             
             
            
-            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
+            % this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
            
             
             %{
@@ -122,15 +122,18 @@ classdef Reticle < mic.Base
             %}
             
             
-            dTop = 10;
-            dLeft = 290;
+            dTop = 20;
+            dLeft = 10;
             
+            this.uiMotMinSimple.build(this.hParent, dLeft, dTop);
+            
+            dLeft = 350;
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             % this.uiMotMin.build(this.hParent, 800, dTop);
-            this.uiMotMinSimple.build(this.hParent, 750, dTop);
+            
 
             dLeft = 10;
-            dTop = 170;
+            dTop = 190;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
@@ -138,23 +141,25 @@ classdef Reticle < mic.Base
             this.uiReticleFiducializedMove.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiReticleFiducializedMove.dHeight + dPad;
             
+            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
             
+            
+            this.uiMod3CapSensors.build(this.hParent, 620, dTop);
+            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
+            
+           
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
-            
-
-            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
+           
             
             this.uiDiode.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
+            dLeft = 10;
             
-            dLeft = 600;
-            this.uiMod3CapSensors.build(this.hParent, dLeft, dTop);
 %             dTop = dTop + this.uiMod3CapSensors.dHeight + dPad;
             
-            this.uiShutter.build(this.hParent, 10, dTop);
+            this.uiShutter.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiShutter.dHeight + dPad;
             
             

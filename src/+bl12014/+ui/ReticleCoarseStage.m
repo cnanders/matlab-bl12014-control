@@ -31,8 +31,8 @@ classdef ReticleCoarseStage < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 950
-        dHeight = 200
+        dWidth = 960
+        dHeight = 165
         
         cName = 'ReticleCoarseStage'
         
@@ -149,7 +149,7 @@ classdef ReticleCoarseStage < mic.Base
             dLeft = 590;
             dTop = 15;
             dWidth = 360;
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 190);
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, dWidth, 140);
             
             
 

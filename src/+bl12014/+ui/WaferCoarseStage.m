@@ -28,7 +28,7 @@ classdef WaferCoarseStage < mic.Base
     properties (SetAccess = private)
         
         dWidth = 960
-        dHeight = 160        
+        dHeight = 170        
         cName = 'wafer-coarse-stage'
         lShowRange = true
         lShowStores = false

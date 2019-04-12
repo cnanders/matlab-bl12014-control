@@ -20,6 +20,8 @@ classdef WaferTTZClosedLoop < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiFineZ  
         
+        % {bl12014.ui.HeightSensorLeds 1x1}
+        uiHeightSensorLEDs
         
         uibLevel
         hLevelScan
@@ -29,6 +31,7 @@ classdef WaferTTZClosedLoop < mic.Base
         hProgress
         
         uiSequenceLevelWafer
+        uiStateHeightSensorLEDsOn
         
         uiCLTiltX
         uiCLTiltY
@@ -42,8 +45,8 @@ classdef WaferTTZClosedLoop < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 970
-        dHeight = 95  
+        dWidth = 625
+        dHeight = 175 
         dWidthStores = 150
         cName = 'wafer-coarse-stage-ttz-closed-loop'
         lShowRange = false
@@ -326,7 +329,7 @@ classdef WaferTTZClosedLoop < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Wafer Z/T/T Closed Loop Control: Z -> HS simple Z (4 nm tol), [Rx,Ry] -> HS Calibrated tilt (3 urad tol)',...
+                'Title', 'Wafer Z,TiltX,TiltY Closed Loop Control: Z -> HS simple Z (4 nm tol), [Rx,Ry] -> HS Calibrated tilt (3 urad tol)',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -337,27 +340,30 @@ classdef WaferTTZClosedLoop < mic.Base
         
 			drawnow;            
 
-            dTop = 20;
+            dTop = 30;
             dLeft = 10;
-            dSep = 24;
+            dSep = 26;
             
 
-            
-            this.uiCLZ.build(this.hPanel, dLeft, dTop);
-%             this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
-            
-            this.uiSequenceLevelWafer.build(this.hPanel, dLeft + 620, dTop, 300);
-
-            
+            this.uiStateHeightSensorLEDsOn.build(this.hPanel, dLeft, dTop, 300);
             dTop = dTop + dSep;
             
+            this.uiSequenceLevelWafer.build(this.hPanel, dLeft, dTop, 300);
+            dTop = dTop + dSep;
+            dTop = dTop + 10;
             
-            
+            this.uiCLZ.build(this.hPanel, dLeft, dTop);
+            dTop = dTop + dSep;
+
             this.uiCLTiltX.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiCLTiltY.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
+                        
+%             this.uibLevel.build(this.hPanel, dLeft + 590, dTop, 80, 50);
+            
+            
             
            
             
@@ -506,9 +512,6 @@ classdef WaferTTZClosedLoop < mic.Base
             this.msg('init()');
             
             cDirThis = fileparts(mfilename('fullpath'));
-            
-            
-           
 
             % Init config
             this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig));
@@ -526,6 +529,8 @@ classdef WaferTTZClosedLoop < mic.Base
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
+            this.initUiHeightSensorLeds();
+            
             
             this.uiSequenceLevelWafer = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-task-sequence-level-wafer'], ...
@@ -534,9 +539,21 @@ classdef WaferTTZClosedLoop < mic.Base
                     this.uiCLTiltX, ...
                     this.uiCLTiltY, ...
                     this.uiCLZ, ...
+                    ...this.uiHeightSensorLEDs, ...
                     this.stConfigDat, ...
                     this.clock ...
                  ), ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateHeightSensorLEDsOn = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-height-sensor-leds-on'], ...
+                'task', bl12014.Tasks.createStateHeightSensorLEDsOn(...
+                    [this.cName, 'state-height-sensor-leds-on'], ...
+                    this.uiHeightSensorLEDs, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
             
@@ -544,6 +561,18 @@ classdef WaferTTZClosedLoop < mic.Base
              
         end
         
+        function initUiHeightSensorLeds(this)
+            
+            
+            % Height Sensor LEDS for easy turnon before level if needed
+            this.uiHeightSensorLEDs = bl12014.ui.HeightSensorLEDs(...
+                'cName', [this.cName, 'height-sensor-leds'], ...
+                'hardware', this.hardware, ...
+                'clock', this.uiClock ...
+            );
+        end
+        
+                    
         
         
     end

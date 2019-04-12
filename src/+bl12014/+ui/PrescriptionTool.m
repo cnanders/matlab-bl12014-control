@@ -351,10 +351,41 @@ classdef PrescriptionTool < mic.Base
                     %}
                     
                     % y position on wafer you want exposure to be
-                    stValue = struct();
-                    stValue.waferY = dY(n); 
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
+                    % 2019.04.12 Break into multiple moves of max .1 mm
+                    % if not n = 1
+                    
+                    if n > 1
+                        
+                        dDeltaRemaining = dY(n) - dY(n - 1);
+                        dAccumulated = 0;
+                        dStepMax = 0.1;
+                        
+                        while abs(dDeltaRemaining) > 1e-6 % 1 nm since units are mm
+                            
+                            if abs(dDeltaRemaining) >= dStepMax
+                                dStep = sign(dDeltaRemaining) * dStepMax;
+                            else
+                                dStep = dDeltaRemaining;
+                            end
+                            
+                            dAccumulated = dAccumulated + dStep;
+                            dDeltaRemaining = dDeltaRemaining - dStep;
+                            
+                            stValue = struct();
+                            stValue.waferY = dY(n - 1) + dAccumulated; 
+                            ceValues{u8Count} = stValue;
+                            u8Count = u8Count + 1;
+                            
+                            fprintf('bl12014.ui.PrescriptionTool in while loop for y moves.\n');
+                            fprintf('bl12014.ui.PrescriptionTool dDeltaRemaining = %1.3f.\n', dDeltaRemaining);
+                            fprintf('bl12014.ui.PrescriptionTool dAccumulated = %1.3f.\n', dAccumulated);
+                        end
+                    else
+                        stValue = struct();
+                        stValue.waferY = dY(n); 
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                    end
                     
                     % Val you want HS to read during exposure
                     stValue = struct();

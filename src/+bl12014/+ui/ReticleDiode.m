@@ -13,9 +13,9 @@ classdef ReticleDiode < mic.Base
     properties (SetAccess = private)
         
         dWidth = 600
-        dHeight = 100
+        dHeight = 65
         
-        cName = 'ReticleDiode'
+        cName = 'reticle-diode'
         
     end
     

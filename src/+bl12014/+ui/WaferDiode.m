@@ -5,17 +5,15 @@ classdef WaferDiode < mic.Base
         % {mic.ui.device.GetNumber 1x1}}
         uiCurrent
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiComm
         
     end
     
     properties (SetAccess = private)
         
         dWidth = 450
-        dHeight = 100
+        dHeight = 65
         
-        cName = 'WaferDiode'
+        cName = 'wafer-diode'
         
     end
     
