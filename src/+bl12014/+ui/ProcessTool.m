@@ -453,23 +453,23 @@ classdef ProcessTool < mic.Base
             this.uieUser            = mic.ui.common.Edit('cLabel', 'User', 'cType', 'c');
             this.uieBase            = mic.ui.common.Edit('cLabel', 'Base', 'cType', 'c');              
             this.uieUnderlayer1Name         = mic.ui.common.Edit('cLabel', 'Underlayer 1', 'cType', 'c');
-            this.uieUnderlayer1Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieUnderlayer1PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
-            this.uieUnderlayer1PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
+            this.uieUnderlayer1Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'c');
+            this.uieUnderlayer1PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'c');
+            this.uieUnderlayer1PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'c');
             this.uieUnderlayer2Name         = mic.ui.common.Edit('cLabel', 'UL 2', 'cType', 'c');
-            this.uieUnderlayer2Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieUnderlayer2PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
-            this.uieUnderlayer2PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
+            this.uieUnderlayer2Thick        = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'c');
+            this.uieUnderlayer2PabTemp      = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'c');
+            this.uieUnderlayer2PabTime      = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'c');
             this.uieResistName      = mic.ui.common.Edit('cLabel', 'Resist', 'cType', 'c');
-            this.uieResistThick     = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'u8');
-            this.uieResistPabTemp   = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'u8');
-            this.uieResistPabTime   = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'u8');
-            this.uieResistPebTemp   = mic.ui.common.Edit('cLabel', 'Peb Temp', 'cType', 'u8');
-            this.uieResistPebTime   = mic.ui.common.Edit('cLabel', 'Peb Time', 'cType', 'u8');
+            this.uieResistThick     = mic.ui.common.Edit('cLabel', 'Thick (nm)', 'cType', 'c');
+            this.uieResistPabTemp   = mic.ui.common.Edit('cLabel', 'Pab Temp', 'cType', 'c');
+            this.uieResistPabTime   = mic.ui.common.Edit('cLabel', 'Pab Time', 'cType', 'c');
+            this.uieResistPebTemp   = mic.ui.common.Edit('cLabel', 'Peb Temp', 'cType', 'c');
+            this.uieResistPebTime   = mic.ui.common.Edit('cLabel', 'Peb Time', 'cType', 'c');
             this.uieDevName         = mic.ui.common.Edit('cLabel', 'Dev', 'cType', 'c');
-            this.uieDevTime         = mic.ui.common.Edit('cLabel', 'Dev Time', 'cType', 'u8');
+            this.uieDevTime         = mic.ui.common.Edit('cLabel', 'Dev Time', 'cType', 'c');
             this.uieRinseName       = mic.ui.common.Edit('cLabel', 'Rinse Name', 'cType', 'c');
-            this.uieRinseTime       = mic.ui.common.Edit('cLabel', 'Rinse Time', 'cType', 'u8');
+            this.uieRinseTime       = mic.ui.common.Edit('cLabel', 'Rinse Time', 'cType', 'c');
             this.uitPre             = mic.ui.common.Text(...
                 'cVal', '1. Process', ...
                 'cAlign', 'center', ...

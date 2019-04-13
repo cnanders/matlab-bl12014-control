@@ -18,8 +18,8 @@ addpath(genpath(cDirMic));
 purge
 
 
-dWidth = 1650;
-dHeight = 920;
+dWidth = 1100;
+dHeight = 720;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
