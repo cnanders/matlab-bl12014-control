@@ -1269,16 +1269,23 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lRequired = true;
             this.stScanAcquireContract.shutter.lIssued = false;
             
-            % Pre-exp pause.  xVal prop will return type double
-            % pause(stValue.task.pausePreExpose);
+            % Pause before the exposure to let resonant motion settle
             
-            dTimeStart = tic;
-            dTimeElapsed = 0;
-            while dTimeElapsed < 10
-                dTimeElapsed = toc(dTimeStart);
-                pause(1);
-                fprintf('bl12014.ui.Scan.onScanAcquire() pausing %1.0f s of 10s\n', dTimeElapsed);
-            end
+            if isfield(stValue.task, 'pausePreExpose')
+                
+                dTimeStart = tic;
+                dTimeElapsed = 0;
+                
+                while dTimeElapsed < stValue.task.pausePreExpose
+                    dTimeElapsed = toc(dTimeStart);
+                    pause(1);
+                    fprintf('bl12014.ui.Scan.onScanAcquire() pausing %1.1f sec of %1.1f sec\n', ...
+                        dTimeElapsed, ...
+                        stValue.task.pausePreExposure ...
+                    );
+                end
+            
+            end            
 
             % Calculate the exposure time
             dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
