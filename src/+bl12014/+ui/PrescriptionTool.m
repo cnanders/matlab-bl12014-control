@@ -35,7 +35,7 @@ classdef PrescriptionTool < mic.Base
     properties (Constant)
        
         dWidth          = 920
-        dHeight         = 480
+        dHeight         = 510
         dColorFigure = [200 200 200]./255
 
                 
@@ -67,7 +67,8 @@ classdef PrescriptionTool < mic.Base
         
         
         
-        uibSave         % button for saving
+        uiButtonSave         % button for saving
+        uiButtonOverwrite
         
         % For undo/redo
         % Use implementation from Redux since it is standard
@@ -189,22 +190,37 @@ classdef PrescriptionTool < mic.Base
             
             
             
-            dTop = 320;
+            dTop = 280;
+            dHeightList = 220;
             this.uiListPrescriptions.build( ...
                 this.hPanel, ...
                 10, ...
                 dTop, ...
                 this.dWidth - 2*dPad, ...
-                140);
+                dHeightList);
             
             this.uiListPrescriptions.refresh();
             
-            this.uibSave.build( ...
+            
+            dWidthButton = 120;
+            dTopButtons = dTop + dHeightList - 35;
+            dLeft = 20;
+            this.uiButtonSave.build( ...
                 this.hPanel, ...
                 dLeft, ...
-                dTop - 45, ...
-                this.uiFemTool.dWidth, ...
-                40);
+                dTopButtons, ...
+                dWidthButton, ...
+                24);
+            
+            dLeft = dLeft + dWidthButton + 10;
+            this.uiButtonOverwrite.build( ...
+                this.hPanel, ...
+                dLeft, ...
+                dTopButtons, ...
+                dWidthButton, ...
+                24);
+            
+
                                               
         end
         
@@ -469,8 +485,17 @@ classdef PrescriptionTool < mic.Base
             this.uiPupilFillTool = bl12014.ui.PupilFillTool();
             this.uiFemTool = bl12014.ui.FemTool();
             
-            this.uibSave = mic.ui.common.Button('cText', 'Save');
-            addlistener(this.uibSave, 'eChange', @this.onSave);
+            this.uiButtonSave = mic.ui.common.Button(...
+                'cText', 'Save As', ...
+                'fhOnClick', @this.onClickSave ...
+            );
+        
+            this.uiButtonOverwrite = mic.ui.common.Button(...
+                'cText', 'Overwrite Selected', ...
+                'fhOnClick', @this.onClickOverwrite ...
+            );
+        
+        
             
             %{
             this.ec                 = ExptControl();
@@ -481,19 +506,25 @@ classdef PrescriptionTool < mic.Base
             cDir = mic.Utils.path2canonical(cDir);
 
             this.uiListPrescriptions = mic.ui.common.ListDir(...
+                'cTitle', 'Saved Prescriptions', ...
                 'cDir', cDir, ...
                 'cLabel', '', ...
                 'cFilter', '*.json', ...
+                'fhOnChange', @this.onPrescriptionsChange, ...
                 'lOrderByReverse', false, ...
                 'lShowDelete', true, ...
                 'lShowMove', false, ...
                 'lShowLabel', false, ...
                 'lShowRefresh', true ...
             );
+        
+            % Load first prescription from the list
+            this.onPrescriptionsChange(this.uiListPrescriptions, []);
+
             % this.uiListPrescriptions.setRefreshFcn(@this.refreshSaved);
             
+            
             % addlistener(this.uiListPrescriptions, 'eDelete', @this.onPrescriptionsDelete);
-            addlistener(this.uiListPrescriptions, 'eChange', @this.onPrescriptionsChange);
            
         end  
         
@@ -546,11 +577,59 @@ classdef PrescriptionTool < mic.Base
             
         end
         
+        function onClickOverwrite(this, src, evt)
+            
+            ceSelected = this.uiListPrescriptions.get();
+            
+            if isempty(ceSelected)
+                % Show alert
+                
+                cMsg = sprintf('Please select a prescription to overwrite');
+                cTitle = 'No prescription selected to overwrite';
+                msgbox(cMsg, cTitle, 'warn')    
+                
+                return
+            end
+            
+            [cPath, cFile, cExt] = fileparts(ceSelected{1});
+            cNameJson = [cFile, '.json'];
+            cNameMat = [cFile, '.mat'];
+            
+            cPathJson = fullfile(this.uiListPrescriptions.getDir(), cNameJson);
+            cPathMat = fullfile(this.uiListPrescriptions.getDir(), cNameMat);
+            
+            this.saveRecipeToDisk(cPathJson)
+            this.saveRecipeMatToDisk(cPathMat)
+            
+            % Refresh the list of prescriptions
+            this.uiListPrescriptions.refresh();
+            
+            % Dispatch
+            stData = struct();
+            stData.cName = cNameJson;
+            notify(this, 'eNew', mic.EventWithData(stData));
+            
+            if isempty(ceSelected)
+                % Show alert
+                
+                cMsg = sprintf('Overwrite completed.');
+                cTitle = 'Success';
+                cIcon = 'none';
+                msgbox(cMsg, cTitle, cIcon)    
+                
+                return
+            end
+            
+            
+            
+        end
+        
+        
         % Generate a suggested save name for the prescription.  Prompt the 
         % user with a dialog to allow them to modify the save name.  If
         % the user continues to save, build and save a JSON prescription
         
-        function onSave(this, src, evt)
+        function onClickSave(this, src, evt)
               
             % Suggested filename
             cName = this.getSuggestedName();
@@ -578,28 +657,6 @@ classdef PrescriptionTool < mic.Base
                 return
             end
  
-            %{
-            
-            Old way allows overriding dir and path.  No longer doing it
-            this way, use the dir defined by "choose dir"
-            
-            cPath = fullfile(this.uiListPrescriptions.getDir(), cName);
-
-            [   cUserFile, ...
-                cUserPath, ...
-                cFilterIndex] = uiputfile('*.json', 'Save As:', cPath);
-            
-            % uiputfile returns 0 when the user hits cancel
-            
-            if cUserFile == 0
-                return
-            end
-            
-            cPathJson = fullfile(cUserPath, cUserFile);
-            cPathMat = this.replaceExtension(cPathJson, '.mat');
-            
-            %}
-            
             cNameJson = [ceAnswer{1}, '.json'];
             cNameMat = [ceAnswer{1}, '.mat'];
             cPathJson = fullfile(this.uiListPrescriptions.getDir(), cNameJson);
