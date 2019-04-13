@@ -1458,13 +1458,24 @@ classdef Scan < mic.Base
              this.saveScanResults(stUnit, true);
              this.abort();
              
+             
+             
         end
 
 
         function onScanComplete(this, stUnit)
               this.saveScanResults(stUnit);
              this.uiScan.reset();
-             this.updateUiScanStatus()
+             this.updateUiScanStatus();
+             
+             
+             this.uiListActive.setOptions({});
+             
+             cMsg = sprintf('FEM is complete. The list of added prescriptions has been purged.');
+            cTitle = 'Success';
+            cIcon = 'none';
+            msgbox(cMsg, cTitle, cIcon)  
+             
         end
         
         function startNewScan(this)
@@ -1558,15 +1569,13 @@ classdef Scan < mic.Base
                 cMsg = 'The FEM was aborted.';
             end
             
+            this.uiListActive.setOptions({});
+             
+            cMsg = sprintf('The FEM was aborted. The list of added prescriptions has been purged.');
+            cTitle = 'Fem Aborted';
+            cIcon = 'help';
+            h = msgbox(cMsg, cTitle, cIcon, 'modal');  
             
-            % Throw message box.
-            h = msgbox( ...
-                cMsg, ...
-                'FEM aborted', ...
-                'help', ...
-                'modal' ...
-            );
-
             % wait for them to close the message
             % uiwait(h);
             
