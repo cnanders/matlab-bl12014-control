@@ -50,9 +50,6 @@ ui = bl12014.ui.TuneFluxDensity(...
     'waferExposureHistory', waferExposureHistory ...
 );
 
-
-
-
 dWidth = 1650;
 dHeight = 900;
 
