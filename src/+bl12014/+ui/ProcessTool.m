@@ -98,28 +98,28 @@ classdef ProcessTool < mic.Base
            this.uieUser.set(st.cUser);
            this.uieBase.set(st.cBase); 
            
-           this.uieUnderlayer1Name.set(st.cUnderlayer1Name);
-           this.uieUnderlayer1Thick.set(st.dUnderlayer1Thick);
-           this.uieUnderlayer1PabTemp.set(st.dUnderlayer1PabTemp);
-           this.uieUnderlayer1PabTime.set(st.dUnderlayer1PabTime);
+           this.uieUnderlayer1Name.set(num2str(st.cUnderlayer1Name));
+           this.uieUnderlayer1Thick.set(num2str(st.dUnderlayer1Thick));
+           this.uieUnderlayer1PabTemp.set(num2str(st.dUnderlayer1PabTemp));
+           this.uieUnderlayer1PabTime.set(num2str(st.dUnderlayer1PabTime));
            
-           this.uieUnderlayer2Name.set(st.cUnderlayer2Name);
-           this.uieUnderlayer2Thick.set(st.dUnderlayer2Thick);
-           this.uieUnderlayer2PabTemp.set(st.dUnderlayer2PabTemp);
-           this.uieUnderlayer2PabTime.set(st.dUnderlayer2PabTime);
+           this.uieUnderlayer2Name.set(num2str(st.cUnderlayer2Name));
+           this.uieUnderlayer2Thick.set(num2str(st.dUnderlayer2Thick));
+           this.uieUnderlayer2PabTemp.set(num2str(st.dUnderlayer2PabTemp));
+           this.uieUnderlayer2PabTime.set(num2str(st.dUnderlayer2PabTime));
            
-           this.uieResistName.set(st.cResistName);
-           this.uieResistThick.set(st.dResistThick);
-           this.uieResistPabTemp.set(st.dResistPabTemp);
-           this.uieResistPabTime.set(st.dResistPabTime);
-           this.uieResistPebTemp.set(st.dResistPebTemp);
-           this.uieResistPebTime.set(st.dResistPebTime);
+           this.uieResistName.set(num2str(st.cResistName));
+           this.uieResistThick.set(num2str(st.dResistThick));
+           this.uieResistPabTemp.set(num2str(st.dResistPabTemp));
+           this.uieResistPabTime.set(num2str(st.dResistPabTime));
+           this.uieResistPebTemp.set(num2str(st.dResistPebTemp));
+           this.uieResistPebTime.set(num2str(st.dResistPebTime));
            
-           this.uieDevName.set(st.cDevName);
-           this.uieDevTime.set(st.dDevTime);
+           this.uieDevName.set(num2str(st.cDevName));
+           this.uieDevTime.set(num2str(st.dDevTime));
            
-           this.uieRinseName.set(st.cRinseName);
-           this.uieRinseTime.set(st.dRinseTime);
+           this.uieRinseName.set(num2str(st.cRinseName));
+           this.uieRinseTime.set(num2str(st.dRinseTime));
             
         end
         
@@ -485,19 +485,19 @@ classdef ProcessTool < mic.Base
             % Defaults
             this.uieUser.set('Development');
             this.uieUnderlayer1Name.set('NCX011');
-            this.uieUnderlayer1Thick.set(uint8(20));
-            this.uieUnderlayer1PabTemp.set(uint8(200));
-            this.uieUnderlayer1PabTime.set(uint8(90));
+            this.uieUnderlayer1Thick.set('20');
+            this.uieUnderlayer1PabTemp.set('200');
+            this.uieUnderlayer1PabTime.set('90');
             this.uieResistName.set('Fuji-1201E');
-            this.uieResistThick.set(uint8(35));
-            this.uieResistPabTemp.set(uint8(110));
-            this.uieResistPabTime.set(uint8(60));
-            this.uieResistPebTemp.set(uint8(100));
-            this.uieResistPebTime.set(uint8(60));
+            this.uieResistThick.set('35');
+            this.uieResistPabTemp.set('110');
+            this.uieResistPabTime.set('60');
+            this.uieResistPebTemp.set('100');
+            this.uieResistPebTime.set('60');
             this.uieDevName.set('MF26A');
-            this.uieDevTime.set(uint8(30));
+            this.uieDevTime.set('30');
             this.uieRinseName.set('DIH20');
-            this.uieRinseTime.set(uint8(30));
+            this.uieRinseTime.set('30');
             
             addlistener(this.uitQA, 'eChange', @this.onQA);
 

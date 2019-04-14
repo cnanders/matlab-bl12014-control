@@ -127,7 +127,7 @@ classdef Hardware < mic.Base
         commMightex2Virtual
         
         commNPointM142
-        commNPointM142Virtrual
+        commNPointM142Virtual
         
         commNPointMA
         commNPointMAVirtual
@@ -1196,7 +1196,7 @@ classdef Hardware < mic.Base
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
             this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();
             
-            this.commNPointM142Virtrual = npoint.LC400Virtual();
+            this.commNPointM142Virtual = npoint.LC400Virtual();
             this.commNPointMAVirtual = npoint.LC400Virtual();
         end
         

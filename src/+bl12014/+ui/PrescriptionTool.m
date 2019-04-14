@@ -35,7 +35,7 @@ classdef PrescriptionTool < mic.Base
     properties (Constant)
        
         dWidth          = 920
-        dHeight         = 510
+        dHeight         = 540
         dColorFigure = [200 200 200]./255
 
                 
@@ -191,7 +191,7 @@ classdef PrescriptionTool < mic.Base
             
             
             dTop = 280;
-            dHeightList = 220;
+            dHeightList = 250;
             this.uiListPrescriptions.build( ...
                 this.hPanel, ...
                 10, ...

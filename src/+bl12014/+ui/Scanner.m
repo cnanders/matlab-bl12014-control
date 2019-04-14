@@ -18,10 +18,7 @@ classdef Scanner < mic.Base
         % {https://github.com/cnanders/matlab-pupil-fill-generator}
         uiPupilFillGenerator
         
-        % { mic.ui.device.GetSetText 1x1} use this to set
-        % PupilFillGenerator to a specific waveform by name, which triggers
-        % it update its internal store of the dX, dY waveforms
-        uiGetSetWaveform
+        
         
     end
     
