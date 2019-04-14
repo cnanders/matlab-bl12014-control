@@ -24,7 +24,7 @@ classdef Scan < mic.Base
         dWidthPanelAdded = 600
         dHeightPanelAdded = 440
         
-        dWidthPanelBorder = 0
+        dWidthPanelBorder = 1
         
         dColorFigure = [200 200 200]./255
         
@@ -77,6 +77,7 @@ classdef Scan < mic.Base
         uibNewWafer
         uibAddToWafer
         uibPrint
+        uibPrintSaved
         uicWaferLL
         uicAutoVentAtLL 
         
@@ -156,6 +157,12 @@ classdef Scan < mic.Base
         uiStateM142ScanningDefault
         
         uiTextReticleField
+        
+        hAxesPupilFill
+        hAxesFieldFill
+        hPlotPupilFill
+        hPlotFieldFill
+        dColorPlotFiducials = [0.3 0.3 0.3]
         
         
     end
@@ -374,7 +381,44 @@ classdef Scan < mic.Base
            dTop = dTopBelowList;
            dLeft = 200;
            dSep = 30;
+           dSize = 100;
            
+           this.hAxesFieldFill = axes(...
+                'Parent', this.hPanelAdded,...
+                'Units', 'pixels',...
+                'Color', [0 0 0], ...
+                'Position',mic.Utils.lt2lb([...
+                dLeft, ...
+                dTop, ...
+                dSize, ...
+                dSize], this.hPanelAdded),...
+                'XColor', [0 0 0],...
+                'YColor', [0 0 0],...
+                'DataAspectRatio',[1 1 1],...
+                'HandleVisibility','on'...
+           );
+       
+            
+            this.hAxesPupilFill = axes(...
+                'Parent', this.hPanelAdded,...
+                'Units', 'pixels',...
+                'Color', [0 0 0], ...
+                'Position',mic.Utils.lt2lb([...
+                dLeft + dSize + 50,...
+                dTop,...
+                dSize,...
+                dSize], this.hPanelAdded),...
+                'XColor', [0 0 0],...
+                'YColor', [0 0 0],...
+                'DataAspectRatio',[1 1 1],...
+                'HandleVisibility','on'...
+           );
+            
+           dTop = dTop + 120;
+           
+           
+           this.uiTextReticleField.build(this.hPanelAdded, dLeft, dTop, 300, 24);
+           dTop = dTop + dSep;
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
@@ -389,7 +433,108 @@ classdef Scan < mic.Base
         end
              
         
+        function plotPupilFill(this)
+            
+            if isempty(this.hAxesPupilFill)
+                return
+            end
+            
+            if ~ishandle(this.hAxesPupilFill)
+                return
+            end
+            
+            
+            st = this.uiScannerMA.uiPupilFillGenerator.get();
+            
+            if isempty(this.hPlotPupilFill)
+                this.hPlotPupilFill = plot(...
+                    this.hAxesPupilFill, ...
+                    st.x, st.y, 'm', ...
+                    'LineWidth', 2 ...
+                );
+            
+                % Create plotting data for circles at sigma = 0.3 - 1.0
+
+                dSig = [0.3:0.1:1.0];
+                dPhase = linspace(0, 2*pi, 100);
+
+                for (k = 1:length(dSig))
+
+                    x = dSig(k)*cos(dPhase);
+                    y = dSig(k)*sin(dPhase);
+                    line( ...
+                        x, y, ...
+                        'color', this.dColorPlotFiducials, ...
+                        'LineWidth', 1, ...
+                        'Parent', this.hAxesPupilFill ...
+                    );
+
+                end
+            else
+                this.hPlotPupilFill.XData = st.x;
+                this.hPlotPupilFill.YData = st.y;
+            end
+            set(this.hAxesPupilFill, 'XTick', [], 'YTick', []);
+            
+            if this.uiScannerMA.uiNPointLC400.uiGetSetLogicalActive.get()
+                set(this.hAxesPupilFill, 'Color', 'k');
+            else
+                set(this.hAxesPupilFill, 'Color', 'r');
+            end
+            xlim(this.hAxesPupilFill, [-1 1])
+            ylim(this.hAxesPupilFill, [-1 1])
+            
+        end
         
+        function plotFieldFill(this)
+            
+            if isempty(this.hAxesFieldFill)
+                return
+            end
+            
+            if ~ishandle(this.hAxesFieldFill)
+                return
+            end
+            
+            
+            st = this.uiScannerM142.uiPupilFillGenerator.get();
+            
+            if isempty(this.hPlotFieldFill)
+                this.hPlotFieldFill = plot(...
+                    this.hAxesFieldFill, ...
+                    st.x, st.y, 'm', ...
+                    'LineWidth', 2 ...
+                );
+            
+                % Draw a border that represents the width of the field
+                dWidth = 0.62;
+                dHeight = dWidth / 5;
+                
+                x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2]
+                y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2]
+                line( ...
+                    x, y, ...
+                    'color', this.dColorPlotFiducials, ...
+                    'LineWidth', 1, ...
+                    'Parent', this.hAxesFieldFill ...
+                );
+            else
+                this.hPlotFieldFill.XData = st.x;
+                this.hPlotFieldFill.YData = st.y;
+            end
+            
+            set(this.hAxesFieldFill, 'XTick', [], 'YTick', []);
+            
+            % Set background color based on if the scanner is on or not
+            if this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get()
+                set(this.hAxesFieldFill, 'Color', 'k');
+            else
+                set(this.hAxesFieldFill, 'Color', 'r');
+            end
+            xlim(this.hAxesFieldFill, [-1 1])
+            ylim(this.hAxesFieldFill, [-1 1])
+            
+        end
         
         function build(this, hParent, dLeft, dTop)
             
@@ -397,11 +542,22 @@ classdef Scan < mic.Base
             
             this.uiPrescriptionTool.build(hParent, dLeft, dTop);
             
+            dLeft = 400;
+            dWidthButton = 150;
+            dSep = 10;
             this.uibAddToWafer.build(...
                 hParent, ...
-                dLeft + 10, ...
-                dTop + this.uiPrescriptionTool.dHeight + 10, ...
-                200, ...
+                400, ...
+                dTop + this.uiPrescriptionTool.dHeight - 45, ...
+                dWidthButton, ...
+                this.dHeightButton);
+            
+            dLeft = dLeft + dWidthButton + dSep;
+            this.uibPrintSaved.build( ...
+                hParent, ...
+                dLeft, ...
+                dTop + this.uiPrescriptionTool.dHeight - 45, ...
+                dWidthButton, ...
                 this.dHeightButton);
             
             
@@ -410,12 +566,10 @@ classdef Scan < mic.Base
             dTop = 580;
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
-            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 20, 400);
+            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
             this.uiPOCurrent.build(this.hParent, 840, dTop);
             
-            this.uiTextReticleField = mic.ui.common.Text(...
-                'cVal', 'Reticle Field: Fix Me' ...
-            );
+            
           
         end
         
@@ -466,19 +620,26 @@ classdef Scan < mic.Base
                 'fhOnClick', @this.onUiButtonClearWafer ...
             );
         
-            this.uibNewWafer = mic.ui.common.Button('cText', 'New');
+            this.uibNewWafer = mic.ui.common.Button(...
+                'cText', 'New', ...
+                'fhOnClick', @this.onUiButtonNewWafer ...
+            );
             this.uibAddToWafer = mic.ui.common.Button(...
-                'cText', 'Add Selected Prescription To Wafer', ...
+                'cText', 'Add To Wafer', ...
                 'fhOnClick', @this.onAddToWafer ...
             );
-            this.uibPrint = mic.ui.common.Button('cText', 'Print');
-            
-            
-            
-            addlistener(this.uibNewWafer, 'eChange', @this.onUiButtonNewWafer);
-            % addlistener(this.uibAddToWafer, 'eChange', @this.onAddToWafer);
-            addlistener(this.uibPrint, 'eChange', @this.onPrint);
-            
+            % Prints from "Added" list
+            this.uibPrint = mic.ui.common.Button(...
+                'cText', 'Print', ...
+                'fhOnClick', @this.onClickPrintActive ...
+            );
+        
+            % Prints from "Saved Prescriptions" list
+            this.uibPrintSaved = mic.ui.common.Button(...
+                'cText', 'Print', ...
+                'fhOnClick', @this.onClickPrintSaved ...
+            );
+        
             this.uiListActive = mic.ui.common.List(...
                 'ceOptions', cell(1,0), ...
                 'cLabel', 'Added prescriptions', ...
@@ -646,10 +807,10 @@ classdef Scan < mic.Base
             );
         
             this.uiStateM142ScanningDefault = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-m142-is-scanning-default'], ...
-                'task', bl12014.Tasks.createStateM142ScanningDefault(...
-                    [this.cName, 'state-m142-is-scanning-default'], ...
-                    this.uiScannerM142.uiNPointLC400, ...
+                'cName', [this.cName, 'ui-sequence-set-m142-to-default'], ...
+                'task', bl12014.Tasks.createSequenceSetM142ToDefault(...
+                    [this.cName, 'sequence-set-m142-to-default'], ...
+                    this.uiScannerM142, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
@@ -657,13 +818,32 @@ classdef Scan < mic.Base
             );
         
         
-        try
-            this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
-        catch
-            this.msg('DYMO labelwriter failed to initialize!!', this.u8_MSG_TYPE_SCAN);
-        end
+        
+            this.uiTextReticleField = mic.ui.common.Text(...
+                'cVal', 'Reticle Field: [--, --]' ...
+            );
+        
+            this.uiClock.add(...
+                @this.updateTextReticleField, ...
+                [this.id(), '-update-text-reticle-field'], ...
+                1 ...
+            );
+        
+            this.uiClock.add(...
+                @this.updateScannerPlots, ...
+                [this.id(), '-update-scanner-plots'], ...
+                1 ...
+            );
+        
+            try
+                this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
+            catch
+                this.msg('DYMO labelwriter failed to initialize!!', this.u8_MSG_TYPE_SCAN);
+            end
                        
         end
+        
+        
         
         function initScanSetContract(this)
             
@@ -776,17 +956,7 @@ classdef Scan < mic.Base
         end
         
         
-        function onPrint(this, ~, ~)
-            this.msg('Printing label on DYMO', this.u8_MSG_TYPE_SCAN);
-           
-            if isempty(this.hDYMO)
-                msgbox('Cannot print label because DYMO failed to initialize');
-                return
-            end
-            
-            % Grab active prescriptions
-            cFile = this.getPathRecipe();  
-            [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
+        function printRecipe(this, stRecipe, cFile)
             
             % build strings:
             cFEMSize        = sprintf('[%d(F) X %d(D)]', stRecipe.fem.u8FocusNum, stRecipe.fem.u8DoseNum);
@@ -814,6 +984,55 @@ classdef Scan < mic.Base
             )
         
             this.hDYMO.printLabel();
+            
+        end
+        
+        
+        
+        
+        function onClickPrintActive(this, ~, ~)
+            this.msg('Printing label on DYMO', this.u8_MSG_TYPE_SCAN);
+           
+            if isempty(this.hDYMO)
+                msgbox('Cannot print label because DYMO failed to initialize');
+                return
+            end
+            
+            % Grab active prescriptions
+            cFile = this.getPathRecipe();  
+            [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
+            this.printRecipe(stRecipe, cFile);
+            
+            
+        end
+        
+        function onClickPrintSaved(this, ~, ~)
+            this.msg('Printing label on DYMO', this.u8_MSG_TYPE_SCAN);
+           
+            if isempty(this.hDYMO)
+                msgbox('Cannot print label because DYMO failed to initialize');
+                return
+            end
+            
+            % Grab active prescriptions
+            
+            ceSelected = this.uiPrescriptionTool.uiListPrescriptions.get();
+            
+            if isempty(ceSelected)
+                % Show alert
+                
+                cMsg = sprintf('Please select a prescription to print');
+                cTitle = 'No prescription selected';
+                msgbox(cMsg, cTitle, 'warn')    
+                
+                return
+            end
+
+            cFile = fullfile(this.uiPrescriptionTool.uiListPrescriptions.getDir(), ceSelected{1});
+            [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
+            this.printRecipe(stRecipe, cFile);
+            
+            
         end
         
         function onUiButtonNewWafer(this, src, evt)
@@ -1269,6 +1488,7 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lRequired = true;
             this.stScanAcquireContract.shutter.lIssued = false;
             
+
             % Pause before the exposure to let resonant motion settle
             
             if isfield(stValue.task, 'pausePreExpose')
@@ -2039,6 +2259,59 @@ classdef Scan < mic.Base
             
         end
         
+        function updateTextReticleField(this, src, evt)
+            
+            dRow = this.uiReticle.uiReticleFiducializedMove.uiRow.getValCalDisplay();
+            dCol = this.uiReticle.uiReticleFiducializedMove.uiCol.getValCalDisplay();
+            
+    
+            
+            if ~isnumeric(dRow) || ...
+               ~isscalar(dRow) || ...
+               ~isnumeric(dCol) || ...
+               ~isscalar(dCol)
+                return
+            end
+            
+            dErrorRow = dRow - round(dRow);
+            dErrorCol = dCol - round(dCol);
+            
+            if abs(dErrorRow) < 0.01
+                dRow = round(dRow);
+            end
+            if abs(dErrorCol) < 0.01
+                dCol = round(dCol);
+            end
+            
+            cNameOfField = 'Unknown';
+            try
+                cNameOfField = bl12014.getNameOfReticleField(...
+                    'row', dRow, ...
+                    'col', dCol ...
+                );
+                
+            catch mE
+                
+                
+            end
+            
+            cVal = sprintf(...
+                'Retile Field: [row %1.1f, col %1.1f] = %s', ...
+                dRow, ...
+                dCol, ...
+                cNameOfField ...
+           );
+           this.uiTextReticleField.set(cVal);
+            
+            
+        end
+        
+        function updateScannerPlots(this, ~, ~)
+            
+            this.plotFieldFill();
+            this.plotPupilFill();
+            
+        end
                           
 
     end 

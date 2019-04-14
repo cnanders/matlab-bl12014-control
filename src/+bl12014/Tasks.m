@@ -2,7 +2,7 @@ classdef Tasks < mic.Base
         
     properties (Constant)
        
-        
+        cRecipeM142Default = 'Serpentine_sigx30_numx9_offx0_sigy10_numy5_offy0_scale1_per20_filthz2000_dt24_20190404-092303.mat';
         
     end
     
@@ -147,8 +147,6 @@ classdef Tasks < mic.Base
                 error('ui must be npoint.ui.LC400');
             end
            
-            cNameOfRecipe = 'Serpentine_sigx25_numx9_offx0_sigy5_numy5_offy0_scale1_per20_filthz2000_dt24_20181219-150012-gridified-repeat.mat';
-            % cNameOfRecipe = 'Default.mat'; % testing
             
             [cDir] = fileparts(mfilename('fullpath'));
             
@@ -162,9 +160,10 @@ classdef Tasks < mic.Base
         
             cPathOfRecipe = fullfile(...
                 cDir, ...
-                cNameOfRecipe ...
+                bl12014.Tasks.cRecipeM142Default ...
             );
        
+            % Checks if the LC400 is loaded and if the hardware is 
             ceTasks = {...
                 mic.Task(...
                    'fhIsDone', @() strcmpi(ui.getPathOfRecipe(), cPathOfRecipe), ...
@@ -205,11 +204,9 @@ classdef Tasks < mic.Base
             % and waits for it to populate its local buffer with the newly
             % calculated waveform from the newly loaded recipe
             
-            % FIXME cVal in production
-            cNameOfRecipe = 'Serpentine_sigx25_numx9_offx0_sigy5_numy5_offy0_scale1_per20_filthz2000_dt24_20181219-150012-gridified-repeat.mat';
             
             task1 = mic.Task(...
-                'fhExecute', @() uiScanner.uiPupilFillGenerator.setStarredByName(cNameOfRecipe), ...
+                'fhExecute', @() uiScanner.uiPupilFillGenerator.setStarredByName(bl12014.Tasks.cRecipeM142Default), ...
                 'fhIsDone', @() uiScanner.uiPupilFillGenerator.isDone(), ...
                 'fhGetMessage', 'Loading recipe into M142 signal generator' ...
             );
