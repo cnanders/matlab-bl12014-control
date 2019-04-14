@@ -9,11 +9,10 @@ classdef Scanner < mic.Base
         
         % These are the UI for activating the hardware that gives the 
         % software real data
-        
-        
-        
+                
         % {npoint.ui.LC400 1x1}
         uiNPointLC400
+        
         
         % {https://github.com/cnanders/matlab-pupil-fill-generator}
         uiPupilFillGenerator
@@ -49,10 +48,7 @@ classdef Scanner < mic.Base
         lShowChooseDir = false
         
         fhGetNPoint
-        
-        
-        
-       
+         
         
     end
     
