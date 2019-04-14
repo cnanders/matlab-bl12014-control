@@ -285,7 +285,7 @@ classdef PrescriptionTool < mic.Base
             % y position on wafer you want exposure to be
             dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
             stValue = struct();
-            stValue.waferY = -(this.uiFemTool.dY(1) - dYStep) % STEP FIX ME; 
+            stValue.waferY = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME; 
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
 
@@ -312,7 +312,10 @@ classdef PrescriptionTool < mic.Base
             stTask.femCol = mMid;
             stTask.femRows = length(this.uiFemTool.dFocus);
             stTask.femRow = nMid;
-            stTask.pausePreExpose = 1; % FIX ME
+            
+            % Enough time for resonant motion of frame excited from stage move
+            % to settle
+            stTask.pausePreExpose = 30; % FIX ME
 
             stValue.task = stTask;
 
@@ -436,7 +439,10 @@ classdef PrescriptionTool < mic.Base
                     else
                         stTask.femRow = n;
                     end
-                    stTask.pausePreExpose = 1; % FIX ME
+                    
+                    % Enough time for resonant motion of frame excited from stage move
+                    % to settle
+                    stTask.pausePreExpose = 5;
                     
                     stValue.task = stTask;
                     
