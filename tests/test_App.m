@@ -6,8 +6,10 @@ end
 
 % Dependencies
 
-addpath(fullfile(cDirThis, '..', 'src'));
-addpath(fullfile(cDirThis, '..', 'mpm-packages'));
+cDirVendor = fullfile(cDirThis, '..', 'vendor');
+
+addpath(genpath(fullfile(cDirThis, '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages')));
 
 % Hardware dependencies are added in bl12014.Hardware
 
