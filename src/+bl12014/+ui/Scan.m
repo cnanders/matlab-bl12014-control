@@ -9,7 +9,7 @@ classdef Scan < mic.Base
     properties (Constant)
        
         dWidth = 950
-        dHeight = 470
+        dHeight = 570
         
         
         dWidthList = 500
@@ -21,7 +21,7 @@ classdef Scan < mic.Base
         dWidthPanelAvailable = 600
         dHeightPanelAvailable = 200
         
-        dWidthPanelAdded = 600
+        dWidthPanelAdded = 800
         dHeightPanelAdded = 440
         
         dWidthPanelBorder = 1
@@ -82,8 +82,6 @@ classdef Scan < mic.Base
         uicAutoVentAtLL 
         
         
-       
-        shutter
         uiMFDriftMonitor
         uiMfDriftMonitorVibration
         uiVibrationIsolationSystem
@@ -192,22 +190,7 @@ classdef Scan < mic.Base
             );
             this.cDirSave = fullfile(this.cDirSrc, 'save', 'fem-scans');
             this.cDirPrescriptions = mic.Utils.path2canonical(this.cDirPrescriptions);
-        
-            
-            
-            
-            
-            %{
-            this.clock              = clock;
-            this.shutter            = shutter;
-            this.uiWafer       = uiWafer;
-            this.uiReticle     = uiReticle;
-            this.uiPupilFill          = uiPupilFill;
-                        
-            %}
-            % ff    fieldfill?
-            % eps   beamline EPS stuff
-            % mono  beamine monochromater
+
                         
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
@@ -223,10 +206,6 @@ classdef Scan < mic.Base
             
             if ~isa(this.uiTuneFluxDensity, 'bl12014.ui.TuneFluxDensity')
                 error('uiTuneFluxDensity must be bl12014.ui.TuneFluxDensity');
-            end
-            
-            if ~isa(this.uiShutter, 'bl12014.ui.Shutter')
-                error('uiShutter must be bl12014.ui.Shutter');
             end
             
             if ~isa(this.uiReticle, 'bl12014.ui.Reticle')
@@ -300,6 +279,8 @@ classdef Scan < mic.Base
             dWidth = this.dWidthPadPanel + ...
                 this.dWidthList + ...
                 this.dWidthPadPanel;
+            
+            dWidth = 700;
             
             
             dLeft = 1000;
@@ -409,7 +390,7 @@ classdef Scan < mic.Base
            this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
            
            dTop = dTopBelowList;
-           dLeft = 200;
+           dLeft = 400;
            dSep = 30;
            dSize = 100;
            
@@ -600,7 +581,7 @@ classdef Scan < mic.Base
             dTop = 580;
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
-            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
+            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 500);
             this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             
