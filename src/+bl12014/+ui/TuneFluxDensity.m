@@ -184,7 +184,7 @@ classdef TuneFluxDensity < mic.Base
         % the exit slit will need to be this during exposures
         % @return {double 1x1} gap of exit slit in um
         function d = getGapOfExitSlitCalibrated(this)
-            d = this.dGapOfExitCalibrated;
+            d = this.dGapOfExitSlitCalibrated;
         end
         
         % Returns {char 1xm} time yyyy-mm-dd--hh-mm-ss when the last 
@@ -946,7 +946,7 @@ classdef TuneFluxDensity < mic.Base
                 this.uiProgressBarSave.set(n / dNum);
                 
 %                 waitbar(n / dNum, this.hWaitbar, cecMsg);
-                pause(0.3);
+                pause(0.6);
             end
             
            %{ 
@@ -1059,7 +1059,7 @@ classdef TuneFluxDensity < mic.Base
                 return
             end
             
-            load(ceReturn{1}); % populates variable st in local workspace
+            load(fullfile(this.cDirSave, ceReturn{1})); % populates variable st in local workspace
             
             this.dFluxDensityCalibrated = st.dFluxDensity;
             this.dGapOfUndulatorCalibrated = st.dGapOfUndulator;
