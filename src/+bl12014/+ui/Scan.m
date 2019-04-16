@@ -94,6 +94,7 @@ classdef Scan < mic.Base
         uiScannerM142
         % {mic.ui.device.GetSetNumber 1x1}
         uiBeamline % Temporary, allows control of the shutter
+        uiTuneFluxDensity
         
         clock
         uiClock
@@ -155,6 +156,8 @@ classdef Scan < mic.Base
         uiSequenceLevelWafer
         uiSequenceLevelReticle
         uiStateM142ScanningDefault
+        uiStateUndulatorIsCalibrated
+        uiStateExitSlitIsCalibrated
         
         uiTextReticleField
         
@@ -218,6 +221,34 @@ classdef Scan < mic.Base
                 error('hardware must be bl12014.Hardware');
             end
             
+            if ~isa(this.uiTuneFluxDensity, 'bl12014.ui.TuneFluxDensity')
+                error('uiTuneFluxDensity must be bl12014.ui.TuneFluxDensity');
+            end
+            
+            if ~isa(this.uiShutter, 'bl12014.ui.Shutter')
+                error('uiShutter must be bl12014.ui.Shutter');
+            end
+            
+            if ~isa(this.uiReticle, 'bl12014.ui.Reticle')
+                error('uiReticle must be bl12014.ui.Reticle');
+            end
+            
+            if ~isa(this.uiWafer, 'bl12014.ui.Wafer')
+                error('uiWafer must be bl12014.ui.Wafer');
+            end
+            
+            if ~isa(this.uiScannerMA, 'bl12014.ui.Scanner')
+                error('uiScannerMA must be bl12014.ui.Scanner');
+            end
+            
+            if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
+                error('uiScannerM142 must be bl12014.ui.Scanner');
+            end
+            
+            if ~isa(this.waferExposureHistory, 'bl12014.WaferExposureHistory')
+                error('waferExposureHistory must be bl12014.WaferExposureHistory');
+            end
+            
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
@@ -235,7 +266,7 @@ classdef Scan < mic.Base
              st.cDirPrescriptions = this.cDirPrescriptions;
              st.lWaferLoadLock = this.uicWaferLL.get();
              st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get(); 
-             st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
+             % st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
              st.uiEditRowStart = this.uiEditRowStart.save();
              st.uiEditColStart = this.uiEditColStart.save();
         end
@@ -245,11 +276,7 @@ classdef Scan < mic.Base
             this.uicWaferLL.set(st.lWaferLoadLock);
             this.uicAutoVentAtLL.set(st.lAutoVentAtLoadLock);
             
-            if isfield(st, 'uiEditMjPerCm2PerSec')
-                try
-                    this.uiEditMjPerCm2PerSec.load(st.uiEditMjPerCm2PerSec);
-                end
-            end
+            
             
             if isfield(st, 'uiEditColStart')
                 try
@@ -347,8 +374,11 @@ classdef Scan < mic.Base
            dTopBelowList = dTop;
            
            dSep = 40;
+           
+           %{
            this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
            dTop = dTop + dSep;
+           %}
                       
            this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
            dTop = dTop + dSep;
@@ -419,15 +449,19 @@ classdef Scan < mic.Base
            
            this.uiTextReticleField.build(this.hPanelAdded, dLeft, dTop, 300, 24);
            dTop = dTop + dSep;
+           
+           this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
+           dTop = dTop + dSep;
+           
+           this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
+           dTop = dTop + dSep;
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
-           
 
-           
            
             
         end
@@ -697,6 +731,7 @@ classdef Scan < mic.Base
             this.initScanSetContract();
             this.initScanAcquireContract();
             
+            %{
             this.uiEditMjPerCm2PerSec = mic.ui.common.Edit(...
                 'cLabel', 'mJ/cm2/s', ...
                 'cType', 'd' ...
@@ -704,6 +739,7 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.set(10);
             this.uiEditMjPerCm2PerSec.setMin(0);
             this.uiEditMjPerCm2PerSec.setMax(1e5);
+            %}
             
             
             this.uiEditRowStart = mic.ui.common.Edit(...
@@ -811,6 +847,28 @@ classdef Scan < mic.Base
                 'task', bl12014.Tasks.createSequenceSetM142ToDefault(...
                     [this.cName, 'sequence-set-m142-to-default'], ...
                     this.uiScannerM142, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateUndulatorIsCalibrated = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-undulator-is-calibrated'], ...
+                'task', bl12014.Tasks.createStateUndulatorIsCalibrated(...
+                    [this.cName, 'state-undulator-is-calibrated'], ...
+                    this.uiTuneFluxDensity, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateExitSlitIsCalibrated = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-exit-slit-is-calibrated'], ...
+                'task', bl12014.Tasks.createStateExitSlitIsCalibrated(...
+                    [this.cName, 'state-exit-slit-is-calibrated'], ...
+                    this.uiTuneFluxDensity, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
@@ -1508,7 +1566,8 @@ classdef Scan < mic.Base
             end            
 
             % Calculate the exposure time
-            dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+            % dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+            dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
             
             % Set the shutter UI time (ms)
             this.uiShutter.uiShutter.setDestCal(...
@@ -1654,7 +1713,7 @@ classdef Scan < mic.Base
         function saveDmiHeightSensorDataFromExposure(this, stValue)
             
             try
-                dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+                dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
                 dSamples = round(dSec * 1000);
                 
                 cPath = fullfile(...
@@ -2225,7 +2284,7 @@ classdef Scan < mic.Base
             
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
-            st.flux_mj_per_cm2_per_s = this.uiEditMjPerCm2PerSec.get();
+            st.flux_mj_per_cm2_per_s = this.uiTuneFluxDensity.getFluxDensityCalibrated();
             
             
             % st.temp_c_po_m2_0200 = this.hardware.getDataTranslation().measure_temperature_rtd(31, 'PT100');

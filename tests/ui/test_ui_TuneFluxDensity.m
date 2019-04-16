@@ -54,8 +54,8 @@ ui = bl12014.ui.TuneFluxDensity(...
     'waferExposureHistory', waferExposureHistory ...
 );
 
-dWidth = 1650;
-dHeight = 900;
+dWidth = 800;
+dHeight = 750;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...

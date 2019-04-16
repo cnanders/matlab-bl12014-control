@@ -5,8 +5,6 @@ classdef ReticleFiducializedMove < mic.Base
         uiRow
         uiCol
         
-        
-        
     end
     
     

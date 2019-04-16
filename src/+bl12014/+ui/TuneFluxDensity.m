@@ -4,7 +4,7 @@ classdef TuneFluxDensity < mic.Base
        
         
         dWidth      = 700 %1295
-        dHeight     = 730
+        dHeight     = 660
         
         dPeriodOfScan = 0.5;
         cNameOfConfigFile = 'tune-flux-density-coordinates.json'
@@ -23,8 +23,8 @@ classdef TuneFluxDensity < mic.Base
                 
         uiStageWaferCoarse
         uiStageReticleCoarse
-        uiAxesWafer
-        uiAxesReticle
+        uiReticleFiducializedMove
+        
         uiDiode
         uiShutter
         uiUndulatorGap
@@ -43,7 +43,37 @@ classdef TuneFluxDensity < mic.Base
         uiStateShutterOpen
         uiStateMAScanningAnnular3585
         uiStateM142ScanningDefault
+        uiStateUndulatorIsCalibrated
         
+        
+        % {figure handle 1x1} returned by waitbar()
+        hWaitbar
+        
+        % {logical 1x1} true when save is aborted. rest to true when save
+        % clicked
+        lAbortSave
+        
+        uiButtonSave
+        uiButtonCancelSave
+        uiButtonConfirmSave
+        uiButtonRedoSave
+        
+        hFigureSave
+        hAxesSave
+        hPlotSave
+        uiTextSaveGapOfUndulator
+        uiTextSaveGapOfExitSlit
+        uiTextSaveValue
+        uiTextSaveMean
+        uiTextSaveStd
+        uiTextSavePV
+        uiProgressBarSave
+        
+        uiTextTimeCalibrated
+        uiTextFluxDensityCalibrated
+        uiTextGapOfUndulatorCalibrated
+        uiTextGapOfExitSlitCalibrated
+                
     end
     
     properties (SetAccess = private)
@@ -53,7 +83,7 @@ classdef TuneFluxDensity < mic.Base
         
         % {struct 1x1} stores config date loaded from +bl12014/config/tune-flux-density-coordinates.json
         stConfig
-        
+        cDirSave
     end
     
     properties (Access = private)
@@ -70,6 +100,13 @@ classdef TuneFluxDensity < mic.Base
         
         % {bl12014.Hardware 1x1}
         hardware
+        
+        dFluxDensityAcc = [] % accumulated during calibration
+        
+        dFluxDensityCalibrated = 0
+        dGapOfUndulatorCalibrated = 40.24
+        dGapOfExitSlitCalibrated = 300
+        dtTimeCalibrated = 'Never';
         
     end
     
@@ -95,6 +132,15 @@ classdef TuneFluxDensity < mic.Base
                 end
             end
             
+            cDirThis = fileparts(mfilename('fullpath'));
+            this.cDirSave = fullfile( ...
+                cDirThis, ...
+                '..', ...
+                '..', ...
+                'save', ...
+                'flux-density' ...
+            );
+            
             if ~isa(this.uiScannerMA, 'bl12014.ui.Scanner')
                 error('uiScannerMA must be bl12014.ui.Scanner');
             end
@@ -119,6 +165,33 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
+        % Returns mJ/cm2/s flux density value currently loaded / saved
+        % @return {double 1x1} flux density in mJ/cm2/s
+        function d = getFluxDensityCalibrated(this)
+            d = this.dFluxDensityCalibrated;
+        end
+        
+        % Returns gap of the undulator in mm that was set when the last
+        % flux density calibration was performend and saved.  The gap of
+        % the undulaotr will need to be this durin exposures
+        % @return {double 1x1} gap of undulator in mm
+        function d = getGapOfUndulatorCalibrated(this)
+            d = this.dGapOfUndulatorCalibrated;
+        end
+        
+        % Returns gap of the exit slit in um that was set when the last
+        % flux density calibration was performend and saved.  The gap of
+        % the exit slit will need to be this during exposures
+        % @return {double 1x1} gap of exit slit in um
+        function d = getGapOfExitSlitCalibrated(this)
+            d = this.dGapOfExitCalibrated;
+        end
+        
+        % Returns {char 1xm} time yyyy-mm-dd--hh-mm-ss when the last 
+        % flux density calibration was performed
+        function c = getTimeCalibrated(this)
+            c = this.dtTimeCalibrated;
+        end
         
         
         
@@ -147,10 +220,6 @@ classdef TuneFluxDensity < mic.Base
             this.uiStageReticleCoarse.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiStageReticleCoarse.dHeight + dPad;
             
-            this.uiAxesReticle.build(hTab, dLeft, dTop);            
-            % dTop = dTop + this.uiAxesReticle.dHeight + dPad;
-            
-            this.uiAxesWafer.build(hTab, 480, dTop);
             
         end
         
@@ -187,6 +256,34 @@ classdef TuneFluxDensity < mic.Base
             this.uiStateShutterOpen.build(hTab, 10, dTop, dWidthTask);
             dTop = dTop + dSep;
                         
+            
+            dTopLast = dTop;
+            
+            dTop = 100;
+            dSep = 25;
+            dWidthText = 200;
+            dHeightText = 14;
+            dSep = 5;
+            dLeft = 380;
+            
+            this.uiTextTimeCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextFluxDensityCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextGapOfUndulatorCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextGapOfExitSlitCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiStateUndulatorIsCalibrated.build(hTab, dLeft, dTop, 300)
+            
+            
+            dTop = dTopLast;
+            dLeft = 10;
+            
             this.uiDiode.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
@@ -200,10 +297,15 @@ classdef TuneFluxDensity < mic.Base
             this.uiUndulatorGap.build(hTab, dLeft, dTop);
             dTop = dTop + 24 + dPad;
             
+            this.uiButtonSave.build(hTab, dLeft, dTop, 100, 24);
+            dTop = dTop + 24 + dPad;
+            
             %{
             this.uiHeightSensorLeds.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiHeightSensorLeds.dHeight + dPad;
             %}
+            
+            this.buildSaveModal();
             
         end
         
@@ -319,6 +421,14 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.uiClock ...
             );
         
+            this.uiReticleFiducializedMove = bl12014.ui.ReticleFiducializedMove(...
+                'clock',        this.uiClock, ...
+                'cName', [this.cName, 'stage-reticle-fiducialized-move'], ...-
+                'hardware', this.hardware ...
+            );
+        
+        
+        
             
         
             this.uiDiode = bl12014.ui.WaferDiode(...
@@ -342,41 +452,15 @@ classdef TuneFluxDensity < mic.Base
             );
 
 
-            dHeight = 410;
-            this.uiAxesWafer = bl12014.ui.WaferAxes( ...
-                'cName', [this.cName, 'wafer-axes'], ...
-                'clock', this.uiClock, ...
-                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
-                'fhGetXOfWafer', @() this.uiStageWaferCoarse.uiX.getValCal('mm') / 1000, ...
-                'fhGetYOfWafer', @() this.uiStageWaferCoarse.uiY.getValCal('mm') / 1000, ...
-                'waferExposureHistory', this.waferExposureHistory, ...
-                'dWidth', dHeight, ...
-                'dHeight', dHeight ...
-            );
-        
-        
-            dHeight = 410;
-            this.uiAxesReticle = bl12014.ui.ReticleAxes( ...
-                'cName', [this.cName, 'reticle-axes'], ...
-                'clock', this.uiClock, ...
-                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
-                'fhGetX', @() this.uiStageReticleCoarse.uiX.getValCal('mm') / 1000, ...
-                'fhGetY', @() this.uiStageReticleCoarse.uiY.getValCal('mm') / 1000, ...
-                'dWidth', dHeight, ...
-                'dHeight', dHeight ...
-            );
-        
-            
-
                         
             this.uiStateReticleAtClearField = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-reticle-at-clear-field'], ...
                 'task', bl12014.Tasks.createStateReticleStageAtClearField(...
                     [this.cName, 'state-reticle-at-clear-field'], ...
-                    this.uiStageReticleCoarse, ...
+                    this.uiReticleFiducializedMove, ...
                     this.clock ...
                 ), ...
-                'lShowButton', false, ...
+                'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
         
@@ -440,7 +524,7 @@ classdef TuneFluxDensity < mic.Base
                 'cName', [this.cName, 'ui-sequence-prep-for-tuning-flux-density'], ...
                 'task', bl12014.Tasks.createSequencePrepForTuningFluxDensity(...
                     [this.cName, 'sequence-prep-for-tuning-flux-density'], ...
-                    this.uiStageReticleCoarse, ...
+                    this.uiReticleFiducializedMove, ...
                     this.uiStageWaferCoarse, ...
                     this.uiHeightSensorLeds, ...
                     this.uiScannerMA, ...
@@ -451,7 +535,73 @@ classdef TuneFluxDensity < mic.Base
                 'lShowIsDone', false, ...
                 'clock', this.uiClock ...
             );
-
+        
+            this.uiButtonSave = mic.ui.common.Button(...
+                'fhOnClick', @this.onClickSave, ...
+                'cText', 'Save' ...
+            );
+        
+            this.uiButtonCancelSave = mic.ui.common.Button(...
+                'fhOnClick', @this.onClickCancelSave, ...
+                'cText', 'Cancel' ...
+            );
+        
+            this.uiButtonConfirmSave = mic.ui.common.Button(...
+                'fhOnClick', @this.onClickConfirmSave, ...
+                'cText', 'Use This!' ...
+            );
+        
+            this.uiButtonRedoSave = mic.ui.common.Button(...
+                'fhOnClick', @this.onClickSave, ...
+                'cText', 'Redo' ...
+            );
+            
+            this.uiTextSaveGapOfUndulator = mic.ui.common.Text(...
+                'cVal', 'Gap of Undulator', ...
+                'dFontSize', 14, ...
+                'cFontWeight', 'bold' ...
+            );
+            this.uiTextSaveGapOfExitSlit = mic.ui.common.Text(...
+                'cVal', 'Gap of Exit Slit', ...
+                'dFontSize', 14, ...
+                'cFontWeight', 'bold' ...
+            );
+            this.uiTextSaveValue = mic.ui.common.Text(...
+                'cVal', 'Value');
+            this.uiTextSaveMean = mic.ui.common.Text(...
+                'cVal', 'Mean', ...
+                'dFontSize', 14, ...
+                'cFontWeight', 'bold' ...
+            );
+            this.uiTextSaveStd = mic.ui.common.Text(...
+                'cVal', 'Std');
+            this.uiTextSavePV = mic.ui.common.Text(...
+                'cVal', 'PV');
+            this.uiProgressBarSave = mic.ui.common.ProgressBar();
+        
+            
+            this.uiTextTimeCalibrated = mic.ui.common.Text(...
+                'cVal', 'Last Calibration:');
+            this.uiTextFluxDensityCalibrated = mic.ui.common.Text(...
+                'cVal', 'Flux Density: ');
+            this.uiTextGapOfUndulatorCalibrated = mic.ui.common.Text(...
+                'cVal', 'Gap of Undulator:');
+            this.uiTextGapOfExitSlitCalibrated = mic.ui.common.Text(...
+                'cVal', 'Gap of Exit Slit:');
+            
+            this.uiStateUndulatorIsCalibrated = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-undulator-is-calibrated'], ...
+                'task', bl12014.Tasks.createStateUndulatorIsCalibrated(...
+                    [this.cName, 'state-undulator-is-calibrated'], ...
+                    this, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+        
+            this.loadLastFluxCalibration();
         end
         
         
@@ -555,6 +705,372 @@ classdef TuneFluxDensity < mic.Base
         
         function l = isInPosition(this)
             l = this.isReticleStageInPosition() && this.isWaferStageInPosition();
+        end
+        
+        function cancelSave(this)
+            % close(this.hWaitbar)
+            this.hideSaveModal();
+            this.lAbortSave = true;
+        end
+        
+        function hideSaveModal(this)
+            
+            
+            if ~ishandle(this.hFigureSave)
+                return
+            end
+            %{
+            delete(this.hPlotSave);
+            delete(this.hFigureSave)
+            %}
+            
+            set(this.hFigureSave, 'Visible', 'off');
+            
+            
+            
+            
+        end
+        
+        function buildSaveModal(this)
+            
+            
+            % Build it the first time
+            
+            dWidthFigure = 500;
+            dHeightFigure = 430;
+            dScreenSize = get(0, 'ScreenSize');
+            
+            this.hFigureSave = figure( ...
+                'NumberTitle', 'off',...
+                'MenuBar', 'none',...
+                'Name', 'Averaging Flux Density for 10 Seconds',...
+                'Position', [ ...
+                (dScreenSize(3) - dWidthFigure)/2 ...
+                (dScreenSize(4) - dHeightFigure)/2 ...
+                dWidthFigure ...
+                dHeightFigure ...
+                ],... % left bottom width height
+                'Resize', 'off',...
+                'HandleVisibility', 'on',... % lets close all close the figure
+                ... % 'CloseRequestFcn', @this.onCloseRequest, ...
+                ... Default to not visible, show when user clicks "Save"
+                'Visible', 'off'... % def
+            );
+                    
+            dTop = 30;
+            dLeft = 70;
+            dWidthAxes = 400;
+            dHeightAxes = 200;
+            
+            this.hAxesSave = axes(...
+                'Parent', this.hFigureSave,...
+                'Units', 'pixels',...
+                'Position',mic.Utils.lt2lb([...
+                    dLeft, ...
+                    dTop, ...
+                    dWidthAxes,...
+                    dHeightAxes], this.hFigureSave),...
+                'XColor', [0 0 0],...
+                'YColor', [0 0 0],...
+                'DataAspectRatio',[1 1 1],...
+                'HandleVisibility','on'...
+           );
+            dTop = dTop + dHeightAxes + 50;
+            
+            dTopTexts = dTop;
+            dLeft = 30;
+            dWidthText = 300;
+            dHeightText = 20;
+            dSep = 5;
+            
+            
+            this.uiTextSaveMean.build(this.hFigureSave, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextSaveGapOfUndulator.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthText, ...
+                dHeightText ...
+            );
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextSaveGapOfExitSlit.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthText, ...
+                dHeightText ...
+            );
+            dTop = dTop + dHeightText + dSep;
+            
+            %{
+            this.uiTextSaveValue.build(this.hFigureSave, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            %}
+            
+           
+            dHeightText = 14;
+            this.uiTextSaveStd.build(this.hFigureSave, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextSavePV.build(this.hFigureSave, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            
+            this.uiTextSaveGapOfUndulator.hide();
+            this.uiTextSaveGapOfExitSlit.hide();
+            this.uiTextSaveValue.hide();
+            this.uiTextSaveMean.hide();
+            this.uiTextSaveStd.hide();
+            this.uiTextSavePV.hide();
+            
+            
+            dTop = dTopTexts;
+            dLeft = 240;
+            dWidthButton = 100;
+            dSep = 10;
+            
+            dLeft = 350;
+            this.uiButtonCancelSave.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                24 ...
+            );
+            dTop = dTop + 24;
+            
+            this.uiButtonRedoSave.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthButton, ...
+                24 ...
+            );
+            dTop = dTop + 24;
+            
+            this.uiButtonConfirmSave.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthButton, ...
+                24 ...
+            );
+        
+            this.uiButtonRedoSave.hide();
+            this.uiButtonConfirmSave.hide();
+            dTop = dTop + 24;
+        
+            dTop = dTop + 70;
+            dLeft = 0;
+            this.uiProgressBarSave.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthFigure, ...
+                10 ...
+            );
+            
+            
+        end
+        
+        function showSaveModal(this)
+            
+            if ishandle(this.hFigureSave)
+                
+                set(this.hFigureSave, 'Visible', 'on');
+                this.uiTextSaveGapOfUndulator.hide();
+                this.uiTextSaveGapOfExitSlit.hide();
+                this.uiTextSaveValue.hide();
+                this.uiTextSaveMean.hide();
+                this.uiTextSaveStd.hide();
+                this.uiTextSavePV.hide();
+                this.uiButtonConfirmSave.hide();
+                this.uiButtonRedoSave.hide();
+                
+            end
+            
+            
+
+            
+        end
+        
+        function onClickCancelSave(this, ~, ~)
+            
+            this.lAbortSave = true;
+            this.hideSaveModal();
+        end
+        
+        
+        function onClickSave(this, ~, ~)
+            
+            % Build up an average flux density over 10 seconds
+            % with a progress bar
+            
+            this.lAbortSave = false;
+            this.showSaveModal();
+            this.uiProgressBarSave.show();
+            
+%             this.hWaitbar = waitbar(...
+%                 0, ...
+%                 'Averaging flux density for 10 seconds ...', ...
+%                 'CreateCancelBtn', @(src, evt) this.cancelSave() ...
+%             );
+        
+            % Adjust the height
+%             dPosition = get(this.hWaitbar, 'Position');
+            
+            % left bottom width height
+%             set(this.hWaitbar, 'Position', [dPosition(1:3) 250]);
+            
+            this.dFluxDensityAcc = [];
+            dNum = 20;
+            for n = 1 : dNum
+                
+                if this.lAbortSave
+                    return
+                end
+                
+                this.dFluxDensityAcc(end + 1) = this.uiDiode.uiCurrent.getValCal("mJ/cm2/s (clear field)");
+                                
+                if isempty(this.hPlotSave)
+                    this.hPlotSave = plot(1 : n, this.dFluxDensityAcc,'.-');
+                    ylabel(this.hAxesSave, 'mJ/cm2/s');
+                else
+                    this.hPlotSave.XData = 1 : n;
+                    this.hPlotSave.YData = this.dFluxDensityAcc;
+                end
+                
+                this.uiProgressBarSave.set(n / dNum);
+                
+%                 waitbar(n / dNum, this.hWaitbar, cecMsg);
+                pause(0.3);
+            end
+            
+           %{ 
+           cMsgValue = sprintf(...
+                '%d of %d: %1.3f mJ/cm2/s', ...
+                n, ...
+                dNum, ...
+                this.dFluxDensityAcc(end) ...
+            );
+            %}
+            
+            dMean = mean(this.dFluxDensityAcc);
+            dStd = std(this.dFluxDensityAcc);
+            dPV = abs(max(this.dFluxDensityAcc) - min(this.dFluxDensityAcc));
+            
+            
+            cMsgMean = sprintf(...
+                'Avgeraging Complete: %1.1f mJ/cm2/s', ...
+                dMean ...
+            );
+            cMsgUndulator = sprintf(...
+                '@Undulator = %1.2f mm', ...
+                this.uiUndulatorGap.getValCal('mm') ...
+            );
+            cMsgExitSlit = sprintf(...
+                '@ExitSlit = %1.2f um', ...
+                this.uiExitSlit.uiGap.getValCal('um') ...
+            );
+        
+            
+            cMsgStd = sprintf(...
+                'Std = %1.1f%% (%1.3f mJ/cm2/s)', ...
+                dStd / dMean  * 100, ...
+                dStd...
+            );
+            cMsgPV = sprintf(...
+                'PV = %1.1f%% (%1.3f mJ/cm2/s)', ...
+                dPV / dMean * 100 , ...
+                dPV...
+            );
+            
+            
+            this.uiTextSaveMean.set(cMsgMean);
+            this.uiTextSaveGapOfUndulator.set(cMsgUndulator);
+            this.uiTextSaveGapOfExitSlit.set(cMsgExitSlit);
+            
+            % this.uiTextSaveValue.set(cMsgValue);
+            this.uiTextSaveStd.set(cMsgStd);
+            this.uiTextSavePV.set(cMsgPV);
+            
+            
+            this.uiTextSaveMean.show();
+            this.uiTextSaveGapOfUndulator.show();
+            this.uiTextSaveGapOfExitSlit.show();
+            % this.uiTextSaveValue.show();
+            this.uiTextSaveStd.show();
+            this.uiTextSavePV.show();
+            
+            this.uiButtonRedoSave.show();
+            this.uiButtonConfirmSave.show();
+            this.uiProgressBarSave.hide();
+            
+            % close(this.hWaitbar);
+            % this.hideSaveModal();
+                            
+        end
+        
+        function onClickConfirmSave(this, ~, ~)
+            
+            st = struct();
+            st.dFluxDensity = mean(this.dFluxDensityAcc);
+            st.dGapOfUndulator = this.uiUndulatorGap.getValCal('mm');
+            st.dGapOfExitSlit = this.uiExitSlit.uiGap.getValCal('um');
+            st.dtTime = datetime('now');
+            
+            cTime = datestr(datevec(now), 'yyyy-mm-dd--HH-MM-SS', 'local');
+            mic.Utils.checkDir(this.cDirSave);
+            c = fullfile(...
+                this.cDirSave, ...
+                ['flux-density-calibration-', cTime , '.mat']...
+            );
+        
+            % Save this to disk
+            save(c, 'st');
+            
+            this.loadLastFluxCalibration();
+            
+            this.lAbortSave = true;
+            this.hideSaveModal();
+            
+        end
+        
+        
+        function loadLastFluxCalibration(this)
+            
+            
+            cOrder = 'descend';
+            cOrderByPredicate = 'date';
+            % {char 1xm} - filter for dir2cell, e.g., '*.json'
+            cFilter = '*.mat';
+            
+            ceReturn = mic.Utils.dir2cell(...
+                this.cDirSave, ...
+                cOrderByPredicate, ...
+                cOrder, ...
+                cFilter ...
+            );
+            
+            if isempty(ceReturn)
+                return
+            end
+            
+            load(ceReturn{1}); % populates variable st in local workspace
+            
+            this.dFluxDensityCalibrated = st.dFluxDensity;
+            this.dGapOfUndulatorCalibrated = st.dGapOfUndulator;
+            this.dGapOfExitSlitCalibrated = st.dGapOfExitSlit;
+            this.dtTimeCalibrated = st.dtTime;
+                        
+            this.uiTextTimeCalibrated.set(sprintf('Last Calibration: %s', this.dtTimeCalibrated));
+            this.uiTextFluxDensityCalibrated.set(sprintf('Flux Density: %1.1f mJ/cm2/s', this.dFluxDensityCalibrated));
+            this.uiTextGapOfUndulatorCalibrated.set(sprintf('Gap of Undulator: %1.2f mm', this.dGapOfUndulatorCalibrated));            
+            this.uiTextGapOfExitSlitCalibrated.set(sprintf('Gap of Exit Slit: %1.1f um', this.dGapOfExitSlitCalibrated));
+
         end
         
         

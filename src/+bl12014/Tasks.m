@@ -48,6 +48,74 @@ classdef Tasks < mic.Base
         
         
         % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.TuneFluxDensity}
+        % @param {mic.Clock 1x1}
+        
+        function task = createStateUndulatorIsCalibrated(cName, ui, clock)
+            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.TuneFluxDensity')
+                error('ui must be bl12014.ui.TuneFluxDensity');
+            end
+            
+            ceTasks = {
+                mic.Task.fromUiGetSetNumberWithGoalGetter(...
+                    ui.uiUndulatorGap, ... mic.ui.device.GetSetNumbern
+                    @() ui.getGapOfUndulatorCalibrated(), ... goal getter
+                    0.02, ... Tolerance
+                    'mm', ... Unit
+                    'Gap of Undulator' ...
+                ), ...
+            };
+
+                        
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'cDescription', 'Gap of Undulator @CalVal' ...
+            );
+            
+        end
+        
+        
+        function task = createStateExitSlitIsCalibrated(cName, ui, clock)
+            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.TuneFluxDensity')
+                error('ui must be bl12014.ui.TuneFluxDensity');
+            end
+            
+            ceTasks = {
+                mic.Task.fromUiGetSetNumberWithGoalGetter(...
+                    ui.uiExitSlit.uiGap, ... mic.ui.device.GetSetNumber
+                    @() ui.getGapOfExitSlitCalibrated(), ... goal getter
+                    1, ... Tolerance
+                    'um', ... Unit
+                    'Gap of Exit Slit' ...
+                ), ...
+            };
+
+                        
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'cDescription', 'Gap Exit Slit @CalVal' ...
+            );
+            
+        end
+        
+        
+        % @param {char 1xm} cName - app-wide unique name
         % @param {bl12014.ui.Shutter 1x1}
         % @param {mic.Clock 1x1}
         function task = createStateShutterIsOpen(cName, ui, clock)
@@ -435,6 +503,7 @@ classdef Tasks < mic.Base
             );
         end
         
+        %{
         % @param {char 1xm} cName - app-wide unique name
         % @param {bl12014.ui.ReticleCoarseStage 1x1} ui
         % @param {mic.Clock 1x1}
@@ -443,14 +512,20 @@ classdef Tasks < mic.Base
             if ~isa(clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
+        
+            if ~isa(ui, 'bl12014.ui.ReticleFiducializedMove')
+                error('ui must be bl12014.ui.ReticleFiducializedMove');
+            end
             
             % Fiducializatoin from 2019.04.04
+            
             ceTasks = {...
                 mic.Task.fromUiGetSetNumber(ui.uiX, 64.38, 0.1, 'mm', 'Reticle Coarse X'), ...
                 mic.Task.fromUiGetSetNumber(ui.uiY, 19.785, 0.1, 'mm', 'Reticle Coarse Y'), ...
                 ... %mic.Task.fromUiGetSetNumber(ui.uiZ, 0, 0.01, 'mm', 'Reticle Coarse Z') ...
             };
             
+                    
             task = mic.TaskSequence(...
                 'cName', cName, ...
                 'clock', clock, ...
@@ -459,6 +534,39 @@ classdef Tasks < mic.Base
                 'cDescription', 'Reticle at Clear Field' ...
             );
         end
+        
+        %}
+        
+        % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.ReticleFiducializedMove 1x1} ui
+        % @param {mic.Clock 1x1}
+        function task = createStateReticleStageAtClearField(cName, ui, clock)
+                
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.ReticleFiducializedMove')
+                error('ui must be bl12014.ui.ReticleFiducializedMove');
+            end
+            
+            ceTasks = {...
+                mic.Task.fromUiGetSetNumber(ui.uiRow, 1, 0.01, 'cell', 'Reticle to Row 1'), ...
+                mic.Task.fromUiGetSetNumber(ui.uiCol, 19, 0.01, 'cell', 'Reticle to Col 19'), ...
+            };
+                    
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'cDescription', 'Reticle at Clear Field' ...
+            );
+        end
+        
+        
+        
+        
         % @param {char 1xm} cName - app-wide unique name
         % @param {bl12014.ui.WaferCoarseStage 1x1} ui
         % @param {mic.Clock 1x1}
@@ -585,7 +693,7 @@ classdef Tasks < mic.Base
         % - shutter open
         % - MA scanning annular 35/85
         % @param {char 1xm} cName - app-wide unique name
-        % @param {bl12014.ui.ReticleCoarseStage 1x1}
+        % @param {bl12014.ui.ReticleFiducializedMove 1x1}
         % @param {bl12014.ui.WaferCoarseStage 1x1}
         % @param {bl12014.ui.WaferCoarseStage 1x1}
         % @param {mic.Clock 1x1}
@@ -603,8 +711,8 @@ classdef Tasks < mic.Base
                 error('clock must be mic.Clock');
             end
             
-            if ~isa(uiReticle, 'bl12014.ui.ReticleCoarseStage')
-                error('uiReticle must be bl12014.ui.ReticleCoarseStage');
+            if ~isa(uiReticle, 'bl12014.ui.ReticleFiducializedMove')
+                error('uiReticle must be bl12014.ui.ReticleFiducializedMove');
             end
             
             if ~isa(uiWafer, 'bl12014.ui.WaferCoarseStage')
