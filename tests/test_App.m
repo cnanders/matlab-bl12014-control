@@ -1,4 +1,4 @@
-if exist('purge', 'file')
+mpm if exist('purge', 'file')
     purge;
 end
 
