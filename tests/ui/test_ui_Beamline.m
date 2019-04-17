@@ -1,3 +1,7 @@
+try
+    purge
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 cDirApp = fullfile(cDirThis, '..', '..');
@@ -13,11 +17,13 @@ cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control'
 addpath(genpath(cDirMic));
 
 
-purge
-
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware();
+uiClock = mic.ui.Clock(clock);
 
 ui = bl12014.ui.Beamline(...
+    'hardware', hardware, ...
+    'uiClock', uiClock, ...
     'clock', clock ...
 );
 
