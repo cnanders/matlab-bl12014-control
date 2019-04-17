@@ -960,7 +960,7 @@ classdef TuneFluxDensity < mic.Base
             );
             %}
             
-            dMean = mean(this.dFluxDensityAcc);
+            dMean = abs(mean(this.dFluxDensityAcc));
             dStd = std(this.dFluxDensityAcc);
             dPV = abs(max(this.dFluxDensityAcc) - min(this.dFluxDensityAcc));
             
@@ -1019,7 +1019,7 @@ classdef TuneFluxDensity < mic.Base
         function onClickConfirmSave(this, ~, ~)
             
             st = struct();
-            st.dFluxDensity = mean(this.dFluxDensityAcc);
+            st.dFluxDensity = abs(mean(this.dFluxDensityAcc));
             st.dGapOfUndulator = this.uiUndulatorGap.getValCal('mm');
             st.dGapOfExitSlit = this.uiExitSlit.uiGap.getValCal('um');
             st.dtTime = datetime('now');

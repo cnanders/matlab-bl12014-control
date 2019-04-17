@@ -22,7 +22,7 @@ classdef Scan < mic.Base
         dHeightPanelAvailable = 200
         
         dWidthPanelAdded = 800
-        dHeightPanelAdded = 440
+        dHeightPanelAdded = 550
         
         dWidthPanelBorder = 1
         
@@ -165,7 +165,8 @@ classdef Scan < mic.Base
         hPlotFieldFill
         dColorPlotFiducials = [0.3 0.3 0.3]
         
-        
+        uiTextTimeCalibrated
+        uiTextFluxDensityCalibrated
     end
     
         
@@ -275,13 +276,7 @@ classdef Scan < mic.Base
         
         function buildPanelAdded(this)
             
-            
-            dWidth = this.dWidthPadPanel + ...
-                this.dWidthList + ...
-                this.dWidthPadPanel;
-            
-            dWidth = 700;
-            
+           
             
             dLeft = 1000;
             dTop = 10;
@@ -295,7 +290,7 @@ classdef Scan < mic.Base
                 'Position', mic.Utils.lt2lb([ ...
                     dLeft ...
                     dTop ...
-                    dWidth ...
+                    this.dWidthPanelAdded...
                     this.dHeightPanelAdded], ...
                     this.hParent ...
                 ) ...
@@ -428,9 +423,21 @@ classdef Scan < mic.Base
            dTop = dTop + 120;
            
            
+           dWidthText = 300
+           dHeightText = 24;
+            
            this.uiTextReticleField.build(this.hPanelAdded, dLeft, dTop, 300, 24);
            dTop = dTop + dSep;
            
+           %{
+            this.uiTextTimeCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dSep;
+           %}
+            
+            this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop  + dSep;
+            
+            
            this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            
@@ -879,10 +886,33 @@ classdef Scan < mic.Base
             catch
                 this.msg('DYMO labelwriter failed to initialize!!', this.u8_MSG_TYPE_SCAN);
             end
+            
+            this.uiTextTimeCalibrated = mic.ui.common.Text(...
+                'cVal', 'Last Calibration:');
+            this.uiTextFluxDensityCalibrated = mic.ui.common.Text(...
+                'cVal', 'Flux Density: ');
+            
+            
+            this.uiClock.add(...
+                @this.updateTextsFluxCalibration, ...
+                [this.id(), '-update-text-flux-calibration'], ...
+                1 ...
+            );
+            
+            
                        
         end
         
         
+        function updateTextsFluxCalibration(this, src, evt)
+            
+            this.uiTextFluxDensityCalibrated.set(...
+                sprintf('Flux Density: %1.1f mJ/cm2/s on %s', ...
+                this.uiTuneFluxDensity.getFluxDensityCalibrated(), ...
+                this.uiTuneFluxDensity.getTimeCalibrated() ...
+            ));
+            
+        end
         
         function initScanSetContract(this)
             
@@ -1540,7 +1570,7 @@ classdef Scan < mic.Base
                     pause(1);
                     fprintf('bl12014.ui.Scan.onScanAcquire() pausing %1.1f sec of %1.1f sec\n', ...
                         dTimeElapsed, ...
-                        stValue.task.pausePreExposure ...
+                        stValue.task.pausePreExpose ...
                     );
                 end
             
