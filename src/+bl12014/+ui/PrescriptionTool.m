@@ -251,18 +251,24 @@ classdef PrescriptionTool < mic.Base
             
             % Use first state to set reticle field and pupil fill 
             
+                        u8Count = 1;
+                        
             stValue = struct();
             stValue.type = 'setup';
             stValue.reticleX = this.uiReticleTool.dX;
             stValue.reticleY = this.uiReticleTool.dY;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
             
             % stValue.pupilFill = this.uiPupilFillTool.get();
             
             % Use other states for wafer pos and exposure task FEM
-            
-            u8Count = 1;
+            % working mode to allow  x y move
+            stValue = struct();
+            stValue.workingMode = 5; % allow xy move
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+
             
             % Center the reticle fine stage in x and y
             
@@ -281,11 +287,6 @@ classdef PrescriptionTool < mic.Base
             mMid = ceil(length(this.uiFemTool.dDose)/2);
             nMid = ceil(length(this.uiFemTool.dFocus)/2);
             
-            stValue = struct();
-            stValue.workingMode = 5; % allow xy move
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-
 
             % x position on wafer you want the exposure to be
             stValue = struct();

@@ -998,7 +998,7 @@ classdef TuneFluxDensity < mic.Base
                 this.uiProgressBarSave.set(n / dNum);
                 
 %                 waitbar(n / dNum, this.hWaitbar, cecMsg);
-                pause(0.6);
+                pause(0.7);
             end
             
            %{ 
