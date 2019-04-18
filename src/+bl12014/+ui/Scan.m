@@ -33,6 +33,8 @@ classdef Scan < mic.Base
         dToleranceWaferX = 0.01 % mm
         dToleranceWaferY = 0.01 % mm
         dToleranceWaferZ = 5 % nm
+        dToleranceReticleFineX = 0.1 % umm
+        dToleranceReticleFineY = 0.1 % um
 
 
         
@@ -1268,7 +1270,17 @@ classdef Scan < mic.Base
                         this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(stValue.workingMode); 
                         this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
                         this.stScanSetContract.workingMode.lIssued = true;
-                                    
+                          
+                    case 'xReticleFine'
+                        
+                        this.uiReticle.uiFineStage.uiX.setDestCalAndGo(stValue.xReticleFine, 'um');
+                        this.stScanSetContract.xReticleFine.lIssued = true;
+                    
+                    case 'yReticleFine'
+                        
+                        this.uiReticle.uiFineStage.uiY.setDestCalAndGo(stValue.yReticleFine, 'um');
+                        this.stScanSetContract.yReticleFine.lIssued = true;
+                        
                     case 'waferX'
                         
                         % The FEM is constructed with positions relative to
@@ -1453,43 +1465,47 @@ classdef Scan < mic.Base
                         
                         lReady = true;
                         
-                        switch cField
-                            case 'pupilFill'
-                                % FIX ME
-                                lReady = true;
-                            case 'reticleX'
-                                lReady =    isempty(stValue.reticleX) ||...
-                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
-                                            abs(this.uiReticle.uiCoarseStage.uiX.getValCal(stUnit.reticleX) - stValue.reticleX) <= this.dToleranceReticleX;
-                            case 'reticleY'
-                                lReady =    isempty(stValue.reticleY) || ...
-                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
-                                            abs(this.uiReticle.uiCoarseStage.uiY.getValCal(stUnit.reticleY) - stValue.reticleY) <= this.dToleranceReticleY;
-                            case 'waferX'
-                                lReady =    isempty(stValue.waferX) || ...
-                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
-                                            abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3 - stValue.waferX) <= this.dToleranceWaferX;
-                            case 'waferY'
-                                lReady =    isempty(stValue.waferY) || ...
-                                            ...~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
-                                            abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3 - stValue.waferY) <= this.dToleranceWaferY;
-                            case 'waferZ'
-                               lReady =     isempty(stValue.waferZ) || ...
-                                            ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
-                                            ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
-                                            this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
-                                            ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
-                               
-                            case 'workingMode'
-
-                                lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;                               
-                                
+                        if ~isempty(stValue.(cField))
                             
-                                
-                            otherwise
-                                
-                                % UNSUPPORTED
-                                
+                            switch cField
+                                case 'pupilFill'
+                                    % FIX ME
+                                    lReady = true;
+
+                                case 'xReticleFine'
+                                    lReady =    abs(this.uiReticle.uiFineStage.uiX.getValCal(stUnit.xReticleFine) - stValue.xReticleFine) <= this.dToleranceReticleFineX;
+                                case 'yReticleFine'
+                                    lReady =    abs(this.uiReticle.uiFineStage.uiY.getValCal(stUnit.yReticleFine) - stValue.yReticleFine) <= this.dToleranceReticleFineY;
+                                case 'reticleX'
+                                    lReady =    ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
+                                                abs(this.uiReticle.uiCoarseStage.uiX.getValCal(stUnit.reticleX) - stValue.reticleX) <= this.dToleranceReticleX;
+                                case 'reticleY'
+                                    lReady =    ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedReticleCoarseXYZTipTilt();
+                                                abs(this.uiReticle.uiCoarseStage.uiY.getValCal(stUnit.reticleY) - stValue.reticleY) <= this.dToleranceReticleY;
+                                case 'waferX'
+                                    lReady =    ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
+                                                abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3 - stValue.waferX) <= this.dToleranceWaferX;
+                                case 'waferY'
+                                    lReady =    ...~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
+                                                abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3 - stValue.waferY) <= this.dToleranceWaferY;
+                                case 'waferZ'
+                                   lReady =     ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
+                                                ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
+                                                this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                                                ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
+
+                                case 'workingMode'
+
+                                    lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;                               
+
+
+
+                                otherwise
+
+                                    % UNSUPPORTED
+
+                            end
+                            
                         end
                         
                         

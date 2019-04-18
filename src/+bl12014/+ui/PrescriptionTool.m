@@ -249,7 +249,7 @@ classdef PrescriptionTool < mic.Base
             
             ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
             
-            % Use first state to set reticle and pupil fill 
+            % Use first state to set reticle field and pupil fill 
             
             stValue = struct();
             stValue.type = 'setup';
@@ -264,6 +264,17 @@ classdef PrescriptionTool < mic.Base
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
+            % Center the reticle fine stage in x and y
+            
+            stValue = struct();
+            stValue.xReticleFine = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            stValue = struct();
+            stValue.yReticleFine = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
             
             %%  Index shot
             
@@ -466,6 +477,8 @@ classdef PrescriptionTool < mic.Base
             stUnit.waferZ = 'nm';
             stUnit.reticleX = 'mm';
             stUnit.reticleY = 'mm';
+            stUnit.xReticleFine = 'um';
+            stUnit.yReticleFine = 'um';
             stUnit.pupilFill = 'n/a';
             stUnit.workingMode = 'n/a';
             
