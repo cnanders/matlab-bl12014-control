@@ -11,11 +11,6 @@ addpath(genpath(cDirBl12014));
 % mpm dependencies
 addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
-% vendor dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-mightex-led-controller', 'src')));
-
-
 hardware = bl12014.Hardware();
 waferExposureHistory = bl12014.WaferExposureHistory();
 waferExposureHistory.addFakeExposures();
