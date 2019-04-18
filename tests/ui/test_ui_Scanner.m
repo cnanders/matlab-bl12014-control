@@ -14,14 +14,18 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
 
+hardware = bl12014.Hardware();
+
+
 ui = bl12014.ui.Scanner(...
+   'fhGetNPoint', @() hardware.getNPointMA(), ...
     'cName', 'ma', ...
     'uiClock', uiClock, ...
     'clock', clock ...
 );
 
 dWidth = 1650;
-dHeight = 900;
+dHeight = 770;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...

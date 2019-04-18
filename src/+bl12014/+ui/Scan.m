@@ -449,8 +449,10 @@ classdef Scan < mic.Base
            
            this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
+           %{
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
+           %}
            this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, 300);
@@ -472,7 +474,7 @@ classdef Scan < mic.Base
             end
             
             
-            st = this.uiScannerMA.uiPupilFillGenerator.get();
+            st = this.uiScannerMA.uiNPointLC400.getWavetables();
             
             if isempty(this.hPlotPupilFill)
                 this.hPlotPupilFill = plot(...
@@ -505,9 +507,9 @@ classdef Scan < mic.Base
             set(this.hAxesPupilFill, 'XTick', [], 'YTick', []);
             
             if this.uiScannerMA.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesPupilFill, 'Color', 'k');
+                set(this.hAxesPupilFill, 'Color', 'g');
             else
-                set(this.hAxesPupilFill, 'Color', 'r');
+                set(this.hAxesPupilFill, 'Color', 'y');
             end
             xlim(this.hAxesPupilFill, [-1 1])
             ylim(this.hAxesPupilFill, [-1 1])
@@ -525,7 +527,7 @@ classdef Scan < mic.Base
             end
             
             
-            st = this.uiScannerM142.uiPupilFillGenerator.get();
+            st = this.uiScannerM142.uiNPointLC400.getWavetables();
             
             if isempty(this.hPlotFieldFill)
                 this.hPlotFieldFill = plot(...
@@ -538,8 +540,8 @@ classdef Scan < mic.Base
                 dWidth = 0.62;
                 dHeight = dWidth / 5;
                 
-                x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2]
-                y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2]
+                x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
+                y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
                 line( ...
                     x, y, ...
                     'color', this.dColorPlotFiducials, ...
@@ -555,9 +557,9 @@ classdef Scan < mic.Base
             
             % Set background color based on if the scanner is on or not
             if this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesFieldFill, 'Color', 'k');
+                set(this.hAxesFieldFill, 'Color', 'g');
             else
-                set(this.hAxesFieldFill, 'Color', 'r');
+                set(this.hAxesFieldFill, 'Color', 'y');
             end
             xlim(this.hAxesFieldFill, [-1 1])
             ylim(this.hAxesFieldFill, [-1 1])
