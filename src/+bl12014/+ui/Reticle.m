@@ -17,7 +17,7 @@ classdef Reticle < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         % uiCommDataTranslationMeasurPoint
         
-        uiReticleZTTClosedLoop
+        uiReticleTTZClosedLoop
         uiReticleFiducializedMove
         
         uiCoarseStage
@@ -100,9 +100,9 @@ classdef Reticle < mic.Base
             this.uiCoarseStage.uiTiltY.syncDestination();
             this.uiFineStage.uiX.syncDestination();
             this.uiFineStage.uiY.syncDestination();
-            this.uiReticleZTTClosedLoop.uiCLTiltX.syncDestination();
-            this.uiReticleZTTClosedLoop.uiCLTiltY.syncDestination();
-            this.uiReticleZTTClosedLoop.uiCLZ.syncDestination();
+            this.uiReticleTTZClosedLoop.uiCLTiltX.syncDestination();
+            this.uiReticleTTZClosedLoop.uiCLTiltY.syncDestination();
+            this.uiReticleTTZClosedLoop.uiCLZ.syncDestination();
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -141,11 +141,11 @@ classdef Reticle < mic.Base
             this.uiReticleFiducializedMove.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiReticleFiducializedMove.dHeight + dPad;
             
-            this.uiReticleZTTClosedLoop.build(this.hParent, dLeft, dTop);
+            this.uiReticleTTZClosedLoop.build(this.hParent, dLeft, dTop);
             
             
             this.uiMod3CapSensors.build(this.hParent, 620, dTop);
-            dTop = dTop + this.uiReticleZTTClosedLoop.dHeight + dPad;
+            dTop = dTop + this.uiReticleTTZClosedLoop.dHeight + dPad;
             
            
             this.uiFineStage.build(this.hParent, dLeft, dTop);
@@ -285,7 +285,7 @@ classdef Reticle < mic.Base
                 'clock', this.uiClock ...
             );
         
-            this.uiReticleZTTClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
+            this.uiReticleTTZClosedLoop = bl12014.ui.ReticleTTZClosedLoop(...
                 'clock',        this.clock, ...
                 'hardware', this.hardware, ...
                 'uiClock',      this.uiClock, ...

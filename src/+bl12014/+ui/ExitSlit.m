@@ -6,9 +6,6 @@ classdef ExitSlit < mic.Base
         % These are the UI for activating the hardware that gives the 
         % software real data
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommExitSlit
-       
         % {mic.ui.device.GetSetNumber 1x1}
         uiStage1
         uiStage2
@@ -173,7 +170,6 @@ classdef ExitSlit < mic.Base
             delete(this.uiStage2);
             delete(this.uiStage3);
             delete(this.uiStage4);
-            delete(this.uiCommExitSlit);
             delete(this.uiGap);
             
         end    

@@ -4,7 +4,7 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
        
         
         dWidth      = 325
-        dHeight     = 110
+        dHeight     = 80
         
     end
     
@@ -109,8 +109,10 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
             dTop = dTop + dSep;
             this.uiStateReticleOn.build(this.hPanel, dLeft, dTop, dWidthStates);
             dTop = dTop + dSep;
+            %{
             this.uiStateLsiOn.build(this.hPanel, dLeft, dTop, dWidthStates);
             dTop = dTop + dSep;
+            %}
             
             dLeft = dLeft + dWidthStates + 10;
             dTop = 20;
