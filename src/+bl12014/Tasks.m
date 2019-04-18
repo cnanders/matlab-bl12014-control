@@ -2,7 +2,7 @@ classdef Tasks < mic.Base
         
     properties (Constant)
        
-        cRecipeM142Default = 'Serpentine_sigx30_numx9_offx0_sigy10_numy5_offy0_scale1_per20_filthz2000_dt24_20190404-092303.mat';
+        cRecipeM142Default = 'Serpentine_sigx25_numx9_offx0_sigy5_numy5_offy0_scale1_per20_filthz2000_dt24_20181219-150012-gridified-repeat.mat';
         
     end
     
@@ -158,7 +158,7 @@ classdef Tasks < mic.Base
                 error('ui must be npoint.ui.LC400');
             end
            
-            cNameOfRecipe = 'Annular-40-80.mat'; % testing
+            % cNameOfRecipe = 'Annular-40-80.mat'; % testing
             cNameOfRecipe = 'Tune-Flux-Density-Ring.mat'; % testing
             
             [cDir] = fileparts(mfilename('fullpath'));
@@ -193,7 +193,7 @@ classdef Tasks < mic.Base
                 'clock', clock, ...
                 'ceTasks', ceTasks, ...
                 'dPeriod', 0.5, ...
-                'cDescription', 'MA Scanning Annular 35-85' ...
+                'cDescription', 'MA Scanning Tune Flux Density Ring' ...
             );
         end
         
