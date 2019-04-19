@@ -851,8 +851,8 @@ classdef App < mic.Base
 
             
             % Beamline
-            this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
-            this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
+            % this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
+            % this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
             
 
                         
