@@ -36,7 +36,8 @@ classdef Scan < mic.Base
         dToleranceReticleFineX = 0.1 % umm
         dToleranceReticleFineY = 0.1 % um
 
-
+        dColorGreen = [.85, 1, .85];
+        dColorRed = [1, .85, .85];
         
     end
     
@@ -507,9 +508,9 @@ classdef Scan < mic.Base
             set(this.hAxesPupilFill, 'XTick', [], 'YTick', []);
             
             if this.uiScannerMA.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesPupilFill, 'Color', 'g');
+                set(this.hAxesPupilFill, 'Color', this.dColorGreen);
             else
-                set(this.hAxesPupilFill, 'Color', 'y');
+                set(this.hAxesPupilFill, 'Color', this.dColorRed);
             end
             xlim(this.hAxesPupilFill, [-1 1])
             ylim(this.hAxesPupilFill, [-1 1])
@@ -557,9 +558,9 @@ classdef Scan < mic.Base
             
             % Set background color based on if the scanner is on or not
             if this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesFieldFill, 'Color', 'g');
+                set(this.hAxesFieldFill, 'Color', this.dColorGreen);
             else
-                set(this.hAxesFieldFill, 'Color', 'y');
+                set(this.hAxesFieldFill, 'Color', this.dColorRed);
             end
             xlim(this.hAxesFieldFill, [-1 1])
             ylim(this.hAxesFieldFill, [-1 1])
