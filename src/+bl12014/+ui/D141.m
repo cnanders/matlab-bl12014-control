@@ -2,11 +2,6 @@ classdef D141 < mic.Base
     
     properties
         
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommWago
-        
-                
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
         

@@ -2,7 +2,6 @@ try
     purge
 end
 
-
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % src
@@ -12,11 +11,18 @@ addpath(genpath(cDirBl12014));
 % mpm dependencies
 addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
+hardware = bl12014.Hardware();
+clock = mic.Clock('Master');
+uiClock = mic.ui.Clock(clock);
 
-ui = bl12014.ui.ScanResultPlot2x2();
+ui = bl12014.ui.DMIPowerMonitor(...
+    'hardware', hardware, ...
+    'clock', clock, ...
+    'uiClock', uiClock ...
+);
 
-dWidth = 1200;
-dHeight = 800;
+dWidth = 400;
+dHeight = 100;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
@@ -30,4 +36,7 @@ h = figure(...
 
 ui.build(h, 10, 10);
 
-% ui.setFile('C:\Users\metmatlab\Documents\MATLAB\matlab-bl12014-control\src\save\fem-scans\20180524-131704__PRE_20180524-131505__RES_Fuji-1201E__RET_name1_R1C2__ILLUM_.__FEM_7x20\result.json');
+
+
+ 
+

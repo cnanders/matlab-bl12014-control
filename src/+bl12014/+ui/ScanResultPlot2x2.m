@@ -17,8 +17,8 @@ classdef ScanResultPlot2x2 < mic.Base
         dWidthPadAxesRight = 40
         dHeightPadAxesTop = 10
         dHeightPadAxesBottom = 40
-        dWidthAxes = 650
-        dHeightAxes = 330
+        dWidthAxes = 350
+        dHeightAxes = 230
         dHeightOffsetTop = 120;
        
         dWidthPopup = 200;
@@ -40,6 +40,11 @@ classdef ScanResultPlot2x2 < mic.Base
         hAxes2
         hAxes3
         hAxes4
+        
+        hPlot1
+        hPlot2
+        hPlot3
+        hPlot4
         
         uiPopup1
         uiPopup2
@@ -377,7 +382,19 @@ classdef ScanResultPlot2x2 < mic.Base
                 end
             end
             
-            this.refresh();
+            if isempty(this.cDir)
+                return
+            end
+            
+            if isempty(this.cFile)
+                return
+            end
+            
+            cPath = fullfile(this.cDir, this.cFile);
+            this.uiTextFile.set(cPath);
+            this.stResult = loadjson(cPath);
+            this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
+            
             
         end
         
@@ -542,6 +559,12 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopup3.setOptions(ceFields);
             this.uiPopup4.setOptions(ceFields);
             
+            
+            % When updating the uiPopupIndexStart, store the current values
+            
+            u8IndexStart = uint8(str2num(this.uiPopupIndexStart.get()));
+            u8IndexEnd = uint8(str2num(this.uiPopupIndexEnd.get()));
+            
             % Returns a {cell 1xm} with values for the index start and index
             % end popups
         
@@ -555,8 +578,17 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopupIndexStart.setOptions(ceOptions);
             this.uiPopupIndexEnd.setOptions(ceOptions);
             
-            this.uiPopupIndexStart.setSelectedIndex(uint8(1));
-            this.uiPopupIndexEnd.setSelectedIndex(uint8(length(dValues)));
+            if u8IndexStart < length(ceOptions)
+                this.uiPopupIndexStart.setSelectedIndex(u8IndexStart);
+            else
+                this.uiPopupIndexStart.setSelectedIndex(uint8(1));
+            end
+            
+            if u8IndexEnd < length(ceOptions)
+                this.uiPopupIndexEnd.setSelectedIndex(u8IndexEnd);
+            else
+                this.uiPopupIndexEnd.setSelectedIndex(uint8(length(dValues)));
+            end
             
             %{
             if length(ceFields) > 0
@@ -592,18 +624,23 @@ classdef ScanResultPlot2x2 < mic.Base
                    hAxes = this.hAxes1;
                    cProp = this.uiPopup1.get();
                    lRemoveDC = this.uiCheckboxDC1.get();
+                   hPlot = this.hPlot1;
                 case 2
                     hAxes = this.hAxes2;
                     cProp = this.uiPopup2.get();
                     lRemoveDC = this.uiCheckboxDC2.get();
+                    hPlot = this.hPlot2;
+                    
                 case 3
                     hAxes = this.hAxes3;
                     cProp = this.uiPopup3.get();
                     lRemoveDC = this.uiCheckboxDC3.get();
+                    hPlot = this.hPlot3;
                 case 4
                     hAxes = this.hAxes4;
                     cProp = this.uiPopup4.get();
                     lRemoveDC = this.uiCheckboxDC4.get();
+                    hPlot = this.hPlot4;
                     
                     
             end
@@ -619,13 +656,38 @@ classdef ScanResultPlot2x2 < mic.Base
                 dValues = dValues - mean(dValues);
             end
             
-            cla(hAxes);
+            % cla(hAxes);
             
-            plot(hAxes, ...
-                dValues, '.-b');
-            xlabel(hAxes, 'State Num');
+            if isempty(hPlot)
+                
+                hPlot = plot(hAxes, dValues, '.-b');
+                
+                % Store
+                switch u8Axes
+                    case 1
+                        this.hPlot1 = hPlot;
+                    case 2
+                        this.hPlot2 = hPlot;
+                    case 3
+                        this.hPlot3 = hPlot;
+                    case 4
+                        this.hPlot4 = hPlot;
+                end
+                
+            else
+                set(hPlot, ...
+                    'XData', 1 : length(dValues), ...
+                    'YData', dValues ...
+                );
+                
+            end
+            
+            
             try
+                xlabel(hAxes, 'State Num');
                 ylabel(hAxes, this.stResult.unit.(cProp));
+            catch mE
+                
             end
             
         end
