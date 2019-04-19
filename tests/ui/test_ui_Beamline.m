@@ -10,12 +10,8 @@ cDirApp = fullfile(cDirThis, '..', '..');
 cDirBl12014 = fullfile(cDirApp, 'src');
 addpath(genpath(cDirBl12014));
 
-% dependencies
-cDirVendor = fullfile(cDirApp, 'vendor');
-
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
-
+% mpm dependencies
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware();
