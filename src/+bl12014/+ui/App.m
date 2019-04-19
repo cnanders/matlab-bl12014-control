@@ -42,6 +42,7 @@ classdef App < mic.Base
         uiMfDriftMonitorVibration
         uiButtonListClockTasks
         uiPowerPmacHydraMotMin
+        uiDMIPowerMonitor
         
         uiCurrentOfRing
         
