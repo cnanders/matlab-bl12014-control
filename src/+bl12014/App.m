@@ -948,27 +948,31 @@ classdef App < mic.Base
             
             % Set clock, required for drift monitor middle layer
             this.hardware.setClock(this.clock); 
-            this.hardware.connectDataTranslation(); % force real hardware
-            this.hardware.connectMfDriftMonitor(); % force real hardware
-                        
-            this.logger = bl12014.Logger(...
-                'hardware', this.hardware, ...
-                'clock', this.clock ...
-            );
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            
+            if ~contains(cDirThis, 'cnanderson') && ...
+               ~contains(cDirThis, 'ryanmiyakawa')
+           
+                this.hardware.connectDataTranslation(); % force real hardware
+                this.hardware.connectMfDriftMonitor(); % force real hardware
+               
+                this.logger = bl12014.Logger(...
+                    'hardware', this.hardware, ...
+                    'clock', this.clock ...
+                );
+        
+            end
+            
             
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton, ...
                 'clock', this.clock, ...
                 'hardware', this.hardware ...
             ); 
-        
-            
-        
+                
             this.initGetSetLogicalConnects();
             
-            % this.initUiComm();
-            % this.initAndConnect()
-            % this.loadStateFromDisk();
 
         end
         
