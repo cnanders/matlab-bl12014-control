@@ -17,30 +17,6 @@ addpath(genpath('vendor/github/cnanders/matlab-hex/src'));
 
 ```
 
-<a name="dependencies"></a>
-## Dependencies and Required Location
-
-### [MATLAB DataTranslation MeasurPoint](https://github.com/awojdyla/matlab-datatranslation-measurpoint)
-- vendor/github/awojdyla/matlab-datatranslation-measurpoint
-
-### [MATLAB Keithley 6482](https://github.com/cnanders/matlab-keithley-6482)
-- vendor/github/cnanders/matlab-keithley-6482
-
-### ~~[MATLAB Scanner Control nPoint](https://github.com/cnanders/matlab-scanner-control-npoint)~~
-- ~~vendor/github/cnanders/matlab-scanner-control-npoint~~ [Removed 2018.01.04]
-
-### [MATLAB Micronix MMC-103](https://github.com/cnanders/matlab-micronix-mmc-103)
-- vendor/github/cnanders/matlab-micronix-mmc-103
-
-### [MATLAB NewFocus Model 8742](https://github.com/cnanders/matlab-newfocus-model-8742)
-- vendor/github/cnanders/matlab-new-focus-model-8742
-
-### [MATLAB Instrument Control](https://github.com/cnanders/matlab-instrument-control) (for the UI)
-- vendor/github/cnanders/matlab/instrument-control
-
-### [MATLAB nPoint LC400](https://github.com/cnanders/matlab-npoint-lc400)
-- vendor/github/cnanders/matlab-npoint-lc400
-
 
 
 ### [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)

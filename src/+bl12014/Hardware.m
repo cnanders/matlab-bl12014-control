@@ -131,6 +131,9 @@ classdef Hardware < mic.Base
         
         commNPointMA
         commNPointMAVirtual
+        
+        commALS
+        commALSVirtual
                 
     end
     
@@ -161,6 +164,43 @@ classdef Hardware < mic.Base
         % Setters
         function setClock(this, clock)
             this.clock = clock;
+        end
+        
+        %% WebSwitch (Beamline)
+        function l = getIsConnectedALS(this)
+           
+            if isa(this.commALS, 'cxro.ALS')
+                l = true;
+                return;
+                
+            end
+
+            l = false;
+        end
+        
+        function connectALS(this)
+            
+            try
+                this.commALS = cxro.ALS();
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectALS(this)
+            if this.getIsConnectedALS()
+                this.commALS.disconnect();
+            end
+            
+            this.commALS = [];
+        end
+                
+        function comm = getALS(this)
+            if this.getIsConnectedALS()
+                comm = this.commALS;
+            else
+                comm = this.commALSVirtual;
+            end            
         end
         
         
