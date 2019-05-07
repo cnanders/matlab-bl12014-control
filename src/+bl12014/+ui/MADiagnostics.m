@@ -5,10 +5,7 @@ classdef MADiagnostics < mic.Base
         
         % These are the UI for activating the hardware that gives the 
         % software real data
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommNewFocusModel8742
-        
+                
         uiCommKeithley6482
 
         % {mic.ui.device.GetSetNumber 1x1}
@@ -80,8 +77,12 @@ classdef MADiagnostics < mic.Base
         
         end
         
+        function syncDestinations(this)
+            
+            
+        end
         
-        
+        %{
         function connectNewFocusModel8742(this, comm)
             
             this.lActive = true;
@@ -114,12 +115,13 @@ classdef MADiagnostics < mic.Base
             
             this.setColorOfBackgroundToWarning();
         end
+        %}
         
         function build(this, hParent, dLeft, dTop)
             
             
             dWidthPanel = 480;
-            dHeightPanel = 190;
+            dHeightPanel = 155;
             this.hPanel = uipanel( ...
                 'Parent', hParent, ...
                 'Units', 'pixels', ...
@@ -136,8 +138,6 @@ classdef MADiagnostics < mic.Base
             dTop = 20;
             dLeft = 10;
             
-            this.uiCommNewFocusModel8742.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
             
             this.uiCommKeithley6482.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 24 + 10;
@@ -159,11 +159,7 @@ classdef MADiagnostics < mic.Base
             
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             
-            if this.uiCommNewFocusModel8742.get() == true
-                this.setColorOfBackgroundToDefault();
-            else
-                this.setColorOfBackgroundToWarning();
-            end
+            
                         
         end
         
@@ -192,9 +188,7 @@ classdef MADiagnostics < mic.Base
             if isfield(st, 'uiStageWheel')
                 this.uiStageWheel.load(st.uiStageWheel)
             end
-            
-            
-            
+                        
         end
         
         
@@ -241,6 +235,7 @@ classdef MADiagnostics < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Axis = 1;
             this.uiStageMAYag = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthVal', this.dWidthVal, ...
@@ -256,6 +251,12 @@ classdef MADiagnostics < mic.Base
                 'lShowStepPos', false, ...
                 'cName', sprintf('%s-ma-yag', this.cName), ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getNewFocus8742MA().getPosition(u8Axis), ...
+                'fhSet', @(dVal) this.hardware.getNewFocus8742MA().moveToTargetPosition(u8Axis, dVal), ...
+                'fhIsReady', @() this.hardware.getNewFocus8742MA().getMotionDoneStatus(u8Axis), ...
+                'fhStop', @() this.hardware.getNewFocus8742MA().stop(u8Axis), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'MA YAG (neg=down)' ...
             );
         end
@@ -272,6 +273,7 @@ classdef MADiagnostics < mic.Base
                 'cPath',  cPathConfig ...
             );
             
+            u8Axis = 2;
             this.uiStageWheel = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
                 'dWidthName', this.dWidthName, ...
@@ -287,6 +289,12 @@ classdef MADiagnostics < mic.Base
                 'lShowStepPos', false, ...
                 'cName', sprintf('%s-subframe-wheel', this.cName), ...
                 'config', uiConfig, ...
+                'fhGet', @() this.hardware.getNewFocus8742MA().getPosition(u8Axis), ...
+                'fhSet', @(dVal) this.hardware.getNewFocus8742MA().moveToTargetPosition(u8Axis, dVal), ...
+                'fhIsReady', @() this.hardware.getNewFocus8742MA().getMotionDoneStatus(u8Axis), ...
+                'fhStop', @() this.hardware.getNewFocus8742MA().stop(u8Axis), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'SF Wheel (Pos = CW)' ...
             );
         end
@@ -315,30 +323,7 @@ classdef MADiagnostics < mic.Base
             );
         
         end
-        
-        
-        function initUiCommNewFocusModel8742(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommNewFocusModel8742 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 180, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-newfocus-model-8742', this.cName), ...
-                'cLabel', 'NewFocus 8742' ...
-            );
-        
-        end
-        
+                
         function initUiCurrent(this)
             
             cPathConfig = fullfile(...
@@ -371,7 +356,6 @@ classdef MADiagnostics < mic.Base
         function init(this)
             this.msg('init');
             
-            this.initUiCommNewFocusModel8742();
             this.initUiCommKeithley6482();
             this.initUiStageMAYag();
             this.initUiStageWheel();
@@ -379,99 +363,29 @@ classdef MADiagnostics < mic.Base
             
             this.uiButtonMALeft = mic.ui.common.Button(...
                 'cText', '<<', ...
-                'fhOnPress', @this.onPressMALeft, ...
-                'fhOnRelease', @this.onReleaseMALeft ...
+                'fhOnPress', @(src, evt) this.hardware.getNewFocus8742MA().moveIndefinitely(1, -1), ...
+                'fhOnRelease', @(src, evt) this.hardware.getNewFocus8742MA().stop(1) ...
             );
                 
             this.uiButtonMARight = mic.ui.common.Button(...
                 'cText', '>>', ...
-                'fhOnPress', @this.onPressMARight, ...
-                'fhOnRelease', @this.onReleaseMARight ...
+                'fhOnPress', @(src, evt)this.hardware.getNewFocus8742MA().moveIndefinitely(1, 1), ...
+                'fhOnRelease', @(src, evt) this.hardware.getNewFocus8742MA().stop(1) ...
             );
         
             this.uiButtonWheelLeft = mic.ui.common.Button(...
                 'cText', '<<', ...
-                'fhOnPress', @this.onPressWheelLeft, ...
-                'fhOnRelease', @this.onReleaseWheelLeft ...
+                'fhOnPress', @(src, evt)this.hardware.getNewFocus8742MA().moveIndefinitely(2, -1), ...
+                'fhOnRelease', @(src, evt) this.hardware.getNewFocus8742MA().stop(2) ...
             );
                 
             this.uiButtonWheelRight = mic.ui.common.Button(...
                 'cText', '>>', ...
-                'fhOnPress', @this.onPressWheelRight, ...
-                'fhOnRelease', @this.onReleaseWheelRight ...
+                'fhOnPress', @(src, evt)this.hardware.getNewFocus8742MA().moveIndefinitely(2, 1), ...
+                'fhOnRelease', @(src, evt) this.hardware.getNewFocus8742MA().stop(2) ...
             );
             
         end
-        
-        
-        function onPressMALeft(this, src, evt)
-            if this.lActive
-                this.comm.moveIndefinitely(1, -1);
-            else
-                this.uiStageMAYag.getDevice().moveIndefinitely(-1);
-            end
-            
-        end
-        
-        function onReleaseMALeft(this, src, evt)
-            if this.lActive
-                this.comm.stop(1);
-            else
-                this.uiStageMAYag.getDevice().stop()
-            end
-        end
-        
-        function onPressMARight(this, src, evt)
-            if this.lActive
-                this.comm.moveIndefinitely(1, 1);
-            else
-                this.uiStageMAYag.getDevice().moveIndefinitely(1);
-            end
-        end
-        
-        function onReleaseMARight(this, src, evt)
-            if this.lActive
-                this.comm.stop(1);
-            else
-                this.uiStageMAYag.getDevice().stop();
-            end
-        end
-        
-        
-        function onPressWheelLeft(this, src, evt)
-            if this.lActive
-                this.comm.moveIndefinitely(2, -1);
-            else
-                this.uiStageWheel.getDevice().moveIndefinitely(-1);
-            end
-        end
-        
-        function onReleaseWheelLeft(this, src, evt)
-            if this.lActive
-                this.comm.stop(2);
-            else
-                this.uiStageWheel.getDevice().stop();
-            end
-        end
-        
-        function onPressWheelRight(this, src, evt)
-            if this.lActive
-                this.comm.moveIndefinitely(2, 1);
-            else
-                this.uiStageWheel.getDevice().moveIndefinitely(1);
-            end
-        end
-        
-        function onReleaseWheelRight(this, src, evt)
-            if this.lActive
-                this.comm.stop(2);
-            else
-                this.uiStageWheel.getDevice().stop();
-            end
-        end
-        
-        
-        
         
         
     end

@@ -40,6 +40,7 @@ classdef Hardware < mic.Base
         cTcpipDataTranslation       = '192.168.20.27'
         cTcpipKeithley6482Wafer     = '192.168.20.28'
         cTcpipKeithley6482Reticle   = '192.168.20.28'
+        cTcpipNewFocusMA            = '192.168.20.31'
         
         cTcpipRigolDG1000Z = '192.168.20.35'
         
@@ -134,6 +135,12 @@ classdef Hardware < mic.Base
         
         commALS
         commALSVirtual
+        
+        commNewFocus8742M142
+        commNewFocus8742M142Virtual
+        
+        commNewFocus8742MA
+        commNewFocus8742MAVirtual
                 
     end
     
@@ -517,6 +524,93 @@ classdef Hardware < mic.Base
                 comm = this.commMightex1;
             else
                 comm = this.commMightex1Virtual;
+            end            
+        end
+        
+        
+        %% NewFocus Model 8742 (M142)
+        
+        function l = getIsConnectedNewFocus8742M142(this)
+           
+            if isa(this.commNewFocus8742M142, 'newfocus.Model8742')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectNewFocus8742M142(this)
+            
+            try 
+                this.commNewFocus8742M142 = newfocus.Model8742(...
+                    'cTcpipHost', '192.168.10.23' ...
+                );
+                this.commNewFocus8742M142.init();
+                this.commNewFocus8742M142.connect();
+                
+            catch mE
+                
+                this.commNewFocus8742M142 = [];
+                error(getReport(mE));
+            end
+            
+        end
+        
+        function disconnectNewFocus8742M142(this)
+             if this.getIsConnectedNewFocus8742M142()
+                 this.commNewFocus8742M142.disconnect();
+             end
+            this.commNewFocus8742M142 = [];
+        end
+                        
+        function comm = getNewFocus8742M142(this)
+            if this.getIsConnectedNewFocus8742M142()
+                comm = this.commNewFocus8742M142;
+            else
+                comm = this.commNewFocus8742M142Virtual;
+            end            
+        end
+        
+        %% NewFocus Model 8742 (M142)
+        
+        function l = getIsConnectedNewFocus8742MA(this)
+           
+            if isa(this.commNewFocus8742MA, 'newfocus.Model8742')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectNewFocus8742MA(this)
+            
+            try 
+                this.commNewFocus8742MA = newfocus.Model8742(...
+                    'cTcpipHost', '192.168.20.31' ...
+                );
+                this.commNewFocus8742MA.init();
+                this.commNewFocus8742MA.connect();
+                
+            catch mE
+                
+                this.commNewFocus8742MA = [];
+                error(getReport(mE));
+            end
+            
+        end
+        
+        function disconnectNewFocus8742MA(this)
+             if this.getIsConnectedNewFocus8742MA()
+                 this.commNewFocus8742MA.disconnect();
+             end
+            this.commNewFocus8742MA = [];
+        end
+                        
+        function comm = getNewFocus8742MA(this)
+            if this.getIsConnectedNewFocus8742MA()
+                comm = this.commNewFocus8742MA;
+            else
+                comm = this.commNewFocus8742MAVirtual;
             end            
         end
         
@@ -1181,6 +1275,7 @@ classdef Hardware < mic.Base
 
             cDirMpm = fullfile(cDirThis, '..', '..', 'mpm-packages');
             cDirMpm = mic.Utils.path2canonical(cDirMpm);
+            
             % Java
             ceJavaPathLoad = { ...
                 ... ALS Channel Access 
@@ -1230,6 +1325,9 @@ classdef Hardware < mic.Base
             this.commNPointMAVirtual = npoint.LC400Virtual();
             
             this.commALSVirtual = cxro.ALSVirtual();
+            
+            this.commNewFocus8742M142Virtual = newfocus.Model8742Virtual();
+            this.commNewFocus8742MAVirtual = newfocus.Model8742Virtual();
         end
         
   

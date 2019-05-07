@@ -15,6 +15,7 @@ purge
 
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware();
+hardware.setClock(clock);
 
 ui = bl12014.ui.MADiagnostics(...
     'hardware', hardware, ...

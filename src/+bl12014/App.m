@@ -10,7 +10,6 @@ classdef App < mic.Base
         cTcpipSmarActM141 = '192.168.10.20'
         cTcpipMicronix = '192.168.10.21'
         cTcpipLc400M142 = '192.168.10.22'
-        cTcpipNewFocus = '192.168.10.23'
         
         
         % Endstation 1 Subnet
@@ -22,7 +21,6 @@ classdef App < mic.Base
         cTcpipSmarActFocusMonitor = '192.168.20.26'
         cTcpipKeithley6482Wafer = '192.168.20.28'
         cTcpipKeithley6482Reticle = '192.168.20.28'
-        cTcpipNewFocusMA = '192.168.20.31'
         
         cTcpipRigolDG1000Z = '192.168.20.35' % Temporary
         cTcpip3GStoreRemotePowerSwitch1 = '192.168.10.30'; % Beamline
@@ -74,19 +72,8 @@ classdef App < mic.Base
         % {cxro.bl1201.dct.DctCorbaProxy 1x1}
         commDctCorbaProxy
         
-        % {newFocus.NewFocusModel8742 1x1} 
-        % May cheat and use DLL directly with {mic.interface.device.*}
-        % M142 + M142R common tiltX (pitch)
-        % M142 independent tiltY  (roll)
-        % M142R independent tiltY (roll)
-        commNewFocusModel8742
         
-        
-        % {newFocus.NewFocusModel8742 1x1} 
-        % MA diagnostic YAG
-        % Subframe wheel
-        commNewFocusModel8742MA
-        
+       
         
         % {micronix.Mmc103 1x1}
         % M142R tiltZ (clocking)
@@ -218,8 +205,6 @@ classdef App < mic.Base
             this.msg('destroyAndDisconnectAll', this.u8_MSG_TYPE_INFO);
                         
             this.destroyAndDisconnectMicronixMmc103();
-            this.destroyAndDisconnectNewFocusModel8742();
-            this.destroyAndDisconnectNewFocusModel8742MA();
             this.destroyAndDisconnectSmarActMcsGoni();
             this.destroyAndDisconnectSmarActSmarPod();
             this.destroyAndDisconnectSmarActRotary();
@@ -232,18 +217,6 @@ classdef App < mic.Base
         % Getters return logical if the COMM class exists.  Used by
         % GetSetLogicalConnect instances
         
-        
-        
-        
-        function l = getNewFocusModel8742(this)
-            l = ~isempty(this.commNewFocusModel8742);
-        end
-        
-        function l = getNewFocusModel8742MA(this)
-            l = ~isempty(this.commNewFocusModel8742MA);
-        end
-        
-
         
         function l = getSmarActMcsGoni(this)
             l = ~isempty(this.commSmarActMcsGoni);
@@ -558,80 +531,12 @@ classdef App < mic.Base
         
         
         
-        function initAndConnectNewFocusModel8742(this)
-            
-
-            if this.getNewFocusModel8742()
-                return
-            end
-            
-            try
-                this.commNewFocusModel8742 = newfocus.Model8742( ...
-                    'cTcpipHost', this.cTcpipNewFocus ...
-                );
-                this.commNewFocusModel8742.init();
-                this.commNewFocusModel8742.connect();
-            catch mE
-                this.commNewFocusModel8742 = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                return;
-            end
-
-            this.uiApp.uiBeamline.uiM142.connectNewFocusModel8742(this.commNewFocusModel8742)
-            
-        end
         
         
-        function initAndConnectNewFocusModel8742MA(this)
-            
-
-            if this.getNewFocusModel8742MA()
-                return
-            end
-            
-            try
-                this.commNewFocusModel8742MA = newfocus.Model8742( ...
-                    'cTcpipHost', this.cTcpipNewFocusMA ...
-                );
-                this.commNewFocusModel8742MA.init();
-                this.commNewFocusModel8742MA.connect();
-            catch mE
-                this.commNewFocusModel8742MA = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                return;
-            end
-
-            this.uiApp.uiMA.uiDiagnostics.connectNewFocusModel8742(this.commNewFocusModel8742MA)
-            
-        end
         
-        function destroyAndDisconnectNewFocusModel8742(this)
-            
-
-            if ~this.getNewFocusModel8742()
-                return
-            end
-            
-            this.uiApp.uiBeamline.uiM142.disconnectNewFocusModel8742();
-            
-            this.commNewFocusModel8742.delete();
-            this.commNewFocusModel8742 = [];
-                            
-        end
         
-        function destroyAndDisconnectNewFocusModel8742MA(this)
-            
-
-            if ~this.getNewFocusModel8742MA()
-                return
-            end
-            
-            this.uiApp.uiMA.uiDiagnostics.disconnectNewFocusModel8742();
-            
-            this.commNewFocusModel8742MA.delete();
-            this.commNewFocusModel8742MA = [];
-                            
-        end
+        
+        
         
         
         
@@ -769,21 +674,9 @@ classdef App < mic.Base
             );
             %}
         
-            gslcCommNewFocusModel8742 = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNewFocusModel8742, ...
-                'fhSetTrue', @this.initAndConnectNewFocusModel8742, ...
-                'fhSetFalse', @this.destroyAndDisconnectNewFocusModel8742 ...
-            );
-        
-        
-            gslcCommNewFocusModel8742MA = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getNewFocusModel8742MA, ...
-                'fhSetTrue', @this.initAndConnectNewFocusModel8742MA, ...
-                'fhSetFalse', @this.destroyAndDisconnectNewFocusModel8742MA ...
-            );
-        
            
         
+            
             gslcCommSmarActRotary = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getSmarActRotary, ...
                 'fhSetTrue', @this.initAndConnectSmarActRotary, ...
@@ -861,18 +754,8 @@ classdef App < mic.Base
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.turnOn();
-            this.uiApp.uiBeamline.uiM142.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742);
-            this.uiApp.uiBeamline.uiM142.uiCommNewFocusModel8742.turnOn();
             
-            
-            
-            
-            
-            
-            % MA Diagnostics
-            this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.setDevice(gslcCommNewFocusModel8742MA);
-            this.uiApp.uiMA.uiDiagnostics.uiCommNewFocusModel8742.turnOn();
-            
+
             
             
             
