@@ -823,7 +823,7 @@ classdef Beamline < mic.Base
         
             addlistener(this.uiGratingTiltX, 'eUnitChange', @this.onUnitChange);
             
-            this.loadGratingTiltXFromDisk()
+            % this.loadGratingTiltXFromDisk()
         end
         
         function initUiRecipe(this)
