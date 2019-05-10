@@ -37,9 +37,9 @@ classdef Scanner < mic.Base
         dWidthPadName = 29
         dScale = 1 % scale factor to hardware
         
-        % {char 1xm} directories to initialize the PupilFillGenerator to
-        cDirWaveforms
-        cDirWaveformsStarred
+        % {char 1xm} directory for saving
+        cDirSave
+        
         % {logical 1x1} show the "choose dir" button on both lists of saved
         % pupilfills
         lShowChooseDir = false
@@ -59,22 +59,16 @@ classdef Scanner < mic.Base
         function this = Scanner(varargin)
             
             [cDir, cName, cExt] = fileparts(mfilename('fullpath'));
-                   
-            this.cDirWaveforms = mic.Utils.path2canonical(fullfile(...
+            
+            this.cDirSave = mic.Utils.path2canonical(fullfile(...
                 cDir, ...
                 '..', ...
                 '..', ...
                 'save', ...
                 'scanner' ...
             ));
-        
-            this.cDirWaveformsStarred = fullfile(...
-                this.cDirWaveforms, ...
-                'starred' ...
-            );
             
-        
-        
+            
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -98,6 +92,25 @@ classdef Scanner < mic.Base
         end
         
         
+            
+        
+        function c = getDirWaveforms(this)
+            c = this.cDirSave;
+        end
+        
+        function c = getDirWaveformsStarred(this)
+            c = fullfile(...
+                this.cDirSave, ...
+                'starred' ...
+            );
+        end
+        
+        function c = getDirUI(this)
+            c = fullfile(...
+                this.cDirSave, ...
+                'npoint-ui' ...
+            );
+        end
         
         % Sets the pupil fill with name {cName} in the directory of the 
         % starred list
@@ -154,7 +167,7 @@ classdef Scanner < mic.Base
         function cec = getSaveLoadProps(this)
             cec = {...
                 'uiPupilFillGenerator', ...
-                'uiNPointLC400' ...
+                ...'uiNPointLC400' ...
              };
         end
         
@@ -199,8 +212,8 @@ classdef Scanner < mic.Base
         function initUiPupilFillGenerator(this)
             this.uiPupilFillGenerator = PupilFillGenerator(...
                 'lShowChooseDir', this.lShowChooseDir, ...
-                'cDirWaveforms', this.cDirWaveforms, ...
-                'cDirWaveformsStarred', this.cDirWaveformsStarred ...
+                'cDirWaveforms', this.getDirWaveforms(), ...
+                'cDirWaveformsStarred', this.getDirWaveformsStarred() ...
             );
         end
         
@@ -224,16 +237,48 @@ classdef Scanner < mic.Base
             this.uiNPointLC400 =  npoint.ui.LC400(...
                 'clock', this.clock, ...
                 'uiClock', this.uiClock, ...
+                'fhOnChangeOffsetX', @this.onChangeNPointOffset, ...
+                'fhOnChangeOffsetY', @this.onChangeNPointOffset, ...
                 'fhGetNPoint', this.fhGetNPoint, ...
                 'fhGet20BitWaveforms', @this.get20BitWaveforms, ...
                 'fhGetPathOfRecipe', @() this.uiPupilFillGenerator.getPathOfRecipe(), ...
                 'cName', sprintf('%s-LC-400-UI', this.cName) ...
             );
+        
+            this.loadStateOfUiNPointFromDisk();
             
         end
         
+        function c = getPathOfSavedState(this)
+            mic.Utils.checkDir(this.getDirUI());
+            c = fullfile(...
+                this.getDirUI(), ...
+                ['saved-state-of-ui', '.mat']...
+            );
+            c = mic.Utils.path2canonical(c);
+        end
+        
+       
+        % Only loads the state of the 
+        function loadStateOfUiNPointFromDisk(this)
+            if exist(this.getPathOfSavedState(), 'file') == 2
+                fprintf('ui.Scanner loadStateOfUiNPointFromDisk() file: %s\n', this.getPathOfSavedState());
+                load(this.getPathOfSavedState()); % populates variable st in local workspace
+                this.uiNPointLC400.load(st);
+            end
+        end
         
         
+        function saveStateOfUiNPointToDisk(this)
+            st = this.uiNPointLC400.save();
+            fprintf('ui.Scanner saveStateOfUiNPointToDisk() file: %s\n', this.getPathOfSavedState());
+            save(this.getPathOfSavedState(), 'st');
+        end
+        
+        
+        function onChangeNPointOffset(this, src, evt)
+            this.saveStateOfUiNPointToDisk();
+        end
         
         function init(this)
             this.msg('init');
