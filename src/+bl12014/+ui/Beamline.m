@@ -380,13 +380,42 @@ classdef Beamline < mic.Base
                     str2double(ceAnswer{1}), ...
                     str2double(ceAnswer{2}) ...
                 );
-
-   
+            
+                % this.saveGratingTiltXToDisk();
            
            end
             
         end
         
+        %{
+        function c = getPathOfSavedState(this)
+            
+            c = fullfile(this.cDirSrc, 'save', 'beamline-grating-cal');
+            c = mic.Utils.path2canonical(c);
+            mic.Utils.checkDir(c);
+            c = fullfile(...
+                c, ...
+                ['grating-tilt-x', '.mat']...
+            );
+            c = mic.Utils.path2canonical(c);
+        end
+        
+       
+        function loadGratingTiltXFromDisk(this)
+            if exist(this.getPathOfSavedState(), 'file') == 2
+                fprintf('ui.Beamlinhe loadGratingTiltXFromDisk() file: %s\n', this.getPathOfSavedState());
+                load(this.getPathOfSavedState()); % populates variable st in local workspace
+                this.uiGratingTiltX.load(st);
+            end
+        end
+        
+        
+        function saveGratingTiltXToDisk(this)
+            st = this.uiGratingTiltX.save();
+            fprintf('ui.Beamline saveGratingTiltXToDisk() file: %s\n', this.getPathOfSavedState());
+            save(this.getPathOfSavedState(), 'st');
+        end
+        %}
         
         function updateAxesCrosshair(this, hFigure)
             
@@ -488,17 +517,47 @@ classdef Beamline < mic.Base
         end
         
         
+        
+        
+        function cec = getSaveLoadProps(this)
+            cec = {...
+                'stUiRecipeStore', ...
+                'uiGratingTiltX', ...
+             };
+        end
+        
+        
         function st = save(this)
+             cecProps = this.getSaveLoadProps();
+            
             st = struct();
-            st.stUiRecipeStore = this.stUiRecipeStore;
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
+        end
+        
+        function load(this, st)
+                        
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
+            end
             
         end
         
-        function  load(this, st)
-            if isfield(st, 'stUiRecipeStore') 
-                this.stUiRecipeStore = st.stUiRecipeStore;
-            end
-        end
+        
+        
+        
         
     end
     
@@ -763,6 +822,8 @@ classdef Beamline < mic.Base
             );
         
             addlistener(this.uiGratingTiltX, 'eUnitChange', @this.onUnitChange);
+            
+            this.loadGratingTiltXFromDisk()
         end
         
         function initUiRecipe(this)
