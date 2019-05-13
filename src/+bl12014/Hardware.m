@@ -42,11 +42,10 @@ classdef Hardware < mic.Base
         cTcpipKeithley6482Reticle   = '192.168.20.28'
         cTcpipNewFocusMA            = '192.168.20.31'
         
-        cTcpipRigolDG1000Z = '192.168.20.35'
+        cTcpipRigolDG1000Z          = '192.168.20.35'
         
-        cTcpipWebSwitchVis = '192.168.20.32';
-        cTcpipWebSwitchBeamline = '192.168.10.30';
-        
+        cTcpipWebSwitchVis          = '192.168.20.32';
+        cTcpipWebSwitchBeamline     = '192.168.10.30';
         
     end
     
@@ -228,7 +227,7 @@ classdef Hardware < mic.Base
             
             try
                 this.commWebSwitchBeamline = controlbyweb.WebSwitch(...
-                    'cHost', this.cTcpipWebSwitchBeamline ...
+                    'cHost', '192.168.10.30' ...
                 );
            catch mE
                 error(getReport(mE));
@@ -264,7 +263,7 @@ classdef Hardware < mic.Base
             
             try
                 this.commWebSwitchEndstation = controlbyweb.WebSwitch(...
-                    'cHost', this.cTcpipWebSwitchEndstation ...
+                    'cHost', '192.168.20.30' ...
                 );
            catch mE
                 error(getReport(mE));

@@ -471,7 +471,7 @@ classdef App < mic.Base
         
         function saveStateToDisk(this)
             st = this.save();
-            fprintf('ui.App saveStateToDisk() file: %s\n', this.file());
+            % fprintf('ui.App saveStateToDisk() file: %s\n', this.file());
             save(this.file(), 'st');
         end
         

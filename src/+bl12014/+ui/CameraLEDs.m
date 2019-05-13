@@ -2,16 +2,6 @@ classdef CameraLEDs < mic.Base
     
     properties
         
-        
-        uiCommWebSwitch1
-        uiCommWebSwitch2
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiComm3GStoreRemotePowerSwitch1
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiComm3GStoreRemotePowerSwitch2
-        
         % {mic.ui.device.GetSetLogical 1x1}}
         uiSwitch1Outlet1
         uiSwitch1Outlet2
@@ -62,78 +52,14 @@ classdef CameraLEDs < mic.Base
         
         end
         
-        
-        function connect3GStoreRemotePowerSwitch1(this, comm)
-            
-            % {< mic.interface.device.GetSetLogical}
-            outlet1 = bl12014.device.GetSetLogicalFrom3GStoreRemotePowerSwitch(comm, 1);
-
-            % {< mic.interface.device.GetSetLogical}
-            outlet2 = bl12014.device.GetSetLogicalFrom3GStoreRemotePowerSwitch(comm, 2);
-            
-            this.uiSwitch1Outlet1.setDevice(outlet1);
-            this.uiSwitch1Outlet2.setDevice(outlet2);
-            
-            this.uiSwitch1Outlet1.turnOn();
-            this.uiSwitch1Outlet2.turnOn();
-            
-        end
-        
-        
-        function connect3GStoreRemotePowerSwitch2(this, comm)
-            
-            % {< mic.interface.device.GetSetLogical}
-            outlet1 = bl12014.device.GetSetLogicalFrom3GStoreRemotePowerSwitch(comm, 1);
-
-            % {< mic.interface.device.GetSetLogical}
-            outlet2 = bl12014.device.GetSetLogicalFrom3GStoreRemotePowerSwitch(comm, 2);
-            
-            this.uiSwitch2Outlet1.setDevice(outlet1);
-            this.uiSwitch2Outlet2.setDevice(outlet2);
-            
-            this.uiSwitch2Outlet1.turnOn();
-            this.uiSwitch2Outlet2.turnOn();
-            
-        end
-        
-        function disconnect3GStoreRemotePowerSwitch1(this)
-           
-            this.uiSwitch1Outlet1.turnOff();
-            this.uiSwitch1Outlet1.setDevice([]);
-            
-            this.uiSwitch1Outlet2.turnOff();
-            this.uiSwitch1Outlet2.setDevice([]);
-            
-        end
-        
-        
-        function disconnect3GStoreRemotePowerSwitch2(this)
-           
-            this.uiSwitch2Outlet1.turnOff();
-            this.uiSwitch2Outlet1.setDevice([]);
-            
-            this.uiSwitch2Outlet2.turnOff();
-            this.uiSwitch2Outlet2.setDevice([]);
-            
-        end
-        
-        
                 
         function build(this, hParent, dLeft, dTop)
             
             this.hParent = hParent
             dSep = 30;
             
-%             this.uiComm3GStoreRemotePowerSwitch1.build(this.hParent, dLeft, dTop);
-%             dTop = dTop + dSep;
-            
-            this.uiComm3GStoreRemotePowerSwitch2.build(this.hParent, dLeft, dTop);
-            dTop = dTop + 15 + dSep;
-            
-            
             this.uiSwitch1Outlet1.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
             
             this.uiSwitch1Outlet2.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
@@ -150,14 +76,9 @@ classdef CameraLEDs < mic.Base
         end
         
         
-       
-        
-        
         function delete(this)
             
             this.msg('delete');
-
-            
             
         end   
         
@@ -275,6 +196,14 @@ classdef CameraLEDs < mic.Base
                 'ceVararginCommandToggle', this.getCommandToggleParams(), ...
                 'cName', sprintf('%s-end-station-outlet-1', this.cName), ...
                 'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getWebSwitchEndstation().isOnRelay1(), ...
+                'fhSet', @(lVal) mic.Utils.ternEval(...
+                   lVal, ...
+                   @() this.hardware.getWebSwitchEndstation().turnOnRelay1(), ...
+                   @() this.hardware.getWebSwitchEndstation().turnOffRelay1() ...
+                ), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'End Station Cameras' ...
             );
         end
@@ -298,54 +227,19 @@ classdef CameraLEDs < mic.Base
                 'ceVararginCommandToggle', this.getCommandToggleParams(), ...
                 'cName', sprintf('%s-end-station-outlet-2', this.cName), ...
                 'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getWebSwitchEndstation().isOnRelay2(), ...
+                'fhSet', @(lVal) mic.Utils.ternEval(...
+                   lVal, ...
+                   @() this.hardware.getWebSwitchEndstation().turnOnRelay2(), ...
+                   @() this.hardware.getWebSwitchEndstation().turnOffRelay2() ...
+                ), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
                 'cLabel', 'End Station LEDs' ...
             );
         end
         
         
-        
-        function initUiComm3GStoreRemotePowerSwitch2(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiComm3GStoreRemotePowerSwitch2 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', '3gstore-remote-power-switch-2', ...
-                'cLabel', '3GStore Remote Power 2' ...
-            );
-        
-        end
-        
-        function initUiComm3GStoreRemotePowerSwitch1(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-        
-            this.uiComm3GStoreRemotePowerSwitch1 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', '3gstore-remote-power-switch-1', ...
-                'cLabel', '3GStore Remote Power 1' ...
-            );
-        
-        end
         
         
         
@@ -358,8 +252,7 @@ classdef CameraLEDs < mic.Base
             this.initUiSwitch2Outlet1();
             this.initUiSwitch2Outlet2();
             
-            % this.initUiComm3GStoreRemotePowerSwitch1();
-            this.initUiComm3GStoreRemotePowerSwitch2();
+            
         end
         
         

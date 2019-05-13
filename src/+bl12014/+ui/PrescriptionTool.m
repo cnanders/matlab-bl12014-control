@@ -306,6 +306,13 @@ classdef PrescriptionTool < mic.Base
             stValue.waferZ = this.uiFemTool.dFocus(nMid);
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+            
+            
+            % Pause
+            stValue = struct();
+            stValue.pause = 10;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
 
             % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
             stValue = struct();
@@ -327,7 +334,7 @@ classdef PrescriptionTool < mic.Base
             
             % Enough time for resonant motion of frame excited from stage move
             % to settle
-            stTask.pausePreExpose = 30; % FIX ME
+            % stTask.pausePreExpose = 30; % FIX ME
 
             stValue.task = stTask;
 
@@ -424,6 +431,12 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
+                    % Pause
+            stValue = struct();
+            stValue.pause = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+                    
                     % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue = struct();
                     stValue.workingMode = 4; % Drift closed loop for exposure
@@ -454,7 +467,7 @@ classdef PrescriptionTool < mic.Base
                     
                     % Enough time for resonant motion of frame excited from stage move
                     % to settle
-                    stTask.pausePreExpose = 5;
+                    % stTask.pausePreExpose = 5;
                     
                     stValue.task = stTask;
                     

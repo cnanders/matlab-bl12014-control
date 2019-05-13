@@ -521,14 +521,14 @@ classdef Beamline < mic.Base
         
         function cec = getSaveLoadProps(this)
             cec = {...
-                'stUiRecipeStore', ...
+                ...'stUiRecipeStore', ...
                 'uiGratingTiltX', ...
              };
         end
         
         
         function st = save(this)
-             cecProps = this.getSaveLoadProps();
+            cecProps = this.getSaveLoadProps();
             
             st = struct();
             for n = 1 : length(cecProps)
@@ -537,6 +537,8 @@ classdef Beamline < mic.Base
                     st.(cProp) = this.(cProp).save();
                 end
             end
+            
+            st.stUiRecipeStore = this.stUiRecipeStore;
 
              
         end
@@ -552,6 +554,8 @@ classdef Beamline < mic.Base
                    end
                end
             end
+            
+            this.stUiRecipeStore = st.stUiRecipeStore;
             
         end
         
