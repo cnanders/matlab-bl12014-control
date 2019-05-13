@@ -78,6 +78,7 @@ classdef App < mic.Base
         uiClockMfDriftMonitor
         uiClockTuneFluxDensity
         uiClockPowerPmacHydraMotMin
+        uiClockDMIPowerMonitor
 
     end
     
@@ -274,6 +275,7 @@ classdef App < mic.Base
         
             this.uiButtonListClockTasks.build(this.hFigureNew, 290, 5, 100, 20);
             this.uiCurrentOfRing.build(this.hFigureNew, 600, 5);
+            this.uiDMIPowerMonitor.build(this.hFigureNew, 900, 1);
         
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
@@ -414,6 +416,7 @@ classdef App < mic.Base
             this.uiClockMfDriftMonitor = [];
             this.uiClockTuneFluxDensity = [];
             this.uiClockPowerPmacHydraMotMin = [];
+            this.uiClockDMIPowerMonitor = [];
             
             
                        
@@ -600,6 +603,7 @@ classdef App < mic.Base
             this.uiClockMfDriftMonitor = mic.ui.Clock(this.clock);
             this.uiClockTuneFluxDensity = mic.ui.Clock(this.clock);
             this.uiClockPowerPmacHydraMotMin = mic.ui.Clock(this.clock);
+            this.uiClockDMIPowerMonitor = mic.ui.Clock(this.clock);
             
             this.uiNetworkCommunication = bl12014.ui.NetworkCommunication('clock', this.uiClockNetworkCommunication);
             
@@ -812,6 +816,12 @@ classdef App < mic.Base
                 'cName', [this.cName, 'current-of-ring'], ...
                 'config', uiConfig, ...
                 'cLabel', 'ALS Current' ...
+            );
+        
+            this.uiDMIPowerMonitor = bl12014.ui.DMIPowerMonitor(...
+                'hardware', this.hardware, ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockDMIPowerMonitor ...
             );
 
         end
