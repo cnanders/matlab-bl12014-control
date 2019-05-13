@@ -1180,7 +1180,12 @@ classdef Hardware < mic.Base
                 this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
                                 'commMFDriftMonitor', comm, ...
                                  'clock', this.clock);
+                 comm = this.commMfDriftMonitorMiddleware;
+            else
+                 comm = this.commMfDriftMonitorMiddlewareVirtual;
             end
+            
+            
             
  
 %             % If first time, establish link with Drift Monitor middleware
@@ -1191,7 +1196,6 @@ classdef Hardware < mic.Base
 %                                  'clock', this.clock);
 %             end
 
-            comm = this.commMfDriftMonitorMiddleware;
             
         end
         
@@ -1306,6 +1310,7 @@ classdef Hardware < mic.Base
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
+            this.commMfDriftMonitorMiddlewareVirtual  = bl12014.hardwareAssets.virtual.MFDriftMonitorMiddleware();
             this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();

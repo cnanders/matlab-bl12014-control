@@ -554,7 +554,7 @@ classdef WaferTTZClosedLoop < mic.Base
                 'clock', this.uiClock ...
             );
             
-            this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
+%             this.uiClock.add(@()this.updateButtonColor(), this.id(), 1);
              
         end
         
