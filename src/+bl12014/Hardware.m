@@ -102,6 +102,10 @@ classdef Hardware < mic.Base
         commBL1201CorbaProxy
         commBL1201CorbaProxyVirtual
         
+        
+        commDCTCorbaProxy
+        commDCTCorbaProxyVirtual
+        
         commSmarActM141
         commSmarActM141Virtual
         
@@ -319,9 +323,6 @@ classdef Hardware < mic.Base
         
         %% BL1201 Cobra Proxy
         
-        
-        
-        
         function l = getIsConnectedBL1201CorbaProxy(this)
            
             if isa(this.commBL1201CorbaProxy, 'cxro.bl1201.beamline.BL1201CorbaProxy')
@@ -352,6 +353,43 @@ classdef Hardware < mic.Base
                 comm = this.commBL1201CorbaProxyVirtual;
             end            
         end
+        
+        
+        %% DCT Cobra Proxy
+        
+        function l = getIsConnectedDCTCorbaProxy(this)
+           
+            if isa(this.commDCTCorbaProxy, 'cxro.bl1201.dct.DctCorbaProxy')
+                l = true;
+                return;
+            end
+
+            l = false;
+        end
+        
+        function connectDCTCorbaProxy(this)
+            
+            try
+                this.commDCTCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectDCTCorbaProxy(this)
+            this.commDCTCorbaProxy = [];
+        end
+                
+        function comm = getDCTCorbaProxy(this)
+            if this.getIsConnectedDCTCorbaProxy()
+                comm = this.commDCTCorbaProxy;
+            else
+                comm = this.commDCTCorbaProxyVirtual;
+            end            
+        end
+        
+        
+        
         
         
         %% MF Drift Monitor (different than MfDriftMonitor Middleware)
@@ -1325,6 +1363,7 @@ classdef Hardware < mic.Base
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
+            % this.commDCTCorbaProxyVirtual = bl12014.hardwareAssets.virtual.DCTCorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();
             this.commExitSlitVirtual = bl12014.hardwareAssets.virtual.BL12PicoExitSlit();

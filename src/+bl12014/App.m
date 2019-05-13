@@ -7,28 +7,14 @@ classdef App < mic.Base
         dWidthButton = 210
         
         % Branchline Subnet
-        cTcpipSmarActM141 = '192.168.10.20'
         cTcpipMicronix = '192.168.10.21'
-        cTcpipLc400M142 = '192.168.10.22'
-        
         
         % Endstation 1 Subnet
-        cTcpipLc400MA = '192.168.20.20'
-        cTcpipAcromag = '192.168.20.22'
         cTcpipDeltaTau = '192.168.20.23'
         cTcpipSmarActLSIGoni = '192.168.20.24'
         cTcpipSmarActLSIHexapod = '192.168.20.25'
         cTcpipSmarActFocusMonitor = '192.168.20.26'
-        cTcpipKeithley6482Wafer = '192.168.20.28'
-        cTcpipKeithley6482Reticle = '192.168.20.28'
-        
-        cTcpipRigolDG1000Z = '192.168.20.35' % Temporary
-        
-
-        % Video Subnet
-        
-        % Endstation 2 Subnet
-        
+       
         
     end
     
@@ -46,12 +32,6 @@ classdef App < mic.Base
         % {cxro.met5.Instruments 1x1}
         jMet5Instruments
         
-        % {rigol.DG1000Z 1x1}
-        commRigolDG1000Z
-        
-        
-        
-        
         % {cxro.common.device.motion.Stage 1x1}
         commSmarActMcsGoni
         
@@ -63,29 +43,15 @@ classdef App < mic.Base
         lUseVirtualPVCam = false % <--- helpful for debugging PI-MTE cam
         
         commSmarActRotary
-        
-        
-       
                 
-        % {cxro.bl1201.dct.DctCorbaProxy 1x1}
-        commDctCorbaProxy
-        
-        
-       
+
         
         % {micronix.Mmc103 1x1}
         % M142R tiltZ (clocking)
         % M142 + M142R common x
         commMicronixMmc103
         
-        
-        
-        
-        
 
-        
-        
-        
         uiApp
         
         
@@ -230,28 +196,7 @@ classdef App < mic.Base
             l = ~isempty(this.commMicronixMmc103);
             
         end
-        
-        function l = getRigolDG1000Z(this)
-            l = ~isempty(this.commRigolDG1000Z);
-            
-        end
-        
-        
-
-        
-        
-        
-        function l = getDctCorbaProxy(this)
-            l = ~isempty(this.commDctCorbaProxy);
-        end
-        
-        
-        
-        
-        
-        
-        
-       
+                
         
         
         function initAndConnectSmarActRotary(this)
@@ -383,89 +328,7 @@ classdef App < mic.Base
         end
         
         
-        
-        
-       
-        
-       
-        
-        
-        
-        
-
-        
-       
-         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      
-        
-        
-        
-        
-        
-       
-        
-        
-        
-        
-        function initAndConnectDctCorbaProxy(this)
-            
-            if this.getDctCorbaProxy()
-                return
-            end
-            
-            try
-                this.commDctCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
-            catch mE
-                this.commDctCorbaProxy = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                return;
-            end
-           
-            this.uiApp.uiBeamline.connectDctCorbaProxy(this.commDctCorbaProxy)
-            
-        end
-        
-        function destroyAndDisconnectDctCorbaProxy(this)
-            
-            if ~this.getDctCorbaProxy()
-                return
-            end
-                        
-            this.uiApp.uiBeamline.disconnectDctCorbaProxy()
-                        
-            this.commDctCorbaProxy = [];
-        end
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+  
         
         function initAndConnectMicronixMmc103(this)
             
@@ -522,82 +385,13 @@ classdef App < mic.Base
             this.commMicronixMmc103 = [];
             
         end
-        
-        
-        
-       
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        function initAndConnectRigolDG1000Z(this)
-            
-            if this.getRigolDG1000Z()
-                return
-            end
-            
-            try 
-                
-                u16Port = 5555;
-                this.commRigolDG1000Z = rigol.DG1000Z(...
-                    'cHost', this.cTcpipRigolDG1000Z, ...
-                    'u16Port', u16Port ...
-                );
-                this.commRigolDG1000Z.idn()
-                % this.uiApp.uiBeamline.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
-                % this.uiApp.uiWafer.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
-                % this.uiApp.uiReticle.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z); % 
-                % this.uiApp.uiScan.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-                % this.uiApp.uiTuneFluxDensity.uiShutter.connectRigolDG1000Z(this.commRigolDG1000Z);
-            catch mE
-                
-                this.commRigolDG1000Z = [];
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                
-            end
-            
-            
-        end
-        
-        
-        function destroyAndDisconnectRigolDG1000Z(this)
-            
-            % this.uiApp.uiBeamline.uiShutter.disconnectRigolDG1000Z();
-            % this.uiApp.uiWafer.uiShutter.disconnectRigolDG1000Z();
-            % this.uiApp.uiReticle.uiShutter.disconnectRigolDG1000Z();
-            % this.uiApp.uiScan.uiShutter.disconnectRigolDG1000Z();
-            % this.uiApp.uiTuneFluxDensity.uiShutter.disconnectRigolDG1000Z();
-            this.commRigolDG1000Z = [];
-            
-        end
-        
-        
-        
-       
+
             
         
         function initGetSetLogicalConnects(this)
             
             
 
-        
-            %{
-            gslcCommRigolDG1000Z = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getRigolDG1000Z, ...
-                'fhSetTrue', @this.initAndConnectRigolDG1000Z, ...
-                'fhSetFalse', @this.destroyAndDisconnectRigolDG1000Z ...
-            );
-            %}
-        
-           
-        
-            
             gslcCommSmarActRotary = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getSmarActRotary, ...
                 'fhSetTrue', @this.initAndConnectSmarActRotary, ...
@@ -623,23 +417,6 @@ classdef App < mic.Base
             );
         
             
-            
-        
-            
-           
-            
-           
-            
-            
-        
-        
-            gslcCommDctCorbaProxy = bl12014.device.GetSetLogicalConnect(...
-                'fhGet', @this.getDctCorbaProxy, ...
-                'fhSetTrue', @this.initAndConnectDctCorbaProxy, ...
-                'fhSetFalse', @this.destroyAndDisconnectDctCorbaProxy ...
-            );
-        
-            
         
             gslcCommMicronixMmc103 = bl12014.device.GetSetLogicalConnect(...
                 'fhGet', @this.getMicronixMmc103, ...
@@ -647,27 +424,11 @@ classdef App < mic.Base
                 'fhSetFalse', @this.destroyAndDisconnectMicronixMmc103 ...
             );
         
-        
-           
-
-            
-            % Beamline
-            % this.uiApp.uiBeamline.uiCommDctCorbaProxy.setDevice(gslcCommDctCorbaProxy)
-            % this.uiApp.uiBeamline.uiCommDctCorbaProxy.turnOn()
-            
-
-                        
-           
             
             % M142
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.setDevice(gslcCommMicronixMmc103);
             this.uiApp.uiBeamline.uiM142.uiCommMicronixMmc103.turnOn();
             
-
-            
-            
-            
-           
            
             %this.uiApp.uiPrescriptionTool.ui          
             %this.uiApp.uiScan.ui            
@@ -702,22 +463,7 @@ classdef App < mic.Base
 
 
             
-            %{
-            this.uiApp.uiBeamline.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
-            this.uiApp.uiBeamline.uiShutter.uiCommRigol.turnOn();
             
-            this.uiApp.uiWafer.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
-            this.uiApp.uiWafer.uiShutter.uiCommRigol.turnOn();
-            
-            this.uiApp.uiReticle.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
-            this.uiApp.uiReticle.uiShutter.uiCommRigol.turnOn();
-            
-            this.uiApp.uiScan.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
-            this.uiApp.uiScan.uiShutter.uiCommRigol.turnOn();
-            
-            this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.setDevice(gslcCommRigolDG1000Z);
-            this.uiApp.uiTuneFluxDensity.uiShutter.uiCommRigol.turnOn();
-            %}
             
 
         end
