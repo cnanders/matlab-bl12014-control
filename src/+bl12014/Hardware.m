@@ -1149,16 +1149,41 @@ classdef Hardware < mic.Base
         % different interface
         
         function l = getIsConnectedMfDriftMonitorMiddleware(this)
-            l = this.getMfDriftMonitorMiddleware().isConnected();
+            % l = this.getMfDriftMonitorMiddleware().isConnected();
+            
+            if isa(this.commMfDriftMonitorMiddleware, 'bl12014.hardwareAssets.middleware.MFDriftMonitor')
+                l = true;
+                else
+                    l = false;
+            end
         end
         
         function connectMfDriftMonitorMiddleware(this)
-           this.getMfDriftMonitorMiddleware().connect();
+           % this.getMfDriftMonitorMiddleware().connect();
+           
+           if isempty(this.jMet5Instruments)
+                this.getjMet5Instruments();
+           end
+            
+           this.connectMfDriftMonitor();
+           comm = this.getMfDriftMonitor();
+           this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
+                                    'commMFDriftMonitor', comm, ...
+                                     'clock', this.clock);
            
         end
         
         function disconnectMfDriftMonitorMiddleware(this)
-           this.getMfDriftMonitorMiddleware().disconnect();
+            
+            
+            if this.getIsConnectedMfDriftMonitorMiddleware
+                this.getMfDriftMonitorMiddleware().disconnect();
+           end
+           
+           % Put disconnect code here
+           
+           
+           this.commMfDriftMonitorMiddleware = [];
         end
                 
         function comm = getMfDriftMonitorMiddleware(this)
@@ -1166,26 +1191,12 @@ classdef Hardware < mic.Base
             % This one is set up differently than some of the others,
             % it has virtualization built-in.  That is a little smarter,
             % actually!
-            
-            if isempty(this.jMet5Instruments)
-                this.getjMet5Instruments();
-            end
-            
-           
-            
-            
-            if isempty(this.commMfDriftMonitorMiddleware)
-                this.connectMfDriftMonitor();
-                comm = this.getMfDriftMonitor();
-                this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                'commMFDriftMonitor', comm, ...
-                                 'clock', this.clock);
-                 comm = this.commMfDriftMonitorMiddleware;
+                        
+            if this.getIsConnectedMfDriftMonitorMiddleware()
+                comm = this.commMfDriftMonitorMiddleware;
             else
                  comm = this.commMfDriftMonitorMiddlewareVirtual;
             end
-            
-            
             
  
 %             % If first time, establish link with Drift Monitor middleware
@@ -1196,7 +1207,6 @@ classdef Hardware < mic.Base
 %                                  'clock', this.clock);
 %             end
 
-            
         end
         
         
