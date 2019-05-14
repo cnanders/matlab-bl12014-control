@@ -1,20 +1,16 @@
+try 
+    purge
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
-% dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
-
-
-purge
 
 clock = mic.Clock('Master');
-hardware = bl12014.Hardware();
+hardware = bl12014.Hardware('clock', clock);
+
 
 ui = bl12014.ui.ReticleFineStage(...
     'hardware', hardware, ...

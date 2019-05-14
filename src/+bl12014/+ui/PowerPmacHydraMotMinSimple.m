@@ -116,15 +116,25 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
             
             dLeft = dLeft + dWidthStates + 10;
             dTop = 20;
-            this.uiSequenceTurnOnWaferAndReticle.build(this.hPanel, dLeft, dTop, dWidthSequences); 
+            
+            %this.uiSequenceTurnOnWaferAndReticle.build(this.hPanel, dLeft, dTop, dWidthSequences); 
+            %dTop = dTop + dSep;
+            
+            this.uiSequenceTurnOnWafer.build(this.hPanel, dLeft, dTop, dWidthSequences); 
             dTop = dTop + dSep;
-            this.uiSequenceTurnOffAll.build(this.hPanel, dLeft, dTop, dWidthSequences); 
-            this.uiSequenceTurnOffAll.hide();
+            
+            this.uiSequenceTurnOnReticle.build(this.hPanel, dLeft, dTop, dWidthSequences); 
+            dTop = dTop + dSep;
+            
+            %this.uiSequenceTurnOffAll.build(this.hPanel, dLeft, dTop, dWidthSequences); 
+            %this.uiSequenceTurnOffAll.hide();
+            
             
             if ~isempty(this.uiClock) && ...
                 ~this.uiClock.has(this.id())
                 this.uiClock.add(@this.onClock, this.id(), this.dDelay);
             end
+            
                         
         end
         
@@ -166,7 +176,24 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
         
         
         function onClock(this, ~, ~)
-                
+              
+            
+            % Show the turn on Wafer?
+            if this.uiStateWaferOn.isDone()
+                this.uiSequenceTurnOnWafer.hide()
+            else
+                this.uiSequenceTurnOnWafer.show();
+            end
+            
+            % Show the turn on Reticle?
+            if this.uiStateReticleOn.isDone()
+                this.uiSequenceTurnOnReticle.hide()
+            else
+                this.uiSequenceTurnOnReticle.show();
+            end
+            
+            
+            %{
             % Show the turn off all?
             if this.uiStateLsiOn.isDone() || ...
                this.uiStateReticleOn.isDone() || ...
@@ -191,7 +218,7 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
             else
                 this.uiSequenceTurnOnWaferAndReticle.enable()
             end
-            
+            %}
             
             
         end
@@ -236,6 +263,7 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
                 'clock', this.uiClock ...
             );
         
+        
             this.uiStateLsiOn = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-task-sequence-state-lsi-hydra-on'], ...
                 'task', bl12014.Tasks.createStateLsiHydraOn(...
@@ -247,6 +275,7 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
                 'clock', this.uiClock ...
             );
         
+            
             this.uiSequenceTurnOnWaferAndReticle = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-task-sequence-turn-on-wafer-and-reticle-hydra'], ...
                 'task', bl12014.Tasks.createSequenceTurnOnWaferAndReticleHydra(...
@@ -263,6 +292,18 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
                 'cName', [this.cName, 'ui-task-sequence-turn-on-wafer-hydra'], ...
                 'task', bl12014.Tasks.createSequenceTurnOnWaferHydra(...
                     [this.cName, 'task-sequence-turn-on-wafer-hydra'], ...
+                    this.uiMotMin, ...
+                    this.uiWorkingMode.uiWorkingMode, ...
+                    this.clock ...
+                 ), ...
+                'lShowIsDone', false, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiSequenceTurnOnReticle = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-task-sequence-turn-on-reticle-hydra'], ...
+                'task', bl12014.Tasks.createSequenceTurnOnReticleHydra(...
+                    [this.cName, 'task-sequence-turn-on-reticle-hydra'], ...
                     this.uiMotMin, ...
                     this.uiWorkingMode.uiWorkingMode, ...
                     this.clock ...

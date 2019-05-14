@@ -84,7 +84,7 @@ classdef MFDriftMonitorMiddleware < mic.Base
     
     methods
         
-        function this = MFDriftMonitor(varargin)
+        function this = MFDriftMonitorMiddleware(varargin)
            
              for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
