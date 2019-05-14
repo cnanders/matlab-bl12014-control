@@ -1,21 +1,16 @@
-try
+try 
     purge
+catch mE
 end
 
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
-
-cDirApp = fullfile(cDirThis, '..', '..');
-
-% src
-cDirBl12014 = fullfile(cDirApp, 'src');
-addpath(genpath(cDirBl12014));
-
-% mpm dependencies
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
+
 clock = mic.Clock('Master');
-hardware = bl12014.Hardware();
 uiClock = mic.ui.Clock(clock);
+hardware = bl12014.Hardware('clock', clock);
 
 ui = bl12014.ui.Beamline(...
     'hardware', hardware, ...

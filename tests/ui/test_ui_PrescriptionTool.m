@@ -1,15 +1,13 @@
+try
+    purge
+catch mE
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
 
-% dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-
-% cnanders/matlab-instrument-control
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
 
 % fileexchange/jsonlib
 cDirJsonLab = fullfile(cDirVendor, 'fileexchange', 'jsonlab-1.2');

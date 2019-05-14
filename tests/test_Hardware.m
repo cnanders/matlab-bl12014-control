@@ -1,22 +1,16 @@
 try
     purge
+catch mE
 end
 
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
-cDirVendor = fullfile(cDirThis, '..', 'vendor');
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 
-cDirSrc = fullfile(cDirThis, '..', 'src');
+clock = mic.Clock('master');
+hardware = bl12014.Hardware('clock', clock);
 
-addpath(genpath(cDirSrc));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
-
-
-% Required by cwcork cxro.met5.Instruments
-cDirMet5InstrumentsConfig = fullfile(cDirVendor, 'cwcork');
-
-addpath(genpath(fullfile(cDirVendor, 'cnanderson')))
-hardware = bl12014.Hardware();
 
 [tc, rtd, volt] = hardware.getDataTranslation().channelType()
 hardware.getDataTranslation().getScanDataOfChannel(34)

@@ -161,20 +161,80 @@ classdef Hardware < mic.Base
     methods
         
         % Constructor
-        function this = Hardware()
+        function this = Hardware(varargin)
+            
+            for k = 1 : 2: length(varargin)
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end
+            
+            if ~isa(this.clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
             this.init();
         end
     
         % Destructor
         function delete(this)
             % Put all of the disconnect functions here
+            this.disconnectALS();
+            this.disconnectBL1201CorbaProxy();
+            this.disconnectDataTranslation();
+            this.disconnectDCTCorbaProxy();
             this.disconnectDeltaTauPowerPmac();
+            this.disconnectExitSlit();
+            this.disconnectGalilD142();
+            this.disconnectGalilM143();
+            this.disconnectGalilVis();
+            this.disconnectKeithley6482Reticle();
+            this.disconnectKeithley6482Wafer();
+            this.disconnectMfDriftMonitor();
+            this.disconnectMfDriftMonitorMiddleware();
+            this.disconnectMightex1();
+            this.disconnectMightex2();
+            this.disconnectNewFocus8742M142();
+            this.disconnectNewFocus8742MA();
+            this.disconnectNPointM142();
+            this.disconnectNPointMA();
+            this.disconnectRigolDG1000Z();
+            this.disconnectSmarActM141();
+            this.disconnectWagoD141();
+            this.disconnectWebSwitchBeamline();
+            this.disconnectWebSwitchEndstation();
+            this.disconnectWebSwitchVis();
+            
+            this.commALSVirtual= [];
+            this.commBL1201CorbaProxyVirtual = [];
+            this.commDataTranslationVirtual = [];
+            % this.commDCTCorbaProxyVirtual = [];
+            this.commDeltaTauPowerPmacVirtual = [];
+            this.commExitSlitVirtual = [];
+            this.commGalilD142Virtual = [];
+            this.commGalilM143Virtual = [];
+            this.commGalilVisVirtual = [];
+            this.commKeithley6482ReticleVirtual = [];
+            this.commKeithley6482WaferVirtual = [];
+            this.commMfDriftMonitorVirtual = [];
+            this.commMfDriftMonitorMiddlewareVirtual = [];
+            this.commMightex1Virtual = [];
+            this.commMightex2Virtual = [];
+            this.commNewFocus8742M142Virtual = [];
+            this.commNewFocus8742MAVirtual = [];
+            this.commNPointM142Virtual = [];
+            this.commNPointMAVirtual = [];
+            this.commRigolDG1000ZVirtual = [];
+            this.commSmarActM141Virtual = [];
+            this.commWagoD141Virtual = [];
+            this.commWebSwitchBeamlineVirtual = [];
+            this.commWebSwitchEndstationVirtual = [];
+            this.commWebSwitchVisVirtual = [];
         end
         
-        % Setters
-        function setClock(this, clock)
-            this.clock = clock;
-        end
+        
         
         %% WebSwitch (Beamline)
         function l = getIsConnectedALS(this)
@@ -1358,7 +1418,9 @@ classdef Hardware < mic.Base
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
-            this.commMfDriftMonitorMiddlewareVirtual  = bl12014.hardwareAssets.virtual.MFDriftMonitorMiddleware();
+            this.commMfDriftMonitorMiddlewareVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitorMiddleware(...
+                'clock', this.clock ...
+            );
             this.commWebSwitchBeamlineVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();

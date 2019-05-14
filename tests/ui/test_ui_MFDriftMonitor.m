@@ -1,31 +1,15 @@
-purge
+try 
+    purge
+catch mE
+end
 
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
-
-
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
 
 clock = mic.Clock('Master');
-
-
-% Normally will import this API from hardware class
-hardware = bl12014.Hardware();
-% 
-% cMode = 'real';
-% 
-% switch cMode
-%     case 'virtual'
-%         APIDriftMonitor     = hardware.getMfDriftMonitorMiddlewareVirtual();
-%     case 'real'
-%         APIDriftMonitor     = hardware.getMfDriftMonitorMiddleware();
-%         APIHexapod          = hardware.getLSIHexapod();
-% end
+hardware = bl12014.Hardware('clock', clock);
 
 
 % Set the UI device to the drift monitor:

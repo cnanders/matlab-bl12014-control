@@ -1,36 +1,16 @@
-try
-    purge;
+try 
+    purge
+catch mE
 end
 
-
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
-
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
-
-% dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-
-% addpath(genpath(fullfile(cDirVendor, 'github', 'awojdyla', 'matlab-datatranslation-measurpoint', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-hex', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-ieee', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400', 'src')));
-% addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-scanner-control-npoint', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-keithley-6482', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-deltatau-ppmac-met5', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-quasar', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-pupil-fill-generator', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-npoint-lc400-ui', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
-
-addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-control')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'LSI-analyze')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'ryanmiyakawa', 'ryan_toolbox')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 
-hardware = bl12014.Hardware();
+clock = mic.Clock('master');
+hardware = bl12014.Hardware('clock', clock);
+
 
 ui = bl12014.ui.App(...
    'hHardware', hardware ...
