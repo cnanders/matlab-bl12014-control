@@ -313,6 +313,12 @@ classdef PrescriptionTool < mic.Base
             stValue.pause = 10;
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+            
+            % Start drift monitor tracking
+            stValue = struct();
+            stValue.tracking = 'start';
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
 
             % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
             stValue = struct();
@@ -340,19 +346,24 @@ classdef PrescriptionTool < mic.Base
 
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+            
+            % wm_RUN
+            stValue = struct();
+            stValue.workingMode = 5; % drift closed loop for exposure
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % Stop drift monitor tracking
+            stValue = struct();
+            stValue.tracking = 'stop';
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
                 
             % FEM for each dose (m), do each focus (n)
             
             for m = 1 : length(this.uiFemTool.dDose) % cols
                 
-                
-                % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-                stValue = struct();
-                stValue.workingMode = 5; % allow xy move
-                ceValues{u8Count} = stValue;
-                u8Count = u8Count + 1;
-
-
                 % x position on wafer you want the exposure to be
                 stValue = struct();
                 stValue.waferX = -this.uiFemTool.dX(m); 
@@ -373,12 +384,7 @@ classdef PrescriptionTool < mic.Base
                         dY = flip(dY);
                         dFocus = flip(dFocus);
                     end
-                                           
-                    % RUN NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-                    stValue = struct();
-                    stValue.workingMode = 5; % allow xy move
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
+                                          
                     
                     %{
                     % x position on wafer you want the exposure to be
@@ -432,10 +438,16 @@ classdef PrescriptionTool < mic.Base
                     u8Count = u8Count + 1;
                     
                     % Pause
-            stValue = struct();
-            stValue.pause = 5;
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
+                    stValue = struct();
+                    stValue.pause = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % Start drift monitor tracking
+                    stValue = struct();
+                    stValue.tracking = 'start';
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
                     
                     % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                     stValue = struct();
@@ -443,12 +455,9 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
-                    
-                    % State
+                    % Exposure task 
                     stValue = struct();
                     stValue.type = 'exposure';
-                    
-                    % Exposure task 
                     
                     stTask = struct();
                     stTask.dose = this.uiFemTool.dDose(m);
@@ -474,17 +483,22 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
+                    
+                    % wm_RUN
+                    stValue = struct();
+                    stValue.workingMode = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % Stop drift monitor tracking
+                    stValue = struct();
+                    stValue.tracking = 'stop';
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
                 end
             end
-            
-            % Set to run at the end
-            % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-            stValue = struct();
-            stValue.workingMode = 5; % Allow xy move
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-                    
-                    
+                                
             stUnit = struct();
             stUnit.waferX = 'mm';
             stUnit.waferY = 'mm';

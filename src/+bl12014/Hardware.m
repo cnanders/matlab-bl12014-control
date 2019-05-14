@@ -1191,23 +1191,21 @@ classdef Hardware < mic.Base
             
             if isa(this.commMfDriftMonitorMiddleware, 'bl12014.hardwareAssets.middleware.MFDriftMonitor')
                 l = true;
-                else
-                    l = false;
+            else
+                l = false;
             end
         end
         
         function connectMfDriftMonitorMiddleware(this)
            % this.getMfDriftMonitorMiddleware().connect();
            
-           if isempty(this.jMet5Instruments)
-                this.getjMet5Instruments();
-           end
-            
-           this.connectMfDriftMonitor();
+           this.connectMfDriftMonitor(); % Needs to be real
            comm = this.getMfDriftMonitor();
            this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-                                    'commMFDriftMonitor', comm, ...
-                                     'clock', this.clock);
+                'commMFDriftMonitor', comm, ...
+                 'clock', this.clock ...
+           );
+            this.commMfDriftMonitorMiddleware.connect();
            
         end
         
@@ -1226,24 +1224,11 @@ classdef Hardware < mic.Base
                 
         function comm = getMfDriftMonitorMiddleware(this)
             
-            % This one is set up differently than some of the others,
-            % it has virtualization built-in.  That is a little smarter,
-            % actually!
-                        
             if this.getIsConnectedMfDriftMonitorMiddleware()
                 comm = this.commMfDriftMonitorMiddleware;
             else
                  comm = this.commMfDriftMonitorMiddlewareVirtual;
             end
-            
- 
-%             % If first time, establish link with Drift Monitor middleware
-%             if isempty(this.commMfDriftMonitorMiddleware)
-%                 % Set up drift monitor bridge
-%                 this.commMfDriftMonitorMiddleware     = bl12014.hardwareAssets.middleware.MFDriftMonitor(...
-%                                 'jMet5Instruments', this.jMet5Instruments, ...
-%                                  'clock', this.clock);
-%             end
 
         end
         

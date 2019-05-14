@@ -66,6 +66,15 @@ classdef MFDriftMonitor < handle
             d = randn(4, 1) * 0.1 + 5;
         end
         
+        function monitorStart(this)
+            
+        end
+        
+        function monitorEnd(this)
+            
+        end
+        
+        
         
     end
     

@@ -917,6 +917,7 @@ classdef Scan < mic.Base
         function initScanSetContract(this)
             
              ceFields = {...
+                'tracking', ...
                 'pause', ...
                 'pupilFill', ...
                 'reticleX', ...
@@ -1286,6 +1287,20 @@ classdef Scan < mic.Base
                         end
                         this.stScanSetContract.pause.lIssued = true;
                     
+                    case 'tracking'
+                        
+                        
+                        switch stValue.tracking
+                            case 'start'
+                                this.hardware.getMfDriftMonitor().monitorStart();
+                            case 'stop'
+                                this.hardware.getMfDriftMonitor().monitorStop();
+                        end
+                        
+                        this.stScanSetContract.tracking.lIssued = true;
+                        
+                        
+                        
                     case 'workingMode'
                         
                         this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(stValue.workingMode); 
@@ -1492,9 +1507,9 @@ classdef Scan < mic.Base
                                 
                                 case 'pause'
                                     lReady = true;
+                                case 'tracking'
+                                    lReady = true; % happens instantaneously
                                     
-                                    
-                            
                                 case 'pupilFill'
                                     % FIX ME
                                     lReady = true;
@@ -1977,6 +1992,12 @@ classdef Scan < mic.Base
             if exist('cMsg', 'var') ~= 1
                 cMsg = 'The FEM was aborted.';
             end
+            
+            % Stop dmi tracking
+            % Send to working mode 5
+            this.hardware.getMfDriftMonitor().monitorStop();
+            this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(5); 
+            this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
             
             this.uiListActive.setOptions({});
              
