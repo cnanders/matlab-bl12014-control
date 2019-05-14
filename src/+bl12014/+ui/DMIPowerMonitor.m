@@ -26,7 +26,7 @@ classdef DMIPowerMonitor < mic.Base
         
         cName = 'dmi-power-monitor-'
         dHeight = 24
-        dWidth = 200
+        dWidth = 300
     end
     
     methods
