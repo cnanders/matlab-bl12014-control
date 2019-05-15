@@ -54,6 +54,8 @@ classdef App < mic.Base
 
         uiApp
         
+        % {bl12014.MotMinReticleDaemon 1x1}
+        motMinReticleDaemon 
         
         
     end
@@ -473,11 +475,7 @@ classdef App < mic.Base
         function init(this)
             
             this.clock = mic.Clock('bl12014-control');
-            
-            this.hardware = bl12014.Hardware();
-            
-            % Set clock, required for drift monitor middle layer
-            this.hardware.setClock(this.clock); 
+            this.hardware = bl12014.Hardware('clock', this.clock);
             
             cDirThis = fileparts(mfilename('fullpath'));
             
@@ -494,6 +492,11 @@ classdef App < mic.Base
         
             end
             
+            
+            this.motMinReticleDaemon = bl12014.MotMinReticleDaemon(...
+                'clock', this.clock, ...
+                'hardware', this.hardware ...
+            );
             
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton, ...

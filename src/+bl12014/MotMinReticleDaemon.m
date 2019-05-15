@@ -22,7 +22,7 @@ classdef MotMinReticleDaemon < mic.Base
         
         % {double 1x1} seconds - if position is held to within dTolerance
         % for dDuration seconds, MonMin is set to zero for reticle stage
-        dDuration = 20 % sec  
+        dDuration = 120 % sec  
         
         
         % {double 1x1} storage 
