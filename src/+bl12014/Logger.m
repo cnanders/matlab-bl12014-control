@@ -288,6 +288,13 @@ classdef Logger < mic.Base
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
                 
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseX()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseY()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseX()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseY()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinLsiCoarseX()];
+
+
                 for n = 1 : length(readings)
                     fprintf(fid, '%1.8f,', readings(n));
                     fprintf('%1.8f,', readings(n));

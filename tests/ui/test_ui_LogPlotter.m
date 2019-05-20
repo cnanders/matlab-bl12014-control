@@ -17,10 +17,8 @@ ui = bl12014.ui.LogPlotter(...
     'uiClock', uiClock ...
 );
 
-
 dWidth = 1650;
 dHeight = 960;
-
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...

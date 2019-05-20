@@ -62,6 +62,11 @@ classdef LogPlotter < mic.Base
             'DMI DC 2', ...
             'DMI DC 3', ...
             'DMI DC 4' ... 
+            'MotMin WCX', ...
+            'MotMin WCY', ...
+            'MotMin RCX', ...
+            'MotMin RCY', ...
+            'MotMin LSIX', ...
         };
        
     end
@@ -124,6 +129,10 @@ classdef LogPlotter < mic.Base
         
         % {mic.ui.clock 1x1}
         uiClock
+        
+        uiCheckboxAutoScaleY
+        uiEditYMax
+        uiEditYMin
     end
     
         
@@ -193,6 +202,10 @@ classdef LogPlotter < mic.Base
             st.cFile = this.cFile;
             st.dChannelsToPlot = this.getChannelsToPlot();
             
+            st.uiEditYMin = this.uiEditYMin.save();
+            st.uiEditYMax = this.uiEditYMax.save();
+            st.uiCheckboxAutoScaleY = this.uiCheckboxAutoScaleY.save();
+            
             return;
             
             ceProps = this.getUiPropsSaved();
@@ -207,6 +220,19 @@ classdef LogPlotter < mic.Base
         function load(this, st)
                         
             this.lLoading = true;
+            
+            if isfield(st, 'uiEditYMin')
+                this.uiEditYMin.load(st.uiEditYMin);
+            end
+            
+            if isfield(st, 'uiEditYMax')
+                this.uiEditYMax.load(st.uiEditYMax);
+            end
+            
+            if isfield(st, 'uiCheckboxAutoScaleY')
+                this.uiCheckboxAutoScaleY.load(st.uiCheckboxAutoScaleY);
+            end
+            
             
             if isfield(st, 'cDir')
                 this.cDir = st.cDir;
@@ -322,6 +348,29 @@ classdef LogPlotter < mic.Base
             dHeight = 14;
             this.uiTextPlotX.build(this.hParent, dLeft, dTop, dWidth, dHeight);
             this.uiTextPlotY.build(this.hParent, dLeft + dWidth, dTop, dWidth, dHeight);
+            
+            
+            
+            dTop = 750;
+            dLeft = 1200;
+            dSep = 30;
+            
+            this.uiCheckboxAutoScaleY.build(this.hParent, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep - 10;
+            
+            this.uiEditYMax.build(this.hParent, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            
+            this.uiEditYMin.build(this.hParent, dLeft, dTop, 150, 24);
+            dTop = dTop + dSep;
+            
+            
+            if this.uiCheckboxAutoScaleY.get()
+                this.uiEditYMin.hide()
+                this.uiEditYMax.hide()
+            end
+            
             
             this.plotData();
                 
@@ -520,6 +569,12 @@ classdef LogPlotter < mic.Base
                 'Location','northwest' ...
             );
         
+            if ~this.uiCheckboxAutoScaleY.get()
+                ylim(this.hAxes, [this.uiEditYMin.get() , this.uiEditYMax.get()])
+            else
+                ylim(this.hAxes, 'auto')
+            end
+        
         
             
         end
@@ -627,7 +682,97 @@ classdef LogPlotter < mic.Base
             % update plot every 5 seconds
             % this.uiClock.add(@this.onClock, this.id(), 5 * 60);
             
+            this.uiCheckboxAutoScaleY = mic.ui.common.Checkbox(...
+                'cLabel', 'Auto Scale Y', ...
+                'lChecked', true, ...
+                'fhDirectCallback', @this.onUiCheckboxAutoScaleY ...
+            );
+        
+            this.initUiEditYMin();
+            this.initUiEditYMax();
+            
         end
+        
+        
+        function onUiCheckboxAutoScaleY(this, src, evt)
+            
+            if isempty(this.uiEditYMin)
+                return
+            end
+            
+            if isempty(this.uiEditYMax)
+                return
+            end
+            
+            if this.uiCheckboxAutoScaleY.get()
+                this.uiEditYMin.hide()
+                this.uiEditYMax.hide()
+            else
+                this.uiEditYMin.show()
+                this.uiEditYMax.show()
+            end
+            
+            this.plotData();
+            
+            
+        end
+        
+        function initUiEditYMin(this)
+            
+             this.uiEditYMin = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditYMin, ...
+                'cLabel', 'Y Min (nm) (min = 0)' ...
+            );
+            this.uiEditYMin.setMin(-50)
+            this.uiEditYMin.set(0);
+            
+        end
+        
+        function initUiEditYMax(this)
+            
+             this.uiEditYMax = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'fhDirectCallback', @this.onUiEditYMax, ...
+                'cLabel', 'Y Max (nm)' ...
+            );
+            this.uiEditYMax.setMin(-50)
+            this.uiEditYMax.set(30);
+            
+        end
+        
+        
+        function onUiEditYMin(this, src, evt)
+            
+            if isempty(this.uiEditYMax)
+               return 
+            end
+            
+            % Make sure max is not less than min
+            if this.uiEditYMax.get() < this.uiEditYMin.get()
+                this.uiEditYMax.set(this.uiEditYMin.get() + 1)
+            end
+            
+            this.plotData();
+            
+        end
+        
+        function onUiEditYMax(this, src, evt)
+            
+            if isempty(this.uiEditYMin)
+                return
+            end
+            
+            
+            % Make sure min is not > max
+            if this.uiEditYMin.get() > this.uiEditYMax.get()
+                this.uiEditYMin.set(this.uiEditYMax.get() - 1)
+            end
+            
+            this.plotData();
+            
+        end
+        
         
         function appendLatestReadingToData(this)
             
@@ -671,6 +816,13 @@ classdef LogPlotter < mic.Base
                 % DMI power
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
+                
+                % Mot Min Levels
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseX()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseY()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseX()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseY()];
+                readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinLsiCoarseX()];
                 
                 this.dData(end + 1, :) = readings;
             

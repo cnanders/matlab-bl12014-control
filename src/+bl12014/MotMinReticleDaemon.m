@@ -65,7 +65,7 @@ classdef MotMinReticleDaemon < mic.Base
             
             
             this.dTicReset = tic;
-            this.clock.add(@this.onClock, this.id(), 1);
+            this.clock.add(@this.onClock, this.id(), 120); % Check every 2 min
             
         end
         
