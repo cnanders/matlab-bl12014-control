@@ -36,25 +36,42 @@ classdef ScanResultPlot2x2 < mic.Base
         hDock
         
         hParent
+        
         hAxes1
         hAxes2
         hAxes3
         hAxes4
+        hAxes5
+        hAxes6
+        hAxes7
+        hAxes8
         
         hPlot1
         hPlot2
         hPlot3
         hPlot4
+        hPlot5
+        hPlot6
+        hPlot7
+        hPlot8
         
         uiPopup1
         uiPopup2
         uiPopup3
         uiPopup4
+        uiPopup5
+        uiPopup6
+        uiPopup7
+        uiPopup8
         
         uiCheckboxDC1
         uiCheckboxDC2
         uiCheckboxDC3
         uiCheckboxDC4
+        uiCheckboxDC5
+        uiCheckboxDC6
+        uiCheckboxDC7
+        uiCheckboxDC8
         
         
         
@@ -596,6 +613,7 @@ classdef ScanResultPlot2x2 < mic.Base
             % save their current value and then re-select that value
             % when done
             
+            %{
             u8IndexStart = this.uiPopupIndexStart.getSelectedIndex();
             u8IndexEnd = this.uiPopupIndexEnd.getSelectedIndex();
             
@@ -607,7 +625,11 @@ classdef ScanResultPlot2x2 < mic.Base
                 u8IndexEnd <= u8IndexStart
                 u8IndexEnd = uint16(length(dValues));
             end
-                       
+            %}
+             
+            u8IndexStart = uint8(1);
+            u8IndexEnd = uint16(length(dValues));
+            
             this.uiPopupIndexStart.setOptions(ceOptions);
             this.uiPopupIndexEnd.setOptions(ceOptions);
             
