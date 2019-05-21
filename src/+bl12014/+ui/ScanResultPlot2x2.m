@@ -182,8 +182,12 @@ classdef ScanResultPlot2x2 < mic.Base
             if isfield(st, 'cFile')
                 this.cFile = st.cFile;
             end
+              
+            % This updates the popups so they have logged
+            % properties as options.  Important to call this first so that
+            % the .load() calls on the popups works below.
+            this.loadFileAndUpdateAll(); 
             
-%             this.loadFileAndUpdateAll();
             
             ceProps = this.getUiPropsSaved();
         
@@ -329,7 +333,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dWidthPopup, ...
                 this.dHeightPopup ...
             );
-          this.uiCheckboxDC4.build(...
+             this.uiCheckboxDC4.build(...
                 this.hParent, ...
                 dLeft + this.dWidthPopup + 20, ...
                 dTop, ...
@@ -337,6 +341,8 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dHeightPopup ...
             );
         
+            this.loadFileAndUpdateAll();
+            
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
                 this.clock.add(@this.onClock, this.id(), 1);
@@ -560,10 +566,7 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiPopup4.setOptions(ceFields);
             
             
-            % When updating the uiPopupIndexStart, store the current values
             
-            u8IndexStart = uint8(str2num(this.uiPopupIndexStart.get()));
-            u8IndexEnd = uint8(str2num(this.uiPopupIndexEnd.get()));
             
             % Returns a {cell 1xm} with values for the index start and index
             % end popups
@@ -574,7 +577,24 @@ classdef ScanResultPlot2x2 < mic.Base
                ceOptions{n} = num2str(n); 
             end
             
-           
+            
+            
+            % Before resettign the options of indexStart and indexEnd
+            % save their current value and then re-select that value
+            % when done
+            
+            u8IndexStart = this.uiPopupIndexStart.getSelectedIndex();
+            u8IndexEnd = this.uiPopupIndexEnd.getSelectedIndex();
+            
+            if isempty(u8IndexStart)
+                u8IndexStart = uint16(1);
+            end
+            
+            if isempty(u8IndexEnd) || ...
+                u8IndexEnd <= u8IndexStart
+                u8IndexEnd = uint16(length(dValues));
+            end
+                       
             this.uiPopupIndexStart.setOptions(ceOptions);
             this.uiPopupIndexEnd.setOptions(ceOptions);
             
@@ -618,6 +638,12 @@ classdef ScanResultPlot2x2 < mic.Base
         
         function updateAxes(this, u8Axes)
             
+            if isempty(this.hAxes1) || ...
+               isempty(this.hAxes2) || ...
+               isempty(this.hAxes3) || ...
+               isempty(this.hAxes4)
+                return
+            end
             
             switch u8Axes
                 case 1
