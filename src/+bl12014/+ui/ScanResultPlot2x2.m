@@ -398,7 +398,14 @@ classdef ScanResultPlot2x2 < mic.Base
             
             cPath = fullfile(this.cDir, this.cFile);
             this.uiTextFile.set(cPath);
-            this.stResult = loadjson(cPath);
+            
+            
+            % this.stResult = loadjson(cPath);
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            this.stResult = jsondecode(cText');
+            
             this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
             
             
@@ -444,7 +451,13 @@ classdef ScanResultPlot2x2 < mic.Base
             cPath = fullfile(this.cDir, this.cFile);
             this.uiTextFile.set(cPath);
             
-            this.stResult = loadjson(cPath);
+            % this.stResult = loadjson(cPath);
+            
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            this.stResult = jsondecode(cText');
+            
             this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
             this.updatePopups()
             

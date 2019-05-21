@@ -1228,7 +1228,11 @@ classdef Scan < mic.Base
             drawnow;
             %}
             
-            stRecipe = loadjson(cPath);
+            % stRecipe = loadjson(cPath);
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            stRecipe = jsondecode(cText');
             
             % this.uitxStatus.cVal = cStatus;
             

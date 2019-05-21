@@ -406,7 +406,12 @@ classdef TuneFluxDensity < mic.Base
             % Init config
             cDirThis = fileparts(mfilename('fullpath'));
 
-            this.stConfig = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cNameOfConfigFile));
+            cPath = fullfile(cDirThis, '..', '..', 'config', this.cNameOfConfigFile);
+            %this.stConfig = loadjson(cPath);
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            this.stConfig = jsondecode(cText');
             
             this.msg('init()');
             

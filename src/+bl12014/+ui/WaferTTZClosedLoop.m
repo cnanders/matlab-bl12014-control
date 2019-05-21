@@ -514,7 +514,14 @@ classdef WaferTTZClosedLoop < mic.Base
             cDirThis = fileparts(mfilename('fullpath'));
 
             % Init config
-            this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig));
+            cPath = fullfile(cDirThis, '..', '..', 'config', this.cWaferLevelConfig);
+            % this.stConfigDat = loadjson(cPath);
+            
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            this.stConfigDat = jsondecode(cText');
+            
             
             % Init button:
             cText = sprintf('Level Wafer (%1.1f, %1.1f, %1.1f)', ...

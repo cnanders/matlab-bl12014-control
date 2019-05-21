@@ -985,7 +985,12 @@ classdef Tasks < mic.Base
                 'config', ...
                 'Wafer-CLTTZ-leveler-coordinates.json' ...
             );
-            stConfigDat = loadjson(cPathConfig);
+            % stConfigDat = loadjson(cPathConfig);
+            
+            fid = fopen(cPathConfig, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            stConfigDat = jsondecode(cText');
             
             %{
             I had debated on making it turn on the HS LEDs but decided
@@ -1060,7 +1065,12 @@ classdef Tasks < mic.Base
                 'config', ...
                 'Reticle-CLTTZ-leveler-coordinates.json' ...
             );
-            stConfigDat = loadjson(cPathConfig);
+            % stConfigDat = loadjson(cPathConfig);
+            
+            fid = fopen(cPathConfig, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            stConfigDat = jsondecode(cText');
 
             ceTasks = {...
                 mic.Task.fromUiGetSetNumber(ui.uiCLZ, ...

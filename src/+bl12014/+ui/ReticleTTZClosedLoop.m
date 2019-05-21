@@ -473,7 +473,13 @@ classdef ReticleTTZClosedLoop < mic.Base
 
 
             % Init config
-            this.stConfigDat = loadjson(fullfile(cDirThis, '..', '..', 'config', this.cReticleLevelConfig));
+            cPath = fullfile(cDirThis, '..', '..', 'config', this.cReticleLevelConfig);
+            % this.stConfigDat = loadjson(cPath);
+            
+            fid = fopen(cPath, 'r');
+            cText = fread(fid, inf, 'uint8=>char');
+            fclose(fid);
+            this.stConfigDat = jsondecode(cText');
             
             % Init button:
             
