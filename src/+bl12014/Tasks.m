@@ -668,6 +668,51 @@ classdef Tasks < mic.Base
         end
         
         
+        % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.WaferCoarseStage 1x1} ui
+        % @param {mic.Clock 1x1}
+        function task = createStateWaferStageNearPrint(cName, hardware, clock)
+                            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            dX = -103;
+            dY = 7;
+            dZ = 0.3;
+            
+            dTolX = 1;
+            dTolY = 1;
+            dTolZ = 0.1;
+            
+            ceTasks = {...
+                mic.Task(...
+                   'fhIsDone', @() ...
+                        abs(hardware.getDeltaTauPowerPmac().getXWaferCoarse() - dX) < dTolX && ...
+                        abs(hardware.getDeltaTauPowerPmac().getYWaferCoarse() - dY) < dTolY && ...
+                        abs(hardware.getDeltaTauPowerPmac().getZWaferCoarse() - dZ) < dTolZ, ...
+                   'fhGetMessage', @() 'Checking WCX/Y/Z Position' ...
+                )
+            };
+        
+        
+            fhGetMessage = @() 'Wafer Stage is at Print';
+            
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 1, ...
+                'fhGetMessage', fhGetMessage ...
+            );
+        end
+        
+        
+        
         function task = createStateDMIPowerIsOK(cName, hardware, clock)
             
             

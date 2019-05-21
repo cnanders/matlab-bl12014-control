@@ -431,6 +431,19 @@ classdef PrescriptionTool < mic.Base
                         u8Count = u8Count + 1;
                     end
                     
+                    % Center the reticle fine stage in x and y
+            
+                    stValue = struct();
+                    stValue.xReticleFine = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    stValue = struct();
+                    stValue.yReticleFine = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+            
+                    
                     % Val you want HS to read during exposure
                     stValue = struct();
                     stValue.waferZ = dFocus(n);

@@ -1303,6 +1303,15 @@ classdef Scan < mic.Base
                         
                     case 'workingMode'
                         
+                        
+                        if stValue.workingMode == 4
+                            % issue CommandCode 6 before going to wm4 -
+                            % this would kill hydra closed loop (which they
+                            % theory is this causes a jump) before drift
+                            % control takes effect.
+                            this.hardware.getDeltaTauPowerPmac.sendCommandCode(uint8(6));
+                        end
+                        
                         this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(stValue.workingMode); 
                         this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
                         this.stScanSetContract.workingMode.lIssued = true;
