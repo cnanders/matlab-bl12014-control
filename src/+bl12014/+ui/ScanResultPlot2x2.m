@@ -585,10 +585,8 @@ classdef ScanResultPlot2x2 < mic.Base
                 return
             end
             
-            ceValues = st.values;
-            idxNonEmpty = find(~cellfun(@isempty, ceValues));
-            ceValues = ceValues(idxNonEmpty);
-                        
+            ceValues = this.getNonEmptyValues(st.values);
+            
             stValue = ceValues{1};
             
             % Initialize empty structure
@@ -663,7 +661,17 @@ classdef ScanResultPlot2x2 < mic.Base
         
   
         
-        
+        function ce = getNonEmptyValues(this, ceValues)
+            
+            % idxNonEmpty = find(~cellfun(@isempty, ceValues) && ~cellfun(@isnan, ceValues));
+            % idxNonEmpty = find(cellfun(@isstruct, ceValues));
+            % ceValues = ceValues(idxNonEmpty);
+            
+            % Use logical indexing
+            lIsStruct = cellfun(@isstruct, ceValues);
+            ce = ceValues(lIsStruct);
+            
+        end
         
         
         function updatePopups(this)
@@ -671,12 +679,8 @@ classdef ScanResultPlot2x2 < mic.Base
             if ~this.getResultStructHasValues(this.stResult)
                 return
             end
-            
-            ceValues = this.stResult.values;
-            
-            % Remove empty values
-            idxNonEmpty = find(~cellfun(@isempty, ceValues));
-            ceValues = ceValues(idxNonEmpty);
+                        
+            ceValues = this.getNonEmptyValues(this.stResult.values);
                                     
             stValue = ceValues{1};
             ceFields = fieldnames(stValue);
