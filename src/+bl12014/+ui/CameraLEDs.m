@@ -8,7 +8,6 @@ classdef CameraLEDs < mic.Base
         uiSwitch2Outlet1
         uiSwitch2Outlet2
         
-        
     end
     
     properties (Access = private)
@@ -100,11 +99,7 @@ classdef CameraLEDs < mic.Base
     
     methods (Access = private)
         
-         function onFigureCloseRequest(this, src, evt)
-            delete(this.hParent);
-            this.hParent = [];
-         end
-        
+         
          
          function ce = getCommandToggleParams(this) 
              
