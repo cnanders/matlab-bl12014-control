@@ -515,6 +515,91 @@ classdef Tasks < mic.Base
         end
         
         % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.M141 1x1}
+        % @param {mic.Clock 1x1}
+        function task = createStateM141InAndD142DiodeIn(cName, uiM141, uiD142, clock)
+                
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(uiM141, 'bl12014.ui.M141')
+                error('ui must be bl12014.ui.M141');
+            end
+            
+            if ~isa(uiD142, 'bl12014.ui.D142')
+                error('ui must be bl12014.ui.D142');
+            end
+            
+            ceTasks = {...
+                mic.Task.fromUiGetSetNumber(uiM141.uiStageX, 35.7, 0.1, 'mm'), ...
+                mic.Task.fromUiGetSetNumber(uiD142.uiStageY, 88.5, 0.1, 'mm'), ...
+            };
+            
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'M141 In + D142 Diode In' ...
+            );
+        end
+        
+        
+        % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.M141 1x1}
+        % @param {mic.Clock 1x1}
+        function task = createStateM141In(cName, ui, clock)
+                
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.M141')
+                error('ui must be bl12014.ui.M141');
+            end
+            
+            ceTasks = {...
+                mic.Task.fromUiGetSetNumber(ui.uiStageX, 35.7, 0.1, 'mm') ...
+            };
+            
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'M141 In' ...
+            );
+        end
+        
+        % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.D142 1x1}
+        % @param {mic.Clock 1x1}
+        function task = createStateD142DiodeIn(cName, ui, clock)
+                
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.D142')
+                error('ui must be bl12014.ui.D142');
+            end
+            
+            ceTasks = {...
+                mic.Task.fromUiGetSetNumber(ui.uiStageY, 88.5, 0.1, 'mm') ...
+            };
+            
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'D142 Diode In' ...
+            );
+        end
+        
+        
+        % @param {char 1xm} cName - app-wide unique name
         % @param {bl12014.ui.PowerPmacHydraMotMin 1x1}
         % @param {mic.Clock 1x1}
         function task = createStateLsiHydraOn(cName, uiMotMin, clock)
