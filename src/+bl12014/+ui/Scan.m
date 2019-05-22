@@ -50,6 +50,7 @@ classdef Scan < mic.Base
         
         hDYMO
         
+        lUseMjPerCm2PerSecOverride = true
         uiEditMjPerCm2PerSec
         uiEditRowStart
         uiEditColStart
@@ -249,8 +250,8 @@ classdef Scan < mic.Base
              st = struct();
              st.cDirPrescriptions = this.cDirPrescriptions;
              st.lWaferLoadLock = this.uicWaferLL.get();
-             st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get(); 
-             % st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
+             st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get();
+             st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
              st.uiEditRowStart = this.uiEditRowStart.save();
              st.uiEditColStart = this.uiEditColStart.save();
         end
@@ -355,10 +356,10 @@ classdef Scan < mic.Base
            
            dSep = 40;
            
-           %{
-           this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-           dTop = dTop + dSep;
-           %}
+           if this.lUseMjPerCm2PerSecOverride
+                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+                dTop = dTop + dSep;
+           end
                       
            this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
            dTop = dTop + dSep;
@@ -728,7 +729,7 @@ classdef Scan < mic.Base
             this.initScanSetContract();
             this.initScanAcquireContract();
             
-            %{
+            
             this.uiEditMjPerCm2PerSec = mic.ui.common.Edit(...
                 'cLabel', 'mJ/cm2/s', ...
                 'cType', 'd' ...
@@ -736,7 +737,7 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.set(10);
             this.uiEditMjPerCm2PerSec.setMin(0);
             this.uiEditMjPerCm2PerSec.setMax(1e5);
-            %}
+            
             
             
             this.uiEditRowStart = mic.ui.common.Edit(...
@@ -1729,7 +1730,12 @@ classdef Scan < mic.Base
 
             % Calculate the exposure time
             % dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
-            dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+            
+            if this.lUseMjPerCm2PerSecOverride
+                dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+            else
+                dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+            end
             
             % Set the shutter UI time (ms)
             this.uiShutter.uiShutter.setDestCal(...
