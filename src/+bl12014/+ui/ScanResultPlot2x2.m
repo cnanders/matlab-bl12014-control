@@ -79,6 +79,7 @@ classdef ScanResultPlot2x2 < mic.Base
         uiPopupIndexEnd
         
         uiButtonRefresh
+        uiButtonLatest
         uiButtonFile
         uiTextFile
         
@@ -141,6 +142,7 @@ classdef ScanResultPlot2x2 < mic.Base
             delete(this.uiPopupIndexEnd);
             delete(this.uiButtonRefresh);
             delete(this.uiButtonFile);
+            delete(this.uiButtonLatest);
             delete(this.uiTextFile);
             delete(this.hAxes1);
             delete(this.hAxes2);
@@ -259,6 +261,18 @@ classdef ScanResultPlot2x2 < mic.Base
                 24 ...
             );
             dLeft = dLeft + 120;
+            
+            
+            this.uiButtonLatest.build(...
+                this.hParent, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                24 ...
+            );
+            dLeft = dLeft + 120;
+            
+            
             
             this.uiButtonFile.build(...
                 this.hParent, ...
@@ -546,6 +560,57 @@ classdef ScanResultPlot2x2 < mic.Base
             
             
         end
+        
+        
+        function onButtonLatest(this, src, evt)
+            
+            cOrderByPredicate = 'date';
+            cOrder = 'descend';
+            cFilter = '*';
+            cDir = mic.Utils.path2canonical(fullfile(this.cDir, '..'));
+            
+            ceReturn = mic.Utils.dir2cell(...
+                cDir, ...
+                cOrderByPredicate, ...
+                cOrder, ...
+                cFilter ...
+            );
+        
+            % This includes files, folders, etc
+            
+            % Get a logical vector that tells which is a directory.
+            dirFlags = cellfun(@isdir, ceReturn);
+            % Extract only those that are directories.
+            ceReturn = ceReturn(dirFlags);
+           
+            
+            % Ignore '.' and '..' directories
+            fhNotMacOSSpecial = @(c) ~strcmp('.', c) && ~strcmpi('..', c);
+            
+            flags = cellfun(fhNotMacOSSpecial, ceReturn);
+            ceReturn = ceReturn(flags);
+            
+            % Loop through dirs
+            % Check if it contains a result.json file
+            % First one that contains, set this this.cDir and
+            % this.cFile
+            
+            cFile = 'result.json';
+            for n = 1 : length(ceReturn)
+                cPath = fullfile(cDir, ceReturn{n}, cFile);
+                if exist(cPath, 'file')
+                    this.cDir = fullfile(cDir, ceReturn{n});
+                    this.cFile = cFile;
+                    break;
+                end
+            end
+                        
+            this.loadFileAndUpdateAll()
+            
+            
+        end
+        
+        
         
         function loadFileAndUpdateAll(this)
             
@@ -994,6 +1059,11 @@ classdef ScanResultPlot2x2 < mic.Base
             this.uiButtonFile = mic.ui.common.Button(...
                 'cText', 'Choose File', ...
                 'fhDirectCallback', @this.onButtonFile ...
+            );
+        
+            this.uiButtonLatest = mic.ui.common.Button(...
+                'cText', 'Load Latest Log', ...
+                'fhDirectCallback', @this.onButtonLatest ...
             );
         
             this.uiButtonRefresh = mic.ui.common.Button(...

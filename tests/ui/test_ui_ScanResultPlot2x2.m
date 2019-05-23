@@ -15,7 +15,7 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 ui = bl12014.ui.ScanResultPlot2x2();
 
-dWidth = 1600;
+dWidth = 1850;
 dHeight = 800;
 
 dScreenSize = get(0, 'ScreenSize');
