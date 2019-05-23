@@ -451,10 +451,12 @@ classdef PrescriptionTool < mic.Base
                     u8Count = u8Count + 1;
                     
                     % Pause
+                    %{
                     stValue = struct();
                     stValue.pause = 5;
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
+                    %}
                     
                     % Start drift monitor tracking
                     stValue = struct();

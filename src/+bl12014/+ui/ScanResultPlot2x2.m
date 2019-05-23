@@ -97,6 +97,8 @@ classdef ScanResultPlot2x2 < mic.Base
         
         % {logical 1x1} 
         lLoading
+        
+        c
                 
     end
     
@@ -486,38 +488,7 @@ classdef ScanResultPlot2x2 < mic.Base
     methods (Access = private)
         
         function onClock(this)
-            
-            if ~ishghandle(this.hParent)
-                this.msg('onClock() returning since not build', this.u8_MSG_TYPE_INFO);
-                
-                % Remove task
-                if isvalid(this.clock) && ...
-                   this.clock.has(this.id())
-                    this.clock.remove(this.id());
-                end
-            end
-            
-            if isempty(this.cDir)
-                return
-            end
-            
-            if isempty(this.cFile)
-                return
-            end
-            
-            cPath = fullfile(this.cDir, this.cFile);
-            this.uiTextFile.set(cPath);
-            
-            
-            % this.stResult = loadjson(cPath);
-            fid = fopen(cPath, 'r');
-            cText = fread(fid, inf, 'uint8=>char');
-            fclose(fid);
-            this.stResult = jsondecode(cText');
-            
-            this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
-            
-            
+            this.refresh();
         end
         
         function onButtonRefresh(this, src, evt)

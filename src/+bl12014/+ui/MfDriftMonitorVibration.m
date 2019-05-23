@@ -748,6 +748,14 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.clock.add(@this.onClock, this.id(), this.dDelay);
             end
             
+            if ~isempty(this.clock)
+                this.clock.add(...
+                    @() this.uiListDir.refresh(), ...
+                    [this.id(), 'refresh-list-dir'], ...
+                    this.dDelay ...
+                );
+            end
+            
         end
         
         function delete(this)

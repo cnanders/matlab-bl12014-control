@@ -838,11 +838,11 @@ classdef App < mic.Base
         end
             
         function onPrescriptionToolNew(this, src, evt)
-            this.uiScan.refreshPrescriptions();
+            % this.uiScan.refreshPrescriptions();
         end
         
         function onPrescriptionToolDelete(this, src, evt)
-            this.uiScan.refreshPrescriptions();
+            % this.uiScan.refreshPrescriptions();
         end
         
         function onPupilFillNew(this, src, evt)

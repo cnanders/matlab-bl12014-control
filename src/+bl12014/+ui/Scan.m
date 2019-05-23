@@ -246,37 +246,46 @@ classdef Scan < mic.Base
             
         end
         
+        function cec = getSaveLoadProps(this)
+           
+            cec = {...
+                'uicWaferLL', ...
+                'uicAutoVentAtLL', ...
+                'uiEditMjPerCm2PerSec', ...
+                'uiEditRowStart', ...
+                'uiEditColStart', ...
+             };
+            
+        end
+        
+        
         function st = save(this)
-             st = struct();
-             st.cDirPrescriptions = this.cDirPrescriptions;
-             st.lWaferLoadLock = this.uicWaferLL.get();
-             st.lAutoVentAtLoadLock = this.uicAutoVentAtLL.get();
-             st.uiEditMjPerCm2PerSec = this.uiEditMjPerCm2PerSec.save();
-             st.uiEditRowStart = this.uiEditRowStart.save();
-             st.uiEditColStart = this.uiEditColStart.save();
+             cecProps = this.getSaveLoadProps();
+            
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
         end
         
         function load(this, st)
-            this.cDirPrescriptions = st.cDirPrescriptions;
-            this.uicWaferLL.set(st.lWaferLoadLock);
-            this.uicAutoVentAtLL.set(st.lAutoVentAtLoadLock);
-            
-            
-            
-            if isfield(st, 'uiEditColStart')
-                try
-                    this.uiEditColStart.load(st.uiEditColStart);
-                end
-            end
-            
-            if isfield(st, 'uiEditRowStart')
-                try
-                    this.uiEditRowStart.load(st.uiEditRowStart);
-                end
+                        
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
             end
             
         end
-       
         
         
         function buildPanelAdded(this)

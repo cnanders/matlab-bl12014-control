@@ -2,8 +2,6 @@ classdef POCurrent < mic.Base
     
     properties
                 
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommKeithley6482
         
         % {mic.ui.device.GetNumber 1x1}
         uiCurrent
@@ -101,8 +99,7 @@ classdef POCurrent < mic.Base
             dLeft = 10;
             dSep = 10;
             
-            this.uiCommKeithley6482.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + dSep + 15;
+            
                         
             this.uiCurrent.build(this.hPanel, dLeft, dTop);
             
@@ -256,31 +253,7 @@ classdef POCurrent < mic.Base
             );
         end
         
-        function initUiCommKeithley6482(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
-
-            this.uiCommKeithley6482 = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', 'keithley-6482-wafer-po-current', ...
-                'fhGet', @() this.hardware.getIsConnectedKeithley6482Wafer(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedKeithley6482Wafer(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'Keithley 6482 (Wafer)' ...
-            );
         
-        end
         
         
         
@@ -288,7 +261,6 @@ classdef POCurrent < mic.Base
             
             this.msg('init');
             this.initUiCurrent();
-            this.initUiCommKeithley6482();
             this.initUiButtonClear();
             
             
