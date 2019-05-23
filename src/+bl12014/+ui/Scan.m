@@ -1890,7 +1890,13 @@ classdef Scan < mic.Base
         function saveDmiHeightSensorDataFromExposure(this, stValue)
             
             try
-                dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+                
+                if this.lUseMjPerCm2PerSecOverride
+                    dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+                else
+                    dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+                end
+            
                 dSamples = round(dSec * 1000);
                 
                 cPath = fullfile(...
