@@ -398,6 +398,8 @@ classdef PrescriptionTool < mic.Base
                     % 2019.04.12 Break into multiple moves of max .1 mm
                     % if not n = 1
                     
+                    % 2019-05-30 no breaking up
+                    %{
                     if n > 1
                         
                         dDeltaRemaining = dY(n) - dY(n - 1);
@@ -430,7 +432,13 @@ classdef PrescriptionTool < mic.Base
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
                     end
+                    %}
                     
+                    stValue = struct();
+                    stValue.waferY = dY(n); 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                        
                     % Center the reticle fine stage in x and y
             
                     stValue = struct();
@@ -451,12 +459,12 @@ classdef PrescriptionTool < mic.Base
                     u8Count = u8Count + 1;
                     
                     % Pause
-                    %{
+                    
                     stValue = struct();
-                    stValue.pause = 5;
+                    stValue.pause = 3;
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
-                    %}
+                    
                     
                     % Start drift monitor tracking
                     stValue = struct();

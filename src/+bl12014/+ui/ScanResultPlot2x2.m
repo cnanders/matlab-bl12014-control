@@ -157,6 +157,9 @@ classdef ScanResultPlot2x2 < mic.Base
                 delete(this.hParent);
             end
             
+            
+            this.clock.remove(this.id());
+
 
         end
         

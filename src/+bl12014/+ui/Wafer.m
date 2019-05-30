@@ -121,9 +121,9 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.uiTiltX.syncDestination();
             this.uiCoarseStage.uiTiltY.syncDestination();
             this.uiFineStage.uiZ.syncDestination();
-            this.uiWaferTTZClosedLoop.uiCLTiltX.syncDestination();
-            this.uiWaferTTZClosedLoop.uiCLTiltY.syncDestination();
-            this.uiWaferTTZClosedLoop.uiCLZ.syncDestination();
+            %this.uiWaferTTZClosedLoop.uiCLTiltX.syncDestination();
+            %this.uiWaferTTZClosedLoop.uiCLTiltY.syncDestination();
+            %this.uiWaferTTZClosedLoop.uiCLZ.syncDestination();
             
         end
         
@@ -227,7 +227,11 @@ classdef Wafer < mic.Base
         %% Destructor
         
         function delete(this)
-                        
+                this.uiCoarseStage = [];
+                this.uiFineStage = [];
+                this.uiLsiCoarseStage = [];
+                this.uiWorkingMode = [];
+                 this.uiWaferTTZClosedLoop = [];       
         end
         
         function st = save(this)

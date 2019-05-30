@@ -770,6 +770,8 @@ classdef MfDriftMonitorVibration < mic.Base
                 this.clock.remove(this.id());
             end 
             
+            this.clock.remove([this.id(), 'refresh-list-dir']);
+            
         end 
         
         

@@ -177,6 +177,14 @@ classdef Reticle < mic.Base
         
         function delete(this)
             
+            this.uiCoarseStage = [];
+            this.uiFineStage = [];
+            this.uiWorkingMode = [];
+            this.uiMotMin = [];
+            this.uiMotMinSimple = [];
+            this.uiReticleTTZClosedLoop = [];
+            this.uiReticleFiducializedMove = [];
+        
             this.msg('delete');
             
             % Clean up clock tasks
@@ -187,9 +195,6 @@ classdef Reticle < mic.Base
             
             % Delete the figure
             
-            if ishandle(this.hParent)
-                delete(this.hParent);
-            end
             
             
         end
