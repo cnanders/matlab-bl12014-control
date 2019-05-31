@@ -7,11 +7,8 @@ end
 addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
-
-
-% fileexchange/jsonlib
+cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
 cDirJsonLab = fullfile(cDirVendor, 'fileexchange', 'jsonlab-1.2');
-addpath(genpath(cDirMic));
 
 purge
 
