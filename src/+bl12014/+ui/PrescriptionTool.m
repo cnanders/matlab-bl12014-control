@@ -458,13 +458,11 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
                     
-                    % Pause
-                    
+                    % Pause for mechanical settling
                     stValue = struct();
-                    stValue.pause = 3;
+                    stValue.pause = this.uiFemTool.uiePause.get();
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
-                    
                     
                     % Start drift monitor tracking
                     stValue = struct();

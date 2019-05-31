@@ -62,65 +62,58 @@ classdef ProcessTool < mic.Base
             this.init();
         end
         
-        % @return {struct} state to save
-        function st = save(this)
-            st = struct();            
-            st.cUser = this.uieUser.get();
-            st.cBase = this.uieBase.get();  
-            
-            st.cUnderlayer1Name = this.uieUnderlayer1Name.get();
-            st.dUnderlayer1Thick = this.uieUnderlayer1Thick.get();
-            st.dUnderlayer1PabTemp = this.uieUnderlayer1PabTemp.get();
-            st.dUnderlayer1PabTime = this.uieUnderlayer1PabTime.get();
-            
-            st.cUnderlayer2Name = this.uieUnderlayer2Name.get();
-            st.dUnderlayer2Thick = this.uieUnderlayer2Thick.get();
-            st.dUnderlayer2PabTemp = this.uieUnderlayer2PabTemp.get();
-            st.dUnderlayer2PabTime = this.uieUnderlayer2PabTime.get();
-            
-            st.cResistName = this.uieResistName.get();
-            st.dResistThick = this.uieResistThick.get();
-            st.dResistPabTemp = this.uieResistPabTemp.get();
-            st.dResistPabTime = this.uieResistPabTime.get();
-            st.dResistPebTemp = this.uieResistPebTemp.get();
-            st.dResistPebTime = this.uieResistPebTime.get();
-            
-            st.cDevName = this.uieDevName.get();
-            st.dDevTime = this.uieDevTime.get();
-            
-            st.cRinseName = this.uieRinseName.get();
-            st.dRinseTime = this.uieRinseTime.get();
+        function cec = getSaveLoadProps(this)
+           
+            cec = {...
+                'uieUser', ...
+                'uieBase', ...
+                'uieUnderlayer1Name', ...
+                'uieUnderlayer1Thick', ...
+                'uieUnderlayer1PabTemp', ...
+                'uieUnderlayer1PabTime', ...
+                'uieUnderlayer2Name', ...
+                'uieUnderlayer2Thick', ...
+                'uieUnderlayer2PabTemp', ...
+                'uieUnderlayer2PabTime', ...
+                'uieResistName', ...
+                'uieResistThick', ...
+                'uieResistPabTemp', ...
+                'uieResistPabTime', ...
+                'uieResistPebTemp', ...
+                'uieResistPebTime', ...
+                'uieDevName', ...
+                'uieDevTime', ...
+                'uieRinseName', ...
+                'uieRinseTime', ...
+             };
             
         end
         
+        function st = save(this)
+             cecProps = this.getSaveLoadProps();
+            
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
+        end
+        
         function load(this, st)
-            
-           this.uieUser.set(st.cUser);
-           this.uieBase.set(st.cBase); 
-           
-           this.uieUnderlayer1Name.set(num2str(st.cUnderlayer1Name));
-           this.uieUnderlayer1Thick.set(num2str(st.dUnderlayer1Thick));
-           this.uieUnderlayer1PabTemp.set(num2str(st.dUnderlayer1PabTemp));
-           this.uieUnderlayer1PabTime.set(num2str(st.dUnderlayer1PabTime));
-           
-           this.uieUnderlayer2Name.set(num2str(st.cUnderlayer2Name));
-           this.uieUnderlayer2Thick.set(num2str(st.dUnderlayer2Thick));
-           this.uieUnderlayer2PabTemp.set(num2str(st.dUnderlayer2PabTemp));
-           this.uieUnderlayer2PabTime.set(num2str(st.dUnderlayer2PabTime));
-           
-           this.uieResistName.set(num2str(st.cResistName));
-           this.uieResistThick.set(num2str(st.dResistThick));
-           this.uieResistPabTemp.set(num2str(st.dResistPabTemp));
-           this.uieResistPabTime.set(num2str(st.dResistPabTime));
-           this.uieResistPebTemp.set(num2str(st.dResistPebTemp));
-           this.uieResistPebTime.set(num2str(st.dResistPebTime));
-           
-           this.uieDevName.set(num2str(st.cDevName));
-           this.uieDevTime.set(num2str(st.dDevTime));
-           
-           this.uieRinseName.set(num2str(st.cRinseName));
-           this.uieRinseTime.set(num2str(st.dRinseTime));
-            
+                        
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
+            end
         end
         
         
