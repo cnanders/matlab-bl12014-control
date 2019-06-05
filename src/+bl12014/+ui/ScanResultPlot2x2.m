@@ -10,6 +10,8 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (SetAccess = private)
         
+        cName = 'fem-plotter'
+        
         dWidth              = 1500;
         dHeight             = 960;
         
@@ -19,7 +21,7 @@ classdef ScanResultPlot2x2 < mic.Base
         dHeightPadAxesBottom = 40
         dWidthAxes = 350
         dHeightAxes = 230
-        dHeightOffsetTop = 120;
+        dHeightOffsetTop = 80;
        
         dWidthPopup = 200;
         dHeightPopup = 24;
@@ -31,6 +33,8 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (Access = private)
          
+        
+        uiPositionRecaller
         
         clock
         hDock
@@ -256,7 +260,7 @@ classdef ScanResultPlot2x2 < mic.Base
             
             
             dLeft = this.getLeft1();
-            dTop = 50;
+            dTop = 15;
             
             this.uiButtonRefresh.build(...
                 this.hParent, ...
@@ -298,7 +302,7 @@ classdef ScanResultPlot2x2 < mic.Base
             );
         
             dLeft = this.getLeft1();
-            dTop = 90;
+            dTop = 45;
         
             dWidth = 70
             this.uiPopupIndexStart.build(...
@@ -467,8 +471,19 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dHeightPopup ...
             );
         
+            dLeft = 50;
+            dTop = 720;
+            dWidth = 400;
+            dHeight = 150;
         
-        
+            this.uiPositionRecaller.build(...
+                this.hParent, ...
+                dLeft, ...
+                dTop, ...
+                dWidth, ...
+                dHeight ...
+            );
+                
             this.loadFileAndUpdateAll();
             
             if ~isempty(this.clock) && ...
@@ -1139,6 +1154,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 'fhDirectCallback', @this.onPopupIndexEnd ...
                 );
             
+            this.initUiPositionRecaller();
         end
  
         
@@ -1374,6 +1390,78 @@ classdef ScanResultPlot2x2 < mic.Base
                 this.dHeightPopupFull + ...
                 this.dHeightPadAxesTop;
          end
+         
+         function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', [this.cName, '-position-recaller'], ...
+                'cTitleOfPanel', 'Saved Settings', ...
+                'lShowLabelOfList', false, ...
+                'lLoadOnSelect', true, ...
+                'lShowLoadButton', false, ...
+                'hGetCallback', @this.onUiPositionRecallerGet, ...
+                'hSetCallback', @this.onUiPositionRecallerSet ...
+            );
+         end
+        
+        
+         
+         function dValues = onUiPositionRecallerGet(this)
+                        
+             dValues = [...
+                this.uiPopup1.getSelectedIndex(), ...
+                this.uiPopup2.getSelectedIndex(), ...
+                this.uiPopup3.getSelectedIndex(), ...
+                this.uiPopup4.getSelectedIndex(), ...
+                this.uiPopup5.getSelectedIndex(), ...
+                this.uiPopup6.getSelectedIndex(), ...
+                this.uiPopup7.getSelectedIndex(), ...
+                this.uiPopup8.getSelectedIndex(), ...
+                this.uiCheckboxDC1.get(), ...
+                this.uiCheckboxDC2.get(), ...
+                this.uiCheckboxDC3.get(), ...
+                this.uiCheckboxDC4.get(), ...
+                this.uiCheckboxDC5.get(), ...
+                this.uiCheckboxDC6.get(), ...
+                this.uiCheckboxDC7.get(), ...
+                this.uiCheckboxDC8.get(), ...
+             ];
+
+        end
+        
+        % Set recalled values into your app
+        function onUiPositionRecallerSet(this, dValues)
+            
+            this.uiPopup1.setSelectedIndex(dValues(1));
+            this.uiPopup2.setSelectedIndex(dValues(2));
+            this.uiPopup3.setSelectedIndex(dValues(3));
+            this.uiPopup4.setSelectedIndex(dValues(4));
+            this.uiPopup5.setSelectedIndex(dValues(5));
+            this.uiPopup6.setSelectedIndex(dValues(6));
+            this.uiPopup7.setSelectedIndex(dValues(7));
+            this.uiPopup8.setSelectedIndex(dValues(8));
+            this.uiCheckboxDC1.set(dValues(9));
+            this.uiCheckboxDC2.set(dValues(10));
+            this.uiCheckboxDC3.set(dValues(11));
+            this.uiCheckboxDC4.set(dValues(12));
+            this.uiCheckboxDC5.set(dValues(13));
+            this.uiCheckboxDC6.set(dValues(14));
+            this.uiCheckboxDC7.set(dValues(15));
+            this.uiCheckboxDC8.set(dValues(16));
+            
+            this.onPopup1([], []);
+            this.onPopup2([], []);
+            this.onPopup3([], []);
+            this.onPopup4([], []);
+            this.onPopup5([], []);
+            this.onPopup6([], []);
+            this.onPopup7([], []);
+            this.onPopup8([], []);
+                                
+        end
          
          
         
