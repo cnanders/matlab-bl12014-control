@@ -21,6 +21,9 @@ classdef MADiagnostics < mic.Base
         uiButtonWheelLeft
         uiButtonWheelRight
         
+        dWidth = 480;
+        dHeight = 155;
+        
                 
     end
     
@@ -120,8 +123,7 @@ classdef MADiagnostics < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             
-            dWidthPanel = 480;
-            dHeightPanel = 155;
+            
             this.hPanel = uipanel( ...
                 'Parent', hParent, ...
                 'Units', 'pixels', ...
@@ -130,7 +132,7 @@ classdef MADiagnostics < mic.Base
                 ...%'BackgroundColor', [200 200 200]./255, ...
                 ...%'BorderType', 'none', ...
                 ...%'BorderWidth',0, ... 
-                'Position', mic.Utils.lt2lb([dLeft dTop dWidthPanel dHeightPanel], hParent)...
+                'Position', mic.Utils.lt2lb([dLeft dTop this.dWidth this.dHeight], hParent)...
             );
         
         

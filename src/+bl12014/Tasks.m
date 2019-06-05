@@ -799,9 +799,10 @@ classdef Tasks < mic.Base
                 error('hardware must be bl12014.Hardware');
             end
             
-            dX = -103;
-            dY = 7;
-            dZ = 0.3;
+            % mm
+            dX = -5.5;
+            dY = 5.5;
+            dZ = 0.13;
             
             dTolX = 1;
             dTolY = 1;
@@ -818,7 +819,7 @@ classdef Tasks < mic.Base
             };
         
         
-            fhGetMessage = @() 'Wafer Stage is at Print';
+            fhGetMessage = @() 'Wafer Stage is near print';
             
             task = mic.TaskSequence(...
                 'cName', cName, ...

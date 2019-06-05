@@ -2,15 +2,12 @@ classdef Shutter < mic.Base
     
     properties
         
-        % {bl12014.device.ShutterVirtual}
-        deviceVirtual
         
         % {mic.ui.device.GetSetNumber 1x1}
         uiShutter
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiOverride
-        
         
     end
     
@@ -98,7 +95,6 @@ classdef Shutter < mic.Base
             this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);
 
             delete(this.uiShutter) % uses deviceVirtrual so need to delete this first
-            delete(this.deviceVirtual)
             delete(this.uiOverride);
             
         end    
@@ -180,7 +176,6 @@ classdef Shutter < mic.Base
                 'lShowJog', false ...
             );
         
-            % this.uiShutter.setDeviceVirtual(this.deviceVirtual);
         end
                 
         function init(this)

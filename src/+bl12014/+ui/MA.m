@@ -17,6 +17,12 @@ classdef MA < mic.Base
         
         uiStateWaferNearPrint
         
+        % {bl12014.ui.Shutter 1x1}
+        uiShutter
+        
+        % {mic.ui.device.GetSetNumber 1x1}
+        uiUndulatorGap
+        
 
         
     end
@@ -77,10 +83,20 @@ classdef MA < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             this.uiScanner.build(hParent, dLeft, dTop);
-            % this.uiGigECamera.build(hParent, dLeft + 1250, dTop, 480);
-            this.uiDiagnostics.build(hParent, dLeft + 1250, 600);
+            
             
             this.uiStateWaferNearPrint.build(hParent, dLeft, 780, 200);
+            % this.uiGigECamera.build(hParent, dLeft + 1250, dTop, 480);
+            
+            dTop = 300;
+            dLeft = dLeft + 1250;
+            this.uiDiagnostics.build(hParent, dLeft, dTop);
+            
+            dTop = dTop + this.uiDiagnostics.dHeight + 10;
+            this.uiShutter.build(hParent, dLeft, dTop);
+            dTop = dTop + this.uiShutter.dHeight + 10;
+            
+            this.uiUndulatorGap.build(hParent, dLeft, dTop);
             
         end
         
@@ -108,6 +124,39 @@ classdef MA < mic.Base
     
     methods (Access = protected)
         
+        function initUiDeviceUndulatorGap(this)
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-set-number', ...
+                'config-undulator-gap.json' ...
+            );
+        
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+            
+            this.uiUndulatorGap = mic.ui.device.GetSetNumber(...
+                'clock', this.uiClock, ...
+                'lShowLabels', false, ...
+                'fhGet', @() this.hardware.getBL1201CorbaProxy().SCA_getIDGap(), ...
+                'fhSet', @(dVal) this.hardware.getBL1201CorbaProxy().SCA_setIDGap(dVal), ...
+                'fhIsReady', @() ~this.hardware.getBL1201CorbaProxy().SCA_getIDMotionComplete(), ...
+                ... Channel Access
+                ...'fhGet', @() this.hardware.getALS().getGapOfUndulator12(), ...
+                ...'fhSet', @(dVal) this.hardware.getALS().setGapOfUndulator12(dVal), ...
+                ...'fhIsReady', @() true, ... FIX ME
+                'fhStop', @() [], ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, '-undulator-gap'], ...
+                'config', uiConfig, ...
+                'cLabel', 'Undulator Gap' ...
+            );
+        
+        end
+        
+        
         function init(this)
             
             
@@ -127,6 +176,11 @@ classdef MA < mic.Base
                 'uiClock', this.uiClock, ...
                 'cDirSave', cDirSave, ...
                 'dScale', 0.67 ... % 0.67 rel amp = sig 1
+            );
+        
+            this.uiShutter = bl12014.ui.Shutter(...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
             );
             
             %{
@@ -166,6 +220,7 @@ classdef MA < mic.Base
                 'clock', this.uiClock ...
             );
             
+            this.initUiDeviceUndulatorGap();
         end
           
         

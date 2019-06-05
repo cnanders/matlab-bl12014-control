@@ -248,20 +248,7 @@ classdef Beamline < mic.Base
 
         end
         
-        function connectRigolDG1000Z(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromRigolDG1000Z(comm, 1);
-            this.uiShutter.setDevice(device);
-            this.uiShutter.turnOn();
-                      
-        end
         
-        function disconnectRigolDG1000Z(this)
-            
-            this.uiShutter.turnOff();
-            this.uiShutter.setDevice([]);
-   
-        end
         
         
         
@@ -786,7 +773,7 @@ classdef Beamline < mic.Base
                 'fhStop', @() [], ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
-                'cName', 'beamline-undulator-gap', ...
+                'cName', [this.cName, '-undulator-gap'], ...
                 'config', uiConfig, ...
                 'cLabel', 'Undulator Gap' ...
             );

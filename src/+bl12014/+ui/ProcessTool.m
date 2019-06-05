@@ -25,7 +25,7 @@ classdef ProcessTool < mic.Base
         uieRinseName
         uieRinseTime
         dWidth = 335
-        dHeight = 260
+        dHeight = 500
         
         uitQA
   
@@ -42,6 +42,10 @@ classdef ProcessTool < mic.Base
         uitPre
         dHeightEdit = 24;
         dWidthBorderPanel = 0
+        
+        % {mic.ui.common.PositionRecaller 1x1}
+        uiPositionRecaller
+        
         
     end
     
@@ -381,14 +385,22 @@ classdef ProcessTool < mic.Base
                 this.dHeightEdit ...
             );
         
+            dTop = dTop + dSep + 10;
+            dHeight = 200;
+            
+            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, this.dWidth - 20, dHeight);
+        
+            dTop = dTop + dHeight + 10;
+            
             this.uitQA.build( ...
                 this.hPanel, ...
-                290, ...
-                dTop + 15, ...
+                280, ...
+                dTop, ...
                 40, ...
                 this.dHeightEdit ...
             );
         
+            
             %{
             this.hAxes = axes( ...
                 'Parent', this.hPanel, ...
@@ -525,9 +537,28 @@ classdef ProcessTool < mic.Base
             this.uieRinseName.set('DIH20');
             this.uieRinseTime.set('30');
             
+            
+            this.initUiPositionRecaller();
+            
             addlistener(this.uitQA, 'eChange', @this.onQA);
 
             
+        end
+        
+        function initUiPositionRecaller(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+            cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
+                'cConfigPath', cPath, ... 
+                'cName', 'process-tool-position-recaller', ...
+                'cTitleOfPanel', 'Saved Processes', ...
+                'lShowLabelOfList', false, ...
+                'lLoadOnSelect', true, ...
+                'lShowLoadButton', false, ...
+                'hGetCallback', @this.onUiPositionRecallerGet, ...
+                'hSetCallback', @this.onUiPositionRecallerSet ...
+            );
         end
         
         
@@ -623,6 +654,40 @@ classdef ProcessTool < mic.Base
                 );
             end
             
+        end
+        
+        
+        % Return list of values from your app
+        function dValues = onUiPositionRecallerGet(this)
+            
+        
+             cecProps = this.getSaveLoadProps();
+            
+             dValues = cell(1, length(cecProps));
+            for n = 1 : length(cecProps)
+                
+                if strcmpi('uieUser', cecProps{n})
+                    continue
+                end
+                
+                dValues{n} = this.(cecProps{n}).get();
+            end
+
+        end
+        
+        % Set recalled values into your app
+        function onUiPositionRecallerSet(this, dValues)
+            
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+                
+                if strcmpi('uieUser', cecProps{n})
+                    continue
+                end
+                
+               this.(cecProps{n}).set(dValues{n})
+            end
+                                
         end
 
     end % private
