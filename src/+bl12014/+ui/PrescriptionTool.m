@@ -308,9 +308,10 @@ classdef PrescriptionTool < mic.Base
             u8Count = u8Count + 1;
             
             
-            % Pause
+            % Pause long time for motion of reticle fine xy from big move to index shot to
+            % dissipate
             stValue = struct();
-            stValue.pause = 10;
+            stValue.pause = 30;
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
@@ -532,7 +533,7 @@ classdef PrescriptionTool < mic.Base
             stUnit.workingMode = 'n/a';
             
             stRecipe = struct();
-            stRecipe.process = this.uiProcessTool.save();
+            stRecipe.process = this.uiProcessTool.savePublic();
             stRecipe.fem = this.uiFemTool().savePublic();
             stRecipe.unit = stUnit;
             stRecipe.values = ceValues;

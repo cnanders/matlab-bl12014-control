@@ -161,6 +161,7 @@ classdef Scan < mic.Base
         uiStateUndulatorIsCalibrated
         uiStateExitSlitIsCalibrated
         uiStateMonoGratingAtEUV
+        uiStateEndstationLEDsOff
         
         uiTextReticleField
         
@@ -460,6 +461,11 @@ classdef Scan < mic.Base
            
            this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
+           
+           this.uiStateEndstationLEDsOff.build(this.hPanelAdded, dLeft, dTop, 300);
+           dTop = dTop + dSep;
+           
+           
            %{
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
@@ -856,6 +862,17 @@ classdef Scan < mic.Base
                 'task', bl12014.Tasks.createStateMonoGratingAtEUV(...
                     [this.cName, 'state-mono-grating-at-euv'], ...
                     this.uiBeamline.uiGratingTiltX, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateEndstationLEDsOff = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-endstation-leds-off'], ...
+                'task', bl12014.Tasks.createStateEndstationLEDsOff(...
+                    [this.cName, 'state-endstation-leds-off'], ...
+                    this.hardware, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
@@ -2539,16 +2556,14 @@ classdef Scan < mic.Base
                 dCol = round(dCol);
             end
             
-            cNameOfField = 'Unknown';
+            
             try
                 cNameOfField = bl12014.getNameOfReticleField(...
                     'row', dRow, ...
                     'col', dCol ...
                 );
-                
             catch mE
-                
-                
+                cNameOfField = 'Unknown';
             end
             
             c = sprintf(...
@@ -2560,7 +2575,20 @@ classdef Scan < mic.Base
         end
         
         function updateTextReticleField(this, src, evt)
-           this.uiTextReticleField.set(['Reticle Field: ', this.getTextReticleField()]);
+            
+            cText = this.getTextReticleField();
+           this.uiTextReticleField.set(['Reticle Field: ', cText]);
+           
+           dColorGreen = [.85, 1, .85];
+           dColorRed = [1, .85, .85];
+            
+           if ~contains(cText, 'Not Specified')
+               % green
+               this.uiTextReticleField.setBackgroundColor(dColorGreen);
+           else
+               % red
+               this.uiTextReticleField.setBackgroundColor(dColorRed);
+           end
         end
         
         function updateScannerPlots(this, ~, ~)

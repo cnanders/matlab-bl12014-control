@@ -180,14 +180,18 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
             
             % Show the turn on Wafer?
             if this.uiStateWaferOn.isDone()
-                this.uiSequenceTurnOnWafer.hide()
+                if ~this.uiSequenceTurnOnWafer.isExecuting()
+                    this.uiSequenceTurnOnWafer.hide();
+                end
             else
                 this.uiSequenceTurnOnWafer.show();
             end
             
             % Show the turn on Reticle?
             if this.uiStateReticleOn.isDone()
-                this.uiSequenceTurnOnReticle.hide()
+                if ~this.uiSequenceTurnOnReticle.isExecuting()
+                    this.uiSequenceTurnOnReticle.hide();
+                end
             else
                 this.uiSequenceTurnOnReticle.show();
             end

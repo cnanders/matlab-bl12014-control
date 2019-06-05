@@ -89,6 +89,39 @@ classdef ProcessTool < mic.Base
             
         end
         
+        function st = savePublic(this)
+            
+            % @return {struct} state to save
+            st = struct();            
+            st.cUser = this.uieUser.get();
+            st.cBase = this.uieBase.get();  
+            
+            st.cUnderlayer1Name = this.uieUnderlayer1Name.get();
+            st.dUnderlayer1Thick = this.uieUnderlayer1Thick.get();
+            st.dUnderlayer1PabTemp = this.uieUnderlayer1PabTemp.get();
+            st.dUnderlayer1PabTime = this.uieUnderlayer1PabTime.get();
+            
+            st.cUnderlayer2Name = this.uieUnderlayer2Name.get();
+            st.dUnderlayer2Thick = this.uieUnderlayer2Thick.get();
+            st.dUnderlayer2PabTemp = this.uieUnderlayer2PabTemp.get();
+            st.dUnderlayer2PabTime = this.uieUnderlayer2PabTime.get();
+            
+            st.cResistName = this.uieResistName.get();
+            st.dResistThick = this.uieResistThick.get();
+            st.dResistPabTemp = this.uieResistPabTemp.get();
+            st.dResistPabTime = this.uieResistPabTime.get();
+            st.dResistPebTemp = this.uieResistPebTemp.get();
+            st.dResistPebTime = this.uieResistPebTime.get();
+            
+            st.cDevName = this.uieDevName.get();
+            st.dDevTime = this.uieDevTime.get();
+            
+            st.cRinseName = this.uieRinseName.get();
+            st.dRinseTime = this.uieRinseTime.get();
+
+            
+        end
+        
         function st = save(this)
              cecProps = this.getSaveLoadProps();
             

@@ -756,6 +756,39 @@ classdef Tasks < mic.Base
         % @param {char 1xm} cName - app-wide unique name
         % @param {bl12014.ui.WaferCoarseStage 1x1} ui
         % @param {mic.Clock 1x1}
+        function task = createStateEndstationLEDsOff(cName, hardware, clock)
+                            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if ~isa(hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            
+            ceTasks = {...
+                mic.Task(...
+                    'fhExecute', @() hardware.getWebSwitchEndstation().turnOffRelay2(), ...
+                   'fhIsDone', @() ~hardware.getWebSwitchEndstation().isOnRelay2(), ...
+                   'fhGetMessage', @() 'Turning off Endstation LEDs' ...
+                )
+            };
+        
+            fhGetMessage = @() 'Endstation LEDs are OFF';
+            
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 1, ...
+                'fhGetMessage', fhGetMessage ...
+            );
+        end
+        
+        % @param {char 1xm} cName - app-wide unique name
+        % @param {bl12014.ui.WaferCoarseStage 1x1} ui
+        % @param {mic.Clock 1x1}
         function task = createStateWaferStageNearPrint(cName, hardware, clock)
                             
             if ~isa(clock, 'mic.Clock')
