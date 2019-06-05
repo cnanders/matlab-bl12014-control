@@ -12,6 +12,6 @@
     "Z": {
         "value":-46.85,
         "unit": "um",
-        "displayTol": 0.2
+        "displayTol": 0.4
     }
  }

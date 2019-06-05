@@ -553,7 +553,9 @@ classdef ScanResultPlot2x2 < mic.Base
             % This includes files, folders, etc
             
             % Get a logical vector that tells which is a directory.
-            dirFlags = cellfun(@isdir, ceReturn);
+            % Make sure to use full path so MATLAB can check directories
+            % that were created after MATLAB launched
+            dirFlags = cellfun(@isdir, fullfile(cDir, ceReturn));
             % Extract only those that are directories.
             ceReturn = ceReturn(dirFlags);
            
