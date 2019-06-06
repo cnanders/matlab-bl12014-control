@@ -144,6 +144,7 @@ classdef Scan < mic.Base
         
         % {cell of struct} storage of state during each acquire
         ceValues
+        ceValuesFast % storage at n Hz not necessarily correlated with exposures
                 
         
         uiWaferAxes
@@ -2025,6 +2026,7 @@ classdef Scan < mic.Base
                 end
                 
                 this.ceValues = cell(size(stRecipe.values));
+                this.ceValuesFast = cell(0);
                 
                 this.scan = mic.Scan(...
                     'ui-fem-scan', ...
@@ -2104,7 +2106,8 @@ classdef Scan < mic.Base
             end
             
             % Verify that DMIs are zeroed:
-            this.uiMFDriftMonitor.apiDriftMonitor.setDMIZero();
+            % this.uiMFDriftMonitor.apiDriftMonitor.setDMIZero();
+            this.hardware.getMfDriftMonitorMiddleware().setDMIZero();
             
             
             % Make sure the shutter is not open (this happens when it is
@@ -2241,6 +2244,37 @@ classdef Scan < mic.Base
             this.saveScanResultsJson(stUnit, lAborted);
             this.saveScanResultsCsv(stUnit, lAborted);
         end
+        
+        %{
+        function saveScanResultsFastJson(this, stUnit, lAborted)
+       
+            % Append new state
+            stState = this.getState(stUnit);
+            stState.dose_mj_per_cm2 = 0; % fix me?
+            this.ceValuesFast{end + 1} = stState;
+
+            this.msg('saveScanResultsJson()');
+             
+            cName = 'result-fast.json';
+            
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                cName ...
+            );
+        
+            stResult = struct();
+            stResult.recipe = this.getPathRecipe();
+            stResult.unit = stUnit;
+            stResult.values = this.ceValuesFast;
+            
+            stOptions = struct();
+            stOptions.FileName = cPath;
+            stOptions.Compact = 0;
+            
+            savejson('', stResult, stOptions);     
+
+        end
+        %}
         
         function saveScanResultsJson(this, stUnit, lAborted)
        

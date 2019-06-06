@@ -228,7 +228,7 @@ classdef App < mic.Base
             % this.onUiTabGroup();
             
             % LSIControl is built separately now
-%             this.uiLSIControl.build();
+            % this.uiLSIControl.build();
             
         end
         

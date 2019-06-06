@@ -92,9 +92,7 @@ classdef MFDriftMonitor < mic.Base
         
         % Two main tabs
         uitgMode
-        
-        % UI Connect
-        uicConnectDriftMonitor
+       
         
         % Plot status
         uicPlotOn
@@ -232,29 +230,8 @@ classdef MFDriftMonitor < mic.Base
         
         function init(this)
             
-            % Instantiate drift monitor immediately, although don't connect
-            % yet
-            this.apiDriftMonitor = this.hardware.getMfDriftMonitorMiddleware();
+
             
-            
-            % Init DriftMonitor Hardware comm (connect button)
-            this.uicConnectDriftMonitor = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', [this.cName, 'connect-drift-monitor'], ...
-                'cLabel', 'MFDrift Monitor',...
-                'lUseFunctionCallbacks', true, ...
-                'fhGet', @()this.apiDriftMonitor.isConnected(), ...
-                'fhSet', @(lVal) mic.Utils.ternEval(lVal, ...
-                                   @this.connectDriftMonitor, ...
-                                   @this.disconnectDriftMontior...
-                                ),...
-                'fhIsInitialized', @()true,... 
-                'fhIsVirtual', @false ...
-                );
             
             this.uicPlotOn = mic.ui.device.GetSetLogical(...
                 'clock', this.clock, ...
@@ -462,9 +439,9 @@ classdef MFDriftMonitor < mic.Base
                     'lShowZero', (k >= 7), ...
                     'lShowRel',  (k >= 7), ...
                     'lShowDevice', false, ...
-                    'fhGet', @()this.apiDriftMonitor.getHeightSensorValue(u8Channel),...
-                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
-                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    'fhGet', @()this.hardware.getMfDriftMonitorMiddleware().getHeightSensorValue(u8Channel),...
+                    'fhIsReady', @()this.hardware.getMfDriftMonitorMiddleware().isReady(),...
+                    'fhIsVirtual',  @() false...
                     );
                 this.uicbHeightSensorChannels{k}= mic.ui.common.Checkbox(...
                     'cLabel',this.ceHSChannelNames{u8Channel},...
@@ -506,9 +483,9 @@ classdef MFDriftMonitor < mic.Base
                     'lShowZero', false, ...
                     'lShowRel',  false, ...
                     'lShowDevice', false, ...
-                    'fhGet', @()this.apiDriftMonitor.getDMIValue(u8Channel),...
-                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
-                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    'fhGet', @()this.hardware.getMfDriftMonitorMiddleware().getDMIValue(u8Channel),...
+                    'fhIsReady', @()this.hardware.getMfDriftMonitorMiddleware().isReady(),...
+                    'fhIsVirtual',  @() false...
                     );
                 this.uicbDMIChannels{k}= mic.ui.common.Checkbox(...
                     'cLabel',this.ceDMIChannelNames{u8Channel},...
@@ -534,9 +511,9 @@ classdef MFDriftMonitor < mic.Base
                     'lShowZero', false, ...
                     'lShowRel',  false, ...
                     'lShowDevice', false, ...
-                    'fhGet', @()this.apiDriftMonitor.getACPower(k),...
-                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
-                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    'fhGet', @()this.hardware.getMfDriftMonitorMiddleware().getACPower(k),...
+                    'fhIsReady', @()this.hardware.getMfDriftMonitorMiddleware().isReady(),...
+                    'fhIsVirtual',  @() false...
                     );
                  this.uiDMIDCPower =  mic.ui.device.GetNumber(...
                     'clock', this.clock, ...
@@ -551,9 +528,9 @@ classdef MFDriftMonitor < mic.Base
                     'lShowZero', false, ...
                     'lShowRel',  false, ...
                     'lShowDevice', false, ...
-                    'fhGet', @()this.apiDriftMonitor.getDCPower(k),...
-                    'fhIsReady', @()this.apiDriftMonitor.isReady(),...
-                    'fhIsVirtual',  @()isempty(this.apiDriftMonitor)...
+                    'fhGet', @()this.hardware.getMfDriftMonitorMiddleware().getDCPower(k),...
+                    'fhIsReady', @()this.hardware.getMfDriftMonitorMiddleware().isReady(),...
+                    'fhIsVirtual',  @() false...
                     );
             end
             
@@ -678,13 +655,13 @@ classdef MFDriftMonitor < mic.Base
         
         % Gets X and Y reticle values separately from normal update loop
         function dVal = getReticleDMIValues(this)
-            this.apiDriftMonitor.forceUpdate();
-            dVal = [this.apiDriftMonitor.getDMIValue(1);this.apiDriftMonitor.getDMIValue(2)];
+            this.hardware.getMfDriftMonitorMiddleware().forceUpdate();
+            dVal = [this.hardware.getMfDriftMonitorMiddleware().getDMIValue(1);this.hardware.getMfDriftMonitorMiddleware().getDMIValue(2)];
         end
         
         function dVal = getHSValues(this)
-            this.apiDriftMonitor.forceUpdate();
-             dVal = [this.apiDriftMonitor.getHeightSensorValue(7); this.apiDriftMonitor.getHeightSensorValue(8);  this.apiDriftMonitor.getHeightSensorValue(9)];
+            this.hardware.getMfDriftMonitorMiddleware().forceUpdate();
+             dVal = [this.hardware.getMfDriftMonitorMiddleware().getHeightSensorValue(7); this.hardware.getMfDriftMonitorMiddleware().getHeightSensorValue(8);  this.hardware.getMfDriftMonitorMiddleware().getHeightSensorValue(9)];
         end
         
         % Sets plotting status:
@@ -708,7 +685,7 @@ classdef MFDriftMonitor < mic.Base
             
             load(dVal);
             
-            this.apiDriftMonitor.setInterpolant(stCalibrationData);
+            this.hardware.getMfDriftMonitorMiddleware().setInterpolant(stCalibrationData);
 %             this.stActiveInterpolant = stCalibrationData;
             (fprintf('(MFDriftMonitor process): Set calibration interpolant to: %s\n', p));
             
@@ -722,7 +699,7 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function setModelType(this, dVal)
-            this.apiDriftMonitor.setModelType(dVal);
+            this.hardware.getMfDriftMonitorMiddleware().setModelType(dVal);
         end
         
         
@@ -742,9 +719,8 @@ classdef MFDriftMonitor < mic.Base
         %% Hardware init:
         % Set up hardware connect/disconnects:
         function connectDriftMonitor(this)
-            if ~this.apiDriftMonitor.isConnected()
-                this.apiDriftMonitor.connect();
-            end
+            
+            
             if ~isempty(this.clock)&& ~this.clock.has(this.id())
                 this.clock.add(@this.onClock, this.id(), this.dGraphUpdatePeriod);
             end
@@ -762,17 +738,6 @@ classdef MFDriftMonitor < mic.Base
         end
         
 
-        function disconnectDriftMontior(this)
-            if this.apiDriftMonitor.isConnected()
-                this.apiDriftMonitor.disconnect();
-            end
-
-            
-            % Remove UI update process
-            if isvalid(this.clock) &&  this.clock.has(this.id())
-                this.clock.remove(this.id());
-            end
-        end
         
         
          % Builds hexapod java api, connecting getSetNumber UI elements
@@ -859,7 +824,7 @@ classdef MFDriftMonitor < mic.Base
         function updatePlots(this)
             try
             
-                if ~this.apiDriftMonitor.isConnected() || ~this.lIsPlotting
+                if ~this.lIsPlotting
                     return
                 end
                 %DMI Scanning
@@ -871,11 +836,8 @@ classdef MFDriftMonitor < mic.Base
                 lgdDMI=[];
                 DMIValue=zeros(length(this.dDMIDisplayChannels),1);
                 for k=1:length(this.dDMIDisplayChannels)
-                    if ~isempty(this.apiDriftMonitor)
-                        DMIValue(k,1)=this.uiDMIChannels{k}.getValCalDisplay;
-                    else
-                        DMIValue(k,1)=randn(1);
-                    end
+                    DMIValue(k,1)=this.uiDMIChannels{k}.getValCalDisplay;
+                    
                 end
                 this.dDMI(1:length(this.dDMIDisplayChannels),end+1)=DMIValue;
                 this.dDMIScanningTime(end+1)=length(this.dDMIScanningTime)*this.uieUpdateInterval.get();
@@ -911,11 +873,8 @@ classdef MFDriftMonitor < mic.Base
                 lgdHS=[];
                 HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
                 for k=1:length(this.dHeightSensorDisplayChannels)
-                    if ~isempty(this.apiDriftMonitor)
-                        HSValue(k,1)=this.uiHeightSensorChannels{k}.getValCalDisplay();
-                    else
-                        HSValue(k,1)=randn(1);
-                    end
+                    HSValue(k,1)=this.uiHeightSensorChannels{k}.getValCalDisplay();
+                    
                 end
                 this.dHS(1:length(this.dHeightSensorDisplayChannels),end+1)=HSValue; 
                 if isempty(this.dGraphTimeSteps)
@@ -1037,7 +996,7 @@ classdef MFDriftMonitor < mic.Base
                     this.dHS=[];
                     this.dGraphTimeSteps=[];
                 case this.uibResetDMI
-                    this.apiDriftMonitor.setDMIZero();
+                    this.hardware.getMfDriftMonitorMiddleware().setDMIZero();
             end
         end
       
@@ -1113,10 +1072,7 @@ classdef MFDriftMonitor < mic.Base
                     
                     this.dSimpleZScan = zeros(dNStates, 1);
         
-                    if ~(this.apiDriftMonitor.isConnected())
-                        msgbox('Drift monitor is not connected')
-                        return
-                    end
+                    
             end
                         
             
@@ -1190,10 +1146,7 @@ classdef MFDriftMonitor < mic.Base
                     this.dRxIdx = zeros(dNStates, 1);
                     this.dRyIdx = zeros(dNStates, 1);
         
-                    if ~(this.apiDriftMonitor.isConnected())
-                        msgbox('Drift monitor is not connected')
-                        return
-                    end
+                    
             end
                         
             
@@ -1414,11 +1367,11 @@ classdef MFDriftMonitor < mic.Base
                         case 1
                             % Read off HS channel values and store
                             % Update HS:
-                            this.apiDriftMonitor.forceUpdate();
+                            this.hardware.getMfDriftMonitorMiddleware().forceUpdate();
 
                             dHSValues = zeros(6,1);
                             for k = 1:6
-                                dHSValues(k) = this.apiDriftMonitor.getHeightSensorValue(k);
+                                dHSValues(k) = this.hardware.getMfDriftMonitorMiddleware().getHeightSensorValue(k);
                             end
                             this.dCalibrationData(u8Idx, 1:6) = dHSValues';
                             this.dZIdx(u8Idx) = stateList{u8Idx}.values(1);
@@ -1428,7 +1381,7 @@ classdef MFDriftMonitor < mic.Base
                     end
                 case this.u8WAFER_LEVEL
                     pause(0.2);
-                    this.dSimpleZScan(u8Idx) = this.apiDriftMonitor.getSimpleZ(200);
+                    this.dSimpleZScan(u8Idx) = this.hardware.getMfDriftMonitorMiddleware().getSimpleZ(200);
                     this.updateWaferLevelAxis();
             end
             
@@ -1598,7 +1551,6 @@ classdef MFDriftMonitor < mic.Base
             dLeft = 10;
             
             % Connect button above tabs:
-            this.uicConnectDriftMonitor.build(this.hParent, dLeft, dTop);
             this.uicPlotOn.build(this.hParent, dLeft, dTop + 30);
             this.uicConnectWafer.build(this.hParent, dLeft, dTop + 60)
             

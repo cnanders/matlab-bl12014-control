@@ -511,6 +511,7 @@ classdef ScanResultPlot2x2 < mic.Base
         
         function refresh(this)
             
+            
             this.loadFileAndUpdateAll();
         end
         
@@ -520,7 +521,25 @@ classdef ScanResultPlot2x2 < mic.Base
     methods (Access = private)
         
         function onClock(this)
+            
+            % Store the values of the index start and index min and reset
+            % after
+            
+            % Before resettign the options of indexStart and indexEnd
+            % save their current value and then re-select that value
+            % when done
+            
+            
+            u8IndexStart = this.uiPopupIndexStart.getSelectedIndex();
+            u8IndexEnd = this.uiPopupIndexEnd.getSelectedIndex();
+
             this.refresh();
+            
+            this.uiPopupIndexStart.setSelectedIndex(u8IndexStart);
+            this.uiPopupIndexEnd.setSelectedIndex(u8IndexEnd);
+            this.onPopupIndexEnd([], []);
+            this.onPopupIndexStart([], []);
+            
         end
         
         function onButtonRefresh(this, src, evt)
@@ -1435,14 +1454,14 @@ classdef ScanResultPlot2x2 < mic.Base
         % Set recalled values into your app
         function onUiPositionRecallerSet(this, dValues)
             
-            this.uiPopup1.setSelectedIndex(dValues(1));
-            this.uiPopup2.setSelectedIndex(dValues(2));
-            this.uiPopup3.setSelectedIndex(dValues(3));
-            this.uiPopup4.setSelectedIndex(dValues(4));
-            this.uiPopup5.setSelectedIndex(dValues(5));
-            this.uiPopup6.setSelectedIndex(dValues(6));
-            this.uiPopup7.setSelectedIndex(dValues(7));
-            this.uiPopup8.setSelectedIndex(dValues(8));
+            this.uiPopup1.setSelectedIndex(uint8(dValues(1)));
+            this.uiPopup2.setSelectedIndex(uint8(dValues(2)));
+            this.uiPopup3.setSelectedIndex(uint8(dValues(3)));
+            this.uiPopup4.setSelectedIndex(uint8(dValues(4)));
+            this.uiPopup5.setSelectedIndex(uint8(dValues(5)));
+            this.uiPopup6.setSelectedIndex(uint8(dValues(6)));
+            this.uiPopup7.setSelectedIndex(uint8(dValues(7)));
+            this.uiPopup8.setSelectedIndex(uint8(dValues(8)));
             this.uiCheckboxDC1.set(dValues(9));
             this.uiCheckboxDC2.set(dValues(10));
             this.uiCheckboxDC3.set(dValues(11));

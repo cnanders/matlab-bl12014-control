@@ -45,8 +45,7 @@ classdef MFDriftMonitorMiddleware < mic.Base
         % Handle to the MFDriftMonitor java interface
         javaAPI
         
-        % Handle to mfdriftmonitor
-        commMFDriftMonitor
+
 
         % Number of samples to average
         dNumSampleAverage = 25
