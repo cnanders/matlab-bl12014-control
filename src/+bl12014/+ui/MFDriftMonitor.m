@@ -539,7 +539,7 @@ classdef MFDriftMonitor < mic.Base
            % bl12014.hardwareAssets.middleware.MFDriftMonitor.getDMIValue(1)
            % this.uiDMIChannels{1}.get()
             this.uieUpdateInterval    = mic.ui.common.Edit('cLabel', 'Interval(s)', 'cType', 'd');
-            this.uieUpdateInterval.set(0.5);
+            this.uieUpdateInterval.set(1);
             this.uibClearDMI    = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
             this.uibClearHS     = mic.ui.common.Button('cText', 'Clear Plot', 'fhDirectCallback', @(src, evt)this.cb(src));
             this.uibResetDMI    = mic.ui.common.Button('cText', 'Zero DMI', 'fhDirectCallback', @(src, evt)this.cb(src));
@@ -675,6 +675,16 @@ classdef MFDriftMonitor < mic.Base
         end
         function lVal = getIsPlotting(this)
             lVal = this.lIsPlotting;
+        end
+        
+        function [dVal, dTime] = getHSHistory(this)
+            dVal = this.dHS;
+            dTime = this.dGraphTimeSteps;
+        end
+        
+        function [dVal, dTime] = getDMIHistory(this)
+            dVal = this.dDMI;
+            dTime = this.dGraphTimeSteps;
         end
         
         %% Calibration S/L handlers:
@@ -822,99 +832,144 @@ classdef MFDriftMonitor < mic.Base
         end
         
         function updatePlots(this)
-            try
+                            
+            if ~this.lIsPlotting
+                return
+            end
+            %DMI Scanning
+            plotDMI=[];
+            dZVals = [];
+            dRxVals = [];
+            dRyVals = [];
+
+            lgdDMI=[];
+            DMIValue=zeros(length(this.dDMIDisplayChannels),1);
+            for k=1:length(this.dDMIDisplayChannels)
+                DMIValue(k,1)=this.uiDMIChannels{k}.getValCalDisplay;
+
+            end
+
+
+            this.dDMI(1:length(this.dDMIDisplayChannels),end+1)=DMIValue;
             
-                if ~this.lIsPlotting
-                    return
+            % Update the DMI time samples array
+            if isempty(this.dDMIScanningTime)
+                this.dDMIScanningTime = 0;
+            else
+                this.dDMIScanningTime(end+1) = this.dDMIScanningTime(end) + this.dGraphUpdatePeriod;
+            end
+            
+            % LEGACY CNA commenting out 2019.06.26
+            % this.dDMIScanningTime(end+1)=length(this.dDMIScanningTime)*this.uieUpdateInterval.get();
+            
+            
+            for k=1:length(this.dDMIDisplayChannels)
+                if this.uicbDMIChannels{k}.get()
+                    plotDMI(end+1,:)=this.dDMI(k,:);
+                    lgdDMI{end+1}=this.ceDMIChannelNames{k};
                 end
-                %DMI Scanning
-                plotDMI=[];
-                dZVals = [];
-                dRxVals = [];
-                dRyVals = [];
-                
-                lgdDMI=[];
-                DMIValue=zeros(length(this.dDMIDisplayChannels),1);
-                for k=1:length(this.dDMIDisplayChannels)
-                    DMIValue(k,1)=this.uiDMIChannels{k}.getValCalDisplay;
-                    
-                end
-                this.dDMI(1:length(this.dDMIDisplayChannels),end+1)=DMIValue;
-                this.dDMIScanningTime(end+1)=length(this.dDMIScanningTime)*this.uieUpdateInterval.get();
-                for k=1:length(this.dDMIDisplayChannels)
-                    if this.uicbDMIChannels{k}.get()
-                        plotDMI(end+1,:)=this.dDMI(k,:);
-                        lgdDMI{end+1}=this.ceDMIChannelNames{k};
+            end
+
+            % Plot DMI difference channels:
+            ceDifferenceChannelNames = {'X drift', 'Y drift'};
+            for k = 1:2
+                if this.uicbDMIDrift{k}.get()
+
+                    if k == 1 % X
+                        % Ret fine X points toward 03:00, wafer coarse x
+                        % also points to 09:00
+                         plotDMI(end+1,: )= 5*this.dDMI(k + 2,:) + this.dDMI(k,:);
+                    elseif k == 2 % Y
+                         % in y, reticle fine y and wafer y point in
+                        % opposite physical directions.  reticle fine y
+                        % points to 12:00; wafer coarse y points to 06:00
+                         plotDMI(end+1,: )= -5*this.dDMI(k + 2,:) + this.dDMI(k,:);
                     end
+                    lgdDMI{end+1}=ceDifferenceChannelNames{k};
                 end
-                
-                % Plot DMI difference channels:
-                ceDifferenceChannelNames = {'X drift', 'Y drift'};
-                for k = 1:2
-                    if this.uicbDMIDrift{k}.get()
-                       
-                        if k == 1 % X
-                            % Ret fine X points toward 03:00, wafer coarse x
-                            % also points to 09:00
-                             plotDMI(end+1,: )= 5*this.dDMI(k + 2,:) + this.dDMI(k,:);
-                        elseif k == 2 % Y
-                             % in y, reticle fine y and wafer y point in
-                            % opposite physical directions.  reticle fine y
-                            % points to 12:00; wafer coarse y points to 06:00
-                             plotDMI(end+1,: )= -5*this.dDMI(k + 2,:) + this.dDMI(k,:);
-                        end
-                        lgdDMI{end+1}=ceDifferenceChannelNames{k};
-                    end
+            end
+
+
+            %HS Scanning
+            plotHS=[];
+            lgdHS=[];
+            HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
+            for k=1:length(this.dHeightSensorDisplayChannels)
+                HSValue(k,1)=this.uiHeightSensorChannels{k}.getValCalDisplay();
+
+            end
+            this.dHS(1:length(this.dHeightSensorDisplayChannels),end+1)=HSValue; 
+
+
+            % Update the Height Sensor time samples array
+            
+            if isempty(this.dGraphTimeSteps)
+                this.dGraphTimeSteps = 0;
+            else
+                this.dGraphTimeSteps(end+1)=this.dGraphTimeSteps(end) + this.dGraphUpdatePeriod;
+            end
+
+            % ADDED by CNA
+            % If the user clicks Clear plot button, dHS and dDMI get 
+            % set to [], which makes the code below throw an error.
+            % Need to make sure at least one reading of data is in the
+            % vectors
+
+            if isempty(this.dHS)
+                return;
+            end
+
+            if isempty(this.dDMI)
+                return;
+            end
+
+
+
+
+            for k=1:length(this.dHeightSensorDisplayChannels)
+                if this.uicbHeightSensorChannels{k}.get()
+                    plotHS(end+1,:)=this.dHS(k,:);
+                    lgdHS{end+1}=this.ceHSChannelNames{k};
                 end
+
+            end
+            dZVals(end+1, :) = this.dHS(9,:);
+            dRxVals(end+1, :) = this.dHS(7,:);
+            dRyVals(end+1, :) = this.dHS(8,:);
+
+
+            [dRows, dColsDMI] = size(plotDMI)
+            [dRows, dColsDMITime] = size(this.dDMIScanningTime)
+            
+            [dRows, dColsHS] = size(plotHS)
+            [dRows, dColsHSTime] = size(this.dGraphTimeSteps)
+
+            % plot only if monitor tab is active
+            if strcmp(this.uitgMode.getSelectedTabName(), 'Monitor')
+                % Plot dmi
+                if ~isempty(plotDMI) && ...
+                    dColsDMI == dColsDMITime
                 
-               
-                %HS Scanning
-                plotHS=[];
-                lgdHS=[];
-                HSValue=zeros(length(this.dHeightSensorDisplayChannels),1);
-                for k=1:length(this.dHeightSensorDisplayChannels)
-                    HSValue(k,1)=this.uiHeightSensorChannels{k}.getValCalDisplay();
-                    
+                    plot(this.haDMI, this.dDMIScanningTime,plotDMI);
+                    legend(this.haDMI,lgdDMI, 'location', 'southwest');
                 end
-                this.dHS(1:length(this.dHeightSensorDisplayChannels),end+1)=HSValue; 
-                if isempty(this.dGraphTimeSteps)
-                    this.dGraphTimeSteps = 0;
-                else
-                    this.dGraphTimeSteps(end+1)=this.dGraphTimeSteps(end) + this.dGraphUpdatePeriod;
+                this.haDMI.Title.String = 'DMI trace';
+                this.haDMI.XLabel.String = 'Scan Time (s)';
+                this.haDMI.YLabel.String = 'Unit';
+
+                % Plot HS
+                if ~isempty(plotHS) && ...
+                    dColsHS == dColsHSTime
+                
+                    plot(this.haHS, this.dGraphTimeSteps,plotHS);
+                    legend(this.haHS,lgdHS, 'location', 'southwest');
                 end
-                
-                for k=1:length(this.dHeightSensorDisplayChannels)
-                    if this.uicbHeightSensorChannels{k}.get()
-                        plotHS(end+1,:)=this.dHS(k,:);
-                        lgdHS{end+1}=this.ceHSChannelNames{k};
-                    end
-                    
-                end
-                dZVals(end+1, :) = this.dHS(9,:);
-                dRxVals(end+1, :) = this.dHS(7,:);
-                dRyVals(end+1, :) = this.dHS(8,:);
-                
-                
-                % plot only if monitor tab is active
-                if strcmp(this.uitgMode.getSelectedTabName(), 'Monitor')
-                    % Plot dmi
-                    if ~isempty(plotDMI)
-                        plot(this.haDMI, this.dGraphTimeSteps,plotDMI);legend(this.haDMI,lgdDMI, 'location', 'southwest');
-                    end
-                    this.haDMI.Title.String = 'DMI trace';
-                    this.haDMI.XLabel.String = 'Scan Time (s)';
-                    this.haDMI.YLabel.String = 'Unit';
-                    
-                    % Plot HS
-                    if ~isempty(plotHS)
-                        plot(this.haHS, this.dGraphTimeSteps,plotHS);legend(this.haHS,lgdHS, 'location', 'southwest');
-                    end
-                    this.haHS.Title.String = 'Height sensor trace';
-                    this.haHS.XLabel.String = 'Scan Time (s)';
-                    this.haHS.YLabel.String = 'Unit';
-                end
-                
-                % Plot on wafer level if tab is active
+                this.haHS.Title.String = 'Height sensor trace';
+                this.haHS.XLabel.String = 'Scan Time (s)';
+                this.haHS.YLabel.String = 'Unit';
+            end
+
+            % Plot on wafer level if tab is active
 %                 if strcmp(this.uitgMode.getSelectedTabName(), 'Wafer-level')
 %                     plot(this.haLevelMonitors{1}, this.dGraphTimeSteps, dZVals, 'k');
 %                     plot(this.haLevelMonitors{2}, this.dGraphTimeSteps, dRxVals, 'k');
@@ -964,25 +1019,7 @@ classdef MFDriftMonitor < mic.Base
 %                 end
                 
                 
-            catch mE
-                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
-                %         %AW(5/24/13) : Added a timer stop when the axis instance has been
-                %         %deleted
-                %         if (strcmp(mE.identifier,'MATLAB:class:InvalidHandle'))
-                %                 %msgbox({'Axis Timer has been stopped','','NON-CRITICAL ERROR','This textbox is here for debugging error'});
-                %                 stop(this.t);
-                %         else
-                %             this.msg(mE.message);
-                %         end
 
-                % CA 2016 remove the task from the timer
-%                 if isvalid(this.clock) && ...
-%                         this.clock.has(this.id())
-%                     this.clock.remove(this.id());
-%                 end
-
-               % error(mE);
-            end
         end
         
         function cb(this, src)
@@ -990,6 +1027,7 @@ classdef MFDriftMonitor < mic.Base
                 
                 case this.uibClearDMI
                     this.dDMI=[];
+                    
                     this.dDMIScanningTime=[];
                     
                 case {this.uibClearHS, this.uibClearLevelPlots}
