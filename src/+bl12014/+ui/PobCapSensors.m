@@ -177,6 +177,11 @@ classdef PobCapSensors < mic.Base
     %                 dTiltY * pi / 180 * 1e6, ...
     %                 dTiltY2 * pi / 180 * 1e6 ...
     %             );
+    
+                    % Invert values into perspective of wafer stage, not
+                    % cap sensors looking down
+                    dTiltX = -dTiltX;
+                    dTiltY = -dTiltY;
 
             catch mE
 
@@ -221,6 +226,13 @@ classdef PobCapSensors < mic.Base
 
                 [dTiltX, dTiltY] = this.getTiltXAndTiltYFromNormalVector(dN4342);
                 [dTiltX2, dTiltY2] = this.getTiltXAndTiltYFromNormalVector(dN4341);
+                
+                % Invert both into the ponit of view of the stage.  These
+                % are computed from the point of view of the cap sensors
+                % looking down towards the floor where the HS isn in the
+                % point of view of the stage
+                dTiltX = -dTiltX;
+                dTiltY = -dTiltY;
 
     %             fprintf('tiltX = %1.1f, %1.1f\n', ...
     %                 dTiltX * pi / 180 * 1e6, ...

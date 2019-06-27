@@ -97,6 +97,7 @@ classdef MFDriftMonitor < mic.Base
         % Plot status
         uicPlotOn
         lIsPlotting = false
+        lIsUpdating = false
         
         % UI:Monitor
         
@@ -836,6 +837,13 @@ classdef MFDriftMonitor < mic.Base
             if ~this.lIsPlotting
                 return
             end
+            
+            if this.lIsUpdating
+                return
+            end
+            
+            this.lIsUpdating = true;
+            
             %DMI Scanning
             plotDMI=[];
             dZVals = [];
@@ -923,9 +931,6 @@ classdef MFDriftMonitor < mic.Base
                 return;
             end
 
-
-
-
             for k=1:length(this.dHeightSensorDisplayChannels)
                 if this.uicbHeightSensorChannels{k}.get()
                     plotHS(end+1,:)=this.dHS(k,:);
@@ -938,11 +943,11 @@ classdef MFDriftMonitor < mic.Base
             dRyVals(end+1, :) = this.dHS(8,:);
 
 
-            [dRows, dColsDMI] = size(plotDMI)
-            [dRows, dColsDMITime] = size(this.dDMIScanningTime)
+            [dRows, dColsDMI] = size(plotDMI);
+            [dRows, dColsDMITime] = size(this.dDMIScanningTime);
             
-            [dRows, dColsHS] = size(plotHS)
-            [dRows, dColsHSTime] = size(this.dGraphTimeSteps)
+            [dRows, dColsHS] = size(plotHS);
+            [dRows, dColsHSTime] = size(this.dGraphTimeSteps);
 
             % plot only if monitor tab is active
             if strcmp(this.uitgMode.getSelectedTabName(), 'Monitor')
@@ -1019,7 +1024,8 @@ classdef MFDriftMonitor < mic.Base
 %                 end
                 
                 
-
+            this.lIsUpdating = false;
+            
         end
         
         function cb(this, src)
