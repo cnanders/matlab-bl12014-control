@@ -38,7 +38,16 @@ classdef ReticleFiducializedMove < mic.Base
         fhRC2XY = @(x) x
         fhXY2RC = @(x) x
         
+        % {mic.ui.device.GetSetNumber 1x1}
+        uiX
+        
+        % {mic.ui.device.GetSetNumber 1x1}
+        uiY
+        
         uibSetFid1
+        
+        
+        
         uibSetFid2
         
         cFidStore     = ...
@@ -80,6 +89,15 @@ classdef ReticleFiducializedMove < mic.Base
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
             end
+            
+            if ~isa(this.uiX, 'mic.ui.device.GetSetNumber')
+                error('uiX must be mic.ui.GetSetNumber');
+            end
+            
+            if ~isa(this.uiY, 'mic.ui.device.GetSetNumber')
+                error('uiY must be mic.ui.GetSetNumber');
+            end
+            
             
             this.init();
         
@@ -201,6 +219,9 @@ classdef ReticleFiducializedMove < mic.Base
             dX = this.hardware.getDeltaTauPowerPmac().getXReticleCoarse();
             dY = this.hardware.getDeltaTauPowerPmac().getYReticleCoarse();
             
+            dX = this.uiX.getValCal('mm');
+            dY = this.uiY.getValCal('mm');
+            
             dRC =  this.fhXY2RC([dX; dY]);
             dVal = dRC(idx);
             
@@ -217,8 +238,10 @@ classdef ReticleFiducializedMove < mic.Base
             dTargetXY = this.fhRC2XY([dTargetR; dTargetC]);
 
             
-            this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dTargetXY(1));
-            this.hardware.getDeltaTauPowerPmac().setYReticleCoarse(dTargetXY(2));
+            % this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dTargetXY(1));
+            % this.hardware.getDeltaTauPowerPmac().setYReticleCoarse(dTargetXY(2));
+            this.uiX.setDestCalAndGo(dTargetXY(1), 'mm');
+            this.uiY.setDestCalAndGo(dTargetXY(2), 'mm');
             
         
         end

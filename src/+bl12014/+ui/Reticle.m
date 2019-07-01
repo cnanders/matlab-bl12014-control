@@ -103,6 +103,9 @@ classdef Reticle < mic.Base
             this.uiReticleTTZClosedLoop.uiCLTiltX.syncDestination();
             this.uiReticleTTZClosedLoop.uiCLTiltY.syncDestination();
             this.uiReticleTTZClosedLoop.uiCLZ.syncDestination();
+            
+            this.uiReticleFiducializedMove.uiRow.syncDestination();
+            this.uiReticleFiducializedMove.uiCol.syncDestination();
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -113,7 +116,6 @@ classdef Reticle < mic.Base
             
             
            
-            % this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
            
             
             %{
@@ -133,6 +135,9 @@ classdef Reticle < mic.Base
             
 
             dLeft = 10;
+            dTop = 140;
+            
+            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             dTop = 190;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
@@ -302,7 +307,9 @@ classdef Reticle < mic.Base
             );
         
             this.uiReticleFiducializedMove = bl12014.ui.ReticleFiducializedMove(...
-                'clock',        this.uiClock, ...
+                'clock',  this.uiClock, ...
+                'uiX', this.uiCoarseStage.uiX, ...
+                'uiY', this.uiCoarseStage.uiY, ...
                 'hardware', this.hardware ...
             );
         

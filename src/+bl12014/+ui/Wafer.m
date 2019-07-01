@@ -144,7 +144,6 @@ classdef Wafer < mic.Base
                         
             
            
-            % this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
@@ -162,6 +161,9 @@ classdef Wafer < mic.Base
             
             
             dLeft = 10;
+            dTop = 140;
+            
+            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             dTop = 180;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
