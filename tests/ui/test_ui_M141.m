@@ -9,8 +9,10 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware('clock', clock);
 
 ui = bl12014.ui.M141(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 

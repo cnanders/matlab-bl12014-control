@@ -54,11 +54,13 @@ classdef CameraLEDs < mic.Base
                 
         function build(this, hParent, dLeft, dTop)
             
-            this.hParent = hParent
+            this.hParent = hParent;
             dSep = 30;
             
+            %{
             this.uiSwitch1Outlet1.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
+            %}
             
             this.uiSwitch1Outlet2.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
