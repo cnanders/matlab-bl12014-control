@@ -163,6 +163,7 @@ classdef Scan < mic.Base
         uiStateExitSlitIsCalibrated
         uiStateMonoGratingAtEUV
         uiStateEndstationLEDsOff
+        uiStateVPFMOut
         
         uiTextReticleField
         
@@ -401,7 +402,7 @@ classdef Scan < mic.Base
            this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
            
            dTop = dTopBelowList;
-           dLeft = 400;
+           dLeft = 480;
            dSep = 30;
            dSize = 100;
            
@@ -439,7 +440,7 @@ classdef Scan < mic.Base
            dTop = dTop + 120;
            
            
-           dWidthText = 300
+           dWidthText = 300;
            dHeightText = 24;
             
            this.uiTextReticleField.build(this.hPanelAdded, dLeft, dTop, 300, 24);
@@ -464,6 +465,9 @@ classdef Scan < mic.Base
            dTop = dTop + dSep;
            
            this.uiStateEndstationLEDsOff.build(this.hPanelAdded, dLeft, dTop, 300);
+           dTop = dTop + dSep;
+           
+           this.uiStateVPFMOut.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
            
            
@@ -616,7 +620,7 @@ classdef Scan < mic.Base
             dTop = 550;
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
-            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 500);
+            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
             % this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             
@@ -875,6 +879,17 @@ classdef Scan < mic.Base
                 'cName', [this.cName, 'ui-state-endstation-leds-off'], ...
                 'task', bl12014.Tasks.createStateEndstationLEDsOff(...
                     [this.cName, 'state-endstation-leds-off'], ...
+                    this.hardware, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateVPFMOut = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-vpfm-out'], ...
+                'task', bl12014.Tasks.createStateVPFMOut(...
+                    [this.cName, 'state-vpfm-out'], ...
                     this.hardware, ...
                     this.clock ...
                 ), ...

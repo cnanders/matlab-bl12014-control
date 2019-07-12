@@ -109,6 +109,9 @@ classdef Hardware < mic.Base
         commSmarActM141
         commSmarActM141Virtual
         
+        commSmarActVPFM
+        commSmarActVPFMVirtual
+        
         commWagoD141
         commWagoD141Virtual
         
@@ -228,6 +231,7 @@ classdef Hardware < mic.Base
             this.commNPointMAVirtual = [];
             this.commRigolDG1000ZVirtual = [];
             this.commSmarActM141Virtual = [];
+            this.commSmarActVPFMVirtual = [];
             this.commWagoD141Virtual = [];
             this.commWebSwitchBeamlineVirtual = [];
             this.commWebSwitchEndstationVirtual = [];
@@ -526,6 +530,54 @@ classdef Hardware < mic.Base
             end            
         end
         
+        
+        %% SmarAct VPFM
+        
+        function l = getIsConnectedSmarActVPFM(this)
+           
+            if isa(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') && ...
+               this.commSmarActVPFM.isConnected() && ...
+               this.commSmarActVPFM.getAxesIsInitialized()
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectSmarActVPFM(this)
+            
+            this.getjMet5Instruments();
+             try
+                
+                this.commSmarActVPFM = this.jMet5Instruments.getVPFMStage();
+                
+                % FIX ME 2019.07.10
+                % this.commSmarActVPFM.connect();
+                %this.commSmarActVPFM.reset();
+                %this.commSmarActVPFM.initializeAxes().get();
+                %this.commSmarActVPFM.moveAxisAbsolute(0, 0);
+
+                
+            catch mE
+                
+                error(getReport(mE));
+            end
+        end
+        
+        function disconnectSmarActVPFM(this)
+             if this.getIsConnectedSmarActVPFM()
+                 this.commSmarActVPFM.disconnect();
+             end
+            this.commSmarActVPFM = [];
+        end
+                        
+        function comm = getSmarActVPFM(this)
+            if this.getIsConnectedSmarActVPFM()
+                comm = this.commSmarActVPFM;
+            else
+                comm = this.commSmarActVPFMVirtual;
+            end            
+        end
         
         %% SmarAct M141
         
@@ -1355,7 +1407,7 @@ classdef Hardware < mic.Base
             cDirVendor = mic.Utils.path2canonical(cDirVendor);
             
             ceGenpathLoad = { ...
-                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3'), ...
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v4'), ...
                 fullfile(cDirVendor, 'cnanderson'), ...
             };
         
@@ -1378,7 +1430,7 @@ classdef Hardware < mic.Base
                 fullfile(cDirMpm, 'matlab-cxro-als', 'src', 'ca_matlab-1.0.0.jar'), ...
                 fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.1.4.jar'), ...
                 ... BL 12.0.1 Exit Slit
-                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOCorbaProxy.jar'), ...
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v4', 'BL12PICOCorbaProxy.jar'), ...
                 ... BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
                 fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'), ...
                 ... BL 12.0.1 Shutter
@@ -1412,6 +1464,7 @@ classdef Hardware < mic.Base
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
             % this.commDCTCorbaProxyVirtual = bl12014.hardwareAssets.virtual.DCTCorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commSmarActVPFMVirtual = bl12014.hardwareAssets.virtual.Stage();
             this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();
             this.commExitSlitVirtual = bl12014.hardwareAssets.virtual.BL12PicoExitSlit();
             this.commGalilD142Virtual = bl12014.hardwareAssets.virtual.Stage();

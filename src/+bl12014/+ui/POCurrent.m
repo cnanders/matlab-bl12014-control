@@ -19,6 +19,8 @@ classdef POCurrent < mic.Base
         
         hPanel
         hAxes
+        % {handle} storage for the Line object returned by plot
+        hPlot 
         
         % {double 1xm} storage of current
         dValues = []
@@ -32,6 +34,10 @@ classdef POCurrent < mic.Base
         
         % {bl12014.Hardware 1x1}
         hardware
+        
+        % {double 1xm} really an int that stores that last read index
+        % of the circular memory buffer of the data translation
+        dIndexOfBuffer
                        
     end
     
@@ -141,6 +147,9 @@ classdef POCurrent < mic.Base
                 24 ...
             );
             
+            % Initialize index of buffer
+            [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
+            
             if ~isempty(this.clock)
                 this.clock.add(@this.onClock, this.id(), this.dPeriod);
             end
@@ -180,26 +189,31 @@ classdef POCurrent < mic.Base
     methods (Access = private)
         
         function onClock(this)
-            
-           
-             
             try
+                
+                %{
                 this.dValues(end + 1) = this.uiCurrent.getValCal('A');
                 this.dtTimes(end + 1) = datetime;
-
-
                 this.updateAxes(this.dtTimes, this.dValues);
-            catch
+                %}
+                
+                
+                [results, this.dIndexOfBuffer] = this.hardware.getDataTranslation.getScanDataAheadOfIndex(this.dIndexOfBuffer);
+                this.dIndexOfBuffer
+                
+                [dRows, dCols] = size(results);
+                this.dtTimes(end + 1 : end + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
+                this.dValues(end + 1 : end + dRows) = results(:, 35); % FIX ME column
+                this.updateAxes(this.dtTimes, this.dValues);
+               
+            catch mE
+                mE
             end
             
         end
         
-         
-        
-        
+                 
          function updateAxes(this, dX, dY)
-             
-            
             
             if  isempty(this.hAxes) || ...
                 ~ishandle(this.hAxes)
@@ -219,12 +233,27 @@ classdef POCurrent < mic.Base
                 return
             end
                 
-            plot(...
-                this.hAxes, ...
-                dX, dY, '.-b'...
-            );
-            xlabel(this.hAxes, 'Time');
-            ylabel(this.hAxes', 'Current');
+            if isempty(this.hPlot)
+                
+                this.hPlot = plot(...
+                    this.hAxes, ...
+                    dX, dY, '.-b'...
+                );
+
+            else
+                set(this.hPlot, ...
+                    'XData', dX, ...
+                    'YData', dY ...
+                );
+                
+            end
+            
+            try
+                xlabel(this.hAxes, 'Time');
+                ylabel(this.hAxes', 'Current');
+            catch mE
+                
+            end
                          
          end
         

@@ -479,6 +479,7 @@ classdef App < mic.Base
             
             cDirThis = fileparts(mfilename('fullpath'));
             
+            
             if ~contains(cDirThis, 'cnanderson') && ...
                ~contains(cDirThis, 'ryanmiyakawa')
            
@@ -491,6 +492,7 @@ classdef App < mic.Base
                 );
         
             end
+            
             
             
             %{

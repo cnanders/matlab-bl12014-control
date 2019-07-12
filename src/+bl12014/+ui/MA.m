@@ -17,6 +17,9 @@ classdef MA < mic.Base
         
         uiStateWaferNearPrint
         
+        % {bl12014.ui.VPFM 1x1}
+        uiVPFM
+        
         % {bl12014.ui.Shutter 1x1}
         uiShutter
         
@@ -93,6 +96,10 @@ classdef MA < mic.Base
             this.uiDiagnostics.build(hParent, dLeft, dTop);
             
             dTop = dTop + this.uiDiagnostics.dHeight + 10;
+            
+            this.uiVPFM.build(hParent, dLeft, dTop);
+            dTop = dTop + this.uiVPFM.dHeight + 10;
+            
             this.uiShutter.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiShutter.dHeight + 10;
             
@@ -179,6 +186,10 @@ classdef MA < mic.Base
             );
         
             this.uiShutter = bl12014.ui.Shutter(...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
+            );
+            this.uiVPFM = bl12014.ui.VPFM(...
                 'clock', this.uiClock, ...
                 'hardware', this.hardware ...
             );

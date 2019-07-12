@@ -1,0 +1,26 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "mm",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		}
+	],
+    "step": 0.1,
+    "stores": [
+        {
+            "name": "out (0)",
+            "raw": 0
+        }
+		{
+            "name": "yag (51.6)",
+            "raw": 51.6
+        }
+    ],
+    "min": -10,
+    "max": 100
+}	
+	
+	

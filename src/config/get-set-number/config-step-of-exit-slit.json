@@ -1,0 +1,17 @@
+{
+	"delay": .5,
+	"units": [
+		{
+			"name": "um",
+			"slope": 1,
+			"offset": 0,
+			"precision": 1
+		}
+	],
+    "step": 10,
+    "stores": [],
+    "min": 20,
+    "max": 100
+}	
+	
+	

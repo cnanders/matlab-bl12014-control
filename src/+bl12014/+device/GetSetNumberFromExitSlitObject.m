@@ -8,6 +8,7 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
         % upper outboard = 6         upper inboard = 4
         % lower outboard = 7         lower inboard = 5
         
+        cPROP_STEP = 'step'
         cPROP_GAP = 'gap'
         cPROP_MOTOR_UPPER_IN = 'motor-1'
         cPROP_MOTOR_LOWER_IN = 'motor-2'
@@ -41,6 +42,8 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
             
             comm = this.fhGetComm();
             switch this.cProp
+                case this.cPROP_STEP
+                    d = comm.getSlitMaxStep();
                 case this.cPROP_GAP
                     [slit,e,estr] = comm.getSlitGap();
                     d = slit.gap;
@@ -64,8 +67,9 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
             
             comm = this.fhGetComm();
             switch this.cProp
+                case this.cPROP_STEP
+                    [e, estr] = comm.setSlitMaxStep(dVal);
                 case this.cPROP_GAP
-            
                     [e,estr] = comm.setSlitGap(dVal);
                 case this.cPROP_MOTOR_UPPER_IN
                     [ret, e, estr]= comm.moveto(4, dVal);
@@ -86,6 +90,8 @@ classdef GetSetNumberFromExitSlitObject < mic.interface.device.GetSetNumber
             [s,e,estr] = comm.getState();
             
             switch this.cProp
+                case this.cPROP_STEP
+                   l = true;
                 case this.cPROP_GAP
                    l = comm.CLstatus == 0;
                 case this.cPROP_MOTOR_UPPER_IN
