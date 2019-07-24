@@ -1,3 +1,4 @@
+
 classdef BL12PicoExitSlit < handle
     % Class for bl12pico slit control
     

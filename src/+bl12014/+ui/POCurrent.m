@@ -197,10 +197,7 @@ classdef POCurrent < mic.Base
                 this.updateAxes(this.dtTimes, this.dValues);
                 %}
                 
-                
-                [results, this.dIndexOfBuffer] = this.hardware.getDataTranslation.getScanDataAheadOfIndex(this.dIndexOfBuffer);
-                this.dIndexOfBuffer
-                
+                [results, this.dIndexOfBuffer] = this.hardware.getDataTranslation.getScanDataAheadOfIndex(this.dIndexOfBuffer);                
                 [dRows, dCols] = size(results);
                 this.dtTimes(end + 1 : end + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
                 this.dValues(end + 1 : end + dRows) = results(:, 35); % FIX ME column
