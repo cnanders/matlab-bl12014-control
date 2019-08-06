@@ -10,6 +10,7 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
+hardware.connectSmarActVPFM();
 
 ui = bl12014.ui.VPFM(...
     'hardware', hardware, ...

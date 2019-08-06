@@ -549,10 +549,10 @@ classdef Hardware < mic.Base
             this.getjMet5Instruments();
              try
                 
-                this.commSmarActVPFM = this.jMet5Instruments.getVPFMStage();
+                this.commSmarActVPFM = this.jMet5Instruments.getVPfmStage();
                 
                 % FIX ME 2019.07.10
-                % this.commSmarActVPFM.connect();
+                this.commSmarActVPFM.connect();
                 %this.commSmarActVPFM.reset();
                 %this.commSmarActVPFM.initializeAxes().get();
                 %this.commSmarActVPFM.moveAxisAbsolute(0, 0);
@@ -1428,7 +1428,7 @@ classdef Hardware < mic.Base
             ceJavaPathLoad = { ...
                 ... ALS Channel Access 
                 fullfile(cDirMpm, 'matlab-cxro-als', 'src', 'ca_matlab-1.0.0.jar'), ...
-                fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.1.4.jar'), ...
+                fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.2.0.jar'), ...
                 ... BL 12.0.1 Exit Slit
                 fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v4', 'BL12PICOCorbaProxy.jar'), ...
                 ... BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter

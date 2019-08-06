@@ -12,8 +12,6 @@ classdef App < mic.Base
 	properties
         
         cName = 'ui.App'
-        
-        
         waferExposureHistory
         
         uiHardware

@@ -2,10 +2,15 @@ classdef M141 < mic.Base
     
     properties
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommSmarActMcsM141
         
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        % Set state of web switch to power on the hardware
         uiSwitch
+        
+        % {mic.ui.device.GetSetLogical 1x1}
+        % To communicate through JAVA vs. virtual
+        uiCommSmarActMcsM141
                 
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageX

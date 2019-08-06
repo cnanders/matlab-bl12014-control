@@ -20,9 +20,11 @@ classdef POCurrent < mic.Base
         hPanel
         hAxes
         % {handle} storage for the Line object returned by plot
-        hPlot 
+        hPlot1
+        hPlot2
         
-        % {double 1xm} storage of current
+        % {double 1xm} storage of values from two channels of the 
+        % Data translation
         dValues = []
         
         % {datetime 1xm} storage of measurement times
@@ -199,8 +201,15 @@ classdef POCurrent < mic.Base
                 
                 [results, this.dIndexOfBuffer] = this.hardware.getDataTranslation.getScanDataAheadOfIndex(this.dIndexOfBuffer);                
                 [dRows, dCols] = size(results);
+                
+                if dRows == 0
+                    return % no new data
+                end
+                
                 this.dtTimes(end + 1 : end + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
-                this.dValues(end + 1 : end + dRows) = results(:, 35); % FIX ME column
+                dLength = length(this.dValues);
+                this.dValues(1, dLength + 1 : dLength + dRows) = results(:, 36); % FIX ME column
+                this.dValues(2, dLength + 1 : dLength + dRows) = results(:, 37); % FIX ME column
                 this.updateAxes(this.dtTimes, this.dValues);
                
             catch mE
@@ -226,31 +235,59 @@ classdef POCurrent < mic.Base
             % Passing values in ensures that they are always the same
             % length
             
+            if isempty(dX)
+                return
+            end
+            
+            if isempty(dY)
+                return
+            end
+            
             if length(dX) ~= length(dY)
                 return
             end
                 
-            if isempty(this.hPlot)
-                
-                this.hPlot = plot(...
+            % Plot channel 1 on left
+            if isempty(this.hPlot1)
+                yyaxis(this.hAxes, 'left')
+                this.hPlot1 = plot(...
                     this.hAxes, ...
-                    dX, dY, '.-b'...
+                    dX, dY(1, :), '.-b'...
                 );
+                xlabel(this.hAxes, 'Time');
+                ylabel(this.hAxes', 'Photocurrent');
 
             else
-                set(this.hPlot, ...
+                yyaxis(this.hAxes, 'left')
+                set(this.hPlot1, ...
                     'XData', dX, ...
-                    'YData', dY ...
+                    'YData', dY(1, :) ...
                 );
                 
             end
             
-            try
+            % Plot channel 2 on right
+            if isempty(this.hPlot2)
+                
+                yyaxis(this.hAxes, 'right')
+                this.hPlot2 = plot(...
+                    this.hAxes, ...
+                    dX, dY(2, :), '.-r'...
+                );
+            
                 xlabel(this.hAxes, 'Time');
-                ylabel(this.hAxes', 'Current');
-            catch mE
+                ylabel(this.hAxes', 'Shutter');
+
+            else
+                yyaxis(this.hAxes, 'right')
+                set(this.hPlot2, ...
+                    'XData', dX, ...
+                    'YData', dY(2, :) ...
+                );
                 
             end
+            
+            
                          
          end
         
@@ -301,6 +338,9 @@ classdef POCurrent < mic.Base
         end
         
         function onButtonClear(this, src, evt)
+            % Initialize index of buffer
+            [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
+            
             this.clearValues()
         end
         

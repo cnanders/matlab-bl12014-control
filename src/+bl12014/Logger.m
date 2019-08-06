@@ -129,6 +129,9 @@ classdef Logger < mic.Base
                 this.hardware.getDataTranslation().setSensorType(n, 'V');
             end
             
+            this.hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
+            % it uses its internal 16 point rolling averaging filter (1.6
+            % seconds)
             this.hardware.getDataTranslation().setScanList(0:47);
             this.hardware.getDataTranslation().setScanPeriod(0.1);
             this.hardware.getDataTranslation().initiateScan();
