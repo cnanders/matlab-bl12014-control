@@ -6,7 +6,7 @@ classdef TuneFluxDensity < mic.Base
         dWidth      = 700 %1295
         dHeight     = 800
         
-        dPeriodOfScan = 0.5;
+        dPeriodOfScan = 1;
         cNameOfConfigFile = 'tune-flux-density-coordinates.json'
     end
     
@@ -167,8 +167,8 @@ classdef TuneFluxDensity < mic.Base
                 error('clock must be mic.Clock');
             end
             
-            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
-                error('uiClock must be mic.Clock | mic.ui.Clock');
+            if ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock mic.ui.Clock');
             end
             
             if ~isa(this.hardware, 'bl12014.Hardware')

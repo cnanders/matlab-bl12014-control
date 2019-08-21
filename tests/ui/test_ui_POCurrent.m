@@ -9,15 +9,17 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
-
+hardware.connectDataTranslation(); % force real hardware
 
 ui = bl12014.ui.POCurrent(...
+    'dWidth', 1200, ...
+    'dHeight', 400, ...
     'hardware', hardware, ...
     'clock', clock ...
 );
 
 dWidth = 1300;
-dHeight = 900;
+dHeight = 500;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...

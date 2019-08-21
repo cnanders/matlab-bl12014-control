@@ -179,6 +179,9 @@ classdef ReticleFiducializedMove < mic.Base
         function delete(this)
             
             this.msg('delete');
+            
+            this.uiRow =  [];
+            this.uiCol = [];
                         
             % Delete the figure
             

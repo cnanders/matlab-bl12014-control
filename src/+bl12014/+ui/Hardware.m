@@ -2,7 +2,6 @@ classdef Hardware < mic.Base
         
     properties (Constant)
        
-        
         dWidthName = 500
         
     end
@@ -209,9 +208,44 @@ classdef Hardware < mic.Base
         
         function delete(this)
             
-            this.uiMfDriftMonitorMiddleware = [];
+            
+            this.uiAll = [];
+        
+            % {mic.ui.TaskSequence 1x1}
+            this.uiStateConnected  = [];
+
+            this.uiALS = [];
             this.uiDeltaTauPowerPmac = [];
-            this.uiApp = [];
+            % uiCxroHeightSensor = [];
+            this.uiDataTranslationMeasurPoint = [];
+            this.uiMfDriftMonitorMiddleware = [];
+            this.uiMfDriftMonitor = [];
+            this.uiKeithleyWafer = [];
+            this.uiKeithleyReticle = [];
+            this.uiWebSwitchBeamline = [];
+            this.uiWebSwitchEndstation = [];
+            this.uiWebSwitchVis = [];
+            this.uiBL1201CorbaProxy = [];
+            this.uiRigol = [];
+            this.uiSmarActM141 = [];
+            this.uiSmarActVPFM = [];
+            this.uiWagoD141 = [];
+            this.uiExitSlit = [];
+
+
+            this.uiGalilD142 = [];
+            this.uiGalilVis = [];
+            this.uiGalilM143 = [];
+
+            this.uiMightex1 = [];
+            this.uiMightex2 = [];
+
+            this.uiNPointM142 = [];
+            this.uiNPointMA = [];
+
+            this.uiNewFocus8742M142 = [];
+            this.uiNewFocus8742MA = [];
+        
             
         end
         
@@ -238,9 +272,6 @@ classdef Hardware < mic.Base
         function init(this)
             
             this.msg('init()');
-            
-            
-            
             this.initUiALS();
             this.initUiDeltaTauPowerPmac();
             this.initUiMfDriftMonitorMiddleware();

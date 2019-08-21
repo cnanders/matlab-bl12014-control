@@ -42,7 +42,7 @@ classdef PowerPmacHydraMotMin < mic.Base
         
         dWidthName = 70
         dWidthUnit = 80
-        dWidthVal = 75
+        dWidthVal = 100
         dWidthPadUnit = 0 % 280
         
         % {bl12014.Hardware 1x1}

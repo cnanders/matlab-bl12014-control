@@ -211,9 +211,7 @@ classdef M142 < mic.Base
         
         function delete(this)
             
-            % {mic.ui.device.GetSetLogical 1x1}
-            this.uiCommNewFocusModel8742 = [];
-
+            
             % {mic.ui.device.GetSetLogical 1x1}
             this.uiCommMicronixMmc103 = [];
 

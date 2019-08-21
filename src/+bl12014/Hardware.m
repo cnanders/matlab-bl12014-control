@@ -24,7 +24,7 @@ classdef Hardware < mic.Base
         cTcpipSmarActM141           = '192.168.10.20'
         cTcpipMicronix              = '192.168.10.21'
         cTcpipLc400M142             = '192.168.10.22'
-        cTcpipNewFocus              = '192.168.10.23'
+        cTcpipNewFocusM142          = '192.168.10.23'
         cTcpipGalilD142             = '192.168.10.24'
         cTcpipGalilM143             = '192.168.10.25'
         cTcpipWago                  = '192.168.10.26'
@@ -205,6 +205,7 @@ classdef Hardware < mic.Base
             this.disconnectNPointMA();
             this.disconnectRigolDG1000Z();
             this.disconnectSmarActM141();
+            this.disconnectSmarActVPFM();
             this.disconnectWagoD141();
             this.disconnectWebSwitchBeamline();
             this.disconnectWebSwitchEndstation();
@@ -243,6 +244,11 @@ classdef Hardware < mic.Base
         %% WebSwitch (Beamline)
         function l = getIsConnectedALS(this)
            
+            if isempty(this.commALS) 
+                l = false;
+                return
+            end
+            
             if isa(this.commALS, 'cxro.ALS')
                 l = true;
                 return;
@@ -282,6 +288,11 @@ classdef Hardware < mic.Base
         %% WebSwitch (Beamline)
         function l = getIsConnectedWebSwitchBeamline(this)
            
+            if isempty(this.commWebSwitchBeamline) 
+                l = false;
+                return;
+            end
+            
             if isa(this.commWebSwitchBeamline, 'controlbyweb.WebSwitch')
                 l = true;
                 return;
@@ -318,6 +329,8 @@ classdef Hardware < mic.Base
         %% WebSwitch (Endstation)
         function l = getIsConnectedWebSwitchEndstation(this)
            
+            
+            
             if isa(this.commWebSwitchEndstation, 'controlbyweb.WebSwitch')
                 l = true;
                 return;
@@ -535,9 +548,10 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedSmarActVPFM(this)
            
-            if isa(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') && ...
-               this.commSmarActVPFM.isConnected() && ...
-               this.commSmarActVPFM.getAxesIsInitialized()
+            if (isa(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') || ...
+                isa(this.commSmarActVPFM, 'cxro.common.device.motion.SmarActMcsController') ...
+                ) && ...
+               this.commSmarActVPFM.isConnected()
                 l = true;
                 return;
             end
@@ -692,10 +706,11 @@ classdef Hardware < mic.Base
             
             try 
                 this.commNewFocus8742M142 = newfocus.Model8742(...
-                    'cTcpipHost', '192.168.10.23' ...
+                    'cTcpipHost', this.cTcpipNewFocusM142 ...
                 );
                 this.commNewFocus8742M142.init();
                 this.commNewFocus8742M142.connect();
+                this.commNewFocus8742M142.getIdentity()
                 
             catch mE
                 
@@ -862,9 +877,7 @@ classdef Hardware < mic.Base
             this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
                 'cHostname', this.cTcpipDeltaTau ...
             );
-            if ~this.commDeltaTauPowerPmac.init();
-                this.disconnectDeltaTauPowerPmac();
-            end
+            
             
         end
         

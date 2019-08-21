@@ -745,10 +745,11 @@ classdef MfDriftMonitorVibration < mic.Base
            
             
             if ~isempty(this.clock)
-                this.clock.add(@this.onClock, this.id(), this.dDelay);
-            end
+                this.clock.add(...
+                    @this.onClock, ...
+                    this.id(), ...
+                    this.dDelay);
             
-            if ~isempty(this.clock)
                 this.clock.add(...
                     @() this.uiListDir.refresh(), ...
                     [this.id(), 'refresh-list-dir'], ...
@@ -764,13 +765,14 @@ classdef MfDriftMonitorVibration < mic.Base
             
             % Clean up clock tasks
             if ~isempty(this.clock) && ...
-                isvalid(this.clock) && ...
-                this.clock.has(this.id())
+                isvalid(this.clock) 
+                
                 this.msg('delete() removing clock task', this.u8_MSG_TYPE_INFO); 
                 this.clock.remove(this.id());
+                this.clock.remove([this.id(), 'refresh-list-dir']);
             end 
             
-            this.clock.remove([this.id(), 'refresh-list-dir']);
+            
             
         end 
         

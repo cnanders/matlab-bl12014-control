@@ -82,8 +82,8 @@ classdef Reticle < mic.Base
             end
             
             
-            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
-                error('uiClock must be mic.Clock | mic.ui.Clock');
+            if ~isa(this.uiClock, 'mic.ui.Clock')
+                error('uiClock mic.ui.Clock');
             end
             
             this.init();

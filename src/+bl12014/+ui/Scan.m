@@ -625,7 +625,7 @@ classdef Scan < mic.Base
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
             this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
-            this.uiPOCurrent.build(this.hParent, 840, dTop);
+            % this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             
           
@@ -812,6 +812,9 @@ classdef Scan < mic.Base
             
         
             this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
+            
+            
+            %{
             this.uiPOCurrent = bl12014.ui.POCurrent(...
                 'cName', [this.cName, 'po-current'], ...
                 'hardware', this.hardware, ...
@@ -819,7 +822,7 @@ classdef Scan < mic.Base
                 'dWidth', 780, ...
                 'dHeight', 400 ...
             );
-        
+            %}
             
             
             this.uiSequenceLevelWafer = mic.ui.TaskSequence(...
