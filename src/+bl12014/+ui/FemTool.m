@@ -153,7 +153,7 @@ classdef FemTool < mic.Base
 
         
         % @return {struct} UI state to save
-        function st = save(this)
+       function st = save(this)
             
             ceProps = this.getPropsSaved();
         
