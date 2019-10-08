@@ -21,6 +21,7 @@
 		"matlab_ieee",
 		"matlab_hex",
 		"matlab_cxro_als",
-		"matlab_mightex_led_controller"
+		"matlab_mightex_led_controller",
+		"matlab_prolith_src"
 	]
 }

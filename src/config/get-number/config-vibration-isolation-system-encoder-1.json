@@ -8,6 +8,12 @@
 			"precision": 3
 		},
         {
+			"name": "Volts Raw",
+			"slope": "1",
+			"offset": 0,
+			"precision": 3
+		},
+        {
 			"name": "um",
 			"slope": "-2630",
 			"offset": 6.35,

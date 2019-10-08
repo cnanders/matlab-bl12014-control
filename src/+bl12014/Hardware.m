@@ -125,6 +125,7 @@ classdef Hardware < mic.Base
         commGalilM143Virtual
         
         commGalilVis
+        commGalilVisFiltered % middleware filter
         commGalilVisVirtual
         
         commMightex1
@@ -381,6 +382,10 @@ classdef Hardware < mic.Base
                 this.commWebSwitchVis = controlbyweb.WebSwitch(...
                     'cHost', this.cTcpipWebSwitchVis ...
                 );
+            
+                % SPECIAL case, also turn on relay 1 so we power on the
+                % controller.
+                this.commWebSwitchVis.turnOnRelay1();
            catch mE
                 error(getReport(mE));
            end
@@ -1196,6 +1201,8 @@ classdef Hardware < mic.Base
         
         function disconnectGalilVis(this)
             if this.getIsConnectedGalilVis()
+                
+                this.commGalilVisFiltered = [];
                 this.commGalilVis.disconnect();
                 this.commGalilVis = [];
             end
@@ -1211,6 +1218,15 @@ classdef Hardware < mic.Base
                 this.getjMet5Instruments();
                 this.commGalilVis = this.jMet5Instruments.getVisStage();
                 this.commGalilVis.connect();
+                
+                % 2019.09.04 wrap with StageFilter middleware to return 
+                % averages of previous values.
+                this.commGalilVisFiltered = bl12014.middleware.StageFilter(...
+                    'stage', this.commGalilVis, ...
+                    'dSizeOfFilter', 3 ...
+                );
+                
+                
             catch mE
                 this.commGalilVis = [];
                 this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
@@ -1222,7 +1238,8 @@ classdef Hardware < mic.Base
         function comm = getGalilVis(this)
             
             if this.getIsConnectedGalilVis()
-                comm = this.commGalilVis;
+                % comm = this.commGalilVis;
+                comm = this.commGalilVisFiltered;
                 return
             end
                 
@@ -1420,7 +1437,7 @@ classdef Hardware < mic.Base
             cDirVendor = mic.Utils.path2canonical(cDirVendor);
             
             ceGenpathLoad = { ...
-                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v4'), ...
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v5'), ...
                 fullfile(cDirVendor, 'cnanderson'), ...
             };
         
@@ -1443,7 +1460,7 @@ classdef Hardware < mic.Base
                 fullfile(cDirMpm, 'matlab-cxro-als', 'src', 'ca_matlab-1.0.0.jar'), ...
                 fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.2.0.jar'), ...
                 ... BL 12.0.1 Exit Slit
-                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v4', 'BL12PICOCorbaProxy.jar'), ...
+                fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v5', 'BL12PICOCorbaProxy.jar'), ...
                 ... BL 12.0.1 Undulator, mono grating angle.  Does not have methods for shutter
                 fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'BL1201CorbaProxy.jar'), ...
                 ... BL 12.0.1 Shutter

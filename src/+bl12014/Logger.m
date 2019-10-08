@@ -291,12 +291,18 @@ classdef Logger < mic.Base
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
                 
+                % PPMAC mot mins
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseX()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseY()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseX()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseY()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinLsiCoarseX()];
-
+                
+                % VIS encoders
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(0)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(1)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(2)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(3)];
 
                 for n = 1 : length(readings)
                     fprintf(fid, '%1.8f,', readings(n));
@@ -308,6 +314,7 @@ classdef Logger < mic.Base
 
             catch mE
                 disp('appendValuesToLogFile had an error');
+                mE
             end
 
             % close

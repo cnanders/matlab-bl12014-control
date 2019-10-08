@@ -109,37 +109,7 @@ classdef M142 < mic.Base
             
         end
         
-        %{
-        function connectNewFocusModel8742(this, comm)
-            
-            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 2); % 2
-            this.uiStageTiltX.setDevice(device);
-            this.uiStageTiltX.turnOn()
-            this.uiStageTiltX.syncDestination();
-            
-            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 1); % 1
-            this.uiStageTiltYMf.setDevice(device);
-            this.uiStageTiltYMf.turnOn()
-            this.uiStageTiltYMf.syncDestination();
-            
-            device = bl12014.device.GetSetNumberFromNewFocusModel8742(comm, 3);
-            this.uiStageTiltYMfr.setDevice(device);
-            this.uiStageTiltYMfr.turnOn()
-            this.uiStageTiltYMfr.syncDestination();
-        end
-        
-        
-        function disconnectNewFocusModel8742(this)
-            
-            this.uiStageTiltX.turnOff()
-            this.uiStageTiltYMf.turnOff()
-            this.uiStageTiltYMfr.turnOff()
-            
-            this.uiStageTiltX.setDevice([]);
-            this.uiStageTiltYMf.setDevice([]);
-            this.uiStageTiltYMfr.setDevice([]);
-        end
-        %}
+       
         
         function buildFigure(this)
             

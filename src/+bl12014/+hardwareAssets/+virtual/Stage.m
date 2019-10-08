@@ -88,6 +88,15 @@ classdef Stage < handle
             l = true;
         end
         
+        function connect(this)
+            
+        end
+        
+        function disconnect(this)
+            
+            
+        end
+        
         
         
     end

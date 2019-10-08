@@ -41,9 +41,9 @@ classdef LogPlotter < mic.Base
             '32 - Volts', ...
             '33 - Volts', ...
             '34 - Volts', ...
-            '35 - Volts', ...
-            '36 - Photo Current (V)', ...
-            '37 - Shutter 5VTTL ', ...
+            '35 - Photo Current (V)', ...
+            '36 - Shutter 5VTTL', ...
+            '37 - DMI Laser Power ', ...
             '38 - Volts', ...
             '39 - Volts', ...
             '40 - Volts', ...
@@ -67,6 +67,10 @@ classdef LogPlotter < mic.Base
             'MotMin RCX', ...
             'MotMin RCY', ...
             'MotMin LSIX', ...
+            'VIS Encoder 0', ...
+            'VIS Encoder 1', ...
+            'VIS Encoder 2', ...
+            'VIS Encoder 3', ...
         };
        
     end
@@ -98,6 +102,8 @@ classdef LogPlotter < mic.Base
         uiTextPlotY
         
         uiToggleLive
+        
+        uiButtonSaveLive
         
         % storage for handles returned by plot()
         hLines
@@ -317,11 +323,20 @@ classdef LogPlotter < mic.Base
                 24 ...
             );
         
+            this.uiButtonSaveLive.build(...
+                this.hParent, ...
+                1450, ...
+                dTop, ...
+                200, ...
+                24 ...
+            );
+            this.uiButtonSaveLive.hide();
+        
             dTop = 50;
             dLeft = this.dWidth - 400;
             dWidth = 240;
             
-            dItemsPerCol = 32;
+            dItemsPerCol = 34;
             for n = 1 : length(this.uiCheckboxes)
                 
                 
@@ -467,12 +482,75 @@ classdef LogPlotter < mic.Base
             this.refresh();
         end
         
+        function onButtonSaveLive(this, src, evt)
+            
+            cFilter = '*.csv';
+            cTitle = 'Save Live Trace Data as .csv ';
+            cNameDefault = [datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), '-Live-Trace-Data.csv'];
+            cDefault = fullfile(this.cDir, cNameDefault);
+            
+            [cFile, cDir] = uiputfile(...
+                cFilter, ...
+                cTitle, ...
+                cDefault ...
+            );
+        
+            if isequal(cFile, 0)
+               return; % User clicked "cancel"
+            end
+            
+            cPath = fullfile(cDir, cFile);
+            
+            if exist(cPath, 'file') ~= 2
+                % File doesn't exist 
+                % open new file in write mode
+                try
+                    fid = fopen(cPath, 'w');
+                catch mE
+                    cMsg = sprintf('LogPlotter could not open file (write mode) %s', cPath);
+                    disp(cMsg);
+                    mE;
+                    
+                end
+
+            else 
+                % open file in append mode
+                try
+                    fid = fopen(cPath, 'a');
+                catch mE
+                    cMsg = sprintf('LogPlotter could not open file (append mode) %s', cPath);
+                    disp(cMsg);
+                end
+            end
+                       
+            [dRows, dCols] = size(this.dData);
+            
+            % dRows = num of records
+            % dCols = num of channels per record
+            
+            for m = 1 : dRows
+                % current record
+                for n = 1 : dCols
+                    % record channel val;
+                    fprintf(fid, '%1.8f,', this.dData(m, n));
+                end
+                fprintf(fid, '\n'); % line break
+            end
+                
+            fclose(fid);   
+            
+        end
+        
         function onButtonChoose(this, src, evt)
             
+            cFilter = '*.csv';
+            cTitle = 'Select a log.csv File';
+            cDefault = this.cDir;
+            
             [cFile, cDir] = uigetfile(...
-                '*.csv', ...
-                'Select a log.csv File', ...
-                this.cDir ...
+                cFilter, ...
+                cTitle, ...
+                cDefault ...
             );
         
             if isequal(cFile, 0)
@@ -640,13 +718,17 @@ classdef LogPlotter < mic.Base
                 
                 this.uiClock.add(@this.onClockLive, this.id(), 1)
                 
+                this.uiButtonSaveLive.show();
+                
             else
                 % Switch to log file mode
                  if this.uiClock.has(this.id())
                     this.uiClock.remove(this.id())
                  end
                  this.loadFileAndPlot();   
-                 % this.uiClock.add(@this.onClock, this.id(), 5 * 60);                
+                 % this.uiClock.add(@this.onClock, this.id(), 5 * 60);
+                 
+                 this.uiButtonSaveLive.hide();
                 
             end
             
@@ -658,6 +740,11 @@ classdef LogPlotter < mic.Base
                 'cTextTrue', 'Stop Live Trace (Show Log File)', ...
                 'cTextFalse', 'Show Fast Live Trace', ...
                 'fhDirectCallback', @this.onToggleLive ...
+            );
+        
+            this.uiButtonSaveLive = mic.ui.common.Button(...
+                'cText', 'Save Live Trace as CSV', ...
+                'fhDirectCallback', @this.onButtonSaveLive ...
             );
             
             this.uiButtonFile = mic.ui.common.Button(...
@@ -823,6 +910,12 @@ classdef LogPlotter < mic.Base
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseX()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseY()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinLsiCoarseX()];
+                
+                % VIS encoders
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(0)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(1)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(2)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(3)];
                 
                 this.dData(end + 1, :) = readings;
             
