@@ -570,7 +570,6 @@ classdef Hardware < mic.Base
                 %this.commSmarActVPFM.reset();
                 %this.commSmarActVPFM.initializeAxes().get();
                 %this.commSmarActVPFM.moveAxisAbsolute(0, 0);
-
                 
             catch mE
                 
