@@ -11,7 +11,6 @@ if ~exist(cPathOutputDir, 'dir')
 end
 
 
-
 cPath = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');
 cSortBy = 'date';
 cSortMode = 'descend';
@@ -45,15 +44,27 @@ for n = 1 : length(ceReturn)
         continue
     end
     
-    cPathInputFile = fullfile(cPathFull, st.name);
-    cPathOutputFile = fullfile(cPathOutputDir, [cVal, '.csv']);
+    
+    for n = 1 : length(st)
+        
+        cPathInputFile = fullfile(cPathFull, st(n).name);
+        cPathOutputFile = fullfile(cPathOutputDir, [cVal, '-', st(n).name]);
 
-    % skip copying if output file already exists
-    if exist(cPathOutputFile, 'file') == 2
-        continue
+        % skip copying if output file already exists
+        if exist(cPathOutputFile, 'file') == 2
+            fprintf('aready exists.\n');
+            continue
+        end
+
+        try
+            copyfile(cPathInputFile, cPathOutputFile);
+
+        catch mE
+            error(mE)
+        end
+        fprintf('Creating: %s\n', cPathOutputFile);
     end
-
-    copyfile(cPathInputFile, cPathOutputFile);
-    fprintf('Creating: %s\n', cPathOutputFile);    
    
 end
+
+fprintf('Done!\n');
