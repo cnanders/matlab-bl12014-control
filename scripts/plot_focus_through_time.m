@@ -11,7 +11,7 @@ cFilter = '*.mat';
 ceReturn = mic.Utils.dir2cell(cPath, cSortBy, cSortMode, cFilter);
 
 dFocus = zeros(size(ceReturn));
-dTime(length(ceReturn)) = datetime;
+dTime(length(ceReturn)) = datetime; % initialize as datetime, fill in the for loop.
 for n = 1 : length(ceReturn)
     cFile = ceReturn{n};
     
@@ -39,4 +39,4 @@ for n = 1 : length(ceReturn)
 end
 
 figure
-plot(dTime, dFocus, '.-b')
+plot(dTime, dFocus, '.b')

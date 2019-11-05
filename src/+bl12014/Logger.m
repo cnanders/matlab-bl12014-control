@@ -287,6 +287,7 @@ classdef Logger < mic.Base
                 %}
                 
                 readings = [readings this.hardware.getDataTranslation().getScanData()];
+                readings(38) = 1000 * readings(38); % multiply laser power by 1000;
                 
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];

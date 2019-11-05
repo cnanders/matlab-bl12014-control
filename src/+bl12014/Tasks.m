@@ -6,7 +6,7 @@ classdef Tasks < mic.Base
         dMotMinWCX = 4
         dMotMinWCY = 4
         dMotMinRCX = 4
-        dMotMinRCY = 3.5
+        dMotMinRCY = 4
         dMotMinLSI = 4
     end
     

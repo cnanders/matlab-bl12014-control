@@ -18,7 +18,7 @@ ui = bl12014.ui.MfDriftMonitorVibration(...
 );
 
 dWidth = 1650;
-dHeight = 900;
+dHeight = 1000;
 
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...

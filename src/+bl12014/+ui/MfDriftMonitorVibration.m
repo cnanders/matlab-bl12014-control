@@ -273,6 +273,7 @@ classdef MfDriftMonitorVibration < mic.Base
         % { bl12014.Hardware 1x1}
         hardware
         
+        uiCheckboxAutoSave
         
     end
     
@@ -726,6 +727,9 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiEditNumOfSamples.build(this.hParent, dLeft, dTop - 10, 150, 24);
             dTop = dTop + dSep;
             
+            dLeft = 10;
+            this.uiCheckboxAutoSave.build(this.hParent, dLeft, dTop, 200, 24);
+            
             this.buildPanelSaveLoad();
             this.buildPanelCasSettings();
             this.buildPanelTimeSettings();
@@ -794,7 +798,7 @@ classdef MfDriftMonitorVibration < mic.Base
                     
                     
             this.updateAxes();
-            this.updateTexts()
+            this.updateTexts();            
             
         end
         
@@ -1751,6 +1755,22 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.update();
             
+            if this.uiCheckboxAutoSave.get() 
+                
+                cNameOfFile = datestr(datevec(now), 'yyyymmdd-HHMMSS.txt', 'local');
+                cPathOfDir = mic.Utils.path2canonical(this.uiListDir.getDir());
+
+                if ~isdir(cPathOfDir)
+                    mkdir(cPathOfDir)
+                end
+
+                cPath = fullfile(cPathOfDir, cNameOfFile);
+
+                this.saveSamplesToFile(this.samples, cPath); 
+                this.uiListDir.refresh();
+                
+            end
+            
         end
         
         function onUiTabGroupAxes(this, src, evt);
@@ -2028,6 +2048,11 @@ classdef MfDriftMonitorVibration < mic.Base
                 'fhDirectCallback', @this.onUiTogglePlayPause ...
             );
         
+            this.uiCheckboxAutoSave = mic.ui.common.Checkbox(...
+                'cLabel', 'Auto Save', ...
+                'lChecked', false, ...
+                'fhDirectCallback', @this.onUiCheckboxAutoSave ...
+            );
             this.uiButtonSave = mic.ui.common.Button(...
                 'cText', 'Save', ...
                 'fhDirectCallback', @this.onUiButtonSave ...
@@ -2097,6 +2122,13 @@ classdef MfDriftMonitorVibration < mic.Base
             
             
         end
+        
+        function onUiCheckboxAutoSave(this, ~, ~)
+            
+            % Dont do anything
+            
+        end
+        
         
         function initUiEditTimeMin(this)
             
