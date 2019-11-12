@@ -1680,7 +1680,8 @@ classdef Scan < mic.Base
                                 case 'waferZ'
                                    lReady =     ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
                                                 ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
-                                                this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                                                ... this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
+                                                this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.isReady();
                                                 ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                                     
                                             
@@ -1692,7 +1693,15 @@ classdef Scan < mic.Base
                                             stValue.waferZ ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-                                    end
+                                   end
+                                    
+                                   % 2019.11.04 CNA this is where we want
+                                   % to check the WFZ delta from the last
+                                   % location and see if it seems
+                                   % reasonable.  If not, do we throw up
+                                   % a modal?
+                                   
+                                   lReasonable = this.checkWaferFineZDeltas();
 
                                 case 'workingMode'
                                     
@@ -1824,7 +1833,18 @@ classdef Scan < mic.Base
                 % Store the state of the system
                 stState = this.getState(stUnit);
                 stState.dose_mj_per_cm2 = stValue.task.dose;
-                this.ceValues{this.scan.u8Index} = stState;
+                
+                % 2019.11.05 adding deltas of height sensor and WFZ to the
+                % data store so it is easy to plot in the log plotter.
+                if isempty(this.ceValues)
+                    stState.dz_height_sensor_nm = 0;
+                    stState.dz_wafer_fine_nm = 0;
+                else
+                    stState.dz_height_sensor_nm = stState.z_height_sensor_nm - this.ceValues{end}.z_height_sensor_nm;
+                    stState.dz_wafer_fine_nm = stState.z_wafer_fine_nm - this.ceValues{end}.z_wafer_fine_nm;
+                end
+                
+                this.ceValues{end + 1} = stState;
             end
             
         end
@@ -1947,6 +1967,53 @@ classdef Scan < mic.Base
                 
             end
         end
+        
+        % Check the change of the WFZ stage from the previous exposure site
+        % to this one and make sure it seems reasonable.  If not, return
+        % false.  During development, echo values. 
+        function lOut = checkWaferFineZDeltas(this)
+            
+           lOut = true;
+           
+           dZWafer = [];
+           dZHS = [];
+           
+           for n = 1 : length(this.ceValues)
+                stValue = this.ceValues{n};
+                if ~isstruct(stValue)
+                    continue
+                end
+                dZWafer(end + 1) = stValue.z_wafer_fine_nm;
+                dZHS(end + 1) = stValue.z_height_sensor_nm;
+                
+           end
+           
+           % append current value
+           dZWafer(end + 1) = this.uiWafer.uiFineStage.uiZ.getValCal('nm');
+           dZHS(end + 1) = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal('nm');
+           
+           % create lists of deltas of the WFZ and the height sensor.  
+           dDeltaWafer = zeros(1, length(dZWafer));
+           dDeltaHS = zeros(1, length(dZWafer)); 
+           if length(dZWafer) > 1
+               for n = 2 : length(dZWafer)
+                   dDeltaWafer(n - 1) = dZWafer(n) - dZWafer(n - 1);
+                   dDeltaHS(n - 1) = dZHS(n) - dZHS(n - 1);
+               end
+           end
+           
+           % echo the diff
+           fprintf("deltaWFZ minus deltaHS: like the discrepancy between the WFZ and what the HS sees\n");
+           dDeltaWafer - dDeltaHS
+           
+           % find all indicies where the dDeltaHS is larger than some
+           % minimum value, call it 5 nm.  Then take the aferage of all of
+           % the delta wafers from those indicies. That should be
+           fprintf("delta wafer (nm) where a height sensor move was commanded\n");
+           lMoved = abs(dDeltaHS) >= 5
+           dDeltaWafer(lMoved)
+           
+        end
 
         % Save 1 kHz DMI data collected during the shutter is open
         function saveDmiHeightSensorDataFromExposure(this, stValue)
@@ -2058,7 +2125,7 @@ classdef Scan < mic.Base
                     return;
                 end
                 
-                this.ceValues = cell(size(stRecipe.values));
+                this.ceValues = cell(0); % cell(size(stRecipe.values));
                 this.ceValuesFast = cell(0);
                 
                 this.scan = mic.Scan(...
@@ -2431,7 +2498,9 @@ classdef Scan < mic.Base
                 'shutter_ms', ...
                 'flux_mj_per_cm2_per_s', ...
                 'temp_c_po_m2_0200', ...
-                'time' ...
+                'time', ...
+                'dz_height_sensor_nm', ...
+                'dz_wafer_fine_nm' ...
             };
         
         

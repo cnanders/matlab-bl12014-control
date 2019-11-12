@@ -129,9 +129,13 @@ classdef Logger < mic.Base
                 this.hardware.getDataTranslation().setSensorType(n, 'V');
             end
             
+            this.hardware.getDataTranslation().abortScan(); % stops scanning so the filter type can be set
             this.hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
             % it uses its internal 16 point rolling averaging filter (1.6
             % seconds)
+            
+            % echo the filter type:
+            this.hardware.getDataTranslation().getFilterType()
             this.hardware.getDataTranslation().setScanList(0:47);
             this.hardware.getDataTranslation().setScanPeriod(0.1);
             this.hardware.getDataTranslation().initiateScan();

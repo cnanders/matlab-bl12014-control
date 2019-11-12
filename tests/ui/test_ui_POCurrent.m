@@ -10,6 +10,22 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
 hardware.connectDataTranslation(); % force real hardware
+% hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
+            % it uses its internal 16 point rolling averaging filter (1.6
+            % seconds)
+            
+            % echo the filter type:
+            
+hardware.getDataTranslation().getFilterType()
+
+%% Run this code to set the filter type to RAW (remove 16-sample averaging)
+% This class assumes that the DT is already configured by the main met5
+% control software
+%{
+hardware.getDataTranslation().abortScan();
+hardware.getDataTranslation().setFilterTypeToRaw();
+hardware.getDataTranslation().initiateScan();
+%}
 
 ui = bl12014.ui.POCurrent(...
     'dWidth', 1200, ...
