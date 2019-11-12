@@ -109,6 +109,7 @@ classdef MfDriftMonitorVibration < mic.Base
         uiCheckboxCh6T2
         uiCheckboxCh6B2
         
+        % avg of cap1 and cap2
         uiCheckboxCh1T
         uiCheckboxCh1B
         uiCheckboxCh2T
@@ -854,7 +855,7 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.uiTogglePlayPause.set(false); % pause so it shows "play"
             
-            ceFiles = this.uiListDir.get();
+            ceFiles = this.uiListDir.get(); % returns the selected file
             if isempty(ceFiles)
                 return
             end
@@ -898,6 +899,15 @@ classdef MfDriftMonitorVibration < mic.Base
             this.updateTexts();
                                          
         end
+        
+        
+        function d = getRawMeanOfHeightSensorChannelsForEveryLogFile(this)
+            
+            d = [];
+            cPathOfDir = mic.Utils.path2canonical(this.uiListDir.getDir());
+            
+        end
+        
         
         function l = areAxesRawAvailable(this)
             l = true;
