@@ -11,13 +11,12 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
 
-
 ui = bl12014.ui.MfDriftMonitorVibration(...
     'hardware', hardware, ...
     'clock', clock ...
 );
 
-dWidth = 1650;
+dWidth = 1800;
 dHeight = 1000;
 
 dScreenSize = get(0, 'ScreenSize');

@@ -1,6 +1,10 @@
 classdef MfDriftMonitorVibration < mic.Base
     
-    properties
+    properties (Constant)
+        
+        cTabCooked = 'Cooked'
+        cTabRaw = 'Raw'
+        cTabRawHsOfFolder = 'Raw HS of Folder'
         
         
                         
@@ -76,6 +80,7 @@ classdef MfDriftMonitorVibration < mic.Base
         hAxesCasRaw % cumulative amplitude spectrum
         
        
+        hAxesRawHsOfFolder
         
         % {< cxro.met5.device.mfdriftmonitorI}
         device 
@@ -122,9 +127,23 @@ classdef MfDriftMonitorVibration < mic.Base
         uiCheckboxCh5B
         uiCheckboxCh6T
         uiCheckboxCh6B
+        
+        
+        uiCheckboxCh1TFolder
+        uiCheckboxCh1BFolder
+        uiCheckboxCh2TFolder
+        uiCheckboxCh2BFolder
+        uiCheckboxCh3TFolder
+        uiCheckboxCh3BFolder
+        uiCheckboxCh4TFolder
+        uiCheckboxCh4BFolder
+        uiCheckboxCh5TFolder
+        uiCheckboxCh5BFolder
+        uiCheckboxCh6TFolder
+        uiCheckboxCh6BFolder
   
-        
-        
+        uiCheckboxRemoveDCFolder
+        uiCheckboxDeltasFolder
         
         
         uiTextCh1T1
@@ -270,6 +289,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         dRawOfHeightSensor = zeros(24, 1);
         dRawOfDmi = zeros(4, 1);
+        dRawHsOfFolder = zeros(12, 1);
         
         % { bl12014.Hardware 1x1}
         hardware
@@ -449,7 +469,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function buildTabCooked(this)
             
-            hPanel = this.uiTabGroupAxes.getTabByName('Cooked');
+            hPanel = this.uiTabGroupAxes.getTabByName(this.cTabCooked);
             
             dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTopAxes;
@@ -544,7 +564,7 @@ classdef MfDriftMonitorVibration < mic.Base
         
         function buildTabRaw(this)
             
-            hPanel = this.uiTabGroupAxes.getTabByName('Raw');
+            hPanel = this.uiTabGroupAxes.getTabByName(this.cTabRaw);
             
             dLeft = this.dWidthPadLeftAxes;
             dTop = this.dHeightPadTopAxes;
@@ -712,6 +732,71 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
         
+        
+        function buildTabRawHsOfFolder(this)
+            
+            hPanel = this.uiTabGroupAxes.getTabByName(this.cTabRawHsOfFolder);
+            
+            dLeft = this.dWidthPadLeftAxes;
+            dTop = this.dHeightPadTopAxes;
+            
+            this.hAxesRawHsOfFolder = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([dLeft, dTop, this.dWidthAxes, 500], hPanel),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
+            );
+            
+            dTop = dTop + this.dHeightAxes + this.dHeightPadTopAxes;
+            
+            drawnow;
+            
+            dLeft = this.dWidthAxes + this.dWidthPadLeftAxes + this.dWidthPadLeftCheckboxes;
+            dTop = this.dHeightPadTopTabGroup;
+            dSep = 20;
+            
+            
+            dWidth = 160;
+            dHeightPadChannel = 5;
+            dHeightPadGroup = 20; %cap1 vs. cap 2 vs dmi
+            dHeight = 15;
+            dSep = 15;
+            cecProps = {
+                'uiCheckboxCh1TFolder', ...
+                'uiCheckboxCh1BFolder', ...
+                'uiCheckboxCh2TFolder', ...
+                'uiCheckboxCh2BFolder', ...
+                'uiCheckboxCh3TFolder', ...
+                'uiCheckboxCh3BFolder', ...
+                'uiCheckboxCh4TFolder', ...
+                'uiCheckboxCh4BFolder', ...
+                'uiCheckboxCh5TFolder', ...
+                'uiCheckboxCh5BFolder', ...
+                'uiCheckboxCh6TFolder', ...
+                'uiCheckboxCh6BFolder' ...
+            };
+        
+            % Building the checkboxes for raw 
+            
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               this.(cProp).build(hPanel, dLeft, dTop, dWidth, dHeight);
+               dTop = dTop + dSep;
+            end
+            
+            dTop = dTop + 30;
+            this.uiCheckboxRemoveDCFolder.build(hPanel, dLeft, dTop, dWidth, dHeight);
+            dTop = dTop + dSep;
+            this.uiCheckboxDeltasFolder.build(hPanel, dLeft, dTop, dWidth, dHeight);
+
+        end
+        
         function build(this, hParent, dLeft, dTop) % , hParent, dLeft, dTop
                         
                    
@@ -742,6 +827,7 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiTabGroupAxes.build(this.hParent, dLeft, 10, this.dWidth - 320, this.dHeight - 40);
             this.buildTabCooked();
             this.buildTabRaw();
+            this.buildTabRawHsOfFolder();
             
             dTop = 20;
             dLeft = 100 + this.dWidthAxes;
@@ -751,14 +837,14 @@ classdef MfDriftMonitorVibration < mic.Base
             
             if ~isempty(this.clock)
                 this.clock.add(...
-                    @this.onClock, ...
+                    @this.onClockWhilePlaying, ...
                     this.id(), ...
                     this.dDelay);
             
                 this.clock.add(...
-                    @() this.uiListDir.refresh(), ...
+                    @this.refreshListDir, ...
                     [this.id(), 'refresh-list-dir'], ...
-                    this.dDelay ...
+                    2 ...
                 );
             end
             
@@ -796,7 +882,13 @@ classdef MfDriftMonitorVibration < mic.Base
                     
             this.dRawOfHeightSensor = this.getRawOfHeightSensorFromSampleData(this.samples);
             this.dRawOfDmi = this.getRawOfDmiFromSampleData(this.samples);
-                    
+            
+            % If on the raw folder tab  
+            
+            switch this.uiTabGroupAxes.getSelectedTabName()
+                case this.cTabRawHsOfFolder
+                    this.dRawHsOfFolder = this.getRawHsOfFolder();
+            end
                     
             this.updateAxes();
             this.updateTexts();            
@@ -810,9 +902,8 @@ classdef MfDriftMonitorVibration < mic.Base
         function updateTexts(this)
             
             switch this.uiTabGroupAxes.getSelectedTabName()
-                case "Cooked"
-                    
-                case "Raw"
+                case this.cTabCooked
+                case this.cTabRaw
                     this.updateTextsRaw(this.dRawOfHeightSensor, this.dRawOfDmi);
             end
         end
@@ -843,10 +934,12 @@ classdef MfDriftMonitorVibration < mic.Base
             
             
             switch this.uiTabGroupAxes.getSelectedTabName()
-                case "Cooked"
+                case this.cTabCooked
                     this.updateAxesCooked(this.dZ, this.dXY);
-                case "Raw"
+                case this.cTabRaw
                     this.updateAxesRaw(this.dRawOfHeightSensor, this.dRawOfDmi);
+                case this.cTabRawHsOfFolder
+                    this.updateAxesRawHsOfFolder();
             end
         end
         
@@ -901,11 +994,66 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         
-        function d = getRawMeanOfHeightSensorChannelsForEveryLogFile(this)
+        % Returns {double 12 x <files>} matrix where each column is the
+        % mean raw value of HS channel data (cap1 + cap2 average) in a log file
+        % Alternatively, thinking about each row of the matrix, you get the
+        % change of, for example, CH1T through every log file.
+        
+        function dReturn = getRawHsOfFolder(this)
             
-            d = [];
             cPathOfDir = mic.Utils.path2canonical(this.uiListDir.getDir());
             
+            cSortBy = 'date';
+            cSortMode = 'ascend';
+            cFilter = '*.txt';
+            cecFiles = mic.Utils.dir2cell(...
+                cPathOfDir, ...
+                cSortBy, ...
+                cSortMode, ...
+                cFilter ...
+            );
+        
+            dReturn = zeros(12, length(cecFiles));
+            
+            for j = 1 : length(cecFiles)
+                
+                cPath = fullfile(cPathOfDir, cecFiles{j});
+                hFile = fopen(cPath);
+
+                % %d = signed integer, 32-bit
+                cFormat = [...
+                    '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,', ...
+                    '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,', ...
+                    '%d,%d,%d,%d' ...
+                ];
+
+                ceData = textscan(...
+                    hFile, cFormat, -1, ...
+                    'headerlines', 1 ...
+                );
+
+                fclose(hFile);
+
+                % To deal with data from the test routines on met5vme that
+                % usually contain partial data, truncate all sample
+                % arrays to the length of dmi4 sample appay
+
+                numSamples = length(ceData{28});
+                for n = 1 : length(ceData)
+                    while length(ceData{n}) > numSamples
+                        ceData{n}(end) = [];
+                    end
+                end
+                
+                dRawHS = this.getRawOfHeightSensorFromFileData(ceData);
+                
+                % return only the cap1 + cap2 averaged results which are in
+                % rows 25 - 36 of the matrix returned by getRawOfHeightSensorFromFileData
+                for n = 25 : 36
+                    dReturn(n - 24, j) = mean(dRawHS(n, :));
+                end
+            end
+             
         end
         
         
@@ -931,6 +1079,18 @@ classdef MfDriftMonitorVibration < mic.Base
                 l = false;
                 return;
             end
+            
+        end
+        
+        function l = areAxesRawHsOfFolderAvailable(this)
+            l = true;
+            if  isempty(this.hAxesRawHsOfFolder) || ...
+                ~ishandle(this.hAxesRawHsOfFolder)
+               
+                l = false;
+                return;
+            end
+            
             
         end
         
@@ -1230,6 +1390,79 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.dChannelsRawHsPrevious = dChannelsHs;
             this.dChannelsRawDmiPrevious = dChannelsDmi;
+            
+        end
+        
+        
+        function updateAxesRawHsOfFolder(this)
+            
+            if ~this.areAxesRawHsOfFolderAvailable()
+                return
+            end
+            
+            cla(this.hAxesRawHsOfFolder);
+            
+            cecLabels = {}; % Fill with plotted things
+            cecLabelsZ = {...
+                'ch6T CAP1,2 mean', ...
+                'ch6B CAP1,2 mean', ...
+                'ch5T CAP1,2 mean', ...
+                'ch5B CAP1,2 mean', ...
+                'ch4T CAP1,2 mean', ...
+                'ch4B CAP1,2 mean', ...
+                'ch3T CAP1,2 mean', ...
+                'ch3B CAP1,2 mean', ...
+                'ch2T CAP1,2 mean', ...
+                'ch2B CAP1,2 mean', ...
+                'ch1T CAP1,2 mean', ...
+                'ch1B CAP1,2 mean' ...
+            };
+                        
+            lSelected = [...
+                this.uiCheckboxCh6TFolder.get(), ...
+                this.uiCheckboxCh6BFolder.get(), ...
+                this.uiCheckboxCh5TFolder.get(), ...
+                this.uiCheckboxCh5BFolder.get(), ...
+                this.uiCheckboxCh4TFolder.get(), ...
+                this.uiCheckboxCh4BFolder.get(), ...
+                this.uiCheckboxCh3TFolder.get(), ...
+                this.uiCheckboxCh3BFolder.get(), ...
+                this.uiCheckboxCh2TFolder.get(), ...
+                this.uiCheckboxCh2BFolder.get(), ...
+                this.uiCheckboxCh1TFolder.get(), ...
+                this.uiCheckboxCh1BFolder.get() ...
+            ];
+            
+            dIndexes = 1:12;
+            dChannelsHs = dIndexes(lSelected);
+            
+            for n = dChannelsHs
+    
+                channel = n;
+                values = this.dRawHsOfFolder(channel, :);
+                
+                % dc removal
+                if this.uiCheckboxRemoveDCFolder.get()
+                    values = values - mean(values);
+                end
+                
+                 % plot shot to shot deltas 
+                if this.uiCheckboxDeltasFolder.get()
+                   deltas = zeros(1, length(values) - 1); % initialize
+                   for m = 2 : length(values)
+                       deltas(m - 1) = values(m) - values(m - 1);
+                   end
+                   values = deltas;
+                end
+                
+                plot(this.hAxesRawHsOfFolder, values', '.-')
+                hold(this.hAxesRawHsOfFolder, 'on') % need to do after first loglog
+                
+                cecLabels{end + 1} = cecLabelsZ{channel};
+
+            end
+
+            legend(this.hAxesRawHsOfFolder, cecLabels);
             
         end
         
@@ -1760,8 +1993,24 @@ classdef MfDriftMonitorVibration < mic.Base
             
         end
                 
+        
+        function refreshListDir(this, src, evt)
+            
+            ceOptionsBefore = this.uiListDir.getOptions();
+            this.uiListDir.refresh();
+            ceOptionsAfter = this.uiListDir.getOptions();
+            
+            if length(ceOptionsAfter) > length(ceOptionsBefore)
+            
+                switch this.uiTabGroupAxes.getSelectedTabName()
+                    case this.cTabRawHsOfFolder
+                        this.dRawHsOfFolder = this.getRawHsOfFolder();
+                        this.updateAxes();
+                end
+            end
+        end
        
-        function onClock(this, src, evt)
+        function onClockWhilePlaying(this, src, evt)
             
             this.update();
             
@@ -1784,6 +2033,12 @@ classdef MfDriftMonitorVibration < mic.Base
         end
         
         function onUiTabGroupAxes(this, src, evt);
+            
+            switch this.uiTabGroupAxes.getSelectedTabName()
+                case this.cTabRawHsOfFolder
+                     this.uiTogglePlayPause.set(false); % pause so it shows "play"
+                    this.dRawHsOfFolder = this.getRawHsOfFolder();
+            end
             this.updateAxes();
         end
         
@@ -1848,6 +2103,7 @@ classdef MfDriftMonitorVibration < mic.Base
 
             
             
+            
             this.uiCheckboxUReticle = mic.ui.common.Checkbox('cLabel', 'U reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             this.uiCheckboxVReticle = mic.ui.common.Checkbox('cLabel', 'V reticle', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
             this.uiCheckboxUWafer = mic.ui.common.Checkbox('cLabel', 'U wafer', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
@@ -1855,6 +2111,30 @@ classdef MfDriftMonitorVibration < mic.Base
             
             
             
+        end
+        
+        function initCheckboxesFolder(this)
+            this.uiCheckboxCh1TFolder = mic.ui.common.Checkbox('cLabel', '1T 5:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh1BFolder = mic.ui.common.Checkbox('cLabel', '1B 5:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            
+            this.uiCheckboxCh2TFolder = mic.ui.common.Checkbox('cLabel', '2T 9:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh2BFolder = mic.ui.common.Checkbox('cLabel', '2B 9:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh3TFolder = mic.ui.common.Checkbox('cLabel', '3T 1:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh3BFolder = mic.ui.common.Checkbox('cLabel', '3B 1:30 z', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh4TFolder = mic.ui.common.Checkbox('cLabel', '4T 0:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh4BFolder = mic.ui.common.Checkbox('cLabel', '4B 0:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh5TFolder = mic.ui.common.Checkbox('cLabel', '5T 4:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh5BFolder = mic.ui.common.Checkbox('cLabel', '5B 4:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+
+            this.uiCheckboxCh6TFolder = mic.ui.common.Checkbox('cLabel', '6T 8:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox);
+            this.uiCheckboxCh6BFolder = mic.ui.common.Checkbox('cLabel', '6B 8:30 ang', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox); 
+            
+            
+            this.uiCheckboxRemoveDCFolder = mic.ui.common.Checkbox('cLabel', 'Remove DC', 'lChecked', true, 'fhDirectCallback', @this.onUiCheckbox); 
+            this.uiCheckboxDeltasFolder = mic.ui.common.Checkbox('cLabel', 'Deltas', 'lChecked', false, 'fhDirectCallback', @this.onUiCheckbox); 
         end
         
         function cec = getTextProps(this)
@@ -2020,11 +2300,20 @@ classdef MfDriftMonitorVibration < mic.Base
             
             % Axes tab group:
             this.uiTabGroupAxes = mic.ui.common.Tabgroup(...
-                'fhDirectCallback', { @this.onUiTabGroupAxes, @this.onUiTabGroupAxes } , ...
-                'ceTabNames',  {'Cooked', 'Raw'} ...
+                'fhDirectCallback', { ...
+                    @this.onUiTabGroupAxes, ...
+                    @this.onUiTabGroupAxes, ...
+                    @this.onUiTabGroupAxes ...
+                 } , ... % provide a callback for each tab!!
+                'ceTabNames',  {...
+                    this.cTabCooked, ...
+                    this.cTabRaw, ...
+                    this.cTabRawHsOfFolder ...
+                } ...
             );
         
-            this.initCheckboxesRaw()
+            this.initCheckboxesRaw();
+            this.initCheckboxesFolder();
             this.initTextsRaw()
             this.initTextSquaresRaw();
             
@@ -2082,6 +2371,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 'lShowLabel', false, ...
                 'lShowChooseDir', true, ...
                 'fhOnChange', @this.onUiListChange, ...
+                'fhOnChangeDir', @this.onUiListChangeDir, ...
                 'cLabel', 'Save / Load Directory' ...
             );
         
@@ -2493,6 +2783,30 @@ classdef MfDriftMonitorVibration < mic.Base
                         
         end
         
+        % Returns a list of z channels to plot based on checkboxes
+        function d = getChannelsHeightSensorRawFolder(this)
+            
+            lSelected = [...
+                ... % 0 us - 1000 us
+                this.uiCheckboxCh6TFolder.get(), ...
+                this.uiCheckboxCh6BFolder.get(), ...
+                this.uiCheckboxCh5TFolder.get(), ...
+                this.uiCheckboxCh5BFolder.get(), ...
+                this.uiCheckboxCh4TFolder.get(), ...
+                this.uiCheckboxCh4BFolder.get(), ...
+                this.uiCheckboxCh3TFolder.get(), ...
+                this.uiCheckboxCh3BFolder.get(), ...
+                this.uiCheckboxCh2TFolder.get(), ...
+                this.uiCheckboxCh2BFolder.get(), ...
+                this.uiCheckboxCh1TFolder.get(), ...
+                this.uiCheckboxCh1BFolder.get() ...
+            ];
+            
+            dIndexes = 1:12;
+            d = dIndexes(lSelected);
+                        
+        end
+        
         
         
         function d = getChannelsDmiRaw(this)
@@ -2544,9 +2858,24 @@ classdef MfDriftMonitorVibration < mic.Base
             end
             
         end
+         
+        function onUiListChangeDir(this, src, evt)
+            
+            switch this.uiTabGroupAxes.getSelectedTabName()
+                case this.cTabRawHsOfFolder
+                    this.dRawHsOfFolder = this.getRawHsOfFolder();
+                    this.updateAxes();
+            end
+            
+        end
         
         function onUiListChange(this, src, evt)
-            this.updateFromFileSelectedInList()
+            
+            
+            
+            
+            this.updateFromFileSelectedInList();
+            
         end
         
         function onUiButtonLoad(this, src, evt)
@@ -2648,7 +2977,7 @@ classdef MfDriftMonitorVibration < mic.Base
                 
                 if ~isempty(this.clock) && ...
                    ~this.clock.has(this.id())
-                    this.clock.add(@this.onClock, this.id(), this.dDelay);
+                    this.clock.add(@this.onClockWhilePlaying, this.id(), this.dDelay);
                     return;
                 end
             

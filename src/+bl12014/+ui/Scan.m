@@ -1870,13 +1870,13 @@ classdef Scan < mic.Base
                 
                 if this.stScanAcquireContract.(cField).lRequired
                     if lDebug
-                        this.msg(sprintf('%s %s set is required', cFn, cField));
+                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
 
                     if this.stScanAcquireContract.(cField).lIssued
                         
                         if lDebug
-                            this.msg(sprintf('%s %s set has been issued', cFn, cField));
+                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         % Check if the set operation is complete
@@ -1886,8 +1886,24 @@ classdef Scan < mic.Base
                         switch cField
                             case 'shutter'
                                 
+                                if this.lUseMjPerCm2PerSecOverride
+                                    dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
+                                else
+                                    dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
+                                end
+                                
+                                if lDebug
+                                    cMsg = sprintf('%s %s checking shutter: %1.1f mJ/cm2, %1.0f msec', ...
+                                        cFn, ...
+                                        cField, ...
+                                        stValue.task.dose, ...
+                                        dSec * 1000 ...
+                                    );
+                                    this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    
+                                end
                                
-                               lReady = this.uiShutter.uiShutter.getDevice().isReady();
+                               lReady = this.uiShutter.uiShutter.isReady();
                                  
                             otherwise
                                 
@@ -1898,13 +1914,13 @@ classdef Scan < mic.Base
                         
                         if lReady
                         	if lDebug
-                                this.msg(sprintf('%s %s set complete', cFn, cField));
+                                this.msg(sprintf('%s %s set complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
  
                         else
                             % still isn't there.
                             if lDebug
-                                this.msg(sprintf('%s %s set still setting', cFn, cField));
+                                this.msg(sprintf('%s %s set still setting', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             lOut = false;
                             return;
@@ -1912,7 +1928,7 @@ classdef Scan < mic.Base
                     else
                         % need to move and hasn't been issued.
                         if lDebug
-                            this.msg(sprintf('%s %s set not yet issued', cFn, cField));
+                            this.msg(sprintf('%s %s set not yet issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         lOut = false;
@@ -1921,7 +1937,7 @@ classdef Scan < mic.Base
                 else
                     
                     if lDebug
-                        this.msg(sprintf('%s %s set is not required', cFn, cField));
+                        this.msg(sprintf('%s %s set is not required', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
                    % don't need to move, this param is OK. Don't false. 
                 end
@@ -1930,6 +1946,10 @@ classdef Scan < mic.Base
             if lOut
                 
                 % Write to log
+                
+                if lDebug
+                    this.msg(sprintf('%s adding exposure to GUI, saving system state to log, and DMI/HS data', cFn), this.u8_MSG_TYPE_SCAN);
+                end
 
                 this.writeToLog('Finished task.');
 
@@ -1962,8 +1982,11 @@ classdef Scan < mic.Base
                 % Overwrite the results file
                 this.saveScanResults(stUnit);
                 
+                drawnow;
+                
                 % 2018.11.15  
-                this.saveDmiHeightSensorDataFromExposure(stValue)
+                this.saveDmiHeightSensorDataFromExposure(stValue);
+                
                 
             end
         end
@@ -2004,14 +2027,14 @@ classdef Scan < mic.Base
            
            % echo the diff
            fprintf("deltaWFZ minus deltaHS: like the discrepancy between the WFZ and what the HS sees\n");
-           dDeltaWafer - dDeltaHS
+           dDeltaWafer - dDeltaHS;
            
            % find all indicies where the dDeltaHS is larger than some
            % minimum value, call it 5 nm.  Then take the aferage of all of
            % the delta wafers from those indicies. That should be
            fprintf("delta wafer (nm) where a height sensor move was commanded\n");
-           lMoved = abs(dDeltaHS) >= 5
-           dDeltaWafer(lMoved)
+           lMoved = abs(dDeltaHS) >= 5;
+           dDeltaWafer(lMoved);
            
         end
 
