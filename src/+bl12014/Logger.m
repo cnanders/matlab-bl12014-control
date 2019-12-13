@@ -129,9 +129,13 @@ classdef Logger < mic.Base
                 this.hardware.getDataTranslation().setSensorType(n, 'V');
             end
             
+            this.hardware.getDataTranslation().abortScan(); % stops scanning so the filter type can be set
             this.hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
             % it uses its internal 16 point rolling averaging filter (1.6
             % seconds)
+            
+            % echo the filter type:
+            this.hardware.getDataTranslation().getFilterType()
             this.hardware.getDataTranslation().setScanList(0:47);
             this.hardware.getDataTranslation().setScanPeriod(0.1);
             this.hardware.getDataTranslation().initiateScan();
@@ -287,16 +291,23 @@ classdef Logger < mic.Base
                 %}
                 
                 readings = [readings this.hardware.getDataTranslation().getScanData()];
+                readings(38) = 1000 * readings(38); % multiply laser power by 1000;
                 
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPower()'];
                 readings = [readings this.hardware.getMfDriftMonitor().dmiGetAxesOpticalPowerDC()'];
                 
+                % PPMAC mot mins
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseX()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinWaferCoarseY()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseX()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinReticleCoarseY()];
                 readings = [readings this.hardware.getDeltaTauPowerPmac().getMotMinLsiCoarseX()];
-
+                
+                % VIS encoders
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(0)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(1)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(2)];
+                readings = [readings this.hardware.getGalilVis().getAxisAnalog(3)];
 
                 for n = 1 : length(readings)
                     fprintf(fid, '%1.8f,', readings(n));
@@ -308,6 +319,7 @@ classdef Logger < mic.Base
 
             catch mE
                 disp('appendValuesToLogFile had an error');
+                mE
             end
 
             % close

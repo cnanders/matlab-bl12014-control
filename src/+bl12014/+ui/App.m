@@ -6,6 +6,8 @@ classdef App < mic.Base
         dHeight = 550
         
         lUseDock = true;
+        
+       
                        
     end
     
@@ -79,6 +81,8 @@ classdef App < mic.Base
         uiClockPowerPmacHydraMotMin
         uiClockDMIPowerMonitor
         uiClockPowerPmacHydraMotMinMonitor
+        
+        fhOnCloseFigure = @(src, evt)[];
 
     end
     
@@ -261,7 +265,7 @@ classdef App < mic.Base
                 'WindowButtonMotionFcn', @this.onFigureWindowMouseMotion, ...
                 'WindowButtonDownFcn', @this.onFigureWindowMouseDown, ... % doesn't work if datacursormode is on!
                 'HandleVisibility', 'on',... % lets close all close the figure
-                ... % 'CloseRequestFcn', @this.onCloseRequest, ...
+                'CloseRequestFcn', @this.onCloseRequest, ...
                 'Visible', 'on'...
             );
             this.uiTabGroup.build(this.hFigureNew, 0, 25, dWidth, dHeight - 2);
@@ -304,6 +308,9 @@ classdef App < mic.Base
         
         function onFigureWindowMouseDown(this, src, evt)
            
+            if ~ishandle(this.hFigureNew)
+                return
+            end
             cTab = this.uiTabGroup.getSelectedTabName();
             
             switch cTab
@@ -317,6 +324,10 @@ classdef App < mic.Base
         
         function onFigureWindowMouseMotion(this, src, evt)
            
+            if ~ishandle(this.hFigureNew)
+                return
+            end
+            
            % this.msg('onWindowMouseMotion()');
            cTab = this.uiTabGroup.getSelectedTabName();
             
@@ -843,10 +854,13 @@ classdef App < mic.Base
             this.clock.listTasks();
         end
         
-        function onCloseRequestFcn(this, src, evt)
+        function onCloseRequest(this, src, evt)
             this.msg('closeRequestFcn()');
             % purge;
-            delete(this.hFigure);
+            if ishandle(this.hFigureNew)
+               delete(this.hFigureNew);
+            end
+            this.fhOnCloseFigure();
             % this.saveState();
         end
             

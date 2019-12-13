@@ -6,6 +6,20 @@ classdef FocusSensor < mic.Base
         dWidth      = 620
         dHeight     = 510
         
+        ceScanAxisLabels = {...
+                        'Ret Crs X', ...
+                        'Ret Crs Y', ...
+                        'Ret Crs Z', ...
+                        'Waf Crs X', ...
+                        'Waf Crs Y', ...
+                        'Waf Crs Z', ...
+                        'FM Rz', ...
+                        'Do Nothing'};
+        ceScanOutputLabels = {'Image capture', 'Image intensity', ...
+            'Background diff', 'Line Pitch', 'Pause 2s', 'Wafer Diode', 'HS Simple Z', ...
+            'HS Cal Z', 'HS Cal Rx', 'HS Cal Ry', 'Image caputure lock conjugate'};
+        
+        
     end
     
 	properties
@@ -28,6 +42,45 @@ classdef FocusSensor < mic.Base
         uiCoarseStage
         uiFineStage
         uiFocusSensor
+        
+        % Scan setups
+        uitgScan
+        ceTabList = {'1D-scan', '2D-scan', '3D-scan'}
+        
+        scanHandler
+        ss1D
+        ss2D
+        ss3D
+        
+        ssCurrentScanSetup %pointer to current scan setup
+        lSaveImagesInScan = false
+        dImageSeriesNumber = 0 %Used to keep track of the number of series 
+        
+        % Scan progress text elements
+        uiTextStatus
+        uiTextTimeElapsed
+        uiTextTimeRemaining
+        uiTextTimeComplete
+        
+        % Keep track of initial state of last scan
+        stLastScanState
+        
+        lAutoSaveImage
+        lIsScanAcquiring = false % whether we're currently in a "scan acquire"
+        lIsScanning = false
+        
+        lIsConjugateLockEnabled = false
+        dInitialHSSZValue = 0
+        dInitialRetZValue = 0
+        
+        % Scan ouput:
+        stLastScan
+        
+        dNumScanOutputAxes
+        ceScanCoordinates
+        dLinearScanOutput
+        dScanOutput
+        
        
     end
     

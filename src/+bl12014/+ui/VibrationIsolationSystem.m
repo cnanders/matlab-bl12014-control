@@ -195,46 +195,6 @@ classdef VibrationIsolationSystem < mic.Base
             
         end
         
-            
-        
-                function connectGalil(this, comm)
-            
-            
-                   
-            
-            device1 = bl12014.device.GetNumberFromStageEncoder(comm, 0);
-            device2 = bl12014.device.GetNumberFromStageEncoder(comm, 1);
-            device3 = bl12014.device.GetNumberFromStageEncoder(comm, 2);
-            device4 = bl12014.device.GetNumberFromStageEncoder(comm, 3);
-            
-            this.uiEncoder1.setDevice(device1);
-            this.uiEncoder2.setDevice(device2);
-            this.uiEncoder3.setDevice(device3);
-            this.uiEncoder4.setDevice(device4);
-            
-            this.uiEncoder1.turnOn();
-            this.uiEncoder2.turnOn();
-            this.uiEncoder3.turnOn();
-            this.uiEncoder4.turnOn();
-            
-            
-            
-        end
-        
-        function disconnectGalil(this)
-            
-            
-            this.uiEncoder1.turnOff();
-            this.uiEncoder2.turnOff();
-            this.uiEncoder3.turnOff();
-            this.uiEncoder4.turnOff();
-            
-            this.uiEncoder1.setDevice([]);
-            this.uiEncoder2.setDevice([]);
-            this.uiEncoder3.setDevice([]);
-            this.uiEncoder4.setDevice([]);
-        end
-        
         
         function build(this, hParent, dLeft, dTop)
                         

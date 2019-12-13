@@ -146,12 +146,18 @@ classdef MFDriftMonitor < mic.Base
                 this.clock.remove(this.id());
             end
             
-           
+            try
+                
             if(this.lHasOwnClock )
                 this.clock.stop();
                 delete(this.clock);
                 fprintf('Deleting MFDriftMonitorClock');
             end
+            
+            catch mE
+                mE
+            end
+            
            
             
 %             if this.isConnected()

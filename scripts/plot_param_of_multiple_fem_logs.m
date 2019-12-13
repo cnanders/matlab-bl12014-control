@@ -3,12 +3,22 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages')));
 
-
-cPath = fullfile(cDirThis, '..', 'src', 'save', 'prescriptions');
+% Allow the user to choose multiple directories from fem-scans
+cPath = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');
 cSortBy = 'date';
 cSortMode = 'descend';
 cFilter = '*.mat';
-ceReturn = mic.Utils.dir2cell(cPath, cSortBy, cSortMode, cFilter);
+
+
+ceDirs = uigetdir2(cPath, 'Choose directories');
+
+for n = 1 : length(ceDirs)
+    ceDirs{n}
+    cPathResult = 
+
+return
+
+% ceReturn = mic.Utils.dir2cell(cPath, cSortBy, cSortMode, cFilter);
 
 dFocus = zeros(size(ceReturn));
 dTime(length(ceReturn)) = datetime; % initialize as datetime, fill in the for loop.

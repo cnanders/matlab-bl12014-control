@@ -637,20 +637,24 @@ classdef ScanResultPlot2x2 < mic.Base
             
             % this.stResult = loadjson(cPath);
             
-            fid = fopen(cPath, 'r');
-            cText = fread(fid, inf, 'uint8=>char');
-            fclose(fid);
-            this.stResult = jsondecode(cText');
-            
-            this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
-            this.updatePopups()
+            try
+                fid = fopen(cPath, 'r');
+                cText = fread(fid, inf, 'uint8=>char');
+                fclose(fid);
+                this.stResult = jsondecode(cText');
+
+                this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
+                this.updatePopups()
+            catch mE
+            end
             
             
         end
         
         % Returns a {struct 1x1} where each prop is a list of values of
         % of a saved result property.  The result structure loaded from
-        % .json has a values field that is a cell of structures.  
+        % .json has a values field that is a cell of structures or a list
+        % of structures (for log files created since 2019.11.05)
         function stOut = getValuesStructFromResultStruct(this, st)
             
             % Initialize the structure
@@ -662,7 +666,11 @@ classdef ScanResultPlot2x2 < mic.Base
             
             ceValues = this.getNonEmptyValues(st.values);
             
-            stValue = ceValues{1};
+            if iscell(ceValues)
+                stValue = ceValues{1};
+            else
+                stValue = ceValues(1);
+            end
             
             % Initialize empty structure
             ceFields = fieldnames(stValue);
@@ -678,7 +686,14 @@ classdef ScanResultPlot2x2 < mic.Base
              
             % Write values
             for idxValue = 1 : length(ceValues)
-                stValue = ceValues{idxValue};
+                %stValue = ceValues{idxValue};
+                
+                if iscell(ceValues)
+                    stValue = ceValues{idxValue};
+                else
+                    stValue = ceValues(idxValue);
+                end
+                
                 if ~isstruct(stValue)
                     continue
                 end
@@ -743,8 +758,13 @@ classdef ScanResultPlot2x2 < mic.Base
             % ceValues = ceValues(idxNonEmpty);
             
             % Use logical indexing
-            lIsStruct = cellfun(@isstruct, ceValues);
-            ce = ceValues(lIsStruct);
+            if iscell(ceValues)
+            
+                lIsStruct = cellfun(@isstruct, ceValues);
+                ce = ceValues(lIsStruct);
+            else
+                ce = ceValues;
+            end
             
         end
         
@@ -756,8 +776,12 @@ classdef ScanResultPlot2x2 < mic.Base
             end
                         
             ceValues = this.getNonEmptyValues(this.stResult.values);
-                                    
-            stValue = ceValues{1};
+            
+            if iscell(ceValues)
+                stValue = ceValues{1};
+            else 
+                stValue = ceValues(1);
+            end
             ceFields = fieldnames(stValue);
             
             
@@ -852,6 +876,10 @@ classdef ScanResultPlot2x2 < mic.Base
         
         function updateAxes(this, u8Axes)
             
+            if isempty(this.stResultForPlotting)
+                return
+            end
+            
             if isempty(this.hAxes1) || ...
                isempty(this.hAxes2) || ...
                isempty(this.hAxes3) || ...
@@ -909,11 +937,13 @@ classdef ScanResultPlot2x2 < mic.Base
                     
                     
             end
-                        
+                       
             
             if ~this.getResultStructHasValues(this.stResult)
                 return
             end
+            
+            
             
             dValues = this.stResultForPlotting.(cProp);
             dValues = dValues(this.uiPopupIndexStart.getSelectedIndex() : this.uiPopupIndexEnd.getSelectedIndex());
