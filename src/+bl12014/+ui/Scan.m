@@ -2271,11 +2271,17 @@ classdef Scan < mic.Base
         function saveScanResults(this, stUnit, lAborted)
             this.msg('saveScanResults()');
             
-            if nargin <3
+            if nargin < 3
                 lAborted = false;
             end
+            
+            dTic = tic;
             this.saveScanResultsJson(stUnit, lAborted);
             this.saveScanResultsCsv(stUnit, lAborted);
+            
+            dToc = toc(dTic);
+            
+            
         end
         
         %{
