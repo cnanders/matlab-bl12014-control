@@ -1902,6 +1902,8 @@ classdef Scan < mic.Base
                                     this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     
                                 end
+                                
+                                % comment for commit.
                                
                                lReady = this.uiShutter.uiShutter.isReady();
                                  
