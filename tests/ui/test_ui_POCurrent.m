@@ -9,7 +9,7 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
-hardware.connectDataTranslation(); % force real hardware
+% hardware.connectDataTranslation(); % force real hardware
 % hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
             % it uses its internal 16 point rolling averaging filter (1.6
             % seconds)

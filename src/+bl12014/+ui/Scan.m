@@ -1798,6 +1798,8 @@ classdef Scan < mic.Base
             
             
             
+            
+            
             % Should eventually have a "type" property associated with the
             % task that can be switched on.  "type", "data" which is a
             % struct.  
@@ -2008,7 +2010,26 @@ classdef Scan < mic.Base
                 this.saveDmiHeightSensorDataFromExposure(stValue);
                 
                 
+                this.pauseScanIfCurrentOfALSIsTooLow()
+                
+                
             end
+        end
+        
+        function pauseScanIfCurrentOfALSIsTooLow(this)
+            
+            if (...
+                this.hardware.getIsConnectedALS && ...
+                this.hardware.getALS().getCurrentOfRing() < 20 ...
+            )
+                
+                this.scan.pause();
+                cMsg = sprintf('The FEM was automatically paused because the current of the ALS dropped below 20 mA.');
+                cTitle = 'FEM Auto Paused (Current of ALS low)';
+                cIcon = 'help';
+                h = msgbox(cMsg, cTitle, cIcon, 'modal');  
+            end
+            
         end
         
         % Check the change of the WFZ stage from the previous exposure site

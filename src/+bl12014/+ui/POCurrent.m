@@ -13,15 +13,22 @@ classdef POCurrent < mic.Base
         
         clock
         dWidth = 800
-        dHeight = 680
+        dHeight = 800
         
         dWidthPadLeftAxes = 60
+        dHeightPadBottomAxes = 40
         
         hPanel
         hAxes
         % {handle} storage for the Line object returned by plot
         hPlot1
         hPlot2
+        
+        hAxes2
+        hPlot21
+        hPlot22
+        
+        dNumPlot2 = 600;
         
         % {double 1xm} storage of values from two channels of the 
         % Data translation
@@ -67,23 +74,7 @@ classdef POCurrent < mic.Base
         
         end
                 
-        %{
-        function connectKeithley6482(this, comm)
-            
-            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
-            this.uiCurrent.setDevice(device);
-            this.uiCurrent.turnOn()
-            this.clearValues();
-            
-        end
         
-        
-        function disconnectKeithley6482(this, comm)
-            this.uiCurrent.turnOff();
-            this.uiCurrent.setDevice([]);
-            
-        end
-        %}
         
                 
         function build(this, hParent, dLeft, dTop)
@@ -107,17 +98,20 @@ classdef POCurrent < mic.Base
             dLeft = 10;
             dSep = 10;
             
+            this.uiButtonClear.build(...
+                this.hPanel, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                24 ...
+            );
             
-                        
-            this.uiCurrent.build(this.hPanel, dLeft, dTop);
-            
-            
-            
-        
+            % this.uiCurrent.build(this.hPanel, dLeft, dTop);
+
             dLeft = this.dWidthPadLeftAxes;
-            dTop = 80;
+            dTop = 50;
             dWidth = this.dWidth - this.dWidthPadLeftAxes - 40;
-            dHeight = this.dHeight - dTop - 50;
+            dHeight = (this.dHeight - 50 - 2 * this.dHeightPadBottomAxes) / 2;
             
             this.hAxes = axes(...
                 'Parent', this.hPanel, ...
@@ -139,15 +133,27 @@ classdef POCurrent < mic.Base
                 'YGrid','on' ... 
             );
         
-            dLeft = this.dWidth - 40 - 100;
-            dTop = 50;
-            this.uiButtonClear.build(...
-                this.hPanel, ...
-                dLeft, ...
-                dTop, ...
-                100, ...
-                24 ...
+            dTop = dTop + dHeight + this.dHeightPadBottomAxes;
+            this.hAxes2 = axes(...
+                'Parent', this.hPanel, ...
+                'Units', 'pixels',...
+                'Position', mic.Utils.lt2lb([ ...
+                    dLeft, ...
+                    dTop, ...
+                    dWidth, ...
+                    dHeight, ...
+                    ], ...
+                    this.hPanel ...
+                ),...
+                'HandleVisibility', 'on', ...
+                'XMinorTick','on', ...
+                'YMinorTick','on', ...
+                'XMinorGrid','on', ...
+                'YMinorGrid','on', ...
+                'XGrid','on', ...
+                'YGrid','on' ... 
             );
+            
             
             % Initialize index of buffer
             [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
@@ -166,13 +172,13 @@ classdef POCurrent < mic.Base
         
         function st = save(this)
             st = struct();
-            st.uiCurrent = this.uiCurrent.save();
+            % st.uiCurrent = this.uiCurrent.save();
             
         end
         
         function load(this, st)
             if isfield(st, 'uiCurrent')
-                this.uiCurrent.load(st.uiCurrent);
+                % this.uiCurrent.load(st.uiCurrent);
             end
         end
         
@@ -218,13 +224,83 @@ classdef POCurrent < mic.Base
             
         end
         
+        
+        function updateAxes2(this, dX, dY)
+            
+             if  isempty(this.hAxes2) || ...
+                ~ishandle(this.hAxes2)
+                return;
+             end
+             
+             if isempty(dX)
+                return
+            end
+            
+            if isempty(dY)
+                return
+            end
+            
+            if length(dX) ~= length(dY)
+                return
+            end
+            
+            % Axes 2
+            % only plot the last N points
+            if length(dX) > this.dNumPlot2
+                dX = dX(end - this.dNumPlot2 : end);
+                dY = dY(:, end - this.dNumPlot2 : end);
+            end
+            
+            % Plot channel 1 on left
+            if isempty(this.hPlot21)
+                yyaxis(this.hAxes2, 'left')
+                this.hPlot21 = plot(...
+                    this.hAxes2, ...
+                    dX, dY(1, :), '.-b'...
+                );
+                xlabel(this.hAxes2, 'Time');
+                ylabel(this.hAxes2', 'Photocurrent');
+
+            else
+                yyaxis(this.hAxes2, 'left')
+                set(this.hPlot21, ...
+                    'XData', dX, ...
+                    'YData', dY(1, :) ...
+                );
+                
+            end
+            
+            % Plot channel 2 on right
+            if isempty(this.hPlot22)
+                
+                yyaxis(this.hAxes2, 'right')
+                this.hPlot22 = plot(...
+                    this.hAxes2, ...
+                    dX, dY(2, :), '.-r'...
+                );
+            
+                xlabel(this.hAxes2, 'Time');
+                ylabel(this.hAxes2', 'Shutter');
+
+            else
+                yyaxis(this.hAxes2, 'right')
+                set(this.hPlot22, ...
+                    'XData', dX, ...
+                    'YData', dY(2, :) ...
+                );
+                
+            end
+            
+        end
                  
          function updateAxes(this, dX, dY)
             
             if  isempty(this.hAxes) || ...
                 ~ishandle(this.hAxes)
                 return;
-             end
+            end
+             
+           
             
             % Careful here
             % If you don't pass values in and instead use the props, you
@@ -287,6 +363,7 @@ classdef POCurrent < mic.Base
                 
             end
             
+            this.updateAxes2(dX, dY);
             
                          
          end
@@ -323,7 +400,7 @@ classdef POCurrent < mic.Base
         function init(this)
             
             this.msg('init');
-            this.initUiCurrent();
+            % this.initUiCurrent();
             this.initUiButtonClear();
             
             
