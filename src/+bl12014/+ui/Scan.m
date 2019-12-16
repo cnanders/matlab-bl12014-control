@@ -22,7 +22,7 @@ classdef Scan < mic.Base
         dHeightPanelAvailable = 200
         
         dWidthPanelAdded = 800
-        dHeightPanelAdded = 550
+        dHeightPanelAdded = 580
         
         dWidthPanelBorder = 1
         
@@ -97,6 +97,7 @@ classdef Scan < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiBeamline % Temporary, allows control of the shutter
         uiTuneFluxDensity
+        uiHeightSensorLEDs
         
         clock
         uiClock
@@ -165,6 +166,7 @@ classdef Scan < mic.Base
         uiStateEndstationLEDsOff
         uiStateVPFMOut
         uiStateM141SmarActOff
+        uiStateHeightSensorLEDsOn
         
         uiTextReticleField
         
@@ -481,6 +483,11 @@ classdef Scan < mic.Base
            %}
            this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
+           
+           
+           this.uiStateHeightSensorLEDsOn.build(this.hPanelAdded, dLeft, dTop, 300);
+           dTop = dTop + dSep;
+           
            this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, 300);
            dTop = dTop + dSep;
 
@@ -920,6 +927,17 @@ classdef Scan < mic.Base
                 'task', bl12014.Tasks.createStateExitSlitIsCalibrated(...
                     [this.cName, 'state-exit-slit-is-calibrated'], ...
                     this.uiTuneFluxDensity, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+            this.uiStateHeightSensorLEDsOn = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-height-sensor-leds-on'], ...
+                'task', bl12014.Tasks.createStateHeightSensorLEDsOn(...
+                    [this.cName, 'state-height-sensor-leds-on'], ...
+                    this.uiHeightSensorLEDs, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
@@ -1385,7 +1403,7 @@ classdef Scan < mic.Base
                             % this would kill hydra closed loop (which they
                             % theory is this causes a jump) before drift
                             % control takes effect.
-                            this.hardware.getDeltaTauPowerPmac.sendCommandCode(uint8(6));
+                            this.hardware.getDeltaTauPowerPmac().sendCommandCode(uint8(6));
                         end
                         
                         this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(stValue.workingMode); 
@@ -1982,7 +2000,7 @@ classdef Scan < mic.Base
             
                 
                 % Overwrite the results file
-                this.saveScanResults(stUnit);
+                this.saveScanResults(stUnit); 
                 
                 drawnow;
                 
@@ -2045,6 +2063,7 @@ classdef Scan < mic.Base
             
             try
                 
+                dTic = tic;
                 if this.lUseMjPerCm2PerSecOverride
                     dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
                 else
@@ -2058,6 +2077,10 @@ classdef Scan < mic.Base
                     this.getNameOfDmiHeightSensorLogFile(stValue) ...
                 );
                 this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
+                dToc = toc(dTic);
+                
+                cMsg = sprintf('saveDmiHeightSensorDataFromExposure elapsedTime = %1.3\n', dToc);
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
             
             catch mE
                 fprintf('saveDmiHeightSensorDataFromExposure error');
@@ -2076,14 +2099,25 @@ classdef Scan < mic.Base
 
 
         function onScanComplete(this, stUnit)
-              this.saveScanResults(stUnit);
+             this.saveScanResults(stUnit);
              this.uiScan.reset();
              this.updateUiScanStatus();
              
              
              this.uiListActive.setOptions({});
              
-             cMsg = sprintf('FEM is complete. The list of added prescriptions has been purged.');
+             if this.uicWaferLL.get()
+                 % set working mode to 7
+                 this.hardware.getDeltaTauPowerPmac().setWorkingModeWaferTransfer();
+             end
+             
+             if this.uicWaferLL.get()
+                 cMsg = sprintf('FEM is complete. The list of added prescriptions has been purged. Wafer has been sent to LL.');
+             else
+                 cMsg = sprintf('FEM is complete. The list of added prescriptions has been purged.');
+             end
+             
+             
             cTitle = 'Success';
             cIcon = 'none';
             msgbox(cMsg, cTitle, cIcon)  
@@ -2361,7 +2395,6 @@ classdef Scan < mic.Base
         
         
         function saveScanResults(this, stUnit, lAborted)
-            this.msg('saveScanResults()');
             
             if nargin < 3
                 lAborted = false;
@@ -2370,8 +2403,10 @@ classdef Scan < mic.Base
             dTic = tic;
             this.saveScanResultsJson(stUnit, lAborted);
             this.saveScanResultsCsv(stUnit, lAborted);
-            
             dToc = toc(dTic);
+            
+            cMsg = sprintf('saveScanResults() elapsed time = %1.3f', dToc);
+            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
             
             
         end
