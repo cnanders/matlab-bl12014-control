@@ -88,6 +88,8 @@ classdef FemTool < mic.Base
         
         dWidthBorderPanel = 0
                 
+        
+        uiButtonLoadDefault
     end
     
         
@@ -251,6 +253,8 @@ classdef FemTool < mic.Base
             this.updateDose();
             this.updateFocus();
             this.updateSize();
+            
+            
             
         end
         
@@ -519,7 +523,7 @@ classdef FemTool < mic.Base
                 mic.Utils.dTEXTHEIGHT ...
             );
             
-            
+            this.uiButtonLoadDefault.build(this.hPanelPos, 110, 100, 110, 24);
         end
         
         
@@ -740,7 +744,7 @@ classdef FemTool < mic.Base
         
             this.uibMatrix = mic.ui.common.Button(...
                 'fhDirectCallback', @this.onPrintMatrix, ...
-                'cText', 'Echo Matrix' ...
+                'cText', 'Echo FEM Values' ...
             );
         
             this.uitQA = mic.ui.common.Toggle(...
@@ -752,7 +756,21 @@ classdef FemTool < mic.Base
             addlistener(this.uitQA, 'eChange', @this.onQA);
 
             this.lInitialized = true;
+            
+            this.uiButtonLoadDefault = mic.ui.common.Button(...
+                'fhOnClick', @this.onClickUiButtonLoadDefault, ...
+                'cText', 'Load Defaults' ...
+            ); 
                         
+        end
+        
+        function onClickUiButtonLoadDefault(this, ~, ~)
+            
+            this.uiePositionX.set(6.5);
+            this.uiePositionY.set(-4.5);
+            this.uiePositionStepX.set(-0.25);
+            this.uiePositionStepY.set(0.17);
+            
         end
         
         function onPrintMatrix(this, ~, ~)
