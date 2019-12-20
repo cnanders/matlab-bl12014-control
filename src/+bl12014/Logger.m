@@ -238,6 +238,9 @@ classdef Logger < mic.Base
         
         function  appendValuesToLogFile(this, cPath )
             
+            
+            lEcho = false;
+            
             %UNTITLED Summary of this function goes here
             %   Detailed explanation goes here
             % @param {timer 1x1} (needed since callack of timer)
@@ -263,9 +266,9 @@ classdef Logger < mic.Base
             % read this article 
             % https://www.mathworks.com/help/exlink/convert-dates-between-microsoft-excel-and-matlab.html
 
-            fprintf('logging: ');
+            lEcho && fprintf('logging: ');
             fprintf(fid, '%1.8f,', now - 693960);
-            fprintf('%1.8f,', now - 693960);
+            lEcho && fprintf('%1.8f,', now - 693960);
 
             readings = [];
             try
@@ -311,10 +314,10 @@ classdef Logger < mic.Base
 
                 for n = 1 : length(readings)
                     fprintf(fid, '%1.8f,', readings(n));
-                    fprintf('%1.8f,', readings(n));
+                    lEcho && fprintf('%1.8f,', readings(n));
                 end
                 fprintf(fid, '\n');
-                fprintf('\n');
+                lEcho && fprintf('\n');
 
 
             catch mE

@@ -66,6 +66,8 @@ classdef Scan < mic.Base
     properties (Access = private)
         
         
+        dTicScanSetState
+        dTicScanAcquire
         dWidthButton = 100
         dWidthPadPanel = 10
         dWidthPadFigure = 10
@@ -602,14 +604,14 @@ classdef Scan < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             this.hParent = hParent;
-            
+            dTop = 10;
             this.uiPrescriptionTool.build(hParent, dLeft, dTop);
             
-            dLeft = 370;
+            dLeft = 390;
             dWidthButton = 110;
             dSep = 10;
             
-            dTop = dTop + this.uiPrescriptionTool.dHeight - 30;
+            dTop = dTop + this.uiPrescriptionTool.dHeight - 40;
             this.uibAddToWafer.build(...
                 hParent, ...
                 dLeft, ...
@@ -628,7 +630,7 @@ classdef Scan < mic.Base
             
             this.buildPanelAdded()
             
-            dTop = 550;
+            dTop = 600;
             this.uiReticleAxes.build(this.hParent, 10, dTop);
             this.uiWaferAxes.build(this.hParent, 420, dTop);
             this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
@@ -1341,6 +1343,7 @@ classdef Scan < mic.Base
             cFn = 'onScanSetState';
             lDebug = true;
             this.resetScanSetContract();
+            this.dTicScanSetState = tic;
             
             % Update the stScanSetContract properties listed in stValue 
             
@@ -1753,8 +1756,16 @@ classdef Scan < mic.Base
                             this.stScanSetContract.(cField).lAchieved = true;
                         	
                             if lDebug
-                                %this.msg(sprintf('%s %s set operation complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                cMsg = sprintf('%s %s set operation complete ELAPSED TIME = %1.3f sec', ...
+                                    cFn, ...
+                                    cField, ...
+                                    toc(this.dTicScanSetState));
+                                this.msg(...
+                                    cMsg, ...
+                                    this.u8_MSG_TYPE_SCAN ...
+                                );
                             end
+                            
  
                         else
                             % still isn't there.
@@ -1788,6 +1799,7 @@ classdef Scan < mic.Base
         % information about the task to execute during acquire)
         function onScanAcquire(this, stUnit, stValue)
             
+            this.dTicScanAcquire = tic;
             this.resetScanAcquireContract();
             
             % If stValue does not have a "task" or "action" prop, return
@@ -1937,6 +1949,16 @@ classdef Scan < mic.Base
                         if lReady
                         	if lDebug
                                 this.msg(sprintf('%s %s set complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                
+                                cMsg = sprintf('%s %s set operation complete ELAPSED TIME = %1.2f sec', ...
+                                    cFn, ...
+                                    cField, ...
+                                    toc(this.dTicScanAcquire));
+                                this.msg(...
+                                    cMsg, ...
+                                    this.u8_MSG_TYPE_SCAN ...
+                                );
+                            
                             end
  
                         else
@@ -1970,7 +1992,7 @@ classdef Scan < mic.Base
                 % Write to log
                 
                 if lDebug
-                    this.msg(sprintf('%s adding exposure to GUI, saving system state to log, and DMI/HS data', cFn), this.u8_MSG_TYPE_SCAN);
+                    this.msg(sprintf('%s adding exposure to GUI', cFn), this.u8_MSG_TYPE_SCAN);
                 end
 
                 this.writeToLog('Finished task.');
@@ -2008,8 +2030,6 @@ classdef Scan < mic.Base
                 
                 % 2018.11.15  
                 this.saveDmiHeightSensorDataFromExposure(stValue);
-                
-                
                 this.pauseScanIfCurrentOfALSIsTooLow()
                 
                 
@@ -2100,7 +2120,7 @@ classdef Scan < mic.Base
                 this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
                 dToc = toc(dTic);
                 
-                cMsg = sprintf('saveDmiHeightSensorDataFromExposure elapsedTime = %1.3\n', dToc);
+                cMsg = sprintf('saveDmiHeightSensorDataFromExposure elapsedTime = %1.3f\n', dToc);
                 this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
             
             catch mE
@@ -2240,8 +2260,9 @@ classdef Scan < mic.Base
             % Stop dmi tracking
             % Send to working mode 5
             this.hardware.getMfDriftMonitor().monitorStop();
-            this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(5); 
-            this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
+            this.hardware.getDeltaTauPowerPmac().setWorkingModeRun();
+            %this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(5); 
+            %this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
             
             this.uiListActive.setOptions({});
              
@@ -2465,6 +2486,7 @@ classdef Scan < mic.Base
         
         function saveScanResultsJson(this, stUnit, lAborted)
        
+            dTic;
             this.msg('saveScanResultsJson()');
              
             switch lAborted
@@ -2489,13 +2511,18 @@ classdef Scan < mic.Base
             stOptions.Compact = 0;
             
             
-            savejson('', stResult, stOptions);     
+            savejson('', stResult, stOptions);
+                        
+            dToc = toc(dTic);
+            cMsg = sprintf('saveScanResultsJson() elapsed time = %1.3f', dToc);
+            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
 
         end
         
         
         function saveScanResultsCsv(this, stUnit, lAborted)
         
+            dTic
             this.msg('saveScanResultsCsv()');
             
             switch lAborted
@@ -2618,6 +2645,10 @@ classdef Scan < mic.Base
 
             % Close the file
             fclose(fid);
+            
+            dToc = toc(dTic);
+            cMsg = sprintf('saveScanResultsCsv() elapsed time = %1.3f', dToc);
+            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
 
         end
         

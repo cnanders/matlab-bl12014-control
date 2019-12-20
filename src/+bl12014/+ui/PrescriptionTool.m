@@ -35,7 +35,7 @@ classdef PrescriptionTool < mic.Base
     properties (Constant)
        
         dWidth          = 920
-        dHeight         = 540
+        dHeight         = 560
         dColorFigure = [200 200 200]./255
 
                 
@@ -204,7 +204,7 @@ classdef PrescriptionTool < mic.Base
             
             dWidthButton = 120;
             dTopButtons = dTop + dHeightList - 35;
-            
+            dLeft = dLeft + 10;
             this.uiButtonSave.build( ...
                 this.hPanel, ...
                 dLeft, ...
