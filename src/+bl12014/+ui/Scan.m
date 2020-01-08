@@ -2486,7 +2486,7 @@ classdef Scan < mic.Base
         
         function saveScanResultsJson(this, stUnit, lAborted)
        
-            dTic;
+            dTic = tic;
             this.msg('saveScanResultsJson()');
              
             switch lAborted
@@ -2522,7 +2522,7 @@ classdef Scan < mic.Base
         
         function saveScanResultsCsv(this, stUnit, lAborted)
         
-            dTic
+            dTic = tic;
             this.msg('saveScanResultsCsv()');
             
             switch lAborted
@@ -2618,6 +2618,7 @@ classdef Scan < mic.Base
             };
         
         
+            % Write the header if this is the first value
             
             
             for n = 1:length(ceNames)
@@ -2625,7 +2626,7 @@ classdef Scan < mic.Base
             end
             fprintf(fid, '\n');
 
-            % Write values
+            % Write the latest value
             for n = 1 : length(this.ceValues)
                 stValue = this.ceValues{n};
                 if ~isstruct(stValue)
