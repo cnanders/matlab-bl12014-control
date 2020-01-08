@@ -2022,9 +2022,14 @@ classdef Scan < mic.Base
                 ];
                 this.waferExposureHistory.addExposure(dExposure);
             
-                
-                % Overwrite the results file
-                this.saveScanResults(stUnit); 
+                                
+                dTic = tic;
+                this.saveScanResultsCsv(stUnit);
+                dToc = toc(dTic);
+
+                cMsg = sprintf('% saveScanResultsCsv() elapsed time = %1.3f', cFn, dToc);
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            
                 
                 drawnow;
                 
@@ -2131,7 +2136,9 @@ classdef Scan < mic.Base
         end
         
         function onScanAbort(this, stUnit)
-             this.saveScanResults(stUnit, true);
+             
+             this.saveScanResultsCsv(stUnit);
+             this.saveScanResultsJson(stUnit, true);
              this.abort();
              
              
@@ -2140,7 +2147,10 @@ classdef Scan < mic.Base
 
 
         function onScanComplete(this, stUnit)
-             this.saveScanResults(stUnit);
+            
+             this.saveScanResultsCsv(stUnit);
+             this.saveScanResultsJson(stUnit, false);
+             
              this.uiScan.reset();
              this.updateUiScanStatus();
              
@@ -2436,22 +2446,7 @@ classdef Scan < mic.Base
         
         
         
-        function saveScanResults(this, stUnit, lAborted)
-            
-            if nargin < 3
-                lAborted = false;
-            end
-            
-            dTic = tic;
-            this.saveScanResultsJson(stUnit, lAborted);
-            this.saveScanResultsCsv(stUnit, lAborted);
-            dToc = toc(dTic);
-            
-            cMsg = sprintf('saveScanResults() elapsed time = %1.3f', dToc);
-            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-            
-            
-        end
+        
         
         %{
         function saveScanResultsFastJson(this, stUnit, lAborted)
@@ -2486,7 +2481,7 @@ classdef Scan < mic.Base
         
         function saveScanResultsJson(this, stUnit, lAborted)
        
-            dTic;
+            dTic = tic;
             this.msg('saveScanResultsJson()');
              
             switch lAborted
@@ -2520,35 +2515,28 @@ classdef Scan < mic.Base
         end
         
         
-        function saveScanResultsCsv(this, stUnit, lAborted)
+        function saveScanResultsCsv(this, stUnit)
         
-            dTic
-            this.msg('saveScanResultsCsv()');
-            
-            switch lAborted
-                case true
-                    cName = 'result-aborted.csv';
-                case false
-                    cName = 'result.csv';
+            if isempty(this.ceValues)
+                return
             end
+            
+            
+            cName = 'result.csv';
             
             cPath = fullfile(...
                 this.cDirScan, ... 
                 cName ...
             );
             
-            if isempty(this.ceValues)
-                return
-            end
-            
-            % Open the file
-            fid = fopen(cPath, 'w');
+            % Open the file in append mode
+            fid = fopen(cPath, 'a');
 
             % Write the header
             % Device
             % fprintf(fid, '# "%s"\n', this.uiPopupRecipeDevice.get().cValue);
             
-            % Write the field names
+            % Field names
             ceNames = {...
                 'als_current_ma', ...
                 'exit_slit_um', ...
@@ -2613,19 +2601,25 @@ classdef Scan < mic.Base
                 'flux_mj_per_cm2_per_s', ...
                 'temp_c_po_m2_0200', ...
                 'time', ...
+                'dose_mj_per_cm2', ...
                 'dz_height_sensor_nm', ...
                 'dz_wafer_fine_nm' ...
             };
         
         
-            
-            
-            for n = 1:length(ceNames)
-                fprintf(fid, '%s,', ceNames{n});
+            % write the header if this is the first value
+            if length(this.ceValues) == 1
+                for n = 1:length(ceNames)
+                    fprintf(fid, '%s', ceNames{n});
+                    if n < length(ceNames)
+                        fprintf(fid, ',');
+                    end
+                end
+                fprintf(fid, '\n');
             end
-            fprintf(fid, '\n');
 
             % Write values
+            %{
             for n = 1 : length(this.ceValues)
                 stValue = this.ceValues{n};
                 if ~isstruct(stValue)
@@ -2642,13 +2636,32 @@ classdef Scan < mic.Base
                 end
                 fprintf(fid, '\n');
             end
+            %}
+            
+            % Append the latest value to the log
+            stValue = this.ceValues{end};
+            if isstruct(stValue)
+                ceNames = fieldnames(stValue);
+                for m = 1 : length(ceNames)
+                    switch ceNames{m}
+                        case 'time'
+                            fprintf(fid, '%s', stValue.(ceNames{m}));
+                            
+                        otherwise
+                            fprintf(fid, '%1.3e', stValue.(ceNames{m}));
+                    end
+                    
+                    if m < length(ceNames)
+                        fprintf(fid, ',');
+                    end
+                end
+                fprintf(fid, '\n');
+            end
 
             % Close the file
             fclose(fid);
             
-            dToc = toc(dTic);
-            cMsg = sprintf('saveScanResultsCsv() elapsed time = %1.3f', dToc);
-            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+
 
         end
         

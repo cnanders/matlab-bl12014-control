@@ -258,7 +258,8 @@ classdef MFDriftMonitorMiddleware < mic.Base
         
         % Gets HS positions
         function dVal = getHSValue(this, u8Channel)
-             dVal = 100*rand(1,6);
+             dVals = 100*rand(1,6);
+             dVal = dVals(u8Channel); % fixed 2020.01.07
 %             if ~this.isConnected()
 %                 dVal = 0;
 %                 return

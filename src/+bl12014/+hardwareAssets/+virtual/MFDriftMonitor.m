@@ -70,7 +70,8 @@ classdef MFDriftMonitor < handle
             
         end
         
-        function monitorEnd(this)
+        
+        function monitorStop(this)
             
         end
         
