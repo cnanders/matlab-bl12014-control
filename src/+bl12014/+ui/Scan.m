@@ -148,6 +148,7 @@ classdef Scan < mic.Base
         % {cell of struct} storage of state during each acquire
         ceValues
         ceValuesFast % storage at n Hz not necessarily correlated with exposures
+        
                 
         
         uiWaferAxes
@@ -2022,9 +2023,14 @@ classdef Scan < mic.Base
                 ];
                 this.waferExposureHistory.addExposure(dExposure);
             
-                
-                % Overwrite the results file
-                this.saveScanResults(stUnit); 
+                                
+                dTic = tic;
+                this.saveScanResultsCsv(stUnit);
+                dToc = toc(dTic);
+
+                cMsg = sprintf('% saveScanResultsCsv() elapsed time = %1.3f', cFn, dToc);
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            
                 
                 drawnow;
                 
@@ -2131,7 +2137,9 @@ classdef Scan < mic.Base
         end
         
         function onScanAbort(this, stUnit)
-             this.saveScanResults(stUnit, true);
+             
+             this.saveScanResultsCsv(stUnit);
+             this.saveScanResultsJson(stUnit, true);
              this.abort();
              
              
@@ -2140,7 +2148,10 @@ classdef Scan < mic.Base
 
 
         function onScanComplete(this, stUnit)
-             this.saveScanResults(stUnit);
+            
+             this.saveScanResultsCsv(stUnit);
+             this.saveScanResultsJson(stUnit, false);
+             
              this.uiScan.reset();
              this.updateUiScanStatus();
              
@@ -2436,22 +2447,7 @@ classdef Scan < mic.Base
         
         
         
-        function saveScanResults(this, stUnit, lAborted)
-            
-            if nargin < 3
-                lAborted = false;
-            end
-            
-            dTic = tic;
-            this.saveScanResultsJson(stUnit, lAborted);
-            this.saveScanResultsCsv(stUnit, lAborted);
-            dToc = toc(dTic);
-            
-            cMsg = sprintf('saveScanResults() elapsed time = %1.3f', dToc);
-            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-            
-            
-        end
+        
         
         %{
         function saveScanResultsFastJson(this, stUnit, lAborted)
@@ -2520,125 +2516,63 @@ classdef Scan < mic.Base
         end
         
         
-        function saveScanResultsCsv(this, stUnit, lAborted)
+        function saveScanResultsCsv(this, stUnit)
         
-            dTic = tic;
-            this.msg('saveScanResultsCsv()');
-            
-            switch lAborted
-                case true
-                    cName = 'result-aborted.csv';
-                case false
-                    cName = 'result.csv';
+
+            if isempty(this.ceValues)
+                    return;
             end
+            
+            
+            cName = 'result.csv';
             
             cPath = fullfile(...
                 this.cDirScan, ... 
                 cName ...
             );
             
-            if isempty(this.ceValues)
-                return
-            end
-            
-            % Open the file
-            fid = fopen(cPath, 'w');
+            % Open the file in append mode
+            % 2020.01.09 trying capital A to not automatically flush the
+            % output buffer when the file closes to see if it is faster
+            % was using 'a' before
+            fid = fopen(cPath, 'A');
 
             % Write the header
             % Device
             % fprintf(fid, '# "%s"\n', this.uiPopupRecipeDevice.get().cValue);
             
-            % Write the field names
-            ceNames = {...
-                'als_current_ma', ...
-                'exit_slit_um', ...
-                'undulator_gap_mm', ...
-                'wavelength_nm', ...
-                'x_reticle_coarse_mm', ...
-                'y_reticle_coarse_mm', ...
-                'z_reticle_coarse_mm', ...
-                'tilt_x_reticle_coarse_urad', ...
-                'tilt_y_reticle_coarse_urad', ...
-                'tilt_x_reticle_cap_urad', ...
-                'tilt_y_reticle_cap_urad', ...
-                'z_reticle_cap_um', ...
-                ...
-                'cap_1_reticle_V', ...
-                'cap_2_reticle_V', ...
-                'cap_3_reticle_V', ...
-                'cap_4_reticle_V', ...
-                'cap_1_reticle_um', ...
-                'cap_2_reticle_um', ...
-                'cap_3_reticle_um', ...
-                'cap_4_reticle_um', ...
-                ...
-                'x_reticle_fine_nm', ...
-                'y_reticle_fine_nm', ...
-                ...
-                'x_wafer_coarse_mm', ...
-                'y_wafer_coarse_mm', ...
-                'z_wafer_coarse_mm', ...
-                'tilt_x_wafer_coarse_urad', ...
-                'tilt_y_wafer_coarse_urad', ...
-                'tilt_x_wafer_height_sensor_urad', ...
-                'tilt_y_wafer_height_sensor_urad', ...
-                'tilt_x_wafer_cap_urad', ...
-                'tilt_y_wafer_cap_urad',...
-                ... 
-                'cap_1_wafer_V', ...
-                'cap_2_wafer_V', ...
-                'cap_3_wafer_V', ...
-                'cap_4_wafer_V', ...
-                ...
-                'cap_1_wafer_um', ...
-                'cap_2_wafer_um', ...
-                'cap_3_wafer_um', ...
-                'cap_4_wafer_um', ...
-                ...
-                'z_wafer_fine_nm', ...
-                'z_height_sensor_nm', ...
-                ... Vibration isolation system
-                'z_encoder_1_vis_V', ...
-                'z_encoder_2_vis_V', ...
-                'z_encoder_3_vis_V', ...
-                'z_encoder_4_vis_V', ...
-                'z_encoder_1_vis_um', ...
-                'z_encoder_2_vis_um', ...
-                'z_encoder_3_vis_um', ...
-                'z_encoder_4_vis_um', ...
-                'tilt_x_vis_urad', ...
-                'tilt_y_vis_urad', ...
-                ...
-                'shutter_ms', ...
-                'flux_mj_per_cm2_per_s', ...
-                'temp_c_po_m2_0200', ...
-                'time', ...
-                'dz_height_sensor_nm', ...
-                'dz_wafer_fine_nm' ...
-            };
-        
-        
-            % Write the header if this is the first value
+            % Append the latest value to the log
+            stValue = this.ceValues{end};
             
+            % write the header if this is the first value
             
-            for n = 1:length(ceNames)
-                fprintf(fid, '%s,', ceNames{n});
-            end
-            fprintf(fid, '\n');
-
-            % Write the latest value
-            for n = 1 : length(this.ceValues)
-                stValue = this.ceValues{n};
-                if ~isstruct(stValue)
-                    continue
+            ceNames = fieldnames(stValue);
+            dNum = length(ceNames);
+            
+            if length(this.ceValues) == 1
+                for n = 1:dNum
+                    fprintf(fid, '%s', ceNames{n});
+                    if n < dNum
+                        fprintf(fid, ',');
+                    end
                 end
-                ceNames = fieldnames(stValue);
-                for m = 1 : length(ceNames)
+                fprintf(fid, '\n');
+            end
+            
+            
+            
+            if isstruct(stValue)
+                
+                for m = 1 : dNum
                     switch ceNames{m}
                         case 'time'
-                            fprintf(fid, '%s,', stValue.(ceNames{m}));
+                            fprintf(fid, '%s', stValue.(ceNames{m}));
                         otherwise
-                            fprintf(fid, '%1.3e,', stValue.(ceNames{m}));
+                            fprintf(fid, '%1.3e', stValue.(ceNames{m}));
+                    end
+                    
+                    if m < dNum
+                        fprintf(fid, ',');
                     end
                 end
                 fprintf(fid, '\n');
@@ -2647,9 +2581,7 @@ classdef Scan < mic.Base
             % Close the file
             fclose(fid);
             
-            dToc = toc(dTic);
-            cMsg = sprintf('saveScanResultsCsv() elapsed time = %1.3f', dToc);
-            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+
 
         end
         

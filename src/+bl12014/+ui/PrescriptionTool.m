@@ -311,7 +311,7 @@ classdef PrescriptionTool < mic.Base
             % Pause long time for motion of reticle fine xy from big move to index shot to
             % dissipate
             stValue = struct();
-            stValue.pause = 30;
+            stValue.pause = 10;
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             

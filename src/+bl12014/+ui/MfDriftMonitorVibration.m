@@ -2903,7 +2903,10 @@ classdef MfDriftMonitorVibration < mic.Base
             
             % Samples.get() is zero-indexed since implementing java
             % ArrayList interface
-            for n = 0 : samples.size() - 1
+            
+            dSize = samples.size();
+            
+            for n = 0 : dSize - 1
                 hsraw = samples.get(n).getHsData();
                 dmi = samples.get(n).getDmiData();
                 
@@ -2919,7 +2922,7 @@ classdef MfDriftMonitorVibration < mic.Base
                     ], ...
                     [hsraw dmi] ...
                 ); 
-                if n < samples.size() - 1
+                if n < dSize - 1
                     fprintf(u8FildId, '\n');
                 end
             end

@@ -12,8 +12,10 @@ addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z
 purge
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware('clock', clock);
 
 ui = bl12014.ui.Shutter(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 

@@ -33,6 +33,8 @@ classdef ScanResultPlot2x2 < mic.Base
     
     properties (Access = private)
          
+        % {cell of char arrays}
+        cecFieldsCsv
         
         uiPositionRecaller
         
@@ -243,6 +245,54 @@ classdef ScanResultPlot2x2 < mic.Base
             this.lLoading = false;
                         
         end
+        
+        % @return {cell 1xfields} where each item of the cell is the 
+        % value of the field/property for each exposure of the fem.  For
+        % example, ceData{1} may be a 121 element vector if it is a 12 x 10
+        % FEM (120 + 1 for the index). and it would be the value of the
+        % als_current_ma at each exposure
+        % @return {cell of strings 1xfields} which is a list of field names
+        function [ceData, ceFields] = getValuesStructFromCsvFile(this, cPath)
+            
+            hFile = fopen(cPath);
+            
+            % Get header fields
+            cFormat = repmat('%q', 1, 58);
+            ceHeader = textscan(...
+                hFile, cFormat, 1, ...
+                'delimiter', ',' ...
+                ...'whitespace', '' ...
+            );
+        
+            ceFields = cell(size(ceHeader));
+            for n = 1 : length(ceHeader)
+                ceFields{n} = ceHeader{n}{1};
+            end
+
+            
+
+            % %d = signed integer, 32-bit
+            cFormat = [...
+                '%f%f%f%f%f%f%f%f%f%f', ... 10
+                '%f%f%f%f%f%f%f%f%f%f', ... 20
+                '%f%f%f%f%f%f%f%f%f%f', ... 30
+                '%f%f%f%f%f%f%f%f%f%f', ... 40
+                '%f%f%f%f%f%f%f%f%f%f', ... 50
+                '%f%f%f%f', ... 54
+                '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
+                '%f%f%f' ... 
+            ];
+
+            ceData = textscan(...
+                hFile, cFormat, -1, ... 
+                'delimiter', ',' ...
+                ...'whitespace', '', ...
+                ...'headerlines', 1 ...
+            );
+       
+            
+            fclose(hFile);
+        end 
         
         function build(this, hParent, dLeft, dTop)
             
@@ -549,7 +599,7 @@ classdef ScanResultPlot2x2 < mic.Base
         function onButtonFile(this, src, evt)
             
             [cFile, cDir] = uigetfile(...
-                '*.json', ...
+                '*.json;*.csv', ...
                 'Select a Scan Result .json File', ...
                 this.cDir ...
             );
@@ -564,9 +614,7 @@ classdef ScanResultPlot2x2 < mic.Base
             % this.refresh(); 
             
             this.loadFileAndUpdateAll()
-            
-            
-            
+
         end
         
         
@@ -605,7 +653,8 @@ classdef ScanResultPlot2x2 < mic.Base
             % First one that contains, set this this.cDir and
             % this.cFile
             
-            cFile = 'result.json';
+            % cFile = 'result.json';
+            cFile = 'result.csv';
             for n = 1 : length(ceReturn)
                 cPath = fullfile(cDir, ceReturn{n}, cFile);
                 if exist(cPath, 'file')
@@ -617,8 +666,8 @@ classdef ScanResultPlot2x2 < mic.Base
                         
             this.loadFileAndUpdateAll()
             
-            
         end
+        
         
         
         
@@ -637,19 +686,51 @@ classdef ScanResultPlot2x2 < mic.Base
             
             % this.stResult = loadjson(cPath);
             
-            try
-                fid = fopen(cPath, 'r');
-                cText = fread(fid, inf, 'uint8=>char');
-                fclose(fid);
-                this.stResult = jsondecode(cText');
+            if contains(cPath, '.json')
+                try 
+                    fid = fopen(cPath, 'r');
+                    cText = fread(fid, inf, 'uint8=>char');
+                    fclose(fid);
+                    this.stResult = jsondecode(cText');
 
-                this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
-                this.updatePopups()
-            catch mE
+                    this.stResultForPlotting = this.getValuesStructFromResultStruct(this.stResult);
+                    this.updatePopups()
+                catch mE
+                    
+                    % json error
+                end
+                
             end
             
+            if contains(cPath, '.csv')
+                
+                % dData = csvread(cFile, 2, 0);
+                [ceData, ceFields] = this.getValuesStructFromCsvFile(cPath);
+                
+                % initialize results structure formatted for easy plotting
+                % (json import creates structure with same format)
+                stResults= struct();
+                
+                % fill results structure
+                for n = 1 : length(ceData)
+                    stResults.(ceFields{n}) = ceData{n}'; % needs to be a row not a column
+                end
+                
+                this.stResultForPlotting = stResults;
+                this.cecFieldsCsv = ceFields; % storage for updatePopups()
+                this.updatePopups(); 
+                
+                 
+            end
+              
             
         end
+        
+        function stOut = getValuesStructFromCsvData(this, ceData)
+            
+            stOut = struct();
+        end
+        
         
         % Returns a {struct 1x1} where each prop is a list of values of
         % of a saved result property.  The result structure loaded from
@@ -768,21 +849,62 @@ classdef ScanResultPlot2x2 < mic.Base
             
         end
         
+        function l = getIsCsv(this)
+            
+            l = false;
+            if isempty(this.cDir)
+                return
+            end
+            
+            if isempty(this.cFile)
+                return
+            end
+            
+            cPath = fullfile(this.cDir, this.cFile);
+            if contains(cPath, '.csv')
+                l = true;
+            end
+        end
+        
+        function l = getIsJson(this)
+            
+            l = false;
+            if isempty(this.cDir)
+                return
+            end
+            
+            if isempty(this.cFile)
+                return
+            end
+            
+            cPath = fullfile(this.cDir, this.cFile);
+            if contains(cPath, '.json')
+                l = true;
+            end
+        end
+        
         
         function updatePopups(this)
             
-            if ~this.getResultStructHasValues(this.stResult)
-                return
+            if this.getIsCsv()
+                ceFields = this.cecFieldsCsv;
             end
-                        
-            ceValues = this.getNonEmptyValues(this.stResult.values);
             
-            if iscell(ceValues)
-                stValue = ceValues{1};
-            else 
-                stValue = ceValues(1);
+            
+            if this.getIsJson()
+                if ~this.getResultStructHasValues(this.stResult)
+                    return
+                end
+
+                ceValues = this.getNonEmptyValues(this.stResult.values);
+
+                if iscell(ceValues)
+                    stValue = ceValues{1};
+                else 
+                    stValue = ceValues(1);
+                end
+                ceFields = fieldnames(stValue);
             end
-            ceFields = fieldnames(stValue);
             
             
             this.uiPopup1.setOptions(ceFields);
@@ -800,7 +922,7 @@ classdef ScanResultPlot2x2 < mic.Base
             % Returns a {cell 1xm} with values for the index start and index
             % end popups
         
-            dValues = this.stResultForPlotting.(ceFields{1});
+            dValues = this.stResultForPlotting.(ceFields{1}); % values of first field used to set the index popups
             ceOptions = cell(1, length(dValues));
             for n = 1 : length(dValues)
                ceOptions{n} = num2str(n); 
