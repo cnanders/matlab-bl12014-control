@@ -135,6 +135,7 @@ classdef FemTool < mic.Base
        
             st = struct();
             
+            st.cPositionType = this.uipPositionType.get();
             st.dPositionStartX = this.dX(1);
             st.dPositionStepX = this.uiePositionStepX.get();
             st.dPositionStartY = this.dY(1);

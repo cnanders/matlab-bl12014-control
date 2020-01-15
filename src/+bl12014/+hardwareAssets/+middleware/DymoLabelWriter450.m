@@ -15,7 +15,7 @@ classdef DymoLabelWriter450 < mic.Base
     
     properties (Access = private)
         
-         cLabelTemplate      = 'WaferLabel.label'
+         cLabelTemplate      = 'WaferLabel2.label' % used non '2' version up to 2020.01.09
 
          cWaferID            = '12345'
          cPrescription       = 'none'
@@ -23,6 +23,10 @@ classdef DymoLabelWriter450 < mic.Base
          cDose               = 'n/a'
          cFocus              = 'n/a'
          cIllumination       = 'None Specified'
+         cFemPos = 'n/a'
+         cPupilFill = ''
+         cFieldScan = ''
+         cReticleName = 'Samsung MET5'
          cPEB                = 'None specified'
          cDev                = 'None specified'
          cField              = 'None specified'
@@ -64,6 +68,8 @@ classdef DymoLabelWriter450 < mic.Base
         end
         
         function updateFields(this)
+            
+            %{
             this.hLabel.SetField('Wafer_ID',        this.cWaferID);
             this.hLabel.SetField('Prescription',    this.cPrescription);
             this.hLabel.SetField('Size',            this.cSize);
@@ -75,7 +81,21 @@ classdef DymoLabelWriter450 < mic.Base
             this.hLabel.SetField('Mask_Field',      this.cField);
             this.hLabel.SetField('Resist',          this.cResist);
             this.hLabel.SetField('Sub',             this.cSublayer);
-            this.hLabel.SetField('Resist_Thickness', this.cResistThickness);
+            this.hLabel.SetField('Resist_Thickness', this.cResistThickness)
+            %}
+            
+            this.hLabel.SetField('Wafer_ID',        this.cWaferID);
+            this.hLabel.SetField('Prescription',    this.cPrescription);
+            this.hLabel.SetField('Size',            this.cSize);
+            this.hLabel.SetField('Dose',         this.cDose);
+            this.hLabel.SetField('Focus',     this.cFocus);
+            this.hLabel.SetField('FemPos', this.cFemPos);
+            this.hLabel.SetField('PupilFill',    this.cPupilFill);
+            this.hLabel.SetField('FieldScan',    this.cFieldScan);
+            this.hLabel.SetField('Mask_Name',  this.cReticleName);
+            this.hLabel.SetField('Mask_Field',      this.cField);
+            
+            
         end
         
         

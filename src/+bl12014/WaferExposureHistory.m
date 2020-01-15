@@ -75,7 +75,6 @@ classdef WaferExposureHistory < mic.Base
         function [dX, dY] = getCoordinatesOfFemPreview(this)
             dX = this.dXFemPreview;
             dY = this.dYFemPreview;
-            
         end
         
         function [dX, dY] = getCoordinatesOfFemPreviewScan(this)
@@ -198,9 +197,7 @@ classdef WaferExposureHistory < mic.Base
         end
         
         function ced = getExposures(this)
-           
             ced = this.ceExposure;
-            
         end
         
                 

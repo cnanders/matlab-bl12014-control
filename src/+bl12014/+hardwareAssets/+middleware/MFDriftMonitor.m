@@ -287,7 +287,11 @@ classdef MFDriftMonitor < mic.Base
         
         function forceUpdate(this)
             this.updateChannelData();
-            this.updateHSPositions();
+           this.updateHSPositions();
+        end
+        
+        function forceUpdateSimple(this)
+            this.updateChannelData();
         end
         
         
@@ -391,9 +395,7 @@ classdef MFDriftMonitor < mic.Base
                 this.dHSPositions = 888*ones(3,1);
                 return
             end
-                
-              
-            
+                            
             switch this.u8HSModel
                 case this.u8HSMODEL_GEOMETRIC
                     stFitModel = this.stGeometricInterpolant;
