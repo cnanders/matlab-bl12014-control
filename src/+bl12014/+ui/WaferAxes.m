@@ -164,6 +164,13 @@ classdef WaferAxes < mic.Base
         dDelay = 0.5
         
         lIsExposing
+        
+        % Storage so only redraw when have to
+        dXFemPreview = []
+        dYFemPreview = []
+        dXFemPreviewScan = []
+        dYFemPreviewScan = []
+        ceExposure = {}
     end
     
         
@@ -298,11 +305,9 @@ classdef WaferAxes < mic.Base
             
             this.setXLsi();
             this.setStagePosition();
-            
             this.drawExposures();
             this.drawFemPreview('prescription');
             this.drawFemPreview('scan');
-            
             this.setExposing();
 
         end 
@@ -1074,32 +1079,58 @@ classdef WaferAxes < mic.Base
             switch cType
                 case 'prescription'
                     
+                    
+                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreview();
+                    
+                    % check if can return before redraw
+                    if all(size(dX) == size(this.dXFemPreview)) && ... 
+                       all(size(dY) == size(this.dYFemPreview)) && ...     
+                       isequal(dX, this.dXFemPreview) && ...
+                       isequal(dY, this.dYFemPreview)
+                        return
+                    end
+                    
+                    if isempty(dX) 
+                        return 
+                    end
+                    if isempty(dY) 
+                        return 
+                    end
+                    
+                    % update storage
+                    this.dXFemPreview = dX;
+                    this.dYFemPreview = dY;
+                    
+                    % delete and allow to redraw
                     this.deleteFemPreviewPrescription();
                     dColor = [1 1 1];
                     dAlpha = 0.5;
                     hParent = this.hFemPreviewPrescription;
-                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreview();
+                        
+                case 'scan'
+                   
+                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreviewScan();
+                    if all(size(dX) == size(this.dXFemPreviewScan)) && ... 
+                       all(size(dY) == size(this.dYFemPreviewScan)) && ...
+                       isequal(dX, this.dXFemPreviewScan) && ...
+                       isequal(dY, this.dYFemPreviewScan)
+                        return
+                    end
                     if isempty(dX) 
                         return 
                     end
                     if isempty(dY) 
                         return 
                     end
-                        
-                case 'scan'
-                    this.deleteFemPreviewScan();
                     
+                    % update storage
+                    this.dXFemPreviewScan = dX;
+                    this.dYFemPreviewScan = dY;
+                    
+                    this.deleteFemPreviewScan();
                     dColor = [1 0 1];
                     dAlpha = 0.5;
                     hParent = this.hFemPreviewScan;
-                    [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreviewScan();
-                    
-                    if isempty(dX) 
-                        return 
-                    end
-                    if isempty(dY) 
-                        return 
-                    end
 
             end
                         
@@ -1155,7 +1186,13 @@ classdef WaferAxes < mic.Base
             
             ceExposure = this.waferExposureHistory.getExposures();
             
+            if all(size(ceExposure) == size(this.ceExposure)) && ...
+               isequal(ceExposure, this.ceExposure)
+                return
+            end
+            
             % size(ceExposure)
+            this.ceExposure = ceExposure; % update storage, redraw
             this.deleteExposures();
             
             for k = 1:length(ceExposure)

@@ -1061,7 +1061,8 @@ classdef ScanResultPlot2x2 < mic.Base
             end
                        
             
-            if ~this.getResultStructHasValues(this.stResult)
+            if this.getIsJson() && ...
+               ~this.getResultStructHasValues(this.stResult)
                 return
             end
             
@@ -1073,9 +1074,15 @@ classdef ScanResultPlot2x2 < mic.Base
                 dValues = dValues - mean(dValues);
             end
             
+            if strcmpi(cProp, 'time')
+                dValues = dValues - dValues(1); % list of drations
+                dValues = minutes(dValues); % converts durations to seconds in double
+            end
+            
             % cla(hAxes);
             
-            if isempty(hPlot)
+            if isempty(hPlot) || ...
+               ~ishandle(hPlot)
                 
                 hPlot = plot(hAxes, dValues, '.-b');
                 

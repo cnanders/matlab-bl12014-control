@@ -280,6 +280,10 @@ classdef MFDriftMonitorMiddleware < mic.Base
 %             this.updateHSPositions();
         end
         
+        function forceUpdateSimple(this)
+            
+        end
+        
         
         
         function setInterpolant(this, stInterpolant)

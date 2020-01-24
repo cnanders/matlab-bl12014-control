@@ -586,7 +586,14 @@ classdef LogPlotter < mic.Base
             % Need to load the CSV file, skipping six header lines
             % (use second arg to skip headers)
             
-            this.dData = csvread(cPath, 7, 0);
+            try
+                this.dData = csvread(cPath, 7, 0);
+            catch mE
+                % it is likeley that someone chose a FEM log file or some
+                % other type that should never be loaded into this
+                % DataTrans logger
+                return
+            end
             this.plotData();
             
         end

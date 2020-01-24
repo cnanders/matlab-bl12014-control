@@ -737,6 +737,7 @@ classdef PrescriptionTool < mic.Base
             
             % Refresh the list of prescriptions
             this.uiListPrescriptions.refresh();
+            this.uiListPrescriptions.setSelectedIndexes(uint8(1)); % select the newly added pre.
             
             %{
             % If the name is not already on the list, append it
