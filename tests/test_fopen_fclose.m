@@ -12,6 +12,6 @@ for m = 1 : dNum
     end
 end
 fclose(fid);
-dElapsedTime = toc(dTic);
+dElapsedTime = toc(dTic)
 
 % commens
