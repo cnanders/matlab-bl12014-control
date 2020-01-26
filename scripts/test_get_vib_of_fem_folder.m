@@ -1,9 +1,7 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % Dependencies
-
-addpath(genpath(fullfile(cDirThis, '..', 'src')));
-addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages')));
+addpath(genpath(fullfile(cDirThis, '..', 'src', '+bl1201')));
 
 cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 2 f2x contact';
 
@@ -11,6 +9,8 @@ cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 
 cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');
 cPathOfDir = mic.Utils.path2canonical(cPathOfDir); 
 cPathOfDir = uigetdir(cPathOfDir, 'Choose a FEM log directory');
+
+cecFolders = regexp(cPathOfDir,filesep,'split');
 
 cSortBy = 'date';
 cSortMode = 'ascend';
@@ -65,18 +65,44 @@ for j = 1 : length(dRmsDriftX)
     dRmsDriftYFem(dFocus(j), dDose(j)) = dRmsDriftY(j);
 end
 
+dRmsSpec = 1.5;
+dRmsDriftXPass = dRmsDriftXFem <= dRmsSpec;
+dRmsDriftYPass = dRmsDriftYFem <= dRmsSpec;
 
-figure
-subplot(121)
+figure('Name', cecFolders{end});
+
+colormapPassFail = [1 0 0; 0 1 0];
+colormapNormal = 'parula';
+
+h1 = subplot(221);
 imagesc(dRmsDriftXFem)
 colorbar
-axis image
+%axis(h1, 'image')
+title('x');
+colormap(h1, colormapNormal)
 
-subplot(122)
+h2 = subplot(222);
 imagesc(dRmsDriftYFem)
 colorbar
-axis image
-    
+%axis(h2, 'image')
+title('y');
+colormap(h2, colormapNormal)
+
+h3 = subplot(223);
+imagesc(dRmsDriftXPass)
+colormap(h3, colormapPassFail)
+colorbar
+title('x pass (green) / fail (red) (1.5 nm RMS)')
+h4 = subplot(224);
+imagesc(dRmsDriftYPass)
+colormap(h4, colormapPassFail)
+colorbar
+title('y pass (green) / fail (red) (1.5 nm RMS)')
+
+
+
+
+
 
        
 
