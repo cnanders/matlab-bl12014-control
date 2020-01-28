@@ -75,7 +75,7 @@ axis image
 subplot(122)
 imagesc(dRmsDriftYFem)
 colorbar
-axis image
+axis imag
     
 
        
