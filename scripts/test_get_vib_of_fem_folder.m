@@ -1,9 +1,8 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % Dependencies
-
 addpath(genpath(fullfile(cDirThis, '..', 'src')));
-addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages')));
+addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages', 'matlab-instrument-control')));
 
 cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 2 f2x contact';
 
@@ -11,6 +10,8 @@ cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 
 cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');
 cPathOfDir = mic.Utils.path2canonical(cPathOfDir); 
 cPathOfDir = uigetdir(cPathOfDir, 'Choose a FEM log directory');
+
+cecFolders = regexp(cPathOfDir,filesep,'split');
 
 cSortBy = 'date';
 cSortMode = 'ascend';
@@ -65,18 +66,87 @@ for j = 1 : length(dRmsDriftX)
     dRmsDriftYFem(dFocus(j), dDose(j)) = dRmsDriftY(j);
 end
 
+dRmsSpec = 1.1;
 
-figure
-subplot(121)
+% For worst-case, take the max X and Y
+
+lXIsMax = dRmsDriftXFem > dRmsDriftYFem;
+
+dRmsDriftFem = zeros(size(dRmsDriftXFem));
+
+dRmsDriftFem(lXIsMax) = dRmsDriftXFem(lXIsMax);
+dRmsDriftFem(~lXIsMax) = dRmsDriftYFem(~lXIsMax);
+
+dRmsDriftPass = dRmsDriftFem <= dRmsSpec;
+dRmsDriftXPass = dRmsDriftXFem <= dRmsSpec;
+dRmsDriftYPass = dRmsDriftYFem <= dRmsSpec;
+
+colormapPassFail = [1 0 0; 0 1 0];
+colormapNormal = 'parula';
+
+figure('Name', cecFolders{end});
+
+h1 = subplot(211);
+imagesc(dRmsDriftFem)
+colorbar
+%axis(h1, 'image')
+colormap(h1, colormapNormal) 
+cTitle = [...
+    'Vibration (nm RMS) ', ...
+    sprintf('avg = %1.2f, ', mean2(dRmsDriftFem)), ...
+    sprintf('std = %1.2f, ', std2(dRmsDriftFem)), ...
+    sprintf('min = %1.2f, ', min(min(dRmsDriftFem))), ...
+    sprintf('max = %1.2f', max(max(dRmsDriftFem))) ...
+];
+title(cTitle);
+xlabel('Dose Col')
+ylabel('Focus Col')
+
+h2 = subplot(212);
+imagesc(dRmsDriftPass)
+colormap(h2, colormapPassFail)
+colorbar
+cTitle = sprintf('pass (green) / fail (red) (< %1.1f nm RMS)', dRmsSpec);
+title(cTitle);
+xlabel('Dose Col')
+ylabel('Focus Col')
+
+return
+
+% X and Y separate
+
+figure('Name', cecFolders{end});
+
+
+
+h1 = subplot(221);
 imagesc(dRmsDriftXFem)
 colorbar
-axis image
+%axis(h1, 'image')
+title('x');
+colormap(h1, colormapNormal)
 
-subplot(122)
+h2 = subplot(222);
 imagesc(dRmsDriftYFem)
 colorbar
-axis imag
-    
+%axis(h2, 'image')
+title('y');
+colormap(h2, colormapNormal)
+
+h3 = subplot(223);
+imagesc(dRmsDriftXPass)
+colormap(h3, colormapPassFail)
+colorbar
+cTitle = sprintf('x pass (green) / fail (red) (< %1.1f nm RMS)', dRmsSpec);
+title(cTitle);
+
+h4 = subplot(224);
+imagesc(dRmsDriftYPass)
+colormap(h4, colormapPassFail)
+colorbar
+cTitle = sprintf('y pass (green) / fail (red) (< %1.1f nm RMS)', dRmsSpec);
+title(cTitle);
+
 
        
 
