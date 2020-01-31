@@ -24,9 +24,18 @@ classdef POCurrent < mic.Base
         hPlot1
         hPlot2
         
+        hPlot2a
+        hPlot2b
+        hPlot2c
+        
+        
         hAxes2
         hPlot21
         hPlot22
+        
+        hPlot22a
+        hPlot22b
+        hPlot22c
         
         dNumPlot2 = 600;
         
@@ -212,10 +221,17 @@ classdef POCurrent < mic.Base
                     return % no new data
                 end
                 
-                this.dtTimes(end + 1 : end + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
+                
                 dLength = length(this.dValues);
-                this.dValues(1, dLength + 1 : dLength + dRows) = results(:, 36); % FIX ME column
-                this.dValues(2, dLength + 1 : dLength + dRows) = results(:, 37); % FIX ME column
+                
+                % HARDWARE HAS A CHANNEL ZERO - SO DUMB
+                % CHANNEL 0 ON THE DEVICE IS INDEX 1 OF THE MATLAB LIST
+                this.dtTimes(dLength + 1 : dLength + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
+                this.dValues(1, dLength + 1 : dLength + dRows) = results(:, 36); % CH 35 on hardware matlab index shifted 1
+                this.dValues(2, dLength + 1 : dLength + dRows) = results(:, 37); % ch 36 on hardware 37 is the DMI laser ref
+                this.dValues(3, dLength + 1 : dLength + dRows) = results(:, 39); % ch 38 on hardware
+                this.dValues(4, dLength + 1 : dLength + dRows) = results(:, 40); % ch 39 on hardware
+                
                 this.updateAxes(this.dtTimes, this.dValues);
                
             catch mE
@@ -241,6 +257,12 @@ classdef POCurrent < mic.Base
             end
             
             if length(dX) ~= length(dY)
+                cMsg = sprintf(...
+                    'updateAxes2 returing because length(dX) %1.0f, ~= length(dY) %1.0f', ...
+                    length(dX), ...
+                    length(dY) ...
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
             
@@ -259,7 +281,7 @@ classdef POCurrent < mic.Base
                     dX, dY(1, :), '.-b'...
                 );
                 xlabel(this.hAxes2, 'Time');
-                ylabel(this.hAxes2', 'Photocurrent');
+                ylabel(this.hAxes2, 'Photocurrent');
 
             else
                 yyaxis(this.hAxes2, 'left')
@@ -271,22 +293,43 @@ classdef POCurrent < mic.Base
             end
             
             % Plot channel 2 on right
-            if isempty(this.hPlot22)
+            if isempty(this.hPlot22a) % now using 22a,b,c
                 
                 yyaxis(this.hAxes2, 'right')
-                this.hPlot22 = plot(...
+                hold(this.hAxes2, 'on');
+                this.hPlot22a = plot(...
                     this.hAxes2, ...
-                    dX, dY(2, :), '.-r'...
+                    dX, dY(2, :), '.-g'...
                 );
-            
+                this.hPlot22b = plot(...
+                    this.hAxes2, ...
+                    dX, dY(3, :), 'o-c'...
+                );
+                this.hPlot22c = plot(...
+                    this.hAxes2, ...
+                    dX, dY(4, :), 'x-k'...
+                );
                 xlabel(this.hAxes2, 'Time');
-                ylabel(this.hAxes2', 'Shutter');
+                ylabel(this.hAxes2, 'Shutter');
+                
+                legend(this.hAxes2, {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'}); 
 
             else
                 yyaxis(this.hAxes2, 'right')
-                set(this.hPlot22, ...
+                hold(this.hAxes2, 'on')
+                set(this.hPlot22a, ...
                     'XData', dX, ...
                     'YData', dY(2, :) ...
+                );
+            
+                set(this.hPlot22b, ...
+                    'XData', dX, ...
+                    'YData', dY(3, :) ...
+                );
+            
+                set(this.hPlot22c, ...
+                    'XData', dX, ...
+                    'YData', dY(4, :) ...
                 );
                 
             end
@@ -295,6 +338,12 @@ classdef POCurrent < mic.Base
                  
          function updateAxes(this, dX, dY)
             
+             % dX are times
+             % dY is a {double 4 x m}:
+             % row 1 is channel 36, 
+             % row 2 is channel 37
+             % row 3 is channel 38 (uniblitz output)
+             % row 4 is channel 39 (uniblitz output)
             if  isempty(this.hAxes) || ...
                 ~ishandle(this.hAxes)
                 return;
@@ -320,6 +369,12 @@ classdef POCurrent < mic.Base
             end
             
             if length(dX) ~= length(dY)
+                cMsg = sprintf(...
+                    'updateAxes returing because length(dX) %1.0f, ~= length(dY) %1.0f', ...
+                    length(dX), ...
+                    length(dY) ...
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_ERROR);
                 return
             end
                 
@@ -331,7 +386,7 @@ classdef POCurrent < mic.Base
                     dX, dY(1, :), '.-b'...
                 );
                 xlabel(this.hAxes, 'Time');
-                ylabel(this.hAxes', 'Photocurrent');
+                ylabel(this.hAxes, 'Photocurrent');
 
             else
                 yyaxis(this.hAxes, 'left')
@@ -342,23 +397,45 @@ classdef POCurrent < mic.Base
                 
             end
             
-            % Plot channel 2 on right
-            if isempty(this.hPlot2)
+            % Plot channel 2, 3, 4 on right
+            if isempty(this.hPlot2a)
                 
                 yyaxis(this.hAxes, 'right')
-                this.hPlot2 = plot(...
+                hold(this.hAxes, 'on');
+                this.hPlot2a = plot(...
                     this.hAxes, ...
-                    dX, dY(2, :), '.-r'...
+                    dX, dY(2, :), '.-g'...
                 );
+                this.hPlot2b = plot(...
+                    this.hAxes, ...
+                    dX, dY(3, :), 'o-c'...
+                );
+                this.hPlot2c = plot(...
+                    this.hAxes, ...
+                    dX, dY(4, :), 'x-k'...
+                );
+                % hPlot2 will be a 3 x 1 Line array
             
                 xlabel(this.hAxes, 'Time');
-                ylabel(this.hAxes', 'Shutter');
+                ylabel(this.hAxes, 'Shutter');
+                legend(this.hAxes, {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'});
 
             else
                 yyaxis(this.hAxes, 'right')
-                set(this.hPlot2, ...
+                hold(this.hAxes, 'on')
+                set(this.hPlot2a, ...
                     'XData', dX, ...
                     'YData', dY(2, :) ...
+                );
+            
+                 set(this.hPlot2b, ...
+                    'XData', dX, ...
+                    'YData', dY(3, :) ...
+                );
+            
+                set(this.hPlot2c, ...
+                    'XData', dX, ...
+                    'YData', dY(4, :) ...
                 );
                 
             end
