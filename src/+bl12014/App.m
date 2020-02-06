@@ -486,7 +486,7 @@ classdef App < mic.Base
                 this.hardware.connectDataTranslation(); % force real hardware
                 this.hardware.connectMfDriftMonitor(); % force real hardware
                 this.hardware.connectWebSwitchVis(); % force real hardware (connects WebSwitch VIS, turns on power to relay1 - VIS Galil)
-                this.hardware.connectGalilVis(); % connects to VIS galil
+                % this.hardware.connectGalilVis(); % connects to VIS galil
                
                 this.logger = bl12014.Logger(...
                     'hardware', this.hardware, ...
