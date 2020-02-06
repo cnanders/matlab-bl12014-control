@@ -37,7 +37,7 @@ classdef FemTool < mic.Base
         % {logical 1x1} set to true after all UI elements are initialized
         lInitialized = false
         
-                uiePause
+        uiePause
 
     
     end
@@ -90,6 +90,7 @@ classdef FemTool < mic.Base
                 
         
         uiButtonLoadDefault
+        
     end
     
         

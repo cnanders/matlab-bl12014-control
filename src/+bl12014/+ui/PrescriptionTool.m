@@ -34,8 +34,8 @@ classdef PrescriptionTool < mic.Base
     
     properties (Constant)
        
-        dWidth          = 920
-        dHeight         = 560
+        dWidth          = 620
+        dHeight         = 600
         dColorFigure = [200 200 200]./255
 
                 
@@ -43,6 +43,7 @@ classdef PrescriptionTool < mic.Base
     
 	properties
         
+        uieName
         uiProcessTool              
         uiReticleTool                
         uiPupilFillTool            
@@ -119,37 +120,56 @@ classdef PrescriptionTool < mic.Base
             
         end
         
+        function cec = getSaveLoadProps(this)
+            cec = {...
+                'uieName', ...
+                ...'uiPupilFillTool', ...
+                ...'uiListPrescriptions', ...
+                'uiFemTool', ... 
+             };
+        end
         
         
         function st = save(this)
-             st = struct();
-             st.uiPupilFillTool = this.uiPupilFillTool.save();
-             st.uiListPrescriptions = this.uiListPrescriptions.save();
+             cecProps = this.getSaveLoadProps();
+            
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
              
         end
         
         function load(this, st)
-
-            
-            if isfield(st, 'uiPupilFillTool')
-                this.uiPupilFillTool.load(st.uiPupilFillTool);
+                        
+            cecProps = this.getSaveLoadProps();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
             end
             
-            if isfield(st, 'uiListPrescriptions')
-                this.uiListPrescriptions.load(st.uiListPrescriptions);
-            end            
             
-            %this.updateUiTextDir();
-            this.uiListPrescriptions.refresh();
         end
         
         
+        
+        
+        
         function build(this, hParent, dLeft, dTop)
-                        
+             
+            
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Prescription',...
+                'Title', 'Prescription Builder',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -157,6 +177,7 @@ classdef PrescriptionTool < mic.Base
                 this.dWidth ...
                 this.dHeight], hParent) ...
             );
+           
                         
             % set(hParent, 'renderer', 'OpenGL'); % Enables proper stacking
             dPad = 10;
@@ -176,12 +197,28 @@ classdef PrescriptionTool < mic.Base
             dLeft = dLeft +  this.uiReticleTool.dWidth + dPad;
             %}
             
+            
+            %{
             this.uiProcessTool.build( ...
                 this.hPanel, ...
                 dLeft, ...
                 dTop);
             
             dLeft = dLeft + this.uiProcessTool.dWidth + dPad;
+            %}
+            
+            dWidth = 300;
+            dHeight = 24;
+            
+            this.uieName.build(...
+                this.hPanel, ...
+                dLeft, ...
+                dTop, ...
+                dWidth, ...
+                dHeight ...
+           );
+            
+            dTop = dTop + dHeight + 15 + dPad;
             
             this.uiFemTool.build( ...
                 this.hPanel, ...
@@ -196,7 +233,7 @@ classdef PrescriptionTool < mic.Base
                 this.hPanel, ...
                 dLeft, ...
                 dTop, ...
-                this.dWidth - 4*dPad - this.uiProcessTool.dWidth, ...
+                this.dWidth - 4*dPad, ... - this.uiProcessTool.dWidth, ...
                 dHeightList);
             
             this.uiListPrescriptions.refresh();
@@ -546,9 +583,21 @@ classdef PrescriptionTool < mic.Base
     
     methods (Access = private)
         
+        function onUiEditName(this, src, evt)
+            
+            
+        end
+        
         function init(this)
              
             this.msg('init()');
+            
+            this.uieName = mic.ui.common.Edit(...
+                'cType', 'c', ...
+                'cLabel', 'Name', ...
+                'fhDirectCallback', @this.onUiEditName ...
+            );
+        
             this.uiProcessTool = bl12014.ui.ProcessTool();
             this.uiReticleTool = bl12014.ui.ReticleTool();
             this.uiPupilFillTool = bl12014.ui.PupilFillTool();
@@ -575,7 +624,7 @@ classdef PrescriptionTool < mic.Base
             cDir = mic.Utils.path2canonical(cDir);
 
             this.uiListPrescriptions = mic.ui.common.ListDir(...
-                'cTitle', 'Saved Prescriptions', ...
+                'cTitle', 'Saved', ...
                 'cDir', cDir, ...
                 'cLabel', '', ...
                 'cFilter', '*.json', ...
@@ -694,21 +743,10 @@ classdef PrescriptionTool < mic.Base
             
         end
         
-        
-        % Generate a suggested save name for the prescription.  Prompt the 
-        % user with a dialog to allow them to modify the save name.  If
-        % the user continues to save, build and save a JSON prescription
-        
-        function onClickSave(this, src, evt)
-              
+        function [cName, lSuccess] = getNameFromUser(this)
+            
             % Suggested filename
             cName = this.getSuggestedName();
-            
-            % Use cDirSave as suggested path
-            if ~exist(this.uiListPrescriptions.getDir(), 'dir')
-                mkdir(this.uiListPrescriptions.getDir())
-            end
-                                
             
             % Allow the user to change the suggested filename
             
@@ -724,11 +762,46 @@ classdef PrescriptionTool < mic.Base
             );
         
             if isempty(ceAnswer)
+                lSuccess = false;
+            else 
+                lSuccess = true;
+                cName = ceAnswer{1};
+            end
+            
+            
+            
+        end
+        
+        
+        % Generate a suggested save name for the prescription.  Prompt the 
+        % user with a dialog to allow them to modify the save name.  If
+        % the user continues to save, build and save a JSON prescription
+        
+        function onClickSave(this, src, evt)
+              
+            
+            
+            % Use cDirSave as suggested path
+            if ~exist(this.uiListPrescriptions.getDir(), 'dir')
+                mkdir(this.uiListPrescriptions.getDir())
+            end
+            
+            cName = [...
+                this.uieName.get(), ...
+                sprintf('__FEM_D%1dxF%1d', length(this.uiFemTool.dDose), length(this.uiFemTool.dFocus)), ...
+                sprintf('__%s', datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local')) ...
+            ];
+                               
+            %{
+            [cName, lSuccess] = this.getNameFromUser();
+            if ~lSuccess
                 return
             end
- 
-            cNameJson = [ceAnswer{1}, '.json'];
-            cNameMat = [ceAnswer{1}, '.mat'];
+            %}
+            
+            cNameJson = [cName, '.json'];
+            cNameMat = [cName, '.mat'];  
+            
             cPathJson = fullfile(this.uiListPrescriptions.getDir(), cNameJson);
             cPathMat = fullfile(this.uiListPrescriptions.getDir(), cNameMat);
             
@@ -751,17 +824,10 @@ classdef PrescriptionTool < mic.Base
             stData.cName = cNameJson;
             notify(this, 'eNew', mic.EventWithData(stData)); 
             
-            
         end
         
         function saveRecipeMatToDisk(this, cPath)
-            
-            st = struct();
-            st.uiProcessTool = this.uiProcessTool.save();
-            st.uiFemTool = this.uiFemTool.save();
-            st.uiPupilFillTool = this.uiPupilFillTool.save();
-            st.uiReticleTool = this.uiReticleTool.save();
-            
+            st = this.save();
             save(cPath, 'st');
         end
         
@@ -769,12 +835,7 @@ classdef PrescriptionTool < mic.Base
         function loadRecipeMatFromDisk(this, cPath)
             if exist(cPath, 'file') == 2
                 load(cPath); % populates variable st in local workspace
-                
-                this.uiProcessTool.load(st.uiProcessTool);
-                this.uiFemTool.load(st.uiFemTool);
-                this.uiPupilFillTool.load(st.uiPupilFillTool);
-                this.uiReticleTool.load(st.uiReticleTool);
-                
+                this.load(st);
             else
 
                 % warning message box

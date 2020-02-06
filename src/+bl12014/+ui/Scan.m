@@ -301,7 +301,7 @@ classdef Scan < mic.Base
             
            
             
-            dLeft = 1000;
+            dLeft = 640;
             dTop = 10;
             
             this.hPanelAdded = uipanel(...
@@ -612,7 +612,7 @@ classdef Scan < mic.Base
             dWidthButton = 110;
             dSep = 10;
             
-            dTop = dTop + this.uiPrescriptionTool.dHeight - 40;
+            dTop = dTop + this.uiPrescriptionTool.dHeight - 30;
             this.uibAddToWafer.build(...
                 hParent, ...
                 dLeft, ...
@@ -632,9 +632,9 @@ classdef Scan < mic.Base
             this.buildPanelAdded()
             
             dTop = 600;
-            this.uiReticleAxes.build(this.hParent, 10, dTop);
-            this.uiWaferAxes.build(this.hParent, 420, dTop);
-            this.uiShutter.build(this.hParent, 10 + this.uiPrescriptionTool.dWidth + 80, 400);
+            %this.uiReticleAxes.build(this.hParent, 10, dTop);
+            this.uiWaferAxes.build(this.hParent, 10, dTop);
+            this.uiShutter.build(this.hParent, this.uiPrescriptionTool.dWidth + 25, 400);
             % this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             

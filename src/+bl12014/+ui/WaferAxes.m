@@ -123,6 +123,8 @@ classdef WaferAxes < mic.Base
         lExposing = false
         
         uiZoomPanAxes
+        
+        hTransformedGroup % a global transformation that can be applied to the ZoomPanAxes before adding anything
         hTrack
         hClockTimes
         hCarriage
@@ -233,16 +235,22 @@ classdef WaferAxes < mic.Base
             this.uiZoomPanAxes.build(hParent, dLeft, dTop);
             this.dThicknessOfCrosshair = this.getThicknessOfCrosshair();
             
+            % Allows global transformations to everything.
+            % Allows you do draw it with one frame of reference and let you
+            % view it in another frame of reference
+            this.hTransformedGroup = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);  
+            
+                
             % For some reason when I build the hg* instances as shown above
             % and then add content to them, the stacking order is messed up
             % (the wafer is not on top of the carriage) but when I do it
             % this way it works. 
             
-            this.hTrack = hggroup('Parent', this.uiZoomPanAxes.hHggroup); 
+            this.hTrack = hggroup('Parent', this.hTransformedGroup); 
             this.drawTrack(); 
-            this.hCarriage = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);      
+            this.hCarriage = hgtransform('Parent', this.hTransformedGroup);      
             this.drawCarriage();         
-            this.hCarriageLsi = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);    
+            this.hCarriageLsi = hgtransform('Parent', this.hTransformedGroup);    
             this.drawCarriageLsi();
             this.setXLsi()
             
@@ -260,19 +268,24 @@ classdef WaferAxes < mic.Base
             this.hFemPreviewScan = hggroup('Parent', this.hWafer);
             this.hExposures = hggroup('Parent', this.hWafer);
             
-            this.hIllum = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hIllum = hggroup('Parent', this.hTransformedGroup);
             this.drawIllum();
             
             
-            this.hCrosshairChiefRay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairZero = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairLoadLock = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hOverlay = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hClockTimes = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairCap1 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairCap2 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairCap3 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
-            this.hCrosshairCap4 = hggroup('Parent', this.uiZoomPanAxes.hHggroup);
+            this.hCrosshairChiefRay = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairZero = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairLoadLock = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlay = hggroup('Parent', this.hTransformedGroup);
+            this.hClockTimes = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairCap1 = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairCap2 = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairCap3 = hggroup('Parent', this.hTransformedGroup);
+            this.hCrosshairCap4 = hggroup('Parent', this.hTransformedGroup);
+            
+            
+            % Rotate around z axis by 180
+            dRotation = makehgtform('zrotate', pi);
+            set(this.hTransformedGroup, 'Matrix', dRotation);
             
             
                        

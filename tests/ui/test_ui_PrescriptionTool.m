@@ -27,4 +27,4 @@ h = figure(...
 );
 
 ui = bl12014.ui.PrescriptionTool();
-ui.build(h, 100, 100);
+ui.build(h, 10, 10);
