@@ -42,6 +42,7 @@ classdef App < mic.Base
         uiMfDriftMonitorVibration
         uiButtonListClockTasks
         uiPowerPmacHydraMotMin
+        uiPowerPmacAccelDecel
         uiDMIPowerMonitor
         uiPowerPmacHydraMotMinMonitor
         
@@ -408,6 +409,7 @@ classdef App < mic.Base
             this.uiMfDriftMonitorVibration = [];
             this.uiButtonListClockTasks = [];
             this.uiPowerPmacHydraMotMin = [];
+            this.uiPowerPmacAccelDecel = [];
 
             this.uiClockHardware = [];
             this.uiClockNetworkCommunication = [];
@@ -676,6 +678,12 @@ classdef App < mic.Base
                 'clock', this.clock, ...
                 'uiClock', this.uiClockPowerPmacHydraMotMin ...
             );
+        
+            this.uiPowerPmacAccelDecel = bl12014.ui.PowerPmacAccelDecel(...
+                'hardware', this.hardware, ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockPowerPmacHydraMotMin ...
+            );
             
             this.uiMfDriftMonitorVibration = bl12014.ui.MfDriftMonitorVibration(...
                 'hardware', this.hardware, ...
@@ -854,6 +862,9 @@ classdef App < mic.Base
         end
         
         function onCloseRequest(this, src, evt)
+            if ~isa(this, 'bl12014.ui.App') 
+                return;
+            end
             this.msg('closeRequestFcn()');
             % purge;
             if ishandle(this.hFigureNew)
@@ -1018,6 +1029,7 @@ classdef App < mic.Base
                     this.uiPowerPmacStatus.build(hTab, 10, 30);
                 case 'PPMAC Hydra Mot Min'
                     this.uiPowerPmacHydraMotMin.build(hTab, 10, 30);
+                    this.uiPowerPmacAccelDecel.build(hTab, 10, 600);
                 case 'FEM Control'
                     this.uiScan.build(hTab, 10, 30);
                 case 'PO Current'

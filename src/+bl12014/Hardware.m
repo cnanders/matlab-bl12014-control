@@ -244,13 +244,8 @@ classdef Hardware < mic.Base
         
         %% WebSwitch (Beamline)
         function l = getIsConnectedALS(this)
-           
-            if isempty(this.commALS) 
-                l = false;
-                return
-            end
-            
-            if isa(this.commALS, 'cxro.ALS')
+          
+            if this.notEmptyAndIsA(this.commALS, 'cxro.ALS')
                 l = true;
                 return;
                 
@@ -288,19 +283,8 @@ classdef Hardware < mic.Base
         
         %% WebSwitch (Beamline)
         function l = getIsConnectedWebSwitchBeamline(this)
-            
-            if isempty(this.commWebSwitchBeamline) 
-                l = false;
-                return
-            end
-            
-           
-            if isempty(this.commWebSwitchBeamline) 
-                l = false;
-                return;
-            end
-            
-            if isa(this.commWebSwitchBeamline, 'controlbyweb.WebSwitch')
+                        
+            if this.notEmptyAndIsA(this.commWebSwitchBeamline, 'controlbyweb.WebSwitch')
                 l = true;
                 return;
                 
@@ -336,15 +320,8 @@ classdef Hardware < mic.Base
         %% WebSwitch (Endstation)
         function l = getIsConnectedWebSwitchEndstation(this)
             
-            if isempty(this.commWebSwitchEndstation) 
-                l = false;
-                return
-            end
             
-           
-            
-            
-            if isa(this.commWebSwitchEndstation, 'controlbyweb.WebSwitch')
+            if this.notEmptyAndIsA(this.commWebSwitchEndstation, 'controlbyweb.WebSwitch')
                 l = true;
                 return;
                 
@@ -379,13 +356,7 @@ classdef Hardware < mic.Base
         %% WebSwitch (VIS)
         function l = getIsConnectedWebSwitchVis(this)
             
-            if isempty(this.commWebSwitchVis) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commWebSwitchVis, 'controlbyweb.WebSwitch')
+            if this.notEmptyAndIsA(this.commWebSwitchVis, 'controlbyweb.WebSwitch')
                 l = true;
                 return;
                 
@@ -425,12 +396,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedBL1201CorbaProxy(this)
            
-            if isempty(this.commBL1201CorbaProxy) 
-                l = false;
-                return
-            end
-            
-            if isa(this.commBL1201CorbaProxy, 'cxro.bl1201.beamline.BL1201CorbaProxy')
+            if this.notEmptyAndIsA(this.commBL1201CorbaProxy, 'cxro.bl1201.beamline.BL1201CorbaProxy')
                 l = true;
                 return;
             end
@@ -464,12 +430,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedDCTCorbaProxy(this)
            
-            if isempty(this.commDCTCorbaProxy) 
-                l = false;
-                return
-            end
-            
-            if isa(this.commDCTCorbaProxy, 'cxro.bl1201.dct.DctCorbaProxy')
+            if this.notEmptyAndIsA(this.commDCTCorbaProxy, 'cxro.bl1201.dct.DctCorbaProxy')
                 l = true;
                 return;
             end
@@ -505,15 +466,8 @@ classdef Hardware < mic.Base
         %% MF Drift Monitor (different than MfDriftMonitor Middleware)
         
         function l = getIsConnectedMfDriftMonitor(this)
-            
-            if isempty(this.commMfDriftMonitor) 
-                l = false;
-                return
-            end
-            
-            
            
-            if isa(this.commMfDriftMonitor, 'cxro.met5.device.mfdriftmonitor.MfDriftMonitorCorbaProxy')
+            if this.notEmptyAndIsA(this.commMfDriftMonitor, 'cxro.met5.device.mfdriftmonitor.MfDriftMonitorCorbaProxy')
                 l = true;
             else
                 l = false;
@@ -551,13 +505,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedRigolDG1000Z(this)
             
-            if isempty(this.commRigolDG1000Z) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commRigolDG1000Z, 'rigol.DG1000Z')
+            if this.notEmptyAndIsA(this.commRigolDG1000Z, 'rigol.DG1000Z')
                 l = true;
                 return;
             end
@@ -593,15 +541,10 @@ classdef Hardware < mic.Base
         %% SmarAct VPFM
         
         function l = getIsConnectedSmarActVPFM(this)
-            
-            if isempty(this.commSmarActVPFM) 
-                l = false;
-                return
-            end
-            
-           
-            if (isa(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') || ...
-                isa(this.commSmarActVPFM, 'cxro.common.device.motion.SmarActMcsController') ...
+                       
+            if ( ...
+                this.notEmptyAndIsA(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') || ...
+                this.notEmptyAndIsA(this.commSmarActVPFM, 'cxro.common.device.motion.SmarActMcsController') ...
                 ) && ...
                this.commSmarActVPFM.isConnected()
                 l = true;
@@ -647,14 +590,8 @@ classdef Hardware < mic.Base
         %% SmarAct M141
         
         function l = getIsConnectedSmarActM141(this)
-            
-            if isempty(this.commSmarActM141) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commSmarActM141, 'cxro.common.device.motion.Stage') && ...
+                       
+            if this.notEmptyAndIsA(this.commSmarActM141, 'cxro.common.device.motion.Stage') && ...
                this.commSmarActM141.isConnected() && ...
                this.commSmarActM141.getAxesIsInitialized()
                 l = true;
@@ -709,13 +646,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedMightex1(this)
             
-            if isempty(this.commMightex1) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commMightex1, 'mightex.UniversalLedController')
+            if this.notEmptyAndIsA(this.commMightex1, 'mightex.UniversalLedController')
                 l = true;
                 return;
             end
@@ -757,14 +688,8 @@ classdef Hardware < mic.Base
         %% NewFocus Model 8742 (M142)
         
         function l = getIsConnectedNewFocus8742M142(this)
-            
-            if isempty(this.commNewFocus8742M142) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commNewFocus8742M142, 'newfocus.Model8742')
+                       
+            if this.notEmptyAndIsA(this.commNewFocus8742M142, 'newfocus.Model8742')
                 l = true;
                 return;
             end
@@ -808,13 +733,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedNewFocus8742MA(this)
             
-            if isempty(this.commNewFocus8742MA) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commNewFocus8742MA, 'newfocus.Model8742')
+            if this.notEmptyAndIsA(this.commNewFocus8742MA, 'newfocus.Model8742')
                 l = true;
                 return;
             end
@@ -858,13 +777,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedMightex2(this)
             
-            if isempty(this.commMightex2) 
-                l = false;
-                return
-            end
-            
-           
-            if isa(this.commMightex2, 'mightex.UniversalLedController')
+            if this.notEmptyAndIsA(this.commMightex2, 'mightex.UniversalLedController')
                 l = true;
                 return;
             end
@@ -918,13 +831,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedDataTranslation(this)
             
-            if isempty(this.commDataTranslation)
-                l = false;
-                return
-            end
-                
-            
-            if isa(this.commDataTranslation, 'datatranslation.MeasurPoint')
+            if this.notEmptyAndIsA(this.commDataTranslation, 'datatranslation.MeasurPoint')
                 l = true;
             else
                 l = false;
@@ -958,7 +865,7 @@ classdef Hardware < mic.Base
         
         function connectDeltaTauPowerPmac(this)
             
-            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+            if this.notEmptyAndIsA(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
                 return
             end
             
@@ -970,21 +877,15 @@ classdef Hardware < mic.Base
         end
         
         function disconnectDeltaTauPowerPmac(this)
-            
-            if isempty(this.commDeltaTauPowerPmac) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+ 
+            if this.notEmptyAndIsA(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
                 % this.commDeltaTauPowerPmac.disconnect();
                 this.commDeltaTauPowerPmac = []; % calls delete() which calls disconnect
             end
         end
         
         function l = getIsConnectedDeltaTauPowerPmac(this)
-            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+            if this.notEmptyAndIsA(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
                 l = true;
             else
                 l = false;
@@ -999,7 +900,7 @@ classdef Hardware < mic.Base
         
         function comm = getDeltaTauPowerPmac(this)
             
-            if isa(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
+            if this.notEmptyAndIsA(this.commDeltaTauPowerPmac, 'deltatau.PowerPmac')
                 comm = this.commDeltaTauPowerPmac; 
                 return;
             end
@@ -1008,19 +909,31 @@ classdef Hardware < mic.Base
             
         end
         
-        
+        % Wrapper around built-in isa that also checks first if the first
+        % arg is not empty
+        function lReturn = notEmptyAndIsA(this, var, type)
+            
+            lReturn = false;
+            
+            % return immediately if var is empty
+            if isempty(var)
+                return
+            end
+            
+            % check
+            if isa(var, type)
+                lReturn = true;
+            end
+        end
         
         %% Keithley6482Wafer
         
         function l = getIsConnectedKeithley6482Wafer(this)
             
-            if isempty(this.commKeithley6482Wafer) 
-                l = false;
-                return
-            end
             
             
-            if isa(this.commKeithley6482Wafer, 'keithley.Keithley6482')
+            
+            if this.notEmptyAndIsA(this.commKeithley6482Wafer, 'keithley.Keithley6482')
                 l = true;
             else
                 l = false;
@@ -1061,13 +974,10 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedWagoD141(this)
             
-            if isempty(this.commWagoD141) 
-                l = false;
-                return
-            end
             
             
-            if isa(this.commWagoD141, 'bl12014.hardwareAssets.WagoD141')
+            
+            if this.notEmptyAndIsA(this.commWagoD141, 'bl12014.hardwareAssets.WagoD141')
                 l = true;
             else
                 l = false;
@@ -1116,13 +1026,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedExitSlit(this)
             
-            if isempty(this.commExitSlit) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commExitSlit, 'bl12pico_slits')
+            if this.notEmptyAndIsA(this.commExitSlit, 'bl12pico_slits')
                 l = true;
             else
                 l = false;
@@ -1163,13 +1067,9 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedKeithley6482Reticle(this)
             
-            if isempty(this.commKeithley6482Reticle) 
-                l = false;
-                return
-            end
+
             
-            
-            if isa(this.commKeithley6482Reticle, 'keithley.Keithley6482')
+            if this.notEmptyAndIsA(this.commKeithley6482Reticle, 'keithley.Keithley6482')
                 l = true;
             else
                 l = false;
@@ -1213,13 +1113,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedGalilD142(this)
             
-            if isempty(this.commGalilD142) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commGalilD142, 'cxro.common.device.motion.Stage') && ...
+            if this.notEmptyAndIsA(this.commGalilD142, 'cxro.common.device.motion.Stage') && ...
                this.commGalilD142.isConnected()
                 l = true;
             else
@@ -1268,13 +1162,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedGalilM143(this)
             
-            if isempty(this.commGalilM143) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commGalilM143, 'cxro.common.device.motion.Stage') && ...
+            if this.notEmptyAndIsA(this.commGalilM143, 'cxro.common.device.motion.Stage') && ...
                this.commGalilM143.isConnected()
                 l = true;
             else
@@ -1324,13 +1212,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedGalilVis(this)
             
-            if isempty(this.commGalilVis) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commGalilVis, 'cxro.common.device.motion.Stage') && ...
+            if this.notEmptyAndIsA(this.commGalilVis, 'cxro.common.device.motion.Stage') && ...
                this.commGalilVis.isConnected()
                 l = true;
             else
@@ -1391,13 +1273,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedNPointMA(this)
             
-            if isempty(this.commNPointMA) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commNPointMA, 'npoint.LC400')
+            if this.notEmptyAndIsA(this.commNPointMA, 'npoint.LC400')
                 l = true;
             else
                 l = false;
@@ -1436,13 +1312,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedNPointM142(this)
             
-            if isempty(this.commNPointM142) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commNPointM142, 'npoint.LC400')
+            if this.notEmptyAndIsA(this.commNPointM142, 'npoint.LC400')
                 l = true;
             else
                 l = false;
@@ -1483,13 +1353,7 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedMfDriftMonitorMiddleware(this)
             
-            if isempty(this.commMfDriftMonitorMiddleware) 
-                l = false;
-                return
-            end
-            
-            
-            if isa(this.commMfDriftMonitorMiddleware, 'bl12014.hardwareAssets.middleware.MFDriftMonitor')
+            if this.notEmptyAndIsA(this.commMfDriftMonitorMiddleware, 'bl12014.hardwareAssets.middleware.MFDriftMonitor')
                 l = true;
             else
                 l = false;

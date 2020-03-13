@@ -705,20 +705,28 @@ classdef ScanResultPlot2x2 < mic.Base
             if contains(cPath, '.csv')
                 
                 % dData = csvread(cFile, 2, 0);
-                [ceData, ceFields] = this.getValuesStructFromCsvFile(cPath);
                 
-                % initialize results structure formatted for easy plotting
-                % (json import creates structure with same format)
-                stResults= struct();
-                
-                % fill results structure
-                for n = 1 : length(ceData)
-                    stResults.(ceFields{n}) = ceData{n}'; % needs to be a row not a column
+                try
+                    [ceData, ceFields] = this.getValuesStructFromCsvFile(cPath);
+
+                    % initialize results structure formatted for easy plotting
+                    % (json import creates structure with same format)
+                    stResults= struct();
+
+                    % fill results structure
+                    for n = 1 : length(ceData)
+                        stResults.(ceFields{n}) = ceData{n}'; % needs to be a row not a column
+                    end
+
+                    this.stResultForPlotting = stResults;
+                    this.cecFieldsCsv = ceFields; % storage for updatePopups()
+                    this.updatePopups();
+                    
+                catch mE
+                    
+                    mE
+                    
                 end
-                
-                this.stResultForPlotting = stResults;
-                this.cecFieldsCsv = ceFields; % storage for updatePopups()
-                this.updatePopups(); 
                 
                  
             end

@@ -1,0 +1,17 @@
+{
+	"delay": .5,
+	"units": [
+		{
+			"name": "ms",
+			"slope": 1,
+			"offset": 0,
+			"precision": 0
+		}
+	],
+    "step": 100,
+    "stores": [],
+    "min": 10,
+    "max": 10000
+}	
+	
+	

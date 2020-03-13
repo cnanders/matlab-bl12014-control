@@ -9,7 +9,7 @@ classdef Scan < mic.Base
     properties (Constant)
        
         dWidth = 950
-        dHeight = 570
+        dHeight = 600
         
         
         dWidthList = 500
@@ -18,11 +18,11 @@ classdef Scan < mic.Base
         
         dPauseTime = 1
         
-        dWidthPanelAvailable = 600
+        dWidthPanelAvailable = 700
         dHeightPanelAvailable = 200
         
-        dWidthPanelAdded = 800
-        dHeightPanelAdded = 580
+        dWidthPanelAdded = 900
+        dHeightPanelAdded = 640
         
         dWidthPanelBorder = 1
         
@@ -170,6 +170,7 @@ classdef Scan < mic.Base
         uiStateVPFMOut
         uiStateM141SmarActOff
         uiStateHeightSensorLEDsOn
+        uiStatePowerPmacAccelSetForFEM
         
         uiTextReticleField
         
@@ -460,38 +461,42 @@ classdef Scan < mic.Base
             this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
             dTop = dTop  + dSep;
             
+            dWidthTask = 400;
             
-           this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiStateMonoGratingAtEUV.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateMonoGratingAtEUV.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiStateEndstationLEDsOff.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateEndstationLEDsOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiStateVPFMOut.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateVPFMOut.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
            
            %{
-           this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            %}
-           this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiSequenceLevelReticle.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
            
-           this.uiStateHeightSensorLEDsOn.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiStateHeightSensorLEDsOn.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
-           this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, 300);
+           this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           this.uiStatePowerPmacAccelSetForFEM.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
 
            
@@ -947,8 +952,18 @@ classdef Scan < mic.Base
                 'clock', this.uiClock ...
             );
         
+            this.uiStatePowerPmacAccelSetForFEM = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-power-pmac-accel-set-for-fem'], ...
+                'task', bl12014.Tasks.createStatePowerPmacAccelSetForFEM(...
+                    [this.cName, 'state-power-pmac-accel-set-for-fem'], ...
+                    this.hardware, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
         
-        
+
             this.uiTextReticleField = mic.ui.common.Text(...
                 'cVal', 'Reticle Field: [--, --]' ...
             );
@@ -1002,6 +1017,7 @@ classdef Scan < mic.Base
             
              ceFields = {...
                 'tracking', ...
+                'settle', ... % vibration settle from DMI
                 'pause', ...
                 'pupilFill', ...
                 'reticleX', ...
@@ -1377,6 +1393,74 @@ classdef Scan < mic.Base
                                 
                 switch cField
                     
+                    case 'settle'
+                        
+                        %{
+                        dTimeStart = tic;
+                        
+                        if isfield(stValue.settle, 'value')
+                            dValue = stValue.settle.value;
+                        else
+                            dValue = 1.0;
+                        end
+                        
+                        if isfield(stValue.settle, 'time')
+                            dTime = stValue.settle.time;
+                        else
+                            dTime = 120;
+                        end
+                        
+                        
+                        [dRmsX, dRmsY] = this.getDriftOfDmi();
+                        
+                        
+                        while dRmsX > dValue || dRmsY > dValue
+                            
+                            dTimeElapsed = toc(dTimeStart);
+                            [dRmsX, dRmsY] = this.getDriftOfDmi();
+                            
+                            cMsg = [...
+                                sprintf('%s DMI vib settling to %1.2f nm RMS: ', cFn, dValue), ...
+                                sprintf('driftX = %1.2f nm RMS, driftY = %1.2f nm RMS ', dRmsX, dRmsY), ...
+                                sprintf('(%1.1f sec elapsed)',dTimeElapsed) ...
+                            ];
+                        
+                            if lDebug
+                                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                            end
+                        
+                            pause(1);
+                            
+                            if (dTimeElapsed > dTime)
+                               cMsg = sprintf('%s DMI vib settle TOOK TOO LONG > %1.1f sec!!', ...
+                                   cFn, ...
+                                   dTime);
+                               if lDebug
+                                    this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                               end 
+                               break; % break out of while loop
+                            end
+                            
+                            if this.scan.getIsPaused() || this.scan.getIsStopped()
+                                
+                                cMsg = [...
+                                    sprintf('%s Aborting DMI settling at: ', cFn), ...
+                                    sprintf('driftX = %1.2f nm RMS, driftY = %1.2f nm RMS ', dRmsX, dRmsY), ...
+                                    sprintf('(%1.1f sec elapsed)',dTimeElapsed) ...
+                                ];
+
+                                if lDebug
+                                    this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                end
+                                
+                                break; % break out of while loop
+                            end
+                                
+                        end
+                        %}
+                        this.stScanSetContract.settle.lIssued = true;
+                        
+                    
                     case 'pause'
                         
                         dTimeStart = tic;
@@ -1389,6 +1473,11 @@ classdef Scan < mic.Base
                                 dTimeElapsed, ...
                                 stValue.pause ...
                             );
+                        
+                            if this.scan.getIsPaused() || this.scan.getIsStopped()
+                                break
+                            end
+                            
                         end
                         this.stScanSetContract.pause.lIssued = true;
                     
@@ -1592,20 +1681,21 @@ classdef Scan < mic.Base
                 end               
                 
                 if this.stScanSetContract.(cField).lRequired
+                    
                     if lDebug
-                        this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                        %this.msg(sprintf('%s %s set is required', cFn, cField), this.u8_MSG_TYPE_SCAN);
                     end
 
                     if this.stScanSetContract.(cField).lIssued
                         
                         if lDebug
-                            this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                            %this.msg(sprintf('%s %s set has been issued', cFn, cField), this.u8_MSG_TYPE_SCAN);
                         end
                         
                         if this.stScanSetContract.(cField).lAchieved
                             
                             if lDebug
-                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                %this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             
                             continue % no need to check this property
@@ -1619,6 +1709,50 @@ classdef Scan < mic.Base
                             
                             switch cField
                                 
+                                case 'settle'
+                                    
+                                    % defaults
+                                    dValue = 1.0;
+                                    dTime = 120; 
+                                    lReady = false;
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+                                    
+                                    % override from prescription
+                                    if isfield(stValue.settle, 'value')
+                                        dValue = stValue.settle.value;
+                                    end
+
+                                    if isfield(stValue.settle, 'time')
+                                        dTime = stValue.settle.time;
+                                    end
+
+                                    [dRmsX, dRmsY] = this.getDriftOfDmi();
+
+                                    % Check values
+                                    if dRmsX < dValue && dRmsY < dValue
+                                        lReady = true;
+                                    end
+
+                                    if lDebug
+                                        cMsg = [...
+                                            sprintf('%s DMI vib settling to %1.2f nm RMS: ', cFn, dValue), ...
+                                            sprintf('driftX = %1.2f nm RMS, driftY = %1.2f nm RMS ', dRmsX, dRmsY), ...
+                                            sprintf('(%1.1f sec elapsed)',dTimeElapsed) ...
+                                        ];
+                                        this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end
+
+
+                                    if (dTimeElapsed > dTime)
+                                       cMsg = sprintf('%s DMI vib settle TOOK TOO LONG > %1.1f sec!!', ...
+                                           cFn, ...
+                                           dTime);
+                                       if lDebug
+                                            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                       end 
+                                       lReady = true;
+                                    end
+                                    
                                 case 'pause'
                                     lReady = true;
                                 case 'tracking'
@@ -1632,7 +1766,7 @@ classdef Scan < mic.Base
                                     lReady =    abs(this.uiReticle.uiFineStage.uiX.getValCal(stUnit.xReticleFine) - stValue.xReticleFine) <= this.dToleranceReticleFineX;
                                     
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiReticle.uiFineStage.uiX.getValCal(stUnit.xReticleFine), ...
@@ -1645,7 +1779,7 @@ classdef Scan < mic.Base
                                     lReady =    abs(this.uiReticle.uiFineStage.uiY.getValCal(stUnit.yReticleFine) - stValue.yReticleFine) <= this.dToleranceReticleFineY;
                                     
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiReticle.uiFineStage.uiY.getValCal(stUnit.yReticleFine), ...
@@ -1659,7 +1793,7 @@ classdef Scan < mic.Base
                                                 abs(this.uiReticle.uiCoarseStage.uiX.getValCal(stUnit.reticleX) - stValue.reticleX) <= this.dToleranceReticleX;
                                     
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiReticle.uiCoarseStage.uiX.getValCal(stUnit.reticleX), ...
@@ -1672,7 +1806,7 @@ classdef Scan < mic.Base
                                                 abs(this.uiReticle.uiCoarseStage.uiY.getValCal(stUnit.reticleY) - stValue.reticleY) <= this.dToleranceReticleY;
                                             
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiReticle.uiCoarseStage.uiY.getValCal(stUnit.reticleY), ...
@@ -1685,7 +1819,7 @@ classdef Scan < mic.Base
                                                 abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3 - stValue.waferX) <= this.dToleranceWaferX;
                                             
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3, ...
@@ -1698,7 +1832,7 @@ classdef Scan < mic.Base
                                                 abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3 - stValue.waferY) <= this.dToleranceWaferY;
                                             
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3, ...
@@ -1715,7 +1849,7 @@ classdef Scan < mic.Base
                                                     
                                             
                                    if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ), ...
@@ -1739,7 +1873,7 @@ classdef Scan < mic.Base
                                     lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;   
                                     
                                     if lDebug
-                                        cMsg = sprintf('%s %s value = %1.0f; goal = %1.0f\n', ...
+                                        cMsg = sprintf('%s %s value = %1.0f; goal = %1.0f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay(), ...
@@ -2206,8 +2340,6 @@ classdef Scan < mic.Base
                        
             % Create new log file
             
-            this.createNewLog();
-            
             % Tell grating and undulator to go to correct place.
             % *** TO DO ***
                         
@@ -2635,9 +2767,9 @@ classdef Scan < mic.Base
             % Get name of recipe
             [cPath, cName, cExt] = fileparts(this.getPathRecipe());
             
-            c = sprintf('%s__PRE_%s', ...
-                datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local'), ...
-                cName ...
+            c = sprintf('%s__%s', ...
+                cName, ...
+                datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local')...
             );
         
             c = fullfile(this.cDirSave, c);
@@ -2838,6 +2970,16 @@ classdef Scan < mic.Base
             
             this.plotFieldFill();
             this.plotPupilFill();
+            
+        end
+        
+        
+        function [dRmsDriftX, dRmsDriftY] = getDriftOfDmi(this)
+            
+            samples = this.hardware.getMfDriftMonitor().getSampleData(1000);
+            dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(samples);
+            dRmsDriftX = std(dDmi(5, :));
+            dRmsDriftY = std(dDmi(6, :));
             
         end
                           

@@ -1,8 +1,10 @@
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
 % Dependencies
+%{
 addpath(genpath(fullfile(cDirThis, '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages', 'matlab-instrument-control')));
+%}
 
 cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 2 f2x contact';
 

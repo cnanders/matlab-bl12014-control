@@ -877,11 +877,11 @@ classdef MfDriftMonitorVibration < mic.Base
             
             this.samples = this.hardware.getMfDriftMonitor().getSampleData(this.uiEditNumOfSamples.get());
             
-            this.dZ = this.getHeightSensorZFromSampleData(this.samples);
-            this.dXY = this.getDmiPositionFromSampleData(this.samples);
+            this.dZ = bl12014.MfDriftMonitorUtilities.getHeightSensorZFromSampleData(this.samples);
+            this.dXY = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(this.samples);
                     
-            this.dRawOfHeightSensor = this.getRawOfHeightSensorFromSampleData(this.samples);
-            this.dRawOfDmi = this.getRawOfDmiFromSampleData(this.samples);
+            this.dRawOfHeightSensor = bl12014.MfDriftMonitorUtilities.getRawOfHeightSensorFromSampleData(this.samples);
+            this.dRawOfDmi = bl12014.MfDriftMonitorUtilities.getRawOfDmiFromSampleData(this.samples);
             
             % If on the raw folder tab  
             
@@ -1500,203 +1500,20 @@ classdef MfDriftMonitorVibration < mic.Base
         % @param {ArrayList<SampleData> 1x1} samples - sample data
         % @return {double 24xm} - height sensor z (nm) of six channels at 1 kHz
         
-        function d = getRawOfHeightSensorFromSampleData(this, samples)
-            
-            d = zeros(36, samples.size());
-            
-            % Samples.get() is zero-indexed since implementing java
-            % interface
-            for n = 0 : samples.size() - 1
-                d(1 : 24, n + 1) = samples.get(n).getHsData();
-            end
-            
-            % Rows 25 - 36 contain average of "cap a" and "cap b" over 
-            % a 1000 us acquisition window
-            for n = 1 : 12
-                d(24 + n, :) = (d(n, :) + d(n + 12, :)) / 2;
-            end
-                                                    
-        end
-        
-        
-        
-        % Returns a {double 6xm} time series of height zensor z in nm of
-        % all six channels
-        % @param {ArrayList<SampleData> 1x1} samples - sample data
-        % @return {double 6xm} - height sensor z (nm) of six channels at 1 kHz
-        % @return(1, :) {double 1xm} - z 5:30 (ch 1)
-        % @return(2, :) {double 1xm} - z 9:30 (ch 2)
-        % @return(3, :) {double 1xm} - z 1:30 (ch 3)
-        % @return(4, :) {double 1xm} - ang 0:30 (ch 4)
-        % @return(5, :) {double 1xm} - ang 4:30 (ch 5)
-        % @return(6, :) {double 1xm} - ang 8:30 (ch 6)
-        function z = getHeightSensorZFromSampleData(this, samples)
-            
-            
-            m_per_diff_over_sum = 120e-6/2;  
-
-            hsraw = zeros(24, samples.size());
-            
-            % Samples.get() is zero-indexed since implementing java
-            % interface
-            for n = 0 : samples.size() - 1
-                hsraw(:, n + 1) = samples.get(n).getHsData();
-            end
-            
-            
-            top = zeros(6, samples.size());
-            bot = zeros(6, samples.size());
-                
-            % Build a map of array index to physical configuration
-            
-            % time 0 us - 500 us use side "a" capacitor
-            stMap.ch6top1 = 1;
-            stMap.ch6bot1 = 2;
-            stMap.ch5top1 = 3;
-            stMap.ch5bot1 = 4;
-            stMap.ch4top1 = 5;
-            stMap.ch4bot1 = 6;
-            stMap.ch3top1 = 7;
-            stMap.ch3bot1 = 8;
-            stMap.ch2top1 = 9;
-            stMap.ch2bot1 = 10;
-            stMap.ch1top1 = 11;
-            stMap.ch1bot1 = 12;
-
-            % time 500 us - 1000 us use side "b" capacitor
-            stMap.ch6top2 = 13;
-            stMap.ch6bot2 = 14;
-            stMap.ch5top2 = 15;
-            stMap.ch5bot2 = 16;
-            stMap.ch4top2 = 17;
-            stMap.ch4bot2 = 18;
-            stMap.ch3top2 = 19;
-            stMap.ch3bot2 = 20;
-            stMap.ch2top2 = 21;
-            stMap.ch2bot2 = 22;
-            stMap.ch1top2 = 23;
-            stMap.ch1bot2 = 24;
-            
-            % Average ADC values from each cap to get 1 ms of data
-            
-            top(1, :) = (hsraw(stMap.ch1top1, :) + hsraw(stMap.ch1top2, :)) / 2;
-            top(2, :) = (hsraw(stMap.ch2top1, :) + hsraw(stMap.ch2top2, :)) / 2;
-            top(3, :) = (hsraw(stMap.ch3top1, :) + hsraw(stMap.ch3top2, :)) / 2;
-            top(4, :) = (hsraw(stMap.ch4top1, :) + hsraw(stMap.ch4top2, :)) / 2;
-            top(5, :) = (hsraw(stMap.ch5top1, :) + hsraw(stMap.ch5top2, :)) / 2;
-            top(6, :) = (hsraw(stMap.ch6top1, :) + hsraw(stMap.ch6top2, :)) / 2; 
-
-            bot(1, :) = (hsraw(stMap.ch1bot1, :) + hsraw(stMap.ch1bot2, :)) / 2;
-            bot(2, :) = (hsraw(stMap.ch2bot1, :) + hsraw(stMap.ch2bot2, :)) / 2;
-            bot(3, :) = (hsraw(stMap.ch3bot1, :) + hsraw(stMap.ch3bot2, :)) / 2;
-            bot(4, :) = (hsraw(stMap.ch4bot1, :) + hsraw(stMap.ch4bot2, :)) / 2;
-            bot(5, :) = (hsraw(stMap.ch5bot1, :) + hsraw(stMap.ch5bot2, :)) / 2;
-            bot(6, :) = (hsraw(stMap.ch6bot1, :) + hsraw(stMap.ch6bot2, :)) / 2;   
-            
-            diff = top - bot;
-            sum = top + bot;
-            dos = double(diff)./double(sum);
-            z = dos * m_per_diff_over_sum * 1e9;
-            
-            % Ch "7" is average of three central
-            z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
-        end
         
         
         
         
         
-        % Returns {double 4xm} x and y position of reticle and wafer in nm
-        % @param {ArrayList<SampleData> 1x1} samples - sample data
-        % @return {double 6xm} - position data of reticle and wafer nm
-        % @return(1, :) {double 1xm} - xReticle
-        % @return(2, :) {double 1xm} - yReticle
-        % @return(3, :) {double 1xm} - xWafer
-        % @return(4, :) {double 1xm} - yWafer
-        % @return(5, :) {double 1xm} - driftX
-        % @return(6, :) {double 1xm} - driftY
-
-        function pos = getDmiPositionFromSampleData(this, samples)
-            
-            % Reshape to a 4xn matrix of doubles.  
-            
-            % Mirrors are mounted 45 degrees relative to x and y
-            % row1 = uReticle
-            % row2 = vReticle
-            % row3 = uWafer
-            % row4 = vWafer
-            
-            % samples is zero-indexed because uses Java interface
-            dmi = zeros(4, samples.size());
-            for n = 0 : samples.size() - 1
-                dmi(:, n + 1) = double(samples.get(n).getDmiData());
-            end
-                  
-            
-            % dmi axes come in units of 1.5 angstroms
-            % convert to nm
-                                  
-            dDMI_SCALE = 632.9907/4096; 
-                                 
-            dErrU_ret = dmi(1, :);
-            dErrV_ret = dmi(2, :);
-            dErrU_waf = dmi(3, :);
-            dErrV_waf = dmi(4, :);
-            
-            pos = zeros(4, samples.size());
-
-            pos(1, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_ret + dErrV_ret); % x ret
-            pos(2, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_ret - dErrV_ret); % y ret
-            pos(3, :) = -dDMI_SCALE * 1/sqrt(2) * (dErrU_waf + dErrV_waf); % x wafer
-            pos(4, :) = dDMI_SCALE * 1/sqrt(2) * (dErrU_waf - dErrV_waf); % y wafer
-            
-            % Drift signal of aerial image is the 
-            % drift signal we use for reticle correction divided by
-            % the magnification 
-            pos(5, :) = (5 * pos(3, :) + pos(1, :)) / 5; % drift x
-            pos(6, :) = (-5 * pos(4, :) + pos(2, :)) / 5; % drift y
-            
-            
-            %{ 
-            From Java code
-            double errX =  5 * xWafer + xReticle;
-            double errY = -5 * yWafer + yReticle;
-            %}
-            
-            
-    
-            
-
-            
-        end
         
         
-        % Returns {double 4xm} x and y position of reticle and wafer in nm
-        % @param {ArrayList<SampleData> 1x1} samples - sample data
-        % @return {double 4xm} - position data of reticle and wafer nm
-        % @return(1, :) {double 1xm} - uReticle
-        % @return(2, :) {double 1xm} - vReticle
-        % @return(3, :) {double 1xm} - uWafer
-        % @return(4, :) {double 1xm} - vWafer
-
-        function d = getRawOfDmiFromSampleData(this, samples)
-            
-            % Reshape to a 4xn matrix of doubles.  
-            
-            % Mirrors are mounted 45 degrees relative to x and y
-            % row1 = uReticle
-            % row2 = vReticle
-            % row3 = uWafer
-            % row4 = vWafer
-            
-            % samples is zero-indexed because uses Java interface
-            d = zeros(4, samples.size());
-            for n = 0 : samples.size() - 1
-                d(:, n + 1) = double(samples.get(n).getDmiData());
-            end
-                  
-           
-        end
+        
+        
+        
+        
+        
+        
+        
         
         function st = save(this)
             
