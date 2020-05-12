@@ -20,6 +20,9 @@ classdef Hardware < mic.Base
         
     properties (Constant)
         
+        
+        cTcpipHydraWafer            = '192.168.10.11'
+        
         % Branchline Subnet
         cTcpipSmarActM141           = '192.168.10.20'
         cTcpipMicronix              = '192.168.10.21'
@@ -28,6 +31,7 @@ classdef Hardware < mic.Base
         cTcpipGalilD142             = '192.168.10.24'
         cTcpipGalilM143             = '192.168.10.25'
         cTcpipWago                  = '192.168.10.26'
+        cTcpipWebSwitchBeamline     = '192.168.10.30'
         
         % Endstation 1 Subnet
         cTcpipLc400MA               = '192.168.20.20'
@@ -45,7 +49,6 @@ classdef Hardware < mic.Base
         cTcpipRigolDG1000Z          = '192.168.20.35'
         
         cTcpipWebSwitchVis          = '192.168.20.32';
-        cTcpipWebSwitchBeamline     = '192.168.10.30';
         
     end
     
@@ -77,6 +80,9 @@ classdef Hardware < mic.Base
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
         commDeltaTauPowerPmacVirtual
+        
+        commHydraWafer
+        commHydraWaferVirtual
         
         % {MFDriftMonitor}
         commMfDriftMonitorMiddleware
@@ -297,7 +303,7 @@ classdef Hardware < mic.Base
             
             try
                 this.commWebSwitchBeamline = controlbyweb.WebSwitch(...
-                    'cHost', '192.168.10.30' ...
+                    'cHost', this.cTcpipWebSwitchBeamline ...
                 );
            catch mE
                 error(getReport(mE));
@@ -861,6 +867,52 @@ classdef Hardware < mic.Base
         end
         
         
+        %% Hydra
+        
+        function connectHydraWafer(this)
+            
+            if this.notEmptyAndIsA(this.commHydraWafer, 'pi.Hydra')
+                return
+            end
+            
+            this.commHydraWafer = pi.Hydra(...
+                'cTcpipHost', this.cTcpipHydraWafer, ...
+                'u16TcpipPort', uint16(400) ...
+            );
+            
+        end
+        
+        function disconnectHydraWafer(this)
+ 
+            if this.notEmptyAndIsA(this.commHydraWafer, 'pi.Hydra')
+                this.commHydraWafer = []; % calls delete() which calls disconnect
+            end
+        end
+        
+        function l = getIsConnectedHydraWafer(this)
+            if this.notEmptyAndIsA(this.commHydraWafer, 'pi.Hydra')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        
+        function setIsConnectedHydraWafer(this, lVal)
+           this.lIsConnectedHydraWafer = lVal;
+        end
+        
+        
+        function comm = getHydraWafer(this)
+            if this.notEmptyAndIsA(this.commHydraWafer, 'pi.Hydra')
+                comm = this.commHydraWafer; 
+                return;
+            end
+            comm = this.commHydraWaferVirtual;
+            
+        end
+        
+        
         %% Power Pmac
         
         function connectDeltaTauPowerPmac(this)
@@ -872,7 +924,6 @@ classdef Hardware < mic.Base
             this.commDeltaTauPowerPmac = deltatau.PowerPmac(...
                 'cHostname', this.cTcpipDeltaTau ...
             );
-            
             
         end
         
@@ -1505,6 +1556,7 @@ classdef Hardware < mic.Base
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
+            this.commHydraWaferVirtual = pi.HydraVirtual();
             this.commDataTranslationVirtual = datatranslation.MeasurPointVirtual();
             this.commMfDriftMonitorVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitor();
             this.commMfDriftMonitorMiddlewareVirtual = bl12014.hardwareAssets.virtual.MFDriftMonitorMiddleware(...
