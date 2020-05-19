@@ -74,6 +74,12 @@ classdef Hardware < mic.Base
         commDataTranslation
         commDataTranslationVirtual
         
+        commDCT2WaferStage
+        commDCT2WaferStageVirtual
+        
+        commDCT2ApertureStage
+        commDCT2ApertureStageVirtual
+        
         % {deltaTau.PowerPmac 1x1}
         commDeltaTauPowerPmac
         commDeltaTauPowerPmacVirtual
@@ -221,6 +227,10 @@ classdef Hardware < mic.Base
             this.commGalilD142Virtual = [];
             this.commGalilM143Virtual = [];
             this.commGalilVisVirtual = [];
+            
+            this.commDCT2WaferStageVirtual = [];
+            this.commDCT2ApertureStageVirtual = [];
+            
             this.commKeithley6482ReticleVirtual = [];
             this.commKeithley6482WaferVirtual = [];
             this.commMfDriftMonitorVirtual = [];
@@ -1256,6 +1266,10 @@ classdef Hardware < mic.Base
             
         end
         
+        
+        
+        
+        
         function comm = getGalilVis(this)
             
             if this.getIsConnectedGalilVis()
@@ -1265,6 +1279,112 @@ classdef Hardware < mic.Base
             end
                 
             comm = this.commGalilVisVirtual;
+                
+        end
+        
+        
+        %% DCT2 Wafer Stage
+        
+        
+        function l = getIsConnectedDCT2WaferStage(this)
+            
+            if this.notEmptyAndIsA(this.commDCT2WaferStage, 'cxro.common.device.motion.Stage') && ...
+               this.commDCT2WaferStage.isConnected()
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectDCT2WaferStage(this)
+            if this.getIsConnectedDCT2WaferStage()
+                
+                this.commDCT2WaferStage.disconnect();
+                this.commDCT2WaferStage = [];
+            end
+        end
+        
+        
+        function connectDCT2WaferStage(this)
+            
+            if this.getIsConnectedDCT2WaferStage()
+                return
+            end
+
+            try
+                this.getjMet5Instruments();
+                this.commDCT2WaferStage = this.jMet5Instruments.getDCT2WaferStage();
+                this.commDCT2WaferStage.connect();
+                
+            catch mE
+                this.commDCT2WaferStage = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
+            end
+            
+        end
+        
+        function comm = getDCT2WaferStage(this)
+            
+            if this.getIsConnectedDCT2WaferStage()
+                comm = this.commDCT2WaferStage;
+                return
+            end
+                
+            comm = this.commDCT2WaferStageVirtual;
+                
+        end
+        
+        
+        %% DCT2 Aperture Stage
+        
+        
+        function l = getIsConnectedDCT2ApertureStage(this)
+            
+            if this.notEmptyAndIsA(this.commDCT2ApertureStage, 'cxro.common.device.motion.Stage') && ...
+               this.commDCT2ApertureStage.isConnected()
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
+        function disconnectDCT2ApertureStage(this)
+            if this.getIsConnectedDCT2ApertureStage()
+                
+                this.commDCT2ApertureStage.disconnect();
+                this.commDCT2ApertureStage = [];
+            end
+        end
+        
+        
+        function connectDCT2ApertureStage(this)
+            
+            if this.getIsConnectedDCT2ApertureStage()
+                return
+            end
+
+            try
+                this.getjMet5Instruments();
+                this.commDCT2ApertureStage = this.jMet5Instruments.getDCT2ApertureStage();
+                this.commDCT2ApertureStage.connect();
+                
+            catch mE
+                this.commDCT2ApertureStage = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+               
+            end
+            
+        end
+        
+        function comm = getDCT2ApertureStage(this)
+            
+            if this.getIsConnectedDCT2ApertureStage()
+                comm = this.commDCT2ApertureStage;
+                return
+            end
+                
+            comm = this.commDCT2ApertureStageVirtual;
                 
         end
         
@@ -1523,6 +1643,10 @@ classdef Hardware < mic.Base
             this.commGalilM143Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
             
+            
+            this.commDCT2WaferStageVirtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commDCT2ApertureStageVirtual = bl12014.hardwareAssets.virtual.Stage();
+
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
             this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();
             
