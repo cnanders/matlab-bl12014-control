@@ -22,6 +22,8 @@
 		"matlab_hex",
 		"matlab_cxro_als",
 		"matlab_mightex_led_controller",
-		"matlab_prolith_src"
+		"matlab_prolith_src",
+		"matlab_srs_sr570",
+		"matlab_ascii_comm"
 	]
 }

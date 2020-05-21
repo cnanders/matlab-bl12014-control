@@ -9,7 +9,6 @@ classdef DCT2ApertureStage < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiY
         
-        
         % {mic.ui.common.PositionRecaller 1x1}
         uiPositionRecaller
         

@@ -77,6 +77,12 @@ classdef Hardware < mic.Base
         commDCT2WaferStage
         commDCT2WaferStageVirtual
         
+        commSR570DCT1
+        commSR570DCT1Virtual
+        
+        commSR570DCT2
+        commSR570DCT2Virtual
+        
         commDCT2ApertureStage
         commDCT2ApertureStageVirtual
         
@@ -230,6 +236,9 @@ classdef Hardware < mic.Base
             
             this.commDCT2WaferStageVirtual = [];
             this.commDCT2ApertureStageVirtual = [];
+            
+            this.commSR570DCT1Virtual = [];
+            this.commSR570DCT2Virtual = [];
             
             this.commKeithley6482ReticleVirtual = [];
             this.commKeithley6482WaferVirtual = [];
@@ -1282,6 +1291,85 @@ classdef Hardware < mic.Base
                 
         end
         
+        %% DCT2 SR570 1
+        
+        function l = getIsConnectedSR570DCT1(this)
+            l = this.notEmptyAndIsA(this.commSR570DCT1, 'srs.SR570');
+        end
+        
+        function disconnectSR570DCT1(this)
+            if this.getIsConnectedSR570DCT1()
+                this.commSR570DCT1 = [];
+            end
+        end
+        
+        
+        function connectSR570DCT1(this)
+            
+            if this.getIsConnectedSR570DCT1()
+                return
+            end
+
+            try
+                this.commSR570DCT1 = srs.SR570(); % FIX ME SET THE PORT
+            catch mE
+                this.commSR570DCT1 = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+            end
+            
+        end
+        
+        function comm = getSR570DCT1(this)
+            
+            if this.getIsConnectedSR570DCT1()
+                comm = this.commSR570DCT1;
+                return
+            end
+                
+            comm = this.commSR570DCT1Virtual;
+                
+        end
+        
+        
+        %% DCT2 SR570 1
+        
+        function l = getIsConnectedSR570DCT2(this)
+            l = this.notEmptyAndIsA(this.commSR570DCT2, 'srs.SR570');
+        end
+        
+        function disconnectSR570DCT2(this)
+            if this.getIsConnectedSR570DCT2()
+                this.commSR570DCT2 = [];
+            end
+        end
+        
+        
+        function connectSR570DCT2(this)
+            
+            if this.getIsConnectedSR570DCT2()
+                return
+            end
+
+            try
+                this.commSR570DCT2 = srs.SR570(); % FIX ME SET THE PORT
+            catch mE
+                this.commSR570DCT2 = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+            end
+            
+        end
+        
+        function comm = getSR570DCT2(this)
+            
+            if this.getIsConnectedSR570DCT2()
+                comm = this.commSR570DCT2;
+                return
+            end
+                
+            comm = this.commSR570DCT2Virtual;
+                
+        end
+        
         
         %% DCT2 Wafer Stage
         
@@ -1646,6 +1734,9 @@ classdef Hardware < mic.Base
             
             this.commDCT2WaferStageVirtual = bl12014.hardwareAssets.virtual.Stage();
             this.commDCT2ApertureStageVirtual = bl12014.hardwareAssets.virtual.Stage();
+            
+            this.commSR570DCT1Virtual = srs.SR570Virtual();
+            this.commSR570DCT2Virtual = srs.SR570Virtual();
 
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
             this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();

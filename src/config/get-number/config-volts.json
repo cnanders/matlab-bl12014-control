@@ -1,0 +1,37 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "V",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "mV",
+			"slope": 1e3,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "uV",
+			"slope": 1e6,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "nV",
+			"slope": 1e9,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "pV",
+			"slope": 1e12,
+			"offset": 0,
+			"precision": 3
+		}
+	]
+}	
+	
+	
