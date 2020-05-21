@@ -66,10 +66,7 @@ classdef WaferExposureHistory < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
-            
-            
-            
-            
+ 
         end
         
         function [dX, dY] = getCoordinatesOfFemPreview(this)
@@ -150,9 +147,6 @@ classdef WaferExposureHistory < mic.Base
             this.ceExposure = {};
         end
         
-       
-                
-        
         function addFakeFemPreview(this)
         
             dX          = 0.5e-3; % Dose
@@ -200,9 +194,6 @@ classdef WaferExposureHistory < mic.Base
             ced = this.ceExposure;
         end
         
-                
-        
-
     end
     
     methods (Access = private)
