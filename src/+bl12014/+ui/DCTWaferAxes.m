@@ -281,8 +281,10 @@ classdef DCTWaferAxes < mic.Base
             
             
             % Rotate around z axis by 180
+            %{
             dRotation = makehgtform('zrotate', pi);
             set(this.hTransformedGroup, 'Matrix', dRotation);
+            %}
             
             
                        
@@ -311,15 +313,13 @@ classdef DCTWaferAxes < mic.Base
         function onClock(this)
             
             this.setXLsi();
-            this.setStagePosition();
+            this.setPositionOfWafer();
+            this.setPositionOfAperture();
             this.drawExposures();
             this.drawExposuresPre();
             this.drawExposuresScan();
             this.setExposing();
-
         end 
-                                
-        
                 
         function deleteClockTimes(this)
             this.deleteChildren(this.hClockTimes)
@@ -394,7 +394,7 @@ classdef DCTWaferAxes < mic.Base
         end
         
         
-        function setStagePosition(this)
+        function setPositionOfWafer(this)
             
             % Make sure the hggroup of the carriage is at the correct
             % location.
@@ -403,13 +403,13 @@ classdef DCTWaferAxes < mic.Base
             dY = this.fhGetYOfWafer();
             
             if isnan(dX)
-                this.msg('setStagePosition() dX === NaN', this.u8_MSG_TYPE_ERROR);
+                this.msg('setPositionOfWafer() dX === NaN', this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
             
             if isnan(dY)
-                this.msg('setStagePosition() dY === NaN', this.u8_MSG_TYPE_ERROR);
+                this.msg('setPositionOfWafer() dY === NaN', this.u8_MSG_TYPE_ERROR);
                 return;
             end
             
@@ -550,11 +550,7 @@ classdef DCTWaferAxes < mic.Base
                 this.deleteCrosshairLoadLock();
                 this.drawCrosshairLoadLock();
                 
-                
-                
-                
             end
-            
             
             this.deleteClockTimes();
             this.drawClockTimes();
@@ -1133,6 +1129,7 @@ classdef DCTWaferAxes < mic.Base
                 'HorizontalAlignment', 'center', ...
                 'Color', [1, 1, 1] ... 
             };
+        
             [dLeft, dBottom, dWidth, dHeight] = this.uiZoomPanAxes.getVisibleSceneLBWH();
                         
             % 12:00
@@ -1145,7 +1142,7 @@ classdef DCTWaferAxes < mic.Base
         
             % 03:00
             text( ...
-                dLeft + dWidth * 0.1, ...
+                dLeft + 0.1 * dWidth, ...
                 dBottom + dHeight * 0.5, ...
                 '03:00 (-X)', ...
                 ceProps{:} ...
@@ -1154,14 +1151,14 @@ classdef DCTWaferAxes < mic.Base
             % 06:00
             text( ...
                 dLeft + dWidth/2, ...
-                dBottom + dHeight - 0.05 * dHeight, ...
+                dBottom + dHeight - 0.02 * dHeight, ...
                 '06:00 (+Y)', ...
                 ceProps{:} ...
             );
         
             % 09:00
             text( ...
-                dLeft + dWidth * 0.93, ...
+                dLeft + dWidth - 0.06 * dWidth, ...
                 dBottom + dHeight * 0.5, ...
                 '09:00 (+X)', ...
                 ceProps{:} ...
