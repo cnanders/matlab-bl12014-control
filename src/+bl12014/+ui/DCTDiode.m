@@ -1,14 +1,8 @@
-classdef DCT2Diode < mic.Base
+classdef DCTDiode < mic.Base
     
     properties
         
-        % {mic.ui.device.GetNumber 1x1}
-        uiVolts
-        uiCurrent % calculated
-        uiFluxDensity % calculated
         
-        uiPopupSensitivity
-        uiPopupAperture
         
         
     end
@@ -29,24 +23,33 @@ classdef DCT2Diode < mic.Base
         
     end
     
+    properties (Access = private)
+        
+        % GetSetNumber config
+        dWidthName = 100
+        hPanel
+        
+    end
+        
     properties (SetAccess = private)
         
-        cName = 'dct2-diode-'
+        cName = 'dct-diode-'
         cTitle = 'Diode Test'
         dHeight = 180
         dWidth = 290
         
-        % GetSetNumber config
-        dWidthName = 100
+        % {mic.ui.device.GetNumber 1x1}
+        uiVolts
+        uiCurrent % calculated
+        uiFluxDensity % calculated
         
-        d
-        
-        hPanel
+        uiPopupSensitivity
+        uiPopupAperture
     end
     
     methods
         
-        function this = DCT2Diode(varargin)
+        function this = DCTDiode(varargin)
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -70,6 +73,12 @@ classdef DCT2Diode < mic.Base
         
         end
         
+        % Returns the flux density on the diode in mj/cm2/s
+        function d = getFluxDensity(this)
+            dAmps = this.getCurrent();
+            dWatts = dAmps / this.dSensitivityOfDiode;
+            d = dWatts * 1e3 / this.uiPopupAperture.get().dArea;
+        end
                 
         function build(this, hParent, dLeft, dTop)
             
@@ -262,12 +271,7 @@ classdef DCT2Diode < mic.Base
             d = this.uiVolts.getValCal('V') * this.uiPopupSensitivity.get().dVal;
         end
         
-        % Returns the flux density on the diode in mj/cm2/s
-        function d = getFluxDensity(this)
-            dAmps = this.getCurrent();
-            dWatts = dAmps / this.dSensitivityOfDiode;
-            d = dWatts * 1e3 / this.uiPopupAperture.get().dVal;
-        end
+        
             
             
         
@@ -337,10 +341,15 @@ classdef DCT2Diode < mic.Base
         
         function initUiAperture(this)
             
-            % Values are area in cm2
+            % dArea is are area in cm2
+            % dX, dY is the position of the aperture stage when centeed on
+            % chief ray
+            
             ceOptions = {...
-                struct('cLabel', '1 cm', 'dVal', 1), ...
-                struct('cLabel', '500 um', 'dVal', 0.002) ...
+                struct('cLabel', '25 mm', 'dArea', 2.5^2, 'dX', -25, 'dY' , 0), ...
+                struct('cLabel', '10 mm', 'dArea', 1, 'dX', 5, 'dY', 0), ...
+                struct('cLabel', '5 mm', 'dArea', .5^2, 'dX', 25, 'dY', 0), ...
+                struct('cLabel', '500 um', 'dArea', 0.002, 'dX', 35, 'dY', 0) ...
             };
         
             this.uiPopupAperture = mic.ui.common.PopupStruct( ...

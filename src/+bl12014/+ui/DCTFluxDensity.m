@@ -1,59 +1,33 @@
-classdef TuneFluxDensity < mic.Base
+classdef DCTFluxDensity < mic.Base
         
     properties (Constant)
        
-        
         dWidth      = 700 %1295
-        dHeight     = 800
-        
-        dPeriodOfScan = 1;
-        cNameOfConfigFile = 'tune-flux-density-coordinates.json'
+        dHeight     = 600
     end
     
 	properties
         
-        
         % These are the UI for activating the hardware that gives the 
         % software real data
         
-        
-        uiHeightSensorLeds
-
-        uiTabGroup
+        uiStageWafer
+        uiStageAperture
                 
-        uiStageWaferCoarse
-        uiStageReticleCoarse
-        
-        uiReticle
-        
         uiDiode
         uiShutter
         uiUndulator
         uiExitSlit
         uiGratingTiltX
-        
-        uiMotMinSimple
-        
                 
         % Must pass in
-        waferExposureHistory
-        uiScannerMA
         uiScannerM142
         
-        uiSequencePrep
         uiStateMonoGratingAtEUV
-        uiStateReticleAtClearField
-        uiStateReticleLevel
         uiStateWaferAtDiode
-        uiStateHeightSensorLEDsOff
+        uiStateApertureMatchesDiode
         uiStateShutterOpen
-        uiStateMAScanningAnnular3585
         uiStateM142ScanningDefault
-        uiStateUndulatorIsCalibrated
-        
-        
-        % {figure handle 1x1} returned by waitbar()
-        hWaitbar
         
         % {logical 1x1} true when save is aborted. rest to true when save
         % clicked
@@ -84,8 +58,7 @@ classdef TuneFluxDensity < mic.Base
     
     properties (SetAccess = private)
         
-        hPanel
-        cName = 'tune-flux-density-'
+        cName = 'dct-flux-density-'
         
         % {struct 1x1} stores config date loaded from +bl12014/config/tune-flux-density-coordinates.json
         stConfig
@@ -103,12 +76,10 @@ classdef TuneFluxDensity < mic.Base
         % {mic.Scan 1x1}
         scan
         
-        
         % {bl12014.Hardware 1x1}
         hardware
         
         dFluxDensityAcc = [] % accumulated during calibration
-        
         dFluxDensityCalibrated = 0
         dGapOfUndulatorCalibrated = 40.24
         dGapOfExitSlitCalibrated = 300
@@ -128,7 +99,7 @@ classdef TuneFluxDensity < mic.Base
     methods
         
         
-        function this = TuneFluxDensity(varargin)
+        function this = DCTFluxDensity(varargin)
             
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
@@ -144,24 +115,24 @@ classdef TuneFluxDensity < mic.Base
                 '..', ...
                 '..', ...
                 'save', ...
-                'flux-density' ...
+                'dct-flux-density' ...
             );
             
-        
+            % The reason we pass this in is because the grating has 
+            % a relative offset and the architecture is set up so this is
+            % on a UI by UI basis.
+            
+            %{
             if ~isa(this.uiGratingTiltX, 'mic.ui.device.GetSetNumber')
-                    error('uiGratingTiltX must be mic.ui.device.GetSetNumber');
+                error('uiGratingTiltX must be mic.ui.device.GetSetNumber');
             end
-            if ~isa(this.uiReticle, 'bl12014.ui.Reticle')
-                    error('uiReticle must be bl12014.ui.Reticle');
-            end
+            %}
             
-            if ~isa(this.uiScannerMA, 'bl12014.ui.Scanner')
-                error('uiScannerMA must be bl12014.ui.Scanner');
-            end
-            
+            %{
             if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
                 error('uiScannerM142 must be bl12014.ui.Scanner');
             end
+            %}
             
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
@@ -207,139 +178,9 @@ classdef TuneFluxDensity < mic.Base
             c = this.dtTimeCalibrated;
         end
         
-        
-        
-        
-        
-        
-
-        function buildTab1(this)
-            
-            % Tab (Stages)
-            
-            dLeft = 10;
-            dTop = 45;
-            dPad = 10;
-            dSep = 30;
-            
-            hTab = this.uiTabGroup.getTabByIndex(1);
-             
-            
-            dTop = dTop + dSep;
-            
-            this.uiStageWaferCoarse.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiStageWaferCoarse.dHeight + dPad;
-            
-            
-            this.uiStageReticleCoarse.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiStageReticleCoarse.dHeight + dPad;
-            
-            
-        end
-        
-        function buildTab2(this)
-            
-            % Tab (Tune)
-            
-            % hTab = this.uiTabGroup.getTabByIndex(2);
-            hTab = this.hPanel;
-            dLeft = 10;
-            dTop = 15;
-            dSep = 30;
-            dPad = 10;
-                        
-            dWidthTask = 300;
-            this.uiSequencePrep.build(hTab, 10, dTop, 600);
-            dTop = dTop + dSep;
-            
-            this.uiMotMinSimple.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiMotMinSimple.dHeight + dPad;
-            
-            this.uiStateMonoGratingAtEUV.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateReticleAtClearField.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateReticleLevel.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateWaferAtDiode.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateHeightSensorLEDsOff.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateMAScanningAnnular3585.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateM142ScanningDefault.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-            
-            this.uiStateShutterOpen.build(hTab, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
-                        
-            
-            dTopLast = dTop;
-            
-            dTop = 100;
-            dSep = 25;
-            dWidthText = 200;
-            dHeightText = 14;
-            dSep = 5;
-            dLeft = 380;
-            
-            this.uiTextTimeCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
-            dTop = dTop + dHeightText + dSep;
-            
-            this.uiTextFluxDensityCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
-            dTop = dTop + dHeightText + dSep;
-            
-            this.uiTextGapOfUndulatorCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
-            dTop = dTop + dHeightText + dSep;
-            
-            this.uiTextGapOfExitSlitCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
-            dTop = dTop + dHeightText + dSep;
-            
-            this.uiStateUndulatorIsCalibrated.build(hTab, dLeft, dTop, 300)
-            
-            
-            dTop = dTopLast;
-            dLeft = 10;
-            
-            this.uiDiode.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiDiode.dHeight + dPad;
-            
-            this.uiShutter.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiShutter.dHeight + dPad;
-            
-            this.uiExitSlit.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiExitSlit.dHeight + dPad;
-            
-            
-            this.uiUndulator.build(hTab, dLeft, dTop);
-            dTop = dTop + 24 + dPad;
-            
-            dTop = dTop + 10
-            this.uiButtonSave.build(hTab, dLeft + 350, dTop, 300, 48);
-            dTop = dTop + 24 + dPad;
-            
-            %{
-            this.uiHeightSensorLeds.build(hTab, dLeft, dTop);
-            dTop = dTop + this.uiHeightSensorLeds.dHeight + dPad;
-            %}
-            
-            this.buildSaveModal();
-            
-        end
-        
-        
         function build(this, hParent, dLeft, dTop)
                     
-            
-            % this.uiTabGroup.build(hParent, dLeft, dTop, this.dWidth, this.dHeight);
-
-            this.hPanel = uipanel(...
+            hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
                 'Title', '',...
@@ -350,8 +191,80 @@ classdef TuneFluxDensity < mic.Base
                 this.dWidth ...
                 this.dHeight], hParent) ...
             );
-            % this.buildTab1();
-            this.buildTab2();
+            
+            dLeft = 10;
+            dTop = 15;
+            dSep = 30;
+            dPad = 10;
+                        
+            dWidthTask = 400;
+            
+            %{
+            this.uiSequencePrep.build(hPanel, 10, dTop, 600);
+            dTop = dTop + dSep;
+            %}
+            
+            %{
+            this.uiStateMonoGratingAtEUV.build(hPanel, 10, dTop, dWidthTask);
+            dTop = dTop + dSep;
+            %}
+            
+            this.uiStateWaferAtDiode.build(hPanel, 10, dTop, dWidthTask);
+            dTop = dTop + dSep;
+            
+            this.uiStateApertureMatchesDiode.build(hPanel, 10, dTop, dWidthTask);
+            dTop = dTop + dSep;
+            
+            %{
+            this.uiStateM142ScanningDefault.build(hPanel, 10, dTop, dWidthTask);
+            dTop = dTop + dSep;
+            %}
+            
+            this.uiStateShutterOpen.build(hPanel, 10, dTop, dWidthTask);
+            dTop = dTop + dSep;
+            
+            dTop = dTop + 20;
+                                    
+            this.uiUndulator.build(hPanel, dLeft, dTop);
+            dTop = dTop + 24 + dPad;
+            
+            this.uiExitSlit.build(hPanel, dLeft, dTop);
+            dTop = dTop + this.uiExitSlit.dHeight + dPad;
+            
+            this.uiShutter.build(hPanel, dLeft, dTop);
+            dTop = dTop + this.uiShutter.dHeight + dPad;
+            
+            this.uiDiode.build(hPanel, dLeft, dTop);
+            
+            this.buildCalibratePanel(hPanel, 350, dTop + 30);
+            
+            dTop = dTop + this.uiDiode.dHeight + dPad;
+            
+            this.buildSaveModal();
+            
+        end
+        
+        function buildCalibratePanel(this, hParent, dLeft, dTop)
+            
+            dSep = 25;
+            dWidthText = 200;
+            dHeightText = 14;
+            dSep = 5;
+            
+            this.uiTextTimeCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextFluxDensityCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextGapOfUndulatorCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextGapOfExitSlitCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            dTop = dTop + 20;
+            
+            this.uiButtonSave.build(hParent, dLeft, dTop, 300, 48);
             
         end
         
@@ -364,17 +277,11 @@ classdef TuneFluxDensity < mic.Base
         
         function delete(this)
                         
-            delete(this.uiStateM142ScanningDefault);
-            delete(this.uiStateMAScanningAnnular3585);
-            delete(this.uiStateReticleAtClearField);
-            delete(this.uiStateReticleLevel);
+            % delete(this.uiStateM142ScanningDefault);
             delete(this.uiStateShutterOpen);
             delete(this.uiStateWaferAtDiode);
-            delete(this.uiStateHeightSensorLEDsOff);
+            delete(this.uiStateApertureMatchesDiode)
             delete(this.uiSequencePrep);
-            
-            %delete(this.uiScannerM142)
-            %delete(this.uiScannerMA);
             delete(this.uiShutter);
             delete(this.uiExitSlit);
                         
@@ -382,19 +289,10 @@ classdef TuneFluxDensity < mic.Base
         
         function st = save(this)
             st = struct();
-            st.uiStageWaferCoarse = this.uiStageWaferCoarse.save();
-            st.uiStageReticleCoarse = this.uiStageReticleCoarse.save();
-            
         end
         
         function load(this, st)
-            if isfield(st, 'uiStageWaferCoarse')
-                this.uiStageWaferCoarse.load(st.uiStageWaferCoarse)
-            end
             
-            if isfield(st, 'uiStageReticleCoarse')
-                this.uiStageReticleCoarse.load(st.uiStageReticleCoarse)
-            end
         end
                
     end
@@ -403,77 +301,40 @@ classdef TuneFluxDensity < mic.Base
         
         function init(this)
             
-            % Init config
-            cDirThis = fileparts(mfilename('fullpath'));
-
-            cPath = fullfile(cDirThis, '..', '..', 'config', this.cNameOfConfigFile);
-            %this.stConfig = loadjson(cPath);
-            fid = fopen(cPath, 'r');
-            cText = fread(fid, inf, 'uint8=>char');
-            fclose(fid);
-            this.stConfig = jsondecode(cText');
-            
             this.msg('init()');
             
-            
-            cecNames = {...
-                'Position Wafer + Reticle Stages', ...
-                'Tune Exit Slit + Undulator' ...
-            };
-        
-%             cefhCallbacks = { ...
-%                 @this.onUiTabStages, ...
-%                 @this.onUiTabTune ...
-%             };
-%         
-            this.uiTabGroup = mic.ui.common.Tabgroup(...
-                ... % 'fhDirectCallback', cefhCallbacks, ...
-                'ceTabNames',  cecNames ...
-            );
-        
-        
-            this.uiHeightSensorLeds = bl12014.ui.HeightSensorLEDs(...
-                'cName', [this.cName, 'height-sensor-leds'], ...
+            this.uiStageWafer = bl12014.ui.DCTWaferStage(...
                 'hardware', this.hardware, ...
-                'clock', this.uiClock ...
-            );
-            
-            
-            this.uiStageWaferCoarse = bl12014.ui.WaferCoarseStage(...
-                'hardware', this.hardware, ...
-                'cName', [this.cName, 'stage-wafer-coarse'], ...
+                'cName', [this.cName, 'stage-wafer'], ...
                 'clock', this.uiClock ...
             );
         
-            this.uiStageReticleCoarse = bl12014.ui.ReticleCoarseStage(...
+            this.uiStageAperture = bl12014.ui.DCTApertureStage(...
                 'hardware', this.hardware, ...
-                'cName', [this.cName, 'stage-reticle-coarse'], ...-
+                'cName', [this.cName, 'stage-aperture'], ...
                 'clock', this.uiClock ...
             );
         
             
         
-        
-            
-        
-            this.uiDiode = bl12014.ui.WaferDiode(...
-                'cName', [this.cName, 'diode-wafer'], ...
-                'hardware', this.hardware, ...
-                'clock', this.uiClock ...
+            this.uiDiode = bl12014.ui.DCTDiode(...
+                'cName', [this.cName, 'diode-1'], ...
+                'cTitle', 'Diode 1', ...
+                'fhSetSensitivity', @(dLevel) this.hardware.getSR570DCT1().setSensitivity(dLevel), ...
+                'fhGetVolts', @() this.hardware.getDataTranslation().getScanDataOfChannel(33), ...
+                'clock', this.clock ...
             );
-           
-            
+        
+       
             this.uiExitSlit = bl12014.ui.ExitSlit(...
                 'hardware', this.hardware, ...
                 'clock', this.uiClock);
-            
             
             this.uiUndulator = bl12014.ui.Undulator(...
                 'cName', [this.cName, 'undulator'], ...
                 'hardware', this.hardware, ...
                 'uiClock', this.uiClock ...
             );
-        
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
@@ -481,7 +342,7 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.uiClock ...
             );
 
-
+            %{
             this.uiStateMonoGratingAtEUV = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-mono-grating-at-euv'], ...
                 'task', bl12014.Tasks.createStateMonoGratingAtEUV(...
@@ -492,50 +353,32 @@ classdef TuneFluxDensity < mic.Base
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
+            %}
                         
-            this.uiStateReticleAtClearField = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-reticle-at-clear-field'], ...
-                'task', bl12014.Tasks.createStateReticleStageAtClearField(...
-                    [this.cName, 'state-reticle-at-clear-field'], ...
-                    this.uiReticle.uiReticleFiducializedMove, ...
-                    this.clock ...
-                ), ...
-                'lShowButton', true, ...
-                'clock', this.uiClock ...
-            );
-        
-            this.uiStateReticleLevel = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-reticle-reticle-level'], ...
-                'task', bl12014.Tasks.createSequenceLevelReticle(...
-                    [this.cName, 'state-reticle-level'], ...
-                    this.uiReticle.uiReticleTTZClosedLoop, ...
-                    this.clock ...
-                ), ...
-                'lShowButton', true, ...
-                'clock', this.uiClock ...
-            );
-        
             this.uiStateWaferAtDiode = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-wafer-at-diode'], ...
-                'task', bl12014.Tasks.createStateWaferStageAtDiode(...
+                'task', bl12014.Tasks.createStateDCTWaferStageAtDiode(...
                     [this.cName, 'state-wafer-at-diode'], ...
-                    this.uiStageWaferCoarse, ...
+                    this.uiStageWafer, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
         
-            this.uiStateHeightSensorLEDsOff = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-height-sensor-leds-off'], ...
-                'task', bl12014.Tasks.createStateHeightSensorLEDsOff(...
-                    [this.cName, 'state-height-sensor-leds-off'], ...
-                    this.uiHeightSensorLeds, ...
+        
+            this.uiStateApertureMatchesDiode = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-dct-aperture-stage-matches-diode'], ...
+                'task', bl12014.Tasks.createStateDCTApertureStageMatchesDiode(...
+                    [this.cName, 'state-dct-aperture-stage-matches-diode'], ...
+                    this.uiStageAperture, ...
+                    this.uiDiode, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
+            
         
             this.uiStateShutterOpen = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-shutter-is-open'], ...
@@ -548,17 +391,7 @@ classdef TuneFluxDensity < mic.Base
                 'clock', this.uiClock ...
             );
         
-            this.uiStateMAScanningAnnular3585 = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-ma-is-scanning-annular'], ...
-                'task', bl12014.Tasks.createStateMAScanningAnnular3585(...
-                    [this.cName, 'state-ma-is-scanning-annular'], ...
-                    this.uiScannerMA.uiNPointLC400, ...
-                    this.clock ...
-                ), ...
-                'lShowButton', false, ...
-                'clock', this.uiClock ...
-            );
-        
+            %{
             this.uiStateM142ScanningDefault = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-m142-is-scanning-default'], ...
                 'task', bl12014.Tasks.createStateM142ScanningDefault(...
@@ -569,24 +402,7 @@ classdef TuneFluxDensity < mic.Base
                 'lShowButton', false, ...
                 'clock', this.uiClock ...
             );
-        
-        
-            this.uiSequencePrep = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-sequence-prep-for-tuning-flux-density'], ...
-                'task', bl12014.Tasks.createSequencePrepForTuningFluxDensity(...
-                    [this.cName, 'sequence-prep-for-tuning-flux-density'], ...
-                    this.uiReticle.uiReticleFiducializedMove, ...
-                    this.uiReticle.uiReticleTTZClosedLoop, ...
-                    this.uiStageWaferCoarse, ...
-                    this.uiHeightSensorLeds, ...
-                    this.uiScannerMA, ...
-                    this.uiScannerM142, ...
-                    this.uiShutter, ...
-                    this.clock ...
-                ), ...
-                'lShowIsDone', false, ...
-                'clock', this.uiClock ...
-            );
+            %}
         
             this.uiButtonSave = mic.ui.common.Button(...
                 'fhOnClick', @this.onClickSave, ...
@@ -641,86 +457,11 @@ classdef TuneFluxDensity < mic.Base
             this.uiTextGapOfExitSlitCalibrated = mic.ui.common.Text(...
                 'cVal', 'Gap of Exit Slit:');
             
-            this.uiStateUndulatorIsCalibrated = mic.ui.TaskSequence(...
-                'cName', [this.cName, 'ui-state-undulator-is-calibrated'], ...
-                'task', bl12014.Tasks.createStateUndulatorIsCalibrated(...
-                    [this.cName, 'state-undulator-is-calibrated'], ...
-                    this, ...
-                    this.clock ...
-                ), ...
-                'lShowButton', true, ...
-                'clock', this.uiClock ...
-            );
-        
-        
-            this.uiMotMinSimple = bl12014.ui.PowerPmacHydraMotMinSimple(...
-                'cName', [this.cName, 'power-pmac-hydra-mot-min-simple'], ...
-                'hardware', this.hardware, ...
-                'uiClock', this.uiClock, ...
-                'clock', this.clock ...
-            );
-        
-        
-        
             this.loadLastFluxCalibration();
         end
         
 
-        
-        
-        function setMotMinToMax(this)
-                        
-        end
-        
-        function l = isReadyMotMin(this)
-           l = true; 
-        end
-        
-        function setWorkingModeToUndefined(this)
-            
-        end
-        
-        function l = isWorkingModeUndefined(this)
-           l = true; 
-        end
-        
-        function setWorkingModeToActivate(this)
-            
-        end
-        
-        function l = isWorkingModeActivate(this)
-            l = true;
-        end
-        
-        
-        function l = isReticleStageInPosition(this)
-        
-               l =  abs(this.stConfig.xReticle.value - this.uiStageReticleCoarse.uiX.getValCal(this.stConfig.xReticle.unit)) <= ...
-                        this.stConfig.xReticle.displayTol && ...
-                    abs(this.stConfig.yReticle.value - this.uiStageReticleCoarse.uiY.getValCal(this.stConfig.yReticle.unit)) <= ...
-                        this.stConfig.yReticle.displayTol && ...
-                    abs(this.stConfig.zReticle.value - this.uiStageReticleCoarse.uiZ.getValCal(this.stConfig.zReticle.unit)) <= ...
-                        this.stConfig.zReticle.displayTol;
-        
-        end
-        
-        function l = isWaferStageInPosition(this)
-        
-               l =  abs(this.stConfig.xWafer.value - this.uiStageWaferCoarse.uiX.getValCal(this.stConfig.xWafer.unit)) <= ...
-                        this.stConfig.xWafer.displayTol && ...
-                    abs(this.stConfig.yWafer.value - this.uiStageWaferCoarse.uiY.getValCal(this.stConfig.yWafer.unit)) <= ...
-                        this.stConfig.yWafer.displayTol && ...
-                    abs(this.stConfig.zWafer.value - this.uiStageWaferCoarse.uiZ.getValCal(this.stConfig.zWafer.unit)) <= ...
-                        this.stConfig.zWafer.displayTol;
-        
-        end
-        
-        function l = isInPosition(this)
-            l = this.isReticleStageInPosition() && this.isWaferStageInPosition();
-        end
-        
         function cancelSave(this)
-            % close(this.hWaitbar)
             this.hideSaveModal();
             this.lAbortSave = true;
         end
@@ -737,10 +478,6 @@ classdef TuneFluxDensity < mic.Base
             %}
             
             set(this.hFigureSave, 'Visible', 'off');
-            
-            
-            
-            
         end
         
         function buildSaveModal(this)
@@ -904,10 +641,7 @@ classdef TuneFluxDensity < mic.Base
                 this.uiButtonRedoSave.hide();
                 
             end
-            
-            
 
-            
         end
         
         function onClickCancelSave(this, ~, ~)
@@ -926,17 +660,6 @@ classdef TuneFluxDensity < mic.Base
             this.showSaveModal();
             this.uiProgressBarSave.show();
             
-%             this.hWaitbar = waitbar(...
-%                 0, ...
-%                 'Averaging flux density for 10 seconds ...', ...
-%                 'CreateCancelBtn', @(src, evt) this.cancelSave() ...
-%             );
-        
-            % Adjust the height
-%             dPosition = get(this.hWaitbar, 'Position');
-            
-            % left bottom width height
-%             set(this.hWaitbar, 'Position', [dPosition(1:3) 250]);
             
             this.dFluxDensityAcc = [];
             dNum = 20;
@@ -946,7 +669,7 @@ classdef TuneFluxDensity < mic.Base
                     return
                 end
                 
-                this.dFluxDensityAcc(end + 1) = this.uiDiode.uiCurrent.getValCal("mJ/cm2/s (clear field)");
+                this.dFluxDensityAcc(end + 1) = this.uiDiode.getFluxDensity();
                                 
                 if isempty(this.hPlotSave)
                     this.hPlotSave = plot(1 : n, this.dFluxDensityAcc,'.-');
@@ -957,19 +680,9 @@ classdef TuneFluxDensity < mic.Base
                 end
                 
                 this.uiProgressBarSave.set(n / dNum);
-                
-%                 waitbar(n / dNum, this.hWaitbar, cecMsg);
-                pause(0.7);
+                pause(0.3);
             end
             
-           %{ 
-           cMsgValue = sprintf(...
-                '%d of %d: %1.3f mJ/cm2/s', ...
-                n, ...
-                dNum, ...
-                this.dFluxDensityAcc(end) ...
-            );
-            %}
             
             dMean = abs(mean(this.dFluxDensityAcc));
             dStd = std(this.dFluxDensityAcc);
@@ -1021,9 +734,6 @@ classdef TuneFluxDensity < mic.Base
             this.uiButtonRedoSave.show();
             this.uiButtonConfirmSave.show();
             this.uiProgressBarSave.hide();
-            
-            % close(this.hWaitbar);
-            % this.hideSaveModal();
                             
         end
         
@@ -1085,11 +795,7 @@ classdef TuneFluxDensity < mic.Base
             this.uiTextGapOfExitSlitCalibrated.set(sprintf('Gap of Exit Slit: %1.1f um', this.dGapOfExitSlitCalibrated));
 
         end
-        
-        
-        
-        
-        
+
     end % private
     
     
