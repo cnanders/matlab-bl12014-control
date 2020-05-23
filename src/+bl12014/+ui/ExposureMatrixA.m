@@ -79,6 +79,8 @@ classdef ExposureMatrixA < mic.Base
                 
         uiButtonLoadDefault
         
+        fhOnChange = @(stData) []
+        
     end
     
         
@@ -93,7 +95,16 @@ classdef ExposureMatrixA < mic.Base
     methods
         
         
-        function this = ExposureMatrixA()
+        function this = ExposureMatrixA(varargin)
+            
+            for k = 1 : 2: length(varargin)
+                this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
+                if this.hasProp( varargin{k})
+                    this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
+                    this.(varargin{k}) = varargin{k + 1};
+                end
+            end 
+            
             this.init();
         end
         
@@ -483,7 +494,6 @@ classdef ExposureMatrixA < mic.Base
             this.uieDoseStep.set(5);
             
             
-            
         end
         
         function onDoseNum(this, src, evt)
@@ -788,6 +798,11 @@ classdef ExposureMatrixA < mic.Base
         
         function update(this)
             
+            if ~this.lInitialized
+                return;
+            end
+               
+            
             this.updateSize();
             this.updateDose();
             
@@ -799,6 +814,8 @@ classdef ExposureMatrixA < mic.Base
             if ~this.lLoading
                 this.msg('updateSize() calling notify()');
                 notify(this, 'eSizeChange', mic.EventWithData(stData));
+                
+                this.fhOnChange(stData);
             else
                 this.msg('updateSize() skipping notify() because loading');
             end

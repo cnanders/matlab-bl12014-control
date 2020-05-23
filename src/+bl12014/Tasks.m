@@ -279,8 +279,9 @@ classdef Tasks < mic.Base
                 error('clock must be mic.Clock');
             end
             
-            if ~isa(ui, 'bl12014.ui.TuneFluxDensity')
-                error('ui must be bl12014.ui.TuneFluxDensity');
+            if  ~isa(ui, 'bl12014.ui.TuneFluxDensity')  && ...
+                ~isa(ui, 'bl12014.ui.DCTFluxDensity')
+                error('ui must be bl12014.ui.*FluxDensity ');
             end
             
             ceTasks = {

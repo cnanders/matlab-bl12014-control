@@ -21,11 +21,8 @@ classdef DCTWaferAxes < mic.Base
         % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
         dHeight = 500
         
-        
-        dXChiefRay = 1e-3 % m
+        dXChiefRay = 1e-3 % m think of this as the stage position when EUV hits center of wafer
         dYChiefRay = 1e-3 % m
-        
-        
         
         cName = 'wafer-axes'
         

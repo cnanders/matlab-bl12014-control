@@ -10,14 +10,15 @@ classdef DCTPrescriptions < mic.Base
     
 	properties
         
-        uieName
-        uiExposureMatrix                  
+                 
                 
     end
     
     properties (SetAccess = private)
         
         uiListPrescriptions
+        uieName
+        uiExposureMatrix         
     
     end
     
@@ -33,6 +34,8 @@ classdef DCTPrescriptions < mic.Base
         uiButtonOverwrite
                 
         dWidthBorderPanel = 0
+        
+        fhOnChange = @(stData) []
     
     end
     
@@ -259,7 +262,9 @@ classdef DCTPrescriptions < mic.Base
             );
         
             
-            this.uiExposureMatrix = bl12014.ui.ExposureMatrixA();
+            this.uiExposureMatrix = bl12014.ui.ExposureMatrixA(...
+                'fhOnChange', @(stData) this.fhOnChange(stData) ...
+            );
             
             this.uiButtonSave = mic.ui.common.Button(...
                 'cText', 'Save As', ...
