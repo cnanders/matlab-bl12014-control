@@ -197,7 +197,7 @@ classdef DCTPrescriptions < mic.Base
             % Reference shot
             stValue = struct();
             stValue.xWafer = this.uiExposureMatrix.dX(1);
-            stValue.yWafer = this.uiExposureMatrix.dY(1) - this.uiExposureMatrix.getStepY();
+            stValue.yWafer = this.uiExposureMatrix.dY(1) - this.uiExposureMatrix.getStepY() * 1e-3;
             
             stTask = struct();
             stTask.dose = this.uiExposureMatrix.dDose(end);
@@ -283,7 +283,7 @@ classdef DCTPrescriptions < mic.Base
                 'cTitle', 'Saved', ...
                 'cDir', cDir, ...
                 'cLabel', '', ...
-                'cFilter', '*.json', ...
+                'cFilter', '*.mat', ... '*.json', ...
                 'fhOnChange', @this.onPrescriptionsChange, ...
                 'lOrderByReverse', false, ...
                 'lShowDelete', true, ...
@@ -384,6 +384,7 @@ classdef DCTPrescriptions < mic.Base
         
         function saveRecipeMatToDisk(this, cPath)
             st = this.save();
+            st.stRecipe = this.getRecipe();
             save(cPath, 'st');
         end
         
@@ -439,7 +440,8 @@ classdef DCTPrescriptions < mic.Base
                 % Load the .mat file (assume that cName is the filename in the
                 % prescriptions directory
 
-                cPath = this.replaceExtension(fullfile(this.uiListPrescriptions.getDir(), ceSelected{1}), '.mat');
+                % cPath = this.replaceExtension(fullfile(this.uiListPrescriptions.getDir(), ceSelected{1}), '.mat');
+                cPath = fullfile(this.uiListPrescriptions.getDir(), ceSelected{1});
                 this.loadRecipeMatFromDisk(cPath);
             end
             

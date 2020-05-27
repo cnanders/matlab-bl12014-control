@@ -80,8 +80,8 @@ classdef Hardware < mic.Base
         commSR570DCT1
         commSR570DCT1Virtual
         
-        commSR570DCT
-        commSR570DCTVirtual
+        commSR570DCT2
+        commSR570DCT2Virtual
         
         commDCTApertureStage
         commDCTApertureStageVirtual
@@ -238,7 +238,7 @@ classdef Hardware < mic.Base
             this.commDCTApertureStageVirtual = [];
             
             this.commSR570DCT1Virtual = [];
-            this.commSR570DCTVirtual = [];
+            this.commSR570DCT2Virtual = [];
             
             this.commKeithley6482ReticleVirtual = [];
             this.commKeithley6482WaferVirtual = [];
@@ -1333,40 +1333,40 @@ classdef Hardware < mic.Base
         
         %% DCT SR570 1
         
-        function l = getIsConnectedSR570DCT(this)
-            l = this.notEmptyAndIsA(this.commSR570DCT, 'srs.SR570');
+        function l = getIsConnectedSR570DCT2(this)
+            l = this.notEmptyAndIsA(this.commSR570DCT2, 'srs.SR570');
         end
         
-        function disconnectSR570DCT(this)
-            if this.getIsConnectedSR570DCT()
+        function disconnectSR570DCT2(this)
+            if this.getIsConnectedSR570DCT2()
                 this.commSR570DCT = [];
             end
         end
         
         
-        function connectSR570DCT(this)
+        function connectSR570DCT2(this)
             
-            if this.getIsConnectedSR570DCT()
+            if this.getIsConnectedSR570DCT2()
                 return
             end
 
             try
-                this.commSR570DCT = srs.SR570(); % FIX ME SET THE PORT
+                this.commSR570DCT2 = srs.SR570(); % FIX ME SET THE PORT
             catch mE
-                this.commSR570DCT = [];
+                this.commSR570DCT2 = [];
                 this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
             end
             
         end
         
-        function comm = getSR570DCT(this)
+        function comm = getSR570DCT2(this)
             
-            if this.getIsConnectedSR570DCT()
-                comm = this.commSR570DCT;
+            if this.getIsConnectedSR570DCT2()
+                comm = this.commSR570DCT2;
                 return
             end
                 
-            comm = this.commSR570DCTVirtual;
+            comm = this.commSR570DCT2Virtual;
                 
         end
         
@@ -1736,7 +1736,7 @@ classdef Hardware < mic.Base
             this.commDCTApertureStageVirtual = bl12014.hardwareAssets.virtual.Stage();
             
             this.commSR570DCT1Virtual = srs.SR570Virtual();
-            this.commSR570DCTVirtual = srs.SR570Virtual();
+            this.commSR570DCT2Virtual = srs.SR570Virtual();
 
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
             this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();

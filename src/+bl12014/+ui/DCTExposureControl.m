@@ -189,6 +189,10 @@ classdef DCTExposureControl < mic.Base
                 error('uiFluxDensity must be bl12014.ui.DCTFluxDensity');
             end
             
+            if ~isa(this.uiBeamline, 'bl12014.ui.Beamline')
+                error('uiBeamline must be bl12014.ui.Beamline');
+            end
+            
             %{
             if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
                 error('uiScannerM142 must be bl12014.ui.Scanner');
@@ -322,13 +326,22 @@ classdef DCTExposureControl < mic.Base
            
            if this.lUseMjPerCm2PerSecOverride
                 this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-                dTop = dTop + dSep;
-           end
-           
+                
+                dWidthText = 300;
+                dHeightText = 24;
+                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 100, dTop, dWidthText, dHeightText);
+                
+           else
+               
            dWidthText = 300;
            dHeightText = 24;
-           this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 100, dTop, dWidthText, dHeightText);
-            
+           this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
+                
+               
+           end
+           
+           
+           dTop = dTop + dSep;
            
            dSep = 20;
            
@@ -572,21 +585,21 @@ classdef DCTExposureControl < mic.Base
             
             this.uiButtonClearPrescriptions = mic.ui.common.Button(...
                 'cText', 'Clear Prescriptions', ...
-                'fhOnClick', @this.onUiButtonClearPrescriptions ...
+                'fhOnClick', @this.onClickClearPrescriptions ...
             );
         
             this.uiButtonClearWafer = mic.ui.common.Button(...
                 'cText', 'Clear Wafer', ...
-                'fhOnClick', @this.onUiButtonClearWafer ...
+                'fhOnClick', @this.onClickClearWafer ...
             );
         
             this.uibNewWafer = mic.ui.common.Button(...
                 'cText', 'New', ...
-                'fhOnClick', @this.onUiButtonNewWafer ...
+                'fhOnClick', @this.onClickNewWafer ...
             );
             this.uibAddToWafer = mic.ui.common.Button(...
                 'cText', 'Add To Wafer', ...
-                'fhOnClick', @this.onAddToWafer ...
+                'fhOnClick', @this.onClickAddToWafer ...
             );
             % Prints from "Added" list
             this.uibPrint = mic.ui.common.Button(...
@@ -680,6 +693,7 @@ classdef DCTExposureControl < mic.Base
             );
             
             
+            %{
             this.uiStateM142ScanningDefault = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-sequence-set-m142-to-default'], ...
                 'task', bl12014.Tasks.createSequenceSetM142ToDefault(...
@@ -690,6 +704,7 @@ classdef DCTExposureControl < mic.Base
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
+            %}
         
             this.uiStateUndulatorIsCalibrated = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-undulator-is-calibrated'], ...
@@ -941,7 +956,7 @@ classdef DCTExposureControl < mic.Base
             
         end
         
-        function onUiButtonNewWafer(this, src, evt)
+        function onClickNewWafer(this, src, evt)
             
             % Purge all items from uiListActive
             this.uiListActive.setOptions(cell(1,0));
@@ -950,13 +965,13 @@ classdef DCTExposureControl < mic.Base
             
         end
         
-        function onUiButtonClearWafer(this, src, evt)
+        function onClickClearWafer(this, src, evt)
             this.exposures.purgeExposures();
             this.exposures.purgeExposuresScan();
             
         end
         
-        function onUiButtonClearPrescriptions(this, src, evt)
+        function onClickClearPrescriptions(this, src, evt)
             
             this.uiListActive.setOptions(cell(1,0));
             this.exposures.purgeExposuresScan();
@@ -990,7 +1005,7 @@ classdef DCTExposureControl < mic.Base
         end
         
         
-        function onAddToWafer(this, src, evt)
+        function onClickAddToWafer(this, src, evt)
                         
             % For all prescriptions highlihged when the user clicks 
             % "add to wafer", add them to ListActive 
@@ -1031,6 +1046,8 @@ classdef DCTExposureControl < mic.Base
         end
         
 
+        % @param {char 1xm} full path to .mat recipe file
+        
         function [stRecipe, lError] = buildRecipeFromFile(this, cPath)
            
             cMsg = sprintf('buildRecipeFromFile: %s', cPath);
@@ -1063,6 +1080,16 @@ classdef DCTExposureControl < mic.Base
             
             % File exists
             
+            load(cPath); 
+            % populates variable st in local workspace.  The variable st is
+            % the saved state of the prescription UI which has props
+            % uieName
+            % uiExposureMatrix
+            % stRecipe
+         
+            stRecipe = st.stRecipe;
+            
+            %{
             % stRecipe = loadjson(cPath);
             fid = fopen(cPath, 'r');
             cText = fread(fid, inf, 'uint8=>char');
@@ -1075,6 +1102,7 @@ classdef DCTExposureControl < mic.Base
                 lError = true;
                 return;
             end
+            %}
 
         end
             
@@ -1103,15 +1131,20 @@ classdef DCTExposureControl < mic.Base
             for n = 1 : length(ceFields)
                 
                 cField = ceFields{n};
+                
+                
                                 
                 switch cField
                     case 'xWafer'
-                        dX = stValue.(cField) + this.uiAxes.dXChiefRay * 1e3;
-                        this.uiStageWafer.uiX.setDestCalAndGo(dX, 'mm')
+                        
+                        % stValue.xWafer is where we want the exposure on
+                        % the wafer so the stage needs to be opposite this.
+                        dVal = -stValue.(cField) + this.uiAxes.dXChiefRay; % both in SI (m)
+                        this.uiStageWafer.uiX.setDestCalAndGo(dVal * 1e3, 'mm')
                         this.stScanSetContract.(cField).lIssued = true;
                     case 'yWafer'
-                        dVal = stValue.(cField) + this.uiAxes.dYChiefRay * 1e3; 
-                        this.uiStageWafer.uiY.setDestCalAndGo(dVal, 'mm')
+                        dVal = -stValue.(cField) + this.uiAxes.dYChiefRay; 
+                        this.uiStageWafer.uiY.setDestCalAndGo(dVal * 1e3, 'mm')
                         this.stScanSetContract.(cField).lIssued = true;
                     otherwise
                         % do nothing
@@ -1180,7 +1213,10 @@ classdef DCTExposureControl < mic.Base
                             switch cField
                                 
                                 case 'xWafer'
-                                    lReady = abs(this.uiStageWafer.uiX.getValCal(stUnit.xWafer) - this.uiAxes.dXChiefRay * 1e3 - stValue.xWafer) <= this.dToleranceWaferX;
+                                    
+                                    dXStageMm = this.uiStageWafer.uiX.getValCal(stUnit.xWafer); % mm
+                                    dXWafer = -dXStageMm * 1e-3 + this.uiAxes.dXChiefRay; % m % position of exposure on wafer
+                                    lReady = abs(dXWafer - stValue.xWafer) <= this.dToleranceWaferX;
                                             
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
@@ -1192,8 +1228,11 @@ classdef DCTExposureControl < mic.Base
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
                                 case 'yWafer'
-                                    lReady = abs(this.uiStageWafer.uiY.getValCal(stUnit.yWafer) - this.uiAxes.dYChiefRay * 1e3 - stValue.yWafer) <= this.dToleranceWaferY;
-                                            
+                                    
+                                    dYStageMm = this.uiStageWafer.uiY.getValCal(stUnit.yWafer); % mm
+                                    dYWafer = -dYStageMm * 1e-3 + this.uiAxes.dYChiefRay; % m % position of exposure on wafer
+                                    lReady = abs(dYWafer - stValue.yWafer) <= this.dToleranceWaferY;
+                                                                                
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
@@ -1415,12 +1454,19 @@ classdef DCTExposureControl < mic.Base
                     this.msg(sprintf('%s adding exposure to GUI', cFn), this.u8_MSG_TYPE_SCAN);
                 end
                 
+                dXStageMm = this.uiStageWafer.uiX.getValCal(stUnit.xWafer); % mm
+                dXWafer = -dXStageMm * 1e-3 + this.uiAxes.dXChiefRay; % m % position of exposure on wafer
+
+                dYStageMm = this.uiStageWafer.uiY.getValCal(stUnit.yWafer); % mm
+                dYWafer = -dYStageMm * 1e-3 + this.uiAxes.dYChiefRay; % m % position of exposure on wafer
+                                    
+                                    
                 % Could also use stValue.xWafer / 1000, stValue.yWafer / 1000
                 dExposure = [
-                    this.uiAxes.dXChiefRay - this.uiStageWafer.uiX.getValCal('mm') / 1000 ...
-                    this.uiAxes.dYChiefRay - this.uiStageWafer.uiY.getValCal('mm') / 1000 ...
-                    this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth, ...
-                    this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight, ...
+                    dXWafer ...
+                    dYWafer ...
+                    this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                    this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight * 1e-3, ...
                     stValue.task.dose ...
                 ];
                 this.exposures.addExposure(dExposure);
@@ -1521,7 +1567,6 @@ classdef DCTExposureControl < mic.Base
             % Create a new folder to save results
             this.cDirScan = this.getDirScan();
 
-
             [stRecipe, lError] = this.buildRecipeFromFile(cFile); 
 
             if lError 
@@ -1533,7 +1578,7 @@ classdef DCTExposureControl < mic.Base
             this.ceValuesFast = cell(0);
 
             this.scan = mic.Scan(...
-                'ui-fem-scan', ...
+                [this.cName, 'scan'], ...
                 this.clock, ...
                 stRecipe, ...
                 @this.onScanSetState, ...
@@ -1542,7 +1587,7 @@ classdef DCTExposureControl < mic.Base
                 @this.onScanIsAcquired, ...
                 @this.onScanComplete, ...
                 @this.onScanAbort, ...
-                0.25 ... % Need larger than the PPMAC cache period of 0.2 s
+                0.25 ... % Need larger than any hardware cache periods (PPMAC is 0.2 s)
             );
 
             this.scan.start();
@@ -1556,7 +1601,9 @@ classdef DCTExposureControl < mic.Base
                 cMsg = 'The FEM was aborted.';
             end
             
-            this.uiListActive.setOptions({});
+            this.uiListActive.setOptions(cell(1,0));
+            this.exposures.purgeExposuresScan();
+            
              
             cMsg = sprintf('The FEM was aborted. The list of added prescriptions has been purged.');
             cTitle = 'Fem Aborted';
@@ -1610,15 +1657,15 @@ classdef DCTExposureControl < mic.Base
             end
             
             if ~this.hardware.getIsConnectedSR570DCT1()
-                cMsg = sprintf('%s\n%s', cMsg, 'SR570 DCT1');
+                cMsg = sprintf('%s\n%s', cMsg, 'SR570 Current Preamp DCT1');
             end
             
             if ~this.hardware.getIsConnectedSR570DCT2()
-                cMsg = sprintf('%s\n%s', cMsg, 'SR570 DCT2');
+                cMsg = sprintf('%s\n%s', cMsg, 'SR570 Current Preamp DCT2');
             end
             
             if ~this.hardware.getIsConnectedDataTranslation()
-                cMsg = sprintf('%s\n%s', cMsg, 'Data Trnslation');
+                cMsg = sprintf('%s\n%s', cMsg, 'Data Translation (Volts From SR570)');
             end
             
 
@@ -1839,9 +1886,9 @@ classdef DCTExposureControl < mic.Base
             st.y_aperture_mm = this.uiStageAperture.uiY.getValCal('mm');
             
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
-            st.sensitivity_sr570 = this.uiDiode.uiPopupSensitivity.get().cLabel;
-            st.aperture = this.uiDiode.uiPopupAperture.get().cLabel;
-            st.flux_mj_per_cm2_per_s = this.uiDiode.getFluxDensity();
+            st.sensitivity_sr570 = this.uiFluxDensity.uiDiode.uiPopupSensitivity.get().cLabel;
+            st.aperture = this.uiFluxDensity.uiDiode.uiPopupAperture.get().cLabel;
+            st.flux_mj_per_cm2_per_s = this.uiFluxDensity.uiDiode.getFluxDensity();
             
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
