@@ -25,8 +25,8 @@ ui = bl12014.ui.DCT(...
 );
 
 
-dWidth = 1750;
-dHeight = 900;
+dWidth = 1800;
+dHeight = 1000;
 dScreenSize = get(0, 'ScreenSize');
 h = figure(...
     'Position', [ ...

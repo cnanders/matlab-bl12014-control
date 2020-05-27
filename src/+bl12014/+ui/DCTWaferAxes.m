@@ -16,15 +16,15 @@ classdef DCTWaferAxes < mic.Base
         
         
         % {double 1x1} width of the mic.ui.axes.ZoomPanAxes in pixels
-        dWidth = 500
+        dWidth = 600
         
         % {double 1x1} height of the mic.ui.axes.ZoomPanAxes in pixels
-        dHeight = 500
+        dHeight = 600
         
         dXChiefRay = 0e-3 % m think of this as the stage position when EUV hits center of wafer
         dYChiefRay = 0e-3 % m
         
-        cName = 'wafer-axes'
+        cName = 'dct-axes'
         
         
     end
@@ -117,7 +117,6 @@ classdef DCTWaferAxes < mic.Base
         hTrack
         hClockTimes
         hCarriage
-        hCarriageLsi
         hIllum
         hAperture
                 
@@ -144,13 +143,9 @@ classdef DCTWaferAxes < mic.Base
         fhGetXOfWafer = @() -0.05
         % @returns {double 1x1} y position of the stage in meters
         fhGetYOfWafer = @() 0.02
-        % @returns {double 1x1} x position of the lsi stage in meters
-        fhGetXOfLsi = @() 450
-        
         % @returns {double 1x1} x, y position of the aperture stage in meters
         fhGetXOfAperture = @() 10e-3
         fhGetYOfAperture = @() -20e-3
-        
         % @returns {logical 1x1} true if shutter is open
         fhGetIsShutterOpen = @()false
         
@@ -172,6 +167,12 @@ classdef DCTWaferAxes < mic.Base
         dHueExposure = 0.8; % magenta
         
         dHue
+        
+        hardware
+        
+        uiStageAperture
+        uiStageWafer
+        uiShutter
     end
     
         
@@ -194,9 +195,18 @@ classdef DCTWaferAxes < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+                
+                
+            
             end
             
-            
+            if ~isa(this.hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
             
             this.init();
             
@@ -230,11 +240,10 @@ classdef DCTWaferAxes < mic.Base
             this.hTrack = hggroup('Parent', this.hTransformedGroup); 
             this.drawTrack(); 
             this.hCarriage = hgtransform('Parent', this.hTransformedGroup);      
-            this.drawCarriage();         
-            this.hCarriageLsi = hgtransform('Parent', this.hTransformedGroup);    
-            this.drawCarriageLsi();
-            this.setXLsi()
+            this.drawCarriage();   
             
+            
+           
             
             
             this.hAperture = hgtransform('Parent', this.hTransformedGroup);  
@@ -309,7 +318,6 @@ classdef DCTWaferAxes < mic.Base
         
         function onClock(this)
             
-            this.setXLsi();
             this.setPositionOfWafer();
             this.setPositionOfAperture();
             this.drawExposures();
@@ -368,26 +376,6 @@ classdef DCTWaferAxes < mic.Base
         
         function deleteOverlay(this)
             this.deleteChildren(this.hOverlay);                
-        end
-        
-        function setXLsi(this)
-            
-            dX = this.fhGetXOfLsi();
-            
-            if isnan(dX)
-                this.msg('setXLsi() dX === NaN', this.u8_MSG_TYPE_ERROR);
-                return;
-            end
-            
-            
-            try
-                hHgtf = makehgtform('translate', [dX 0 0]);
-                if ishandle(this.hCarriageLsi)
-                    set(this.hCarriageLsi, 'Matrix', hHgtf);
-                end
-            catch mE
-                this.msg(getReport(mE));
-            end
         end
         
         
@@ -493,6 +481,31 @@ classdef DCTWaferAxes < mic.Base
         function init(this)
             this.msg('init()');
             this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
+            
+            this.uiShutter = bl12014.ui.Shutter(...
+                'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+        
+            this.uiStageWafer = bl12014.ui.DCTWaferStage(...
+                'cName', [this.cName, 'stage-wafer'], ...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+        
+            this.uiStageAperture = bl12014.ui.DCTApertureStage(...
+                'cName', [this.cName, 'stage-aperture'], ...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+        
+            this.fhGetIsShutterOpen = @() this.uiShutter.uiOverride.get();
+            this.fhGetXOfWafer = @() this.uiStageWafer.uiX.getValCal('mm') * 1e-3;
+            this.fhGetYOfWafer = @() this.uiStageWafer.uiY.getValCal('mm') * 1e-3;
+            this.fhGetXOfAperture = @() this.uiStageAperture.uiX.getValCal('mm') * 1e-3;
+            this.fhGetYOfAperture = @() this.uiStageAperture.uiY.getValCal('mm') * 1e-3;
+        
             addlistener(this.uiZoomPanAxes, 'eZoom', @this.onZoom);
             addlistener(this.uiZoomPanAxes, 'ePanX', @this.onPan);
             addlistener(this.uiZoomPanAxes, 'ePanY', @this.onPan);
@@ -617,25 +630,7 @@ classdef DCTWaferAxes < mic.Base
             uistack(hPatch, 'top');
         end
         
-        function drawCarriageLsi(this)
-            
-            dOffset = 0;
-            dL = -200e-3 + dOffset;
-            dR = 200e-3 + dOffset;
-            dT = 200e-3;
-            dB = -200e-3;
-
-            
-            % Base square
-            
-            hPatch = patch( ...
-                [dL dL dR dR], ...
-                [dB dT dT dB], ...
-                [0.4, 0.4, 0.4], ...
-                'Parent', this.hCarriageLsi, ...
-                'EdgeColor', 'none');
-            
-        end
+        
         
         function drawCarriage(this)
             
@@ -1180,26 +1175,39 @@ classdef DCTWaferAxes < mic.Base
             % This is going to be dumb and manual but only need to do one
             % time so not trying to get too clever
             
+            % Need to make a text file with these values that the aperture
+            % uses and this uses.
+            
+            
+            %{
+            ceOptions = {...
+                struct('cLabel', '25 mm', 'dArea', 2.5^2, 'dX', -25, 'dY' , 0, 'dWidth', 25, 'dHeight', 25), ...
+                struct('cLabel', '10 mm', 'dArea', 1, 'dX', 5, 'dY', 0, 'dWidth', 10, 'dHeight', 10), ...
+                struct('cLabel', '5 mm', 'dArea', .5^2, 'dX', 25, 'dY', 0, 'dWidth', 5, 'dHeight', 5), ...
+                struct('cLabel', '500 um', 'dArea', 0.002, 'dX', 35, 'dY', 0, 'dWidth', 0.5, 'dHeight', 0.5) ...
+            };
+            %}
+            
             % Aperture 1
-            dX1 = -25;
+            dX1 = 25;
             dY1 = 0;
             dWidth1 = 25.4;
             dHeight1 = 25.4;
             
             % Aperture 2
-            dX2 = 5;
+            dX2 = -5;
             dY2 = 0;
             dWidth2 = 10;
             dHeight2 = 10;
             
             % Aperture 3
-            dX3 = 25;
+            dX3 = -25;
             dY3 = 0;
             dWidth3 = 5;
             dHeight3 = 5;
             
             % Aperture 4
-            dX4 = 35;
+            dX4 = -35;
             dY4 = 0;
             dWidth4 = 1;
             dHeight4 = 1;

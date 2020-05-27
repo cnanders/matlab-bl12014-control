@@ -57,17 +57,19 @@ classdef DCTDiode < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
-            
-            %{
-            if ~isa(this.hardware, 'bl12014.Hardware')
-                error('hardware must be bl12014.Hardware');
-            end
-            %}
-            
-            
+                        
             if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
                 error('clock must be mic.Clock | mic.ui.Clock');
             end
+            
+            if ~isa(this.fhGetVolts, 'function_handle')
+                error('fhGetVolts must be function_handle');
+            end
+            
+            if ~isa(this.fhSetSensitivity, 'function_handle')
+                error('fhSetSensitivity must be function_handle');
+            end
+            
             
             this.init();
         

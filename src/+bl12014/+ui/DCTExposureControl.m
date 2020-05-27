@@ -7,6 +7,9 @@ classdef DCTExposureControl < mic.Base
     
     
     properties (Constant)
+        
+        dXChiefRay = 0e-3 % m think of this as the stage position when EUV hits center of wafer
+        dYChiefRay = 0e-3 % m
        
         dWidth = 950
         dHeight = 600
@@ -20,8 +23,8 @@ classdef DCTExposureControl < mic.Base
         dWidthPanelAvailable = 700
         dHeightPanelAvailable = 200
         
-        dWidthPanelAdded = 530
-        dHeightPanelAdded = 640
+        dWidthPanelAdded = 430
+        dHeightPanelAdded = 580
         
         dWidthPanelBorder = 1
         
@@ -255,15 +258,10 @@ classdef DCTExposureControl < mic.Base
         end
         
         
-        function buildPanelAdded(this)
-            
-           
-            
-            dLeft = 1200;
-            dTop = 10;
+        function buildPanelAdded(this, hParent, dLeft, dTop)
             
             this.hPanelAdded = uipanel(...
-                'Parent', this.hParent,...
+                'Parent', hParent,...
                 'Units', 'pixels',...
                 'Title', '',...
                 'BorderWidth', this.dWidthPanelBorder, ...
@@ -273,7 +271,7 @@ classdef DCTExposureControl < mic.Base
                     dTop ...
                     this.dWidthPanelAdded...
                     this.dHeightPanelAdded], ...
-                    this.hParent ...
+                    hParent ...
                 ) ...
             );
         
@@ -284,7 +282,7 @@ classdef DCTExposureControl < mic.Base
             this.uiListActive.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
-                this.dWidthList, ...
+                this.dWidthPanelAdded - 2 * this.dWidthPadFigure, ...
                 40);
             
            dTop = 30;
@@ -308,6 +306,7 @@ classdef DCTExposureControl < mic.Base
                 dTop, ...
                 this.dWidthButton, ...
                 this.dHeightButton);
+            
             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
             
             this.uibPrint.build(this.hPanelAdded, ...
@@ -329,7 +328,7 @@ classdef DCTExposureControl < mic.Base
                 
                 dWidthText = 300;
                 dHeightText = 24;
-                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 100, dTop, dWidthText, dHeightText);
+                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 110, dTop + 16, dWidthText, dHeightText);
                 
            else
                
@@ -529,11 +528,18 @@ classdef DCTExposureControl < mic.Base
         
         function build(this, hParent, dLeft, dTop)
             
-            this.hParent = hParent;
-            dTop = 10;
+            this.buildPanelPrescriptions(hParent, dLeft, dTop)
+            this.buildPanelAdded(hParent, dLeft + this.uiPrescriptions.dWidth + 20, dTop)
+            
+            % this.uiShutter.build(this.hParent, this.uiPrescriptions.dWidth + 25, 400);
+                      
+        end
+        
+        function buildPanelPrescriptions(this, hParent, dLeft, dTop)
+            
             this.uiPrescriptions.build(hParent, dLeft, dTop);
             
-            dLeft = 340;
+            dLeft = dLeft + this.uiPrescriptions.dWidth - 250;
             dWidthButton = 110;
             dSep = 10;
             
@@ -553,16 +559,6 @@ classdef DCTExposureControl < mic.Base
                 dWidthButton, ...
                 this.dHeightButton);
             
-            
-            this.buildPanelAdded()
-            
-            %this.uiReticleAxes.build(this.hParent, 10, dTop);
-            this.uiAxes.build(this.hParent, this.uiPrescriptions.dWidth + 30, 10);
-            % this.uiShutter.build(this.hParent, this.uiPrescriptions.dWidth + 25, 400);
-            % this.uiPOCurrent.build(this.hParent, 840, dTop);
-            
-            
-          
         end
         
         
@@ -618,7 +614,7 @@ classdef DCTExposureControl < mic.Base
                 'cLabel', 'Added prescriptions', ...
                 'fhDirectCallback', @this.onChangeListActive, ...
                 'lShowDelete', true, ...
-                'lShowMove', true, ...
+                'lShowMove', false, ...
                 'lShowLabel', true, ...
                 'lShowRefresh', false ...
             );
@@ -675,18 +671,7 @@ classdef DCTExposureControl < mic.Base
                 'clock', this.uiClock ...
             );
             
-            this.uiAxes = bl12014.ui.DCTWaferAxes(...
-                'cName', [this.cName, 'wafer-axes'], ...
-                'dWidth', 580, ...
-                'dHeight', 580, ...
-                'clock', this.uiClock, ...
-                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
-                'fhGetXOfWafer', @() this.uiStageWafer.uiX.getValCal('mm') * 1e-3, ...
-                'fhGetYOfWafer', @() this.uiStageWafer.uiY.getValCal('mm') * 1e-3, ...
-                'fhGetXOfAperture', @() this.uiStageAperture.uiX.getValCal('mm') * 1e-3, ...
-                'fhGetYOfAperture', @() this.uiStageAperture.uiY.getValCal('mm') * 1e-3, ...
-                'exposures', this.exposures ...
-            );
+            
         
             this.uiPrescriptions = bl12014.ui.DCTPrescriptions(...
                 'fhOnChange', @(stData) this.onChangePrescription(stData) ...
@@ -1139,11 +1124,11 @@ classdef DCTExposureControl < mic.Base
                         
                         % stValue.xWafer is where we want the exposure on
                         % the wafer so the stage needs to be opposite this.
-                        dVal = -stValue.(cField) + this.uiAxes.dXChiefRay; % both in SI (m)
+                        dVal = -stValue.(cField) + this.dXChiefRay; % both in SI (m)
                         this.uiStageWafer.uiX.setDestCalAndGo(dVal * 1e3, 'mm')
                         this.stScanSetContract.(cField).lIssued = true;
                     case 'yWafer'
-                        dVal = -stValue.(cField) + this.uiAxes.dYChiefRay; 
+                        dVal = -stValue.(cField) + this.dYChiefRay; 
                         this.uiStageWafer.uiY.setDestCalAndGo(dVal * 1e3, 'mm')
                         this.stScanSetContract.(cField).lIssued = true;
                     otherwise
@@ -1215,14 +1200,14 @@ classdef DCTExposureControl < mic.Base
                                 case 'xWafer'
                                     
                                     dXStageMm = this.uiStageWafer.uiX.getValCal(stUnit.xWafer); % mm
-                                    dXWafer = -dXStageMm * 1e-3 + this.uiAxes.dXChiefRay; % m % position of exposure on wafer
+                                    dXWafer = -dXStageMm * 1e-3 + this.dXChiefRay; % m % position of exposure on wafer
                                     lReady = abs(dXWafer - stValue.xWafer) <= this.dToleranceWaferX;
                                             
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
-                                            this.uiStageWafer.uiX.getValCal(stUnit.xWafer) - this.uiAxes.dXChiefRay * 1e3, ...
+                                            this.uiStageWafer.uiX.getValCal(stUnit.xWafer) - this.dXChiefRay * 1e3, ...
                                             stValue.xWafer ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
@@ -1230,14 +1215,14 @@ classdef DCTExposureControl < mic.Base
                                 case 'yWafer'
                                     
                                     dYStageMm = this.uiStageWafer.uiY.getValCal(stUnit.yWafer); % mm
-                                    dYWafer = -dYStageMm * 1e-3 + this.uiAxes.dYChiefRay; % m % position of exposure on wafer
+                                    dYWafer = -dYStageMm * 1e-3 + this.dYChiefRay; % m % position of exposure on wafer
                                     lReady = abs(dYWafer - stValue.yWafer) <= this.dToleranceWaferY;
                                                                                 
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
-                                            this.uiStageWafer.uiY.getValCal(stUnit.yWafer) - this.uiAxes.dYChiefRay * 1e3, ...
+                                            this.uiStageWafer.uiY.getValCal(stUnit.yWafer) - this.dYChiefRay * 1e3, ...
                                             stValue.yWafer ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
@@ -1455,10 +1440,10 @@ classdef DCTExposureControl < mic.Base
                 end
                 
                 dXStageMm = this.uiStageWafer.uiX.getValCal(stUnit.xWafer); % mm
-                dXWafer = -dXStageMm * 1e-3 + this.uiAxes.dXChiefRay; % m % position of exposure on wafer
+                dXWafer = -dXStageMm * 1e-3 + this.dXChiefRay; % m % position of exposure on wafer
 
                 dYStageMm = this.uiStageWafer.uiY.getValCal(stUnit.yWafer); % mm
-                dYWafer = -dYStageMm * 1e-3 + this.uiAxes.dYChiefRay; % m % position of exposure on wafer
+                dYWafer = -dYStageMm * 1e-3 + this.dYChiefRay; % m % position of exposure on wafer
                                     
                                     
                 % Could also use stValue.xWafer / 1000, stValue.yWafer / 1000

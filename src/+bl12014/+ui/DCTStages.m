@@ -5,8 +5,8 @@ classdef DCTStages < mic.Base
     
     properties (Constant)
         
-        dWidth = 1000
-        dHeight = 700
+        dWidth = 500
+        dHeight = 500
                
     end
     
@@ -19,8 +19,6 @@ classdef DCTStages < mic.Base
         
         uiStageAperture
         uiStageWafer
-        uiAxes
-        uiShutter
         
     end
     
@@ -83,12 +81,6 @@ classdef DCTStages < mic.Base
         
         function init(this)
             
-            this.uiShutter = bl12014.ui.Shutter(...
-                'cName', [this.cName, 'shutter'], ...
-                'hardware', this.hardware, ...
-                'clock', this.uiClock ...
-            );
-        
             this.uiStageWafer = bl12014.ui.DCTWaferStage(...
                 'cName', [this.cName, 'stage-wafer'], ...
                 'hardware', this.hardware, ...
@@ -100,18 +92,6 @@ classdef DCTStages < mic.Base
                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
-            
-            this.uiAxes = bl12014.ui.DCTWaferAxes(...
-                'cName', [this.cName, 'axes'], ...
-                'clock', this.uiClock, ...
-                'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
-                'fhGetXOfWafer', @() this.uiStageWafer.uiX.getValCal('mm') * 1e-3, ...
-                'fhGetYOfWafer', @() this.uiStageWafer.uiY.getValCal('mm') * 1e-3, ...
-                'fhGetXOfAperture', @() this.uiStageAperture.uiX.getValCal('mm') * 1e-3, ...
-                'fhGetYOfAperture', @() this.uiStageAperture.uiY.getValCal('mm') * 1e-3, ...
-                'exposures', this.exposures ...
-            );
-            
             
         end
         
@@ -129,11 +109,6 @@ classdef DCTStages < mic.Base
             this.uiStageWafer.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiStageWafer.dHeight + dPad;
             
-            % Don't build shutter.
-            
-            dLeft = dLeft + this.uiStageWafer.dWidth + dPad;
-            dTop = dTopStart;
-            this.uiAxes.build(hParent, dLeft, dTop);
             
         end
         

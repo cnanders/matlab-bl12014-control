@@ -3,7 +3,7 @@ classdef DCT < mic.Base
     properties (Constant)
         
         
-        dWidth = 1500
+        dWidth = 1750
         dHeight = 750
                
     end

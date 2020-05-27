@@ -13,7 +13,7 @@ classdef DCTFluxDensity < mic.Base
         
         uiStageWafer
         uiStageAperture
-                
+           
         uiDiode
         uiShutter
         uiUndulator
@@ -133,6 +133,7 @@ classdef DCTFluxDensity < mic.Base
                 error('uiScannerM142 must be bl12014.ui.Scanner');
             end
             %}
+
             
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
@@ -191,7 +192,7 @@ classdef DCTFluxDensity < mic.Base
                 this.dWidth ...
                 this.dHeight], hParent) ...
             );
-            
+                        
             dLeft = 10;
             dTop = 15;
             dSep = 30;
@@ -341,6 +342,8 @@ classdef DCTFluxDensity < mic.Base
                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
+        
+            
 
             %{
             this.uiStateMonoGratingAtEUV = mic.ui.TaskSequence(...

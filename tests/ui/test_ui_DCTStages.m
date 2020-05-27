@@ -10,7 +10,6 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
 
-
 exposures = bl12014.DCTExposures();
 exposures.addFakeExposures();
 exposures.addFakePre();
@@ -22,7 +21,13 @@ ui = bl12014.ui.DCTStages(...
     'exposures', exposures ...
 );
 
-dWidth = 1100;
+uiAxes = bl12014.ui.DCTWaferAxes(...
+    'clock', clock, ...
+    'hardware', hardware, ...
+    'exposures', exposures ...
+);
+
+dWidth = 1400;
 dHeight = 800;
 
 dScreenSize = get(0, 'ScreenSize');
@@ -35,8 +40,8 @@ h = figure( ...
         dHeight ...
      ] ...
 );
-% set(h,'renderer','zbuffer')
-ui.build(h, 10, 10);
+uiAxes.build(h, 10, 10);
+ui.build(h, uiAxes.dWidth + 30, 10);
 
  
 
