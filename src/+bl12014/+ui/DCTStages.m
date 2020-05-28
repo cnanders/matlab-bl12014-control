@@ -100,9 +100,7 @@ classdef DCTStages < mic.Base
 
             dPad = 10;
             dSep = 30;
-            
-            dTopStart = dTop;
-            
+                        
             this.uiStageAperture.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiStageAperture.dHeight + dPad;
             

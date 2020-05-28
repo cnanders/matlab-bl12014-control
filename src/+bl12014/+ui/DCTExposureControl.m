@@ -24,9 +24,9 @@ classdef DCTExposureControl < mic.Base
         dHeightPanelAvailable = 200
         
         dWidthPanelAdded = 430
-        dHeightPanelAdded = 580
+        dHeightPanelAdded = 650
         
-        dWidthPanelBorder = 1
+        dWidthPanelBorder = 0
         
         dColorFigure = [200 200 200]./255
         
@@ -136,23 +136,18 @@ classdef DCTExposureControl < mic.Base
         hardware
             
         
-        uiSequenceLevelWafer
-        uiSequenceLevelReticle
+        
         uiStateM142ScanningDefault
         uiStateUndulatorIsCalibrated
         uiStateExitSlitIsCalibrated
+        uiStateApertureIsCalibrated
         uiStateMonoGratingAtEUV
-        uiStateEndstationLEDsOff
-        uiStateVPFMOut
         uiStateM141SmarActOff
-        uiStateHeightSensorLEDsOn
-        uiStatePowerPmacAccelSetForFEM
+        uiStateApertureMatchesDiode
         
         uiTextReticleField
         
-        hAxesPupilFill
         hAxesFieldFill
-        hPlotPupilFill
         hPlotFieldFill
         dColorPlotFiducials = [0.3 0.3 0.3]
         
@@ -372,7 +367,7 @@ classdef DCTExposureControl < mic.Base
                 'Units', 'pixels',...
                 'Color', [0 0 0], ...
                 'Position',mic.Utils.lt2lb([...
-                dLeft, ...
+                dLeft + 10, ...
                 dTop, ...
                 dSize, ...
                 dSize], this.hPanelAdded),...
@@ -382,21 +377,6 @@ classdef DCTExposureControl < mic.Base
                 'HandleVisibility','on'...
            );
        
-            
-            this.hAxesPupilFill = axes(...
-                'Parent', this.hPanelAdded,...
-                'Units', 'pixels',...
-                'Color', [0 0 0], ...
-                'Position',mic.Utils.lt2lb([...
-                dLeft + dSize + 50,...
-                dTop,...
-                dSize,...
-                dSize], this.hPanelAdded),...
-                'XColor', [0 0 0],...
-                'YColor', [0 0 0],...
-                'DataAspectRatio',[1 1 1],...
-                'HandleVisibility','on'...
-           );
             
            dTop = dTop + 120;
            
@@ -414,68 +394,20 @@ classdef DCTExposureControl < mic.Base
            this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
+           this.uiStateApertureMatchesDiode.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           this.uiStateApertureIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
            %{
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            %}
-           
             
         end
              
-        
-        function plotPupilFill(this)
-            
-            if isempty(this.hAxesPupilFill)
-                return
-            end
-            
-            if ~ishandle(this.hAxesPupilFill)
-                return
-            end
-            
-            
-            st = this.uiScannerMA.uiNPointLC400.getWavetables();
-            
-            if isempty(this.hPlotPupilFill)
-                this.hPlotPupilFill = plot(...
-                    this.hAxesPupilFill, ...
-                    st.x, st.y, 'm', ...
-                    'LineWidth', 2 ...
-                );
-            
-                % Create plotting data for circles at sigma = 0.3 - 1.0
-
-                dSig = [0.3:0.1:1.0];
-                dPhase = linspace(0, 2*pi, 100);
-
-                for (k = 1:length(dSig))
-
-                    x = dSig(k)*cos(dPhase);
-                    y = dSig(k)*sin(dPhase);
-                    line( ...
-                        x, y, ...
-                        'color', this.dColorPlotFiducials, ...
-                        'LineWidth', 1, ...
-                        'Parent', this.hAxesPupilFill ...
-                    );
-
-                end
-            else
-                this.hPlotPupilFill.XData = st.x;
-                this.hPlotPupilFill.YData = st.y;
-            end
-            set(this.hAxesPupilFill, 'XTick', [], 'YTick', []);
-            
-            if this.uiScannerMA.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesPupilFill, 'Color', this.dColorGreen);
-            else
-                set(this.hAxesPupilFill, 'Color', this.dColorRed);
-            end
-            xlim(this.hAxesPupilFill, [-1 1])
-            ylim(this.hAxesPupilFill, [-1 1])
-            
-        end
-        
+                
         function plotFieldFill(this)
             
             if isempty(this.hAxesFieldFill)
@@ -486,8 +418,25 @@ classdef DCTExposureControl < mic.Base
                 return
             end
             
-            
+            % Returns the wavetable data loaded on the hardware.  Amplitude is
+            % relative [-1 : 1] to the max mechanical deflection of the hardware
+            % @typedef {struct 1x1} WavetableData
+            % @property {double 1xm} x - x amplitude [-1 : 1]
+            % @property {double 1xm} y - y amplitude [-1 : 1]
+            % @property {double 1xm} t - time (sec)
+            % @return {WavetableData 1x1}
+        
             st = this.uiScannerM142.uiNPointLC400.getWavetables();
+            
+            % Calculate mm per wavetable amplitude
+            % +/- 3 mrad mechanical creates +/- 6 mrad optical in
+            % reflection.  Propagate lets assume 6 meters to DCT aperture
+            % so when amplitude of wavetable is 1, we have 36mm of
+            % deflection
+            % So a swing of 2 in wavetable amplitude (+/- 1) is a width of 72mm
+            % Need to draw the aperture in wavetable units.  So divide the
+            % width by 72 and that is the amplitude.
+            
             
             if isempty(this.hPlotFieldFill)
                 this.hPlotFieldFill = plot(...
@@ -497,8 +446,12 @@ classdef DCTExposureControl < mic.Base
                 );
             
                 % Draw a border that represents the width of the field
-                dWidth = 0.62;
-                dHeight = dWidth / 5;
+                
+                dWidthMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth;
+                dHeightMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight;
+                
+                dWidth = dWidthMm / 72; % wavetable amplitude unuits
+                dHeight = dHeightMm / 72; % wavetable amplitude units
                 
                 x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
                 y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
@@ -724,6 +677,18 @@ classdef DCTExposureControl < mic.Base
                 'clock', this.uiClock ...
             );
         
+            this.uiStateApertureMatchesDiode = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-dct-aperture-stage-matches-diode'], ...
+                'task', bl12014.Tasks.createStateDCTApertureStageMatchesDiode(...
+                    [this.cName, 'state-dct-aperture-stage-matches-diode'], ...
+                    this.uiStageAperture, ...
+                    this.uiFluxDensity.uiDiode, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
             this.uiStateExitSlitIsCalibrated = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-exit-slit-is-calibrated'], ...
                 'task', bl12014.Tasks.createStateExitSlitIsCalibrated(...
@@ -734,6 +699,18 @@ classdef DCTExposureControl < mic.Base
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
+        
+            this.uiStateApertureIsCalibrated = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-aperture-is-calibrated'], ...
+                'task', bl12014.Tasks.createStateDCTApertureIsCalibrated(...
+                    [this.cName, 'state-aperture-is-calibrated'], ...
+                    this.uiFluxDensity, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
         
             this.uiClock.add(...
                 @this.updateScannerPlots, ...
@@ -764,8 +741,9 @@ classdef DCTExposureControl < mic.Base
         function updateTextsFluxCalibration(this, src, evt)
             
             this.uiTextFluxDensityCalibrated.set(...
-                sprintf('Flux Density: %1.1f mJ/cm2/s on %s', ...
+                sprintf('Flux Density: %1.1f mJ/cm2/s (%s aperture) on %s', ...
                 this.uiFluxDensity.getFluxDensityCalibrated(), ...
+                this.uiFluxDensity.getApertureCalibrated(), ...
                 this.uiFluxDensity.getTimeCalibrated() ...
             ));
             
@@ -1881,11 +1859,8 @@ classdef DCTExposureControl < mic.Base
         
         
         function updateScannerPlots(this, ~, ~)
-            
-            return
-             
+                         
             this.plotFieldFill();
-            this.plotPupilFill();
             
         end
         

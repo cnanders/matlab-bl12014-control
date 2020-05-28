@@ -3,8 +3,8 @@ classdef DCT < mic.Base
     properties (Constant)
         
         
-        dWidth = 1750
-        dHeight = 750
+        dWidthTabGroup = 1060
+        dHeightTabGroup = 750
                
     end
     
@@ -13,10 +13,15 @@ classdef DCT < mic.Base
         cName = 'ui.DCT'
         
         exposures
+        
+        uiAxes
         uiFluxDensity
         uiStages
         uiExposureControl
+        
+        % Pass in
         uiBeamline
+        uiScannerM142
         
         % Eventually make private.
         % Exposing for troubleshooting
@@ -67,6 +72,11 @@ classdef DCT < mic.Base
                 end
             end
             
+            if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
+                error('uiScannerM142 must be bl12014.ui.Scanner');
+            end
+            
+            
             if ~isa(this.uiBeamline, 'bl12014.ui.Beamline')
                 error('uiBeamline must be bl12014.ui.Beamline');
             end
@@ -85,15 +95,19 @@ classdef DCT < mic.Base
         
         
         function build(this, hParent, dLeft, dTop)
-
-            this.uiTabGroup.build(hParent, dLeft, dTop, this.dWidth, this.dHeight);
+            
+            
+            this.uiAxes.build(hParent, dLeft, dTop + 20);
+            this.uiTabGroup.build(hParent, ...
+                dLeft + this.uiAxes.dWidth + 10, ...
+                dTop, this.dWidthTabGroup, this.dHeightTabGroup);
             
             % Build the first tab.
             cTab = 'Stages';
             this.lIsTabBuilt(strcmp(cTab, this.cecTabs)) = true;
             hTab = this.uiTabGroup.getTabByName(cTab);
             
-            dLeft = 10;
+            dLeft = 30;
             dTop = 30;
             this.uiStages.build(hTab, dLeft, dTop);
             
@@ -166,6 +180,14 @@ classdef DCT < mic.Base
                 cefhCallback{n} = @this.onUiTabGroup;
             end
             
+            this.uiAxes = bl12014.ui.DCTWaferAxes(...
+                'clock', this.clock, ...
+                'dWidth', 700, ...
+                'dHeight', 700, ...
+                'hardware', this.hardware, ...
+                'exposures', this.exposures ...
+            );
+            
             this.uiTabGroup = mic.ui.common.Tabgroup(...
                 'fhDirectCallback', cefhCallback, ...
                 'ceTabNames',  this.cecTabs ...
@@ -182,12 +204,14 @@ classdef DCT < mic.Base
                 'exposures', this.exposures ...
             );
         
+            
+        
             this.uiFluxDensity = bl12014.ui.DCTFluxDensity(...
                 'clock', this.clock, ...
                 'uiClock', this.uiClockFluxDensity, ...
-                'hardware', this.hardware ...
+                'hardware', this.hardware, ...
                 ...'uiGratingTiltX', this.uiBeamline.uiGratingTiltX, ...
-                ...'uiScannerM142', this.uiScannerM142 ...
+                'uiScannerM142', this.uiScannerM142 ...
             );
             
             this.uiExposureControl = bl12014.ui.DCTExposureControl(...
@@ -199,6 +223,8 @@ classdef DCT < mic.Base
                 ...%'uiScannerM142', uiScannerM142, ...
                 'uiBeamline', this.uiBeamline ...
             );
+        
+            
         end
         
 
@@ -245,7 +271,7 @@ classdef DCT < mic.Base
 
             switch cTab
                 case 'Stages'
-                    this.uiBeamline.build(hTab, dLeft, dTop);
+                    this.uiStages.build(hTab, dLeft, dTop);
                 case 'Flux Density'
                      this.uiFluxDensity.build(hTab, dLeft, dTop);
                 case 'Exposure Control'

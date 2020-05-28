@@ -4,6 +4,7 @@ classdef DCTFluxDensity < mic.Base
        
         dWidth      = 700 %1295
         dHeight     = 600
+        dWidthPanelBorder = 0
     end
     
 	properties
@@ -53,6 +54,14 @@ classdef DCTFluxDensity < mic.Base
         uiTextFluxDensityCalibrated
         uiTextGapOfUndulatorCalibrated
         uiTextGapOfExitSlitCalibrated
+        uiTextApertureCalibrated
+        
+        
+        hAxesFieldFill
+        hPlotFieldFill
+        
+        dColorPlotFiducials = [0.3 0.3 0.3]
+        
                 
     end
     
@@ -83,6 +92,7 @@ classdef DCTFluxDensity < mic.Base
         dFluxDensityCalibrated = 0
         dGapOfUndulatorCalibrated = 40.24
         dGapOfExitSlitCalibrated = 300
+        cApertureCalibrated = '25 mm'
         dtTimeCalibrated = 'Never';
         
     end
@@ -128,12 +138,10 @@ classdef DCTFluxDensity < mic.Base
             end
             %}
             
-            %{
+            
             if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
                 error('uiScannerM142 must be bl12014.ui.Scanner');
             end
-            %}
-
             
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
@@ -173,6 +181,13 @@ classdef DCTFluxDensity < mic.Base
             d = this.dGapOfExitSlitCalibrated;
         end
         
+        % Returns aperture that was set when the last
+        % flux density calibration was performend and saved.  
+        % @return {char 1xm}
+        function c = getApertureCalibrated(this)
+            c = this.cApertureCalibrated;
+        end
+        
         % Returns {char 1xm} time yyyy-mm-dd--hh-mm-ss when the last 
         % flux density calibration was performed
         function c = getTimeCalibrated(this)
@@ -185,6 +200,7 @@ classdef DCTFluxDensity < mic.Base
                 'Parent', hParent,...
                 'Units', 'pixels',...
                 'Title', '',...
+                'BorderWidth', this.dWidthPanelBorder, ...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -263,6 +279,10 @@ classdef DCTFluxDensity < mic.Base
             
             this.uiTextGapOfExitSlitCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
             dTop = dTop + dHeightText + dSep;
+            
+            this.uiTextApertureCalibrated.build(hParent, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
             dTop = dTop + 20;
             
             this.uiButtonSave.build(hParent, dLeft, dTop, 300, 48);
@@ -299,6 +319,56 @@ classdef DCTFluxDensity < mic.Base
     end
     
     methods (Access = private)
+        
+        function plotFieldFill(this)
+            
+            if isempty(this.hAxesFieldFill)
+                return
+            end
+            
+            if ~ishandle(this.hAxesFieldFill)
+                return
+            end
+            
+            
+            st = this.uiScannerM142.uiNPointLC400.getWavetables();
+            
+            if isempty(this.hPlotFieldFill)
+                this.hPlotFieldFill = plot(...
+                    this.hAxesFieldFill, ...
+                    st.x, st.y, 'm', ...
+                    'LineWidth', 2 ...
+                );
+            
+                % Draw a border that represents the width of the field
+                dWidth = 0.62;
+                dHeight = dWidth / 5;
+                
+                x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
+                y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
+                line( ...
+                    x, y, ...
+                    'color', this.dColorPlotFiducials, ...
+                    'LineWidth', 1, ...
+                    'Parent', this.hAxesFieldFill ...
+                );
+            else
+                this.hPlotFieldFill.XData = st.x;
+                this.hPlotFieldFill.YData = st.y;
+            end
+            
+            set(this.hAxesFieldFill, 'XTick', [], 'YTick', []);
+            
+            % Set background color based on if the scanner is on or not
+            if this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get()
+                set(this.hAxesFieldFill, 'Color', this.dColorGreen);
+            else
+                set(this.hAxesFieldFill, 'Color', this.dColorRed);
+            end
+            xlim(this.hAxesFieldFill, [-1 1])
+            ylim(this.hAxesFieldFill, [-1 1])
+            
+        end
         
         function init(this)
             
@@ -459,6 +529,9 @@ classdef DCTFluxDensity < mic.Base
                 'cVal', 'Gap of Undulator:');
             this.uiTextGapOfExitSlitCalibrated = mic.ui.common.Text(...
                 'cVal', 'Gap of Exit Slit:');
+            
+            this.uiTextApertureCalibrated = mic.ui.common.Text(...
+                'cVal', 'Aperture:');
             
             this.loadLastFluxCalibration();
         end
@@ -746,6 +819,7 @@ classdef DCTFluxDensity < mic.Base
             st.dFluxDensity = abs(mean(this.dFluxDensityAcc));
             st.dGapOfUndulator = this.uiUndulator.uiGap.getValCal('mm');
             st.dGapOfExitSlit = this.uiExitSlit.uiGap.getValCal('um');
+            st.cAperture = this.uiDiode.uiPopupAperture.get().cLabel;
             st.dtTime = datetime('now');
             
             cTime = datestr(datevec(now), 'yyyy-mm-dd--HH-MM-SS', 'local');
@@ -768,7 +842,6 @@ classdef DCTFluxDensity < mic.Base
         
         function loadLastFluxCalibration(this)
             
-            
             cOrder = 'descend';
             cOrderByPredicate = 'date';
             % {char 1xm} - filter for dir2cell, e.g., '*.json'
@@ -790,12 +863,14 @@ classdef DCTFluxDensity < mic.Base
             this.dFluxDensityCalibrated = st.dFluxDensity;
             this.dGapOfUndulatorCalibrated = st.dGapOfUndulator;
             this.dGapOfExitSlitCalibrated = st.dGapOfExitSlit;
+            this.cApertureCalibrated = st.cAperture;
             this.dtTimeCalibrated = st.dtTime;
                         
             this.uiTextTimeCalibrated.set(sprintf('Last Calibration: %s', this.dtTimeCalibrated));
             this.uiTextFluxDensityCalibrated.set(sprintf('Flux Density: %1.1f mJ/cm2/s', this.dFluxDensityCalibrated));
             this.uiTextGapOfUndulatorCalibrated.set(sprintf('Gap of Undulator: %1.2f mm', this.dGapOfUndulatorCalibrated));            
             this.uiTextGapOfExitSlitCalibrated.set(sprintf('Gap of Exit Slit: %1.1f um', this.dGapOfExitSlitCalibrated));
+            this.uiTextApertureCalibrated.set(sprintf('Aperture: %s', this.cApertureCalibrated));
 
         end
 
