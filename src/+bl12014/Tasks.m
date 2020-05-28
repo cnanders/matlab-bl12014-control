@@ -128,6 +128,87 @@ classdef Tasks < mic.Base
             
         end
         
+        
+        function d = getXOfApertureOfDCTFluxCalibration(uiFluxDensity)
+            ceOptions = uiFluxDensity.uiDiode.uiPopupAperture.getOptions();
+            for n = 1 : length(ceOptions)
+               if strcmpi(ceOptions{n}.cLabel, uiFluxDensity.getApertureCalibrated())
+                   d = ceOptions{n}.dX;
+                   return
+               end
+           end
+        end
+        
+        function d = getYOfApertureOfDCTFluxCalibration(uiFluxDensity)
+            ceOptions = uiFluxDensity.uiDiode.uiPopupAperture.getOptions();
+            for n = 1 : length(ceOptions)
+               if strcmpi(ceOptions{n}.cLabel, uiFluxDensity.getApertureCalibrated())
+                   d = ceOptions{n}.dY;
+                   return
+               end
+           end
+        end
+        
+        
+        function task = createStateDCTApertureStageIsCalibrated(cName, uiStage, uiFluxDensity, clock)
+            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
+            
+            if  ~isa(uiStage, 'bl12014.ui.DCTApertureStage') 
+                error('uiStage must be bl12014.ui.DCTApertureStage');
+            end
+            
+            if  ~isa(uiFluxDensity, 'bl12014.ui.DCTFluxDensity')
+                error('uiFluxDensity must be bl12014.ui.DCTFluxDensity');
+            end
+            
+            dTolerance = 0.02;
+            
+            
+
+            ceTasks = {
+                mic.Task.fromUiGetSetNumberWithGoalGetter(...
+                    uiStage.uiX, ... mic.ui.device.GetSetNumbern
+                    @() bl12014.Tasks.getXOfApertureOfDCTFluxCalibration(uiFluxDensity), ... goal getter
+                    dTolerance, ... Tolerance
+                    'mm', ... Unit
+                    'X of Aperture Stage' ...
+                ), ...
+                mic.Task.fromUiGetSetNumberWithGoalGetter(...
+                    uiStage.uiY, ... mic.ui.device.GetSetNumbern
+                    @() bl12014.Tasks.getYOfApertureOfDCTFluxCalibration(uiFluxDensity), ... goal getter
+                    dTolerance, ... Tolerance
+                    'mm', ... Unit
+                    'Y of Aperture Stage' ...
+                ), ...
+                bl12014.Tasks.createStateDCTApertureIsCalibrated(...
+                    [cName, 'diode-aperture-setting-is-calibrated'], ...
+                    uiFluxDensity, ...
+                    clock ...
+               ) ...
+            };
+
+            fhGetMessage = @() [...
+                'Aperture Stage @CalAperture ', ...
+                sprintf('(%s) ', uiFluxDensity.getApertureCalibrated()), ...
+                sprintf('x=%1.2f y=%1.2f ', ...
+                    bl12014.Tasks.getXOfApertureOfDCTFluxCalibration(uiFluxDensity), ...
+                    bl12014.Tasks.getYOfApertureOfDCTFluxCalibration(uiFluxDensity) ...
+                ) ...
+            ];
+        
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', fhGetMessage ...
+            );
+            
+        end
+        
         function task = createStateDCTApertureStageMatchesDiode(cName, uiStage, uiDiode, clock)
             
             if ~isa(clock, 'mic.Clock')

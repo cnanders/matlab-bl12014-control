@@ -344,7 +344,7 @@ classdef DCTDiode < mic.Base
         function initUiAperture(this)
             
             % dArea is are area in cm2
-            % dX, dY is the position of the aperture stage when centeed on
+            % dX, dY is the position of the aperture stage when this aperture is centeed on
             % chief ray
             
             ceOptions = {...
