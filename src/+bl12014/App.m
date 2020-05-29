@@ -110,23 +110,18 @@ classdef App < mic.Base
             this.uiApp.build();
         end
         
-        %% Destructor
         
         function delete(this)
            
-            this.msg('bl12014.App.delete', this.u8_MSG_TYPE_INFO);
-            this.destroyAndDisconnectAll();
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);
             
+            this.destroyAndDisconnectAll();
             
             this.logger.delete();
             this.uiApp.delete();
             
             % uiApp uses hardware so delete hardware after
             this.hardware.delete();
-            
-            % hardware uses clock so delete clock after
-            % uiApp uses clock
-            % this.clock = [];
             
         end
         
@@ -340,8 +335,6 @@ classdef App < mic.Base
             end
             
             try
- 
-
                 this.commMicronixMmc103 = micronix.MMC103(...
                     'cConnection', micronix.MMC103.cCONNECTION_TCPCLIENT, ...
                     'cTcpipHost', this.cTcpipMicronix, ...
@@ -455,19 +448,11 @@ classdef App < mic.Base
             this.uiApp.uiDriftMonitor.uicConnectHexapod.setDevice(gslcCommSmarActSmarPod);
             this.uiApp.uiDriftMonitor.uicConnectHexapod.turnOn();
             
-
-            
             
             % Focus Sensor
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.setDevice(gslcCommSmarActRotary);
             this.uiApp.uiFocusSensor.uiCommSmarActRotary.turnOn();
             
-
-
-            
-            
-            
-
         end
         
         
@@ -507,7 +492,7 @@ classdef App < mic.Base
             
             this.uiApp = bl12014.ui.App(...
                 'dWidthButtonButtonList', this.dWidthButton, ...
-                'fhOnCloseFigure', @this.delete, ...
+                'fhOnCloseFigure', @(src, evt) this.delete(), ...
                 'clock', this.clock, ...
                 'hardware', this.hardware ...
             ); 
@@ -517,14 +502,6 @@ classdef App < mic.Base
 
         end
         
-        function onCloseRequestFcn(this, src, evt)
-            this.msg('closeRequestFcn()');
-            % purge;
-            delete(this.hFigure);
-            % this.saveState();
-        end
-         
-                
 
     end % private
     

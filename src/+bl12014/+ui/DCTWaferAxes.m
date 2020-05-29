@@ -219,14 +219,14 @@ classdef DCTWaferAxes < mic.Base
         end
           
         function delete(this)
-            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
 
             this.clock.remove(this.id());
             cecProps = this.getPropsDelete();
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
                 cMsg = sprintf('delete() deleting %s', cProp);
-                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE); 
                 this.(cProp).delete();
             end
             

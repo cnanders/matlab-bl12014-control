@@ -15,7 +15,6 @@ classdef App < mic.Base
         
         cName = 'ui.App'
         waferExposureHistory
-        
         uiHardware
         uiNetworkCommunication
         uiBeamline
@@ -167,6 +166,8 @@ classdef App < mic.Base
                 'app' ...
             );
         
+            this.fhOnCloseFigure = @(src, evt) this.delete(); % default
+        
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -222,33 +223,15 @@ classdef App < mic.Base
         end
         
         function onFigureCloseRequest(this, src, evt)
-            
-            return;
-            
-            this.msg('App.closeRequestFcn()');
-            delete(this.hFigure);
-            this.hFigure = [];
+            this.delete();
          end
         
+        
         function build(this)
-            
-            %{
-            2018.12.20 UNCOMMENT TO GET LSI LAUNCHER
-            this.buildFigure();
-            this.uiButtonListInterferometry.build(this.hFigure, 10, 10);
-            
-            %}
-            
-            % Tab-based 
-            this.buildNew();
-            % this.onUiTabGroup();
             
             % LSIControl is built separately now
             % this.uiLSIControl.build();
             
-        end
-        
-        function buildNew(this)
             
             dWidth = 1850;
             dHeight = 1040;
@@ -350,14 +333,6 @@ classdef App < mic.Base
            end
            
         end
-        
-        
-        
-        
-        
-
-        
-        
        
         function onClock(this)
             
@@ -368,7 +343,6 @@ classdef App < mic.Base
             this.uiTextDurationOfTimerExecution.set(cVal);
             
             this.saveStateToDisk(); % save state every second or two
-            
             
         end
         
@@ -406,6 +380,7 @@ classdef App < mic.Base
                 'uiPowerPmacHydraMotMinMonitor', ...
                 'uiHardware', ...
                 'uiNetworkCommunication', ...
+                'uiCurrentOfRing', ...
                 ...
                 'uiClockHardware', ...
                 'uiClockNetworkCommunication', ...
@@ -440,7 +415,7 @@ classdef App < mic.Base
         
         function delete(this)
             
-            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
             
             this.saveStateToDisk();
             this.clock.remove(this.id());
@@ -458,7 +433,7 @@ classdef App < mic.Base
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
                 cMsg = sprintf('delete() deleting %s', cProp);
-                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE);  
                 this.(cProp).delete();
             end
             
@@ -897,16 +872,7 @@ classdef App < mic.Base
         end
         
         function onCloseRequest(this, src, evt)
-            if ~isa(this, 'bl12014.ui.App') 
-                return;
-            end
-            this.msg('closeRequestFcn()');
-            % purge;
-            if ishandle(this.hFigureNew)
-               delete(this.hFigureNew);
-            end
-            this.fhOnCloseFigure();
-            % this.saveState();
+            this.fhOnCloseFigure(); % in test, calls this.delete()
         end
             
         function onPrescriptionToolNew(this, src, evt)

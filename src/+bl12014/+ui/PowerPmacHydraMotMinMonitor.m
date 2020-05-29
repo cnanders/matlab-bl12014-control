@@ -88,10 +88,7 @@ classdef PowerPmacHydraMotMinMonitor < mic.Base
             dTop = dTop + dSep;
 
             
-            if ~isempty(this.uiClock) && ...
-                ~this.uiClock.has(this.id())
-                this.uiClock.add(@this.onClock, this.id(), this.dDelay);
-            end
+            this.uiClock.add(@this.onClock, this.id(), this.dDelay);
             
                         
         end
@@ -101,17 +98,8 @@ classdef PowerPmacHydraMotMinMonitor < mic.Base
         %% Destructor
         
         function delete(this)
-            
-            %{
-            if ~isempty(this.uiClock) && ...
-                isvalid(this.uiClock) && ...
-                this.uiClock.has(this.id())
-                this.msg('delete() removing clock task', this.u8_MSG_TYPE_INFO); 
-                this.uiClock.remove(this.id());
-            end
-            %}
-            
-            
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.uiClock.remove(this.id());
         end
         
         function st = save(this)
@@ -121,12 +109,6 @@ classdef PowerPmacHydraMotMinMonitor < mic.Base
         
         function load(this, st)
         end
-            
-               
-        
-        
-        
-        
         
     end
     

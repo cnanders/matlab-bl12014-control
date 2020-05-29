@@ -646,32 +646,24 @@ classdef Scan < mic.Base
           
         end
         
+        function onClock(this, ~, ~)
+            this.updateTextReticleField();
+            this.updateScannerPlots();
+            this.updateTextsFluxCalibration();
+        
+        end 
+        
         
         %% Destructor
         
         function delete(this)
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.uiClock.remove(this.id());
             
-            this.uiClock.remove(...
-                [this.id(), '-update-text-reticle-field'] ...
-            );
-        
-            this.uiClock.remove(...
-                [this.id(), '-update-scanner-plots'] ...
-            );
-        
+            this.uiReticleAxes.delete();
+            this.uiWaferAxes.delete();
+            %this.uiPOCurrent.delete();
             
-            this.uiReticleAxes = [];
-            this.uiWaferAxes = [];
-            this.uiPOCurrent = [];
-            
-            this.msg('delete');
-            % Clean up clock tasks
-            
-            % Delete the figure
-            
-            if ishandle(this.hParent)
-                delete(this.hParent);
-            end
                         
         end
         
@@ -977,17 +969,7 @@ classdef Scan < mic.Base
                 'cVal', 'Reticle Field: [--, --]' ...
             );
         
-            this.uiClock.add(...
-                @this.updateTextReticleField, ...
-                [this.id(), '-update-text-reticle-field'], ...
-                1 ...
-            );
-        
-            this.uiClock.add(...
-                @this.updateScannerPlots, ...
-                [this.id(), '-update-scanner-plots'], ...
-                1 ...
-            );
+            
         
             try
                 this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
@@ -1000,15 +982,8 @@ classdef Scan < mic.Base
             this.uiTextFluxDensityCalibrated = mic.ui.common.Text(...
                 'cVal', 'Flux Density: ');
             
-            
-            this.uiClock.add(...
-                @this.updateTextsFluxCalibration, ...
-                [this.id(), '-update-text-flux-calibration'], ...
-                1 ...
-            );
-            
-            
-                       
+            this.uiClock.add(@this.onClock, this.id(), 1);
+                                   
         end
         
         

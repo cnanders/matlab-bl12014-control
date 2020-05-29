@@ -92,7 +92,7 @@ classdef Shutter < mic.Base
         
         function delete(this)
             
-            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);
 
             delete(this.uiShutter) % uses deviceVirtrual so need to delete this first
             delete(this.uiOverride);
