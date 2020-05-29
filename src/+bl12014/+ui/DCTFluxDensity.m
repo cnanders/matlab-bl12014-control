@@ -309,20 +309,33 @@ classdef DCTFluxDensity < mic.Base
         
         %% Destructor
         
-        
+        function cec = getPropsDelete(this)
+            cec = {...
+                'uiStageWafer', ... 
+                'uiStageAperture', ... 
+                'uiDiode', ... 
+                'uiExitSlit', ... 
+                'uiUndulator', ... 
+                'uiShutter', ... 
+                'uiStateMonoGratingAtEUV', ... 
+                'uiStateWaferAtDiode', ... 
+                'uiStateApertureMatchesDiode', ... 
+                'uiStateShutterOpen', ... 
+                'uiScannerPlotDCT', ... 
+            };
+            
+            
+        end 
         
         function delete(this)
-            this.uiStageWafer = []; 
-            this.uiStageAperture = []; 
-            this.uiDiode = []; 
-            this.uiExitSlit = []; 
-            this.uiUndulator = []; 
-            this.uiShutter = []; 
-            this.uiStateMonoGratingAtEUV = []; 
-            this.uiStateWaferAtDiode = []; 
-            this.uiStateApertureMatchesDiode = []; 
-            this.uiStateShutterOpen = []; 
-            this.uiScannerPlotDCT = []; 
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
+            end
                         
         end
         

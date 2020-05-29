@@ -19,7 +19,6 @@ classdef App < mic.Base
         uiHardware
         uiNetworkCommunication
         uiBeamline
-        uiShutter
         uiTuneFluxDensity
         uiM143
         uiVibrationIsolationSystem
@@ -57,7 +56,6 @@ classdef App < mic.Base
         uiClockHardware
         uiClockNetworkCommunication
         uiClockBeamline
-        uiClockShutter
         uiClockM143
         uiClockDCT
         uiClockVibrationIsolationSystem
@@ -379,25 +377,21 @@ classdef App < mic.Base
         function cec = getPropsDelete(this)
             
             cec = {
-                'uiHardware', ...
-                'uiNetworkCommunication', ...
                 'uiDCT', ...
+                'uiScan', ...
                 'uiBeamline', ...
-                'uiShutter', ...
                 'uiTuneFluxDensity', ...
                 'uiM143', ...
                 'uiVibrationIsolationSystem', ...
                 'uiReticle', ...
                 'uiWafer', ...
                 'uiPowerPmacStatus', ...
-                'uiScan', ...
                 'uiTempSensors', ...
                 'uiFocusSensor', ...
                 'uiDriftMonitor', ...
-                'uiLSIControl', ...
-                'uiLSIAnalyze', ...
+                ...'uiLSIControl', ...
+                ...'uiLSIAnalyze', ...
                 'uiScannerM142', ...
-                'uiScanner', ...
                 'uiMA', ...
                 'uiHeightSensorLEDs', ...
                 'uiCameraLEDs', ...
@@ -408,11 +402,14 @@ classdef App < mic.Base
                 'uiButtonListClockTasks', ...
                 'uiPowerPmacHydraMotMin', ...
                 'uiPowerPmacAccelDecel', ...
+                'uiDMIPowerMonitor', ...
+                'uiPowerPmacHydraMotMinMonitor', ...
+                'uiHardware', ...
+                'uiNetworkCommunication', ...
                 ...
                 'uiClockHardware', ...
                 'uiClockNetworkCommunication', ...
                 'uiClockBeamline', ...
-                'uiClockShutter', ...
                 'uiClockM143', ...
                 'uiClockVibrationIsolationSystem', ...
                 'uiClockReticle', ...
@@ -443,7 +440,7 @@ classdef App < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
             
             this.saveStateToDisk();
             this.clock.remove(this.id());
@@ -453,73 +450,21 @@ classdef App < mic.Base
                 delete(this.hFigure);
             end
             
+            if ishandle(this.hFigureNew)
+               delete(this.hFigureNew);
+            end
+            
             cecProps = this.getPropsDelete();
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
-                this.(cProp) = [];
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+                this.(cProp).delete();
             end
             
-            return;
-            
-            this.uiHardware = [];
-            this.uiNetworkCommunication = [];
-            this.uiBeamline = [];
-            this.uiShutter = [];
-            this.uiTuneFluxDensity = [];
-            this.uiM143 = [];
-            this.uiVibrationIsolationSystem = [];
-            this.uiReticle = [];
-            this.uiWafer = [];
-            this.uiPowerPmacStatus = [];
-            this.uiScan = [];
-            this.uiTempSensors = [];
-            this.uiFocusSensor = [];
-            this.uiDriftMonitor = [];
             this.uiLSIControl = [];
             this.uiLSIAnalyze = [];
-            this.uiScannerM142 = [];
-            this.uiScanner = [];
-            this.uiMA = [];
-            this.uiHeightSensorLEDs = [];
-            this.uiCameraLEDs = [];
-            this.uiScanResultPlot2x2 = [];
-            this.uiLogPlotter = [];
-            this.uiPOCurrent = [];
-            this.uiMfDriftMonitorVibration = [];
-            this.uiButtonListClockTasks = [];
-            this.uiPowerPmacHydraMotMin = [];
-            this.uiPowerPmacAccelDecel = [];
-            this.uiDCT = [];
-
-            this.uiClockHardware = [];
-            this.uiClockNetworkCommunication = [];
-            this.uiClockBeamline = [];
-            this.uiClockShutter = [];
-            this.uiClockM143 = [];
-            this.uiClockVibrationIsolationSystem = [];
-            this.uiClockReticle = [];
-            this.uiClockWafer = [];
-            this.uiClockPowerPmacStatus = [];
-            this.uiClockPrescriptionTool = [];
-            this.uiClockScan = [];
-            this.uiClockTempSensors = [];
-            this.uiClockFocusSensor = [];
-            this.uiClockDriftMonitor = [];
-            this.uiClockLSIControl = [];
-            this.uiClockLSIAnalyze = [];
-            this.uiClockScannerM142 = [];
-            this.uiClockMA = [];
-            this.uiClockHeightSensorLEDs = [];
-            this.uiClockCameraLEDs = [];
-            this.uiClockScanResultPlot2x2 = [];
-            this.uiClockLogPlotter = [];
-            this.uiClockPOCurrent = [];
-            this.uiClockMfDriftMonitorVibration = [];
-            this.uiClockMfDriftMonitor = [];
-            this.uiClockTuneFluxDensity = [];
-            this.uiClockPowerPmacHydraMotMin = [];
-            this.uiClockDMIPowerMonitor = [];
-            this.uiClockPowerPmacHydraMotMinMonitor = [];
+                        
                        
         end 
         
@@ -532,7 +477,6 @@ classdef App < mic.Base
                 'uiDCT', ...
                 ...%'uiNetworkCommunication', ...
                 'uiBeamline', ...
-                ...%'uiShutter', ...
                 'uiPOCurrent', ...
                 'uiM143', ...
                 ...% 'uiVibrationIsolationSystem', ...
@@ -842,7 +786,6 @@ classdef App < mic.Base
                 'clock', this.clock, ...
                 'uiClock', this.uiClockScan, ...
                 'hardware', this.hardware, ...
-                ...% 'uiShutter', this.uiBeamline.uiShutter.uiShutter, ...
                 'uiReticle', this.uiReticle, ...
                 'uiWafer', this.uiWafer, ...
                 'uiHeightSensorLEDs', this.uiHeightSensorLEDs, ...
@@ -1031,8 +974,6 @@ classdef App < mic.Base
             switch cTab
                 case 'Beamline'
                     this.uiClockBeamline.start();
-                case 'Shutter'
-                     this.uiClockShutter.start();
                 case 'Field Scanner (M142)'
                      this.uiClockScannerM142.start();
                 case 'M143'
@@ -1101,8 +1042,6 @@ classdef App < mic.Base
             switch cTab
                 case 'Beamline'
                     this.uiBeamline.build(hTab, 10, 30);
-                case 'Shutter'
-                     this.uiShutter.build(hTab, 10, 30);
                 case 'Field Scanner (M142)'
                      this.uiScannerM142.build(hTab, 10, 30);
                 case 'M143'

@@ -7,12 +7,9 @@ classdef Hardware < mic.Base
     end
     
 	properties
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiAll
         
         % {mic.ui.TaskSequence 1x1}
         uiStateConnected
-        
         uiALS
         uiDeltaTauPowerPmac
         % uiCxroHeightSensor
@@ -206,45 +203,51 @@ classdef Hardware < mic.Base
         
         %% Destructor
         
+        function cec = getPropsDelete(this)
+            
+            cec = {...
+                ... {mic.ui.TaskSequence 1x1}
+                'uiStateConnected', ...
+                'uiALS', ...
+                'uiDeltaTauPowerPmac', ...
+                ... uiCxroHeightSensor', ...
+                'uiDataTranslationMeasurPoint', ...
+                'uiMfDriftMonitorMiddleware', ...
+                'uiMfDriftMonitor', ...
+                'uiKeithleyWafer', ...
+                'uiKeithleyReticle', ...
+                'uiWebSwitchBeamline', ...
+                'uiWebSwitchEndstation', ...
+                'uiWebSwitchVis', ...
+                'uiBL1201CorbaProxy', ...
+                'uiRigol', ...
+                'uiSmarActM141', ...
+                'uiSmarActVPFM', ...
+                'uiWagoD141', ...
+                'uiExitSlit', ...
+                'uiGalilD142', ...
+                'uiGalilVis', ...
+                'uiGalilM143', ...
+                'uiMightex1', ...
+                'uiMightex2', ...
+                'uiNPointM142', ...
+                'uiNPointMA', ...
+                'uiNewFocus8742M142', ...
+                'uiNewFocus8742MA' ...
+            };
+            
+            
+        end
+        
         function delete(this)
             
-            
-            this.uiAll = [];
-        
-            % {mic.ui.TaskSequence 1x1}
-            this.uiStateConnected  = [];
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
 
-            this.uiALS = [];
-            this.uiDeltaTauPowerPmac = [];
-            % uiCxroHeightSensor = [];
-            this.uiDataTranslationMeasurPoint = [];
-            this.uiMfDriftMonitorMiddleware = [];
-            this.uiMfDriftMonitor = [];
-            this.uiKeithleyWafer = [];
-            this.uiKeithleyReticle = [];
-            this.uiWebSwitchBeamline = [];
-            this.uiWebSwitchEndstation = [];
-            this.uiWebSwitchVis = [];
-            this.uiBL1201CorbaProxy = [];
-            this.uiRigol = [];
-            this.uiSmarActM141 = [];
-            this.uiSmarActVPFM = [];
-            this.uiWagoD141 = [];
-            this.uiExitSlit = [];
-
-
-            this.uiGalilD142 = [];
-            this.uiGalilVis = [];
-            this.uiGalilM143 = [];
-
-            this.uiMightex1 = [];
-            this.uiMightex2 = [];
-
-            this.uiNPointM142 = [];
-            this.uiNPointMA = [];
-
-            this.uiNewFocus8742M142 = [];
-            this.uiNewFocus8742MA = [];
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                this.(cProp).delete();
+            end
         
             
         end

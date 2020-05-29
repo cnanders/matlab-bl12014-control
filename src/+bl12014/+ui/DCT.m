@@ -135,26 +135,16 @@ classdef DCT < mic.Base
                 'uiClockAxes' ...
             };
         end
-            
-        
-        
+                    
         function delete(this)
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
             cecProps = this.getPropsDelete();
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
-                this.(cProp) = [];
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
             end
-             
-            return ;
-            
-            this.uiAxes = [];
-            this.uiStages = [];
-            this.uiFluxDensity = [];
-            this.uiExposureControl = [];
-            this.uiClockStages = []
-            this.uiClockFluxDensity
-            this.uiClockExposureControl
-            this.uiClockAxes
         end 
         
         function cec = getPropsSaved(this)

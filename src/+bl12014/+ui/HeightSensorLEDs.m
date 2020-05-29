@@ -177,11 +177,29 @@ classdef HeightSensorLEDs < mic.Base
             
         end
         
+        
+        
+        function cec = getPropsDelete(this)
+            cec = {...
+                'ui1', ...
+                'ui2', ... references FluxDensity
+                'ui3', ...
+                'ui4', ...
+                'ui5', ...
+                'ui6', ...
+            };
+        end
+                    
         function delete(this)
-            
-            this.msg('delete');
- 
-        end    
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
+            end
+        end  
         
         
     end

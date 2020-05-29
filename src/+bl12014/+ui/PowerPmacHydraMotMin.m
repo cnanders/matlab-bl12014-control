@@ -130,18 +130,29 @@ classdef PowerPmacHydraMotMin < mic.Base
             
         end
         
+        function cec = getPropsDelete(this)
+            cec = {...
+                'ui1', ...
+                'ui2', ... 
+                'ui3', ...
+                'ui4', ...
+                'ui5', ...
+                'uiCommDeltaTauPowerPmac', ...
+                'uiWorkingMode', ...
+                'uiSequenceSetAll', ...
+            };
+        end
+                    
         function delete(this)
-            
-            this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hPanel)
-                delete(this.hPanel);
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
             end
-            
-            
-        end    
+        end   
         
         
     end

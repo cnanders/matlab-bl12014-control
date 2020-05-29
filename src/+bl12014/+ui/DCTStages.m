@@ -19,6 +19,7 @@ classdef DCTStages < mic.Base
         
         uiStageAperture
         uiStageWafer
+        cName = 'dct-stages-'
         
     end
     
@@ -26,7 +27,6 @@ classdef DCTStages < mic.Base
         
         
         hPanel
-        cName = 'dct-stages-'
         
         
         uiClock
@@ -150,8 +150,9 @@ classdef DCTStages < mic.Base
         
         
         function delete(this)
-            this.uiStageWafer = [];
-            this.uiStageAperture = [];
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            this.uiStageWafer.delete();
+            this.uiStageAperture.delete();
             
         end
         

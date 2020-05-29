@@ -498,6 +498,9 @@ classdef MFDriftMonitor < mic.Base
                     'cLabel' ,ceDriftNames{k},...
                     'fhDirectCallback', @(src, evt)this.cb(src));
             end
+            
+            %{
+            
             for k = 1:size(this.ceDMIPowerNames, 2)
                 this.uiDMIACPower =  mic.ui.device.GetNumber(...
                     'clock', this.clock, ...
@@ -534,6 +537,7 @@ classdef MFDriftMonitor < mic.Base
                     'fhIsVirtual',  @() false...
                     );
             end
+            %}
             
             % Init DMI power
             

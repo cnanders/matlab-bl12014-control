@@ -651,6 +651,15 @@ classdef Scan < mic.Base
         
         function delete(this)
             
+            this.uiClock.remove(...
+                [this.id(), '-update-text-reticle-field'] ...
+            );
+        
+            this.uiClock.remove(...
+                [this.id(), '-update-scanner-plots'] ...
+            );
+        
+            
             this.uiReticleAxes = [];
             this.uiWaferAxes = [];
             this.uiPOCurrent = [];

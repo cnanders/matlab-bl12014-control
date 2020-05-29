@@ -133,7 +133,7 @@ classdef DCTDiode < mic.Base
         
         
         function delete(this)
-            
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
             this.uiCurrent = [];
             this.uiVolts = [];
             this.uiFluxDensity = [];

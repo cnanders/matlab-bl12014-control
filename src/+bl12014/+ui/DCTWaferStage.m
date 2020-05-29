@@ -98,9 +98,9 @@ classdef DCTWaferStage < mic.Base
         end
         
         function delete(this)
-            
-            this.uiX = [];
-            this.uiY = [];
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            this.uiX.delete();
+            this.uiY.delete();
             
         end 
         

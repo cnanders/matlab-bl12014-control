@@ -437,20 +437,33 @@ classdef DCTExposureControl < mic.Base
         
         %% Destructor
         
-        function delete(this)
+        function cec = getPropsDelete(this)
             
+            cec = {...
+                'uiShutter', ...
+                'uiStageWafer', ...
+                'uiStageAperture', ...
+                'uiStateUndulatorIsCalibrated', ...
+                'uiStateMonoGratingAtEUV', ...
+                'uiStateM141SmarActOff', ...
+                'uiStateApertureMatchesDiode', ...
+                'uiStateExitSlitIsCalibrated', ...
+                'uiStateApertureIsCalibrated', ...
+                'uiStateApertureStageIsCalibrated', ...
+                'uiScannerPlotDCT' ...
+            };
+            
+        end
+        
+        function delete(this)
+                        this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+
             this.uiClock.remove(this.id());
-            this.uiShutter = []; 
-            this.uiStageWafer = []; 
-            this.uiStageAperture = []; 
-            this.uiStateUndulatorIsCalibrated = []; 
-            this.uiStateMonoGratingAtEUV = []; 
-            this.uiStateM141SmarActOff = [];
-            this.uiStateApertureMatchesDiode = []; 
-            this.uiStateExitSlitIsCalibrated = []; 
-            this.uiStateApertureIsCalibrated = []; 
-            this.uiStateApertureStageIsCalibrated = []; 
-            this.uiScannerPlotDCT = []; 
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                this.(cProp).delete();
+            end
                         
         end
                             

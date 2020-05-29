@@ -195,8 +195,6 @@ classdef DCTWaferAxes < mic.Base
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
-                
-                
             
             end
             
@@ -211,9 +209,27 @@ classdef DCTWaferAxes < mic.Base
             this.init();
             
         end
+        
+        function cec = getPropsDelete(this)
+            cec = {
+                'uiShutter', ...
+                'uiStageWafer', ...
+                'uiStageAperture' ...
+            };
+        end
           
         function delete(this)
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+
             this.clock.remove(this.id());
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
+            end
+            
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -312,7 +328,6 @@ classdef DCTWaferAxes < mic.Base
     methods (Access = private)
         
         function onClock(this)
-            
             this.setPositionOfWafer();
             this.setPositionOfAperture();
             this.drawExposures();

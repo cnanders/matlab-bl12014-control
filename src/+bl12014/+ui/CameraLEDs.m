@@ -77,11 +77,25 @@ classdef CameraLEDs < mic.Base
         end
         
         
+        function cec = getPropsDelete(this)
+            cec = {...
+                'uiSwitch1Outlet1', ...
+                'uiSwitch1Outlet2', ... references FluxDensity
+                'uiSwitch2Outlet1', ...
+                'uiSwitch2Outlet2', ...
+            };
+        end
+                    
         function delete(this)
-            
-            this.msg('delete');
-            
-        end   
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_INIT_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_INIT_DELETE); 
+                this.(cProp).delete();
+            end
+        end  
         
         function st = save(this)
             %st = struct();
