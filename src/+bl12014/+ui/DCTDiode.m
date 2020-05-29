@@ -19,6 +19,8 @@ classdef DCTDiode < mic.Base
         % setter for the sensitivity of a SR570 current preamplifier
         fhSetSensitivity
         
+        fhOnChangeAperture = @() []
+        
         dSensitivityOfDiode = 0.1 % A/W
         
     end
@@ -359,6 +361,7 @@ classdef DCTDiode < mic.Base
                 'cLabel', 'Aperture', ...
                 'dWidthLabel', 175, ...
                 'lShowLabel', false, ...
+                'fhDirectCallback', @(src, evt) this.fhOnChangeAperture(), ...
                 'ceOptions', ceOptions ...
             );
         end

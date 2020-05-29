@@ -19,7 +19,7 @@ classdef DCTFluxDensity < mic.Base
         uiShutter
         uiUndulator
         uiExitSlit
-        uiGratingTiltX
+        uiBeamline
                 
         % Must pass in
         uiScannerM142
@@ -88,6 +88,9 @@ classdef DCTFluxDensity < mic.Base
         % {bl12014.Hardware 1x1}
         hardware
         
+        % {bl12014.DCTExposures}
+        exposures
+        
         dFluxDensityAcc = [] % accumulated during calibration
         dFluxDensityCalibrated = 0
         dGapOfUndulatorCalibrated = 40.24
@@ -153,6 +156,14 @@ classdef DCTFluxDensity < mic.Base
             
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
+            end
+            
+            if ~isa(this.exposures, 'bl12014.DCTExposures')
+                error('exposures must be bl12014.DCTExposures');
+            end
+            
+            if ~isa(this.uiBeamline, 'bl12014.ui.Beamline')
+                error('uiBeamline must be bl12014.ui.Beamline');
             end
             
             this.init();
@@ -221,10 +232,10 @@ classdef DCTFluxDensity < mic.Base
             dTop = dTop + dSep;
             %}
             
-            %{
+            
             this.uiStateMonoGratingAtEUV.build(hPanel, 10, dTop, dWidthTask);
             dTop = dTop + dSep;
-            %}
+            
             
             this.uiStateWaferAtDiode.build(hPanel, 10, dTop, dWidthTask);
             dTop = dTop + dSep;
@@ -302,7 +313,6 @@ classdef DCTFluxDensity < mic.Base
             delete(this.uiStateShutterOpen);
             delete(this.uiStateWaferAtDiode);
             delete(this.uiStateApertureMatchesDiode)
-            delete(this.uiSequencePrep);
             delete(this.uiShutter);
             delete(this.uiExitSlit);
                         
@@ -370,6 +380,20 @@ classdef DCTFluxDensity < mic.Base
             
         end
         
+        function onChangeDiodeAperture(this)
+            
+            this.exposures.setSizeOfApertureForScan(...
+                this.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                this.uiDiode.uiPopupAperture.get().dHeight * 1e-3 ...
+            );
+        
+            this.exposures.setSizeOfApertureForPre(...
+                this.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                this.uiDiode.uiPopupAperture.get().dHeight * 1e-3 ...
+            );
+        
+        end
+        
         function init(this)
             
             this.msg('init()');
@@ -386,11 +410,10 @@ classdef DCTFluxDensity < mic.Base
                 'clock', this.uiClock ...
             );
         
-            
-        
             this.uiDiode = bl12014.ui.DCTDiode(...
                 'cName', [this.cName, 'diode-1'], ...
                 'cTitle', 'Diode 1', ...
+                'fhOnChangeAperture', @() this.onChangeDiodeAperture, ...
                 'fhSetSensitivity', @(dLevel) this.hardware.getSR570DCT1().setSensitivity(dLevel), ...
                 'fhGetVolts', @() this.hardware.getDataTranslation().getScanDataOfChannel(33), ...
                 'clock', this.clock ...
@@ -414,19 +437,16 @@ classdef DCTFluxDensity < mic.Base
             );
         
             
-
-            %{
             this.uiStateMonoGratingAtEUV = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-mono-grating-at-euv'], ...
                 'task', bl12014.Tasks.createStateMonoGratingAtEUV(...
                     [this.cName, 'state-mono-grating-at-euv'], ...
-                    this.uiGratingTiltX, ...
+                    this.uiBeamline.uiGratingTiltX, ...
                     this.clock ...
                 ), ...
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
-            %}
                         
             this.uiStateWaferAtDiode = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-wafer-at-diode'], ...

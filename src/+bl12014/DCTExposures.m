@@ -182,6 +182,38 @@ classdef DCTExposures < mic.Base
             ced = this.ceExposuresScan;
         end
         
+        function setSizeOfApertureForScan(this, dWidth, dHeight)
+            cedExposures = this.getExposuresScan();
+            this.purgeExposuresScan();
+            for n = 1 : length(cedExposures)
+                dExposure = cedExposures{n};
+                dExposureNew = [
+                    dExposure(1), ...
+                    dExposure(2), ...
+                    dWidth, ...
+                    dHeight, ...
+                    dExposure(5) ...
+                ];
+                this.addExposureToScan(dExposureNew);
+            end
+        end
+        
+        function setSizeOfApertureForPre(this, dWidth, dHeight)
+            cedExposures = this.getExposuresPre();
+            this.purgeExposuresPre();
+            for n = 1 : length(cedExposures)
+                dExposure = cedExposures{n};
+                dExposureNew = [
+                    dExposure(1), ...
+                    dExposure(2), ...
+                    dWidth, ...
+                    dHeight, ...
+                    dExposure(5) ...
+                ];
+                this.addExposureToPre(dExposureNew);
+            end
+        end
+        
     end
     
     methods (Access = private)

@@ -41,7 +41,7 @@ h = figure( ...
      ] ...
 );
 uiAxes.build(h, 10, 10);
-ui.build(h, uiAxes.dWidth + 30, 10);
+ui.build(h, uiAxes.dWidth + 30, 100);
 
  
 

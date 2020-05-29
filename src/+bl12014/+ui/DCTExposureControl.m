@@ -71,7 +71,7 @@ classdef DCTExposureControl < mic.Base
         uiListActive
         
         uiButtonClearPrescriptions
-        uiButtonClearWafer
+        uiButtonClearExposures
         
         uibNewWafer
         uibAddToWafer
@@ -150,7 +150,8 @@ classdef DCTExposureControl < mic.Base
         
         hAxesFieldFill
         hPlotFieldFill
-        dColorPlotFiducials = [0.3 0.3 0.3]
+        hLineFieldFillAperture
+        dColorPlotFiducials = [0.7 0.7 0]
         
         uiTextTimeCalibrated
         uiTextFluxDensityCalibrated
@@ -183,6 +184,11 @@ classdef DCTExposureControl < mic.Base
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
             end
+            
+            % These are all basically indirect ways to access some property
+            % of a piece of hardware or some piece of UI state.  There is
+            % no global state that is the source of truth so need to pass
+            % in some UIs
             
             if ~isa(this.uiFluxDensity, 'bl12014.ui.DCTFluxDensity')
                 error('uiFluxDensity must be bl12014.ui.DCTFluxDensity');
@@ -271,23 +277,67 @@ classdef DCTExposureControl < mic.Base
                 ) ...
             );
         
+        
+           dSize = 100;
+           dLeft = 10;
+           
+           this.hAxesFieldFill = axes(...
+                'Parent', this.hPanelAdded,...
+                'Units', 'pixels',...
+                'Color', [0 0 0], ...
+                'Position',mic.Utils.lt2lb([...
+                dLeft, ...
+                dTop, ...
+                dSize, ...
+                dSize], this.hPanelAdded),...
+                'XColor', [0 0 0],...
+                'YColor', [0 0 0],...
+                'DataAspectRatio',[1 1 1],...
+                'HandleVisibility','on'...
+           );
+       
+           dSep = 30;
+           dTop = dTop + dSize + 10;
+           
+           dWidthTask = 400;
             
-            dLeft = this.dWidthPadFigure;
-            dTop = this.dWidthPadFigure;
-            
-            this.uiListActive.build(this.hPanelAdded, ...
+           this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           this.uiStateMonoGratingAtEUV.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           %{
+           this.uiStateApertureIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           %}
+           
+           this.uiStateApertureStageIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           %{
+           this.uiStateApertureMatchesDiode.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           %}
+                      
+           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           dTop = dTop + 60;
+           dHeightList = 40;
+           
+           this.uiListActive.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthPanelAdded - 2 * this.dWidthPadFigure, ...
-                40);
+                dHeightList);
             
-           dTop = 30;
            dSep = 20;
-           dTop = 140;
+           dTop = dTop + dHeightList + 20;
            
            %dLeft = dPad + this.dWidthList + dPad;
-           
-           dTop = 70;
            dLeft = this.dWidthPadFigure;
            
             this.uiButtonClearPrescriptions.build(this.hPanelAdded, ...
@@ -297,7 +347,7 @@ classdef DCTExposureControl < mic.Base
                 this.dHeightButton);
             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
             
-            this.uiButtonClearWafer.build(this.hPanelAdded, ...
+            this.uiButtonClearExposures.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthButton, ...
@@ -312,32 +362,26 @@ classdef DCTExposureControl < mic.Base
                 this.dHeightButton);
             
            
-           dLeft = this.dWidthPadFigure;
+           dLeft = 10;
            dTop = dTop + 50;
-           
-           dTopBelowList = dTop;
-           
            dSep = 40;
            
            if this.lUseMjPerCm2PerSecOverride
                 this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
                 
-                dWidthText = 300;
-                dHeightText = 24;
-                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 110, dTop + 16, dWidthText, dHeightText);
+                dWidthText = 200;
+                dHeightText = 36;
+                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 110, dTop + 8, dWidthText, dHeightText);
                 
            else
                
            dWidthText = 300;
            dHeightText = 24;
            this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
-                
                
            end
            
-           
            dTop = dTop + dSep;
-           
            dSep = 20;
            
            this.uicWaferLL.build(this.hPanelAdded, ...
@@ -354,57 +398,9 @@ classdef DCTExposureControl < mic.Base
                20);
            dTop = dTop + 30;
            
-           % dLeft = 150;
-           % dTop = 180
-           this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
            
-           dTop = dTop + this.uiScan.dHeight + 10;
            
-           dSep = 30;
-           dSize = 100;
            
-           this.hAxesFieldFill = axes(...
-                'Parent', this.hPanelAdded,...
-                'Units', 'pixels',...
-                'Color', [0 0 0], ...
-                'Position',mic.Utils.lt2lb([...
-                dLeft + 10, ...
-                dTop, ...
-                dSize, ...
-                dSize], this.hPanelAdded),...
-                'XColor', [0 0 0],...
-                'YColor', [0 0 0],...
-                'DataAspectRatio',[1 1 1],...
-                'HandleVisibility','on'...
-           );
-       
-            
-           dTop = dTop + 120;
-           
-           dWidthTask = 400;
-            
-           this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-           this.uiStateMonoGratingAtEUV.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-           this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-           this.uiStateApertureIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-           this.uiStateApertureStageIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-           this.uiStateApertureMatchesDiode.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
-           
-
-           
-           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
            
            
            
@@ -414,6 +410,12 @@ classdef DCTExposureControl < mic.Base
            this.uiStateM142ScanningDefault.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            %}
+           
+           % dLeft = 150;
+           % dTop = 180
+           this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
+           
+           dTop = dTop + this.uiScan.dHeight + 10;
             
         end
              
@@ -447,6 +449,7 @@ classdef DCTExposureControl < mic.Base
             % Need to draw the aperture in wavetable units.  So divide the
             % width by 72 and that is the amplitude.
             
+ 
             
             if isempty(this.hPlotFieldFill)
                 this.hPlotFieldFill = plot(...
@@ -454,27 +457,39 @@ classdef DCTExposureControl < mic.Base
                     st.x, st.y, 'm', ...
                     'LineWidth', 2 ...
                 );
-            
-                % Draw a border that represents the width of the field
-                
-                dWidthMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth;
-                dHeightMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight;
-                
-                dWidth = dWidthMm / 72; % wavetable amplitude unuits
-                dHeight = dHeightMm / 72; % wavetable amplitude units
-                
-                x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
-                y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
-                line( ...
-                    x, y, ...
-                    'color', this.dColorPlotFiducials, ...
-                    'LineWidth', 1, ...
-                    'Parent', this.hAxesFieldFill ...
-                );
             else
                 this.hPlotFieldFill.XData = st.x;
                 this.hPlotFieldFill.YData = st.y;
             end
+            
+            
+            % Draw a border that represents the width of the field
+                
+            dWidthMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth;
+            dHeightMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight;
+
+            dWidth = dWidthMm / 72; % wavetable amplitude unuits
+            dHeight = dHeightMm / 72; % wavetable amplitude units
+
+            x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
+            y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
+            
+            if isempty(this.hLineFieldFillAperture)
+                
+                this.hLineFieldFillAperture = line( ...
+                    x, y, ...
+                    'color', this.dColorPlotFiducials, ...
+                    'LineWidth', 2, ...
+                    'Parent', this.hAxesFieldFill ...
+                );
+                
+            else
+                
+                this.hLineFieldFillAperture.XData = x;
+                this.hLineFieldFillAperture.YData = y;
+            end
+            
+
             
             set(this.hAxesFieldFill, 'XTick', [], 'YTick', []);
             
@@ -547,9 +562,9 @@ classdef DCTExposureControl < mic.Base
                 'fhOnClick', @this.onClickClearPrescriptions ...
             );
         
-            this.uiButtonClearWafer = mic.ui.common.Button(...
-                'cText', 'Clear Wafer', ...
-                'fhOnClick', @this.onClickClearWafer ...
+            this.uiButtonClearExposures = mic.ui.common.Button(...
+                'cText', 'Clear Exposures', ...
+                'fhOnClick', @this.onClickClearExposures ...
             );
         
             this.uibNewWafer = mic.ui.common.Button(...
@@ -732,7 +747,6 @@ classdef DCTExposureControl < mic.Base
                 'lShowButton', true, ...
                 'clock', this.uiClock ...
             );
-        
         
             this.uiClock.add(...
                 @this.updateScannerPlots, ...
@@ -950,17 +964,14 @@ classdef DCTExposureControl < mic.Base
             
         end
         
-        function onClickClearWafer(this, src, evt)
+        function onClickClearExposures(this, src, evt)
             this.exposures.purgeExposures();
-            this.exposures.purgeExposuresScan();
-            
         end
         
         function onClickClearPrescriptions(this, src, evt)
             
-            this.uiListActive.setOptions(cell(1,0));
             this.exposures.purgeExposuresScan();
-
+            this.uiListActive.setOptions(cell(1,0));
         end
         
         function onChangeListActive(this)
