@@ -99,18 +99,13 @@ classdef DCTWaferStage < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
-                        
-            % Delete the figure
-            
-            if ishandle(this.hPanel)
-                delete(this.hPanel);
-            end
+            this.uiX = [];
+            this.uiY = [];
             
         end 
         
         
-        function cec = getSaveLoadProps(this)
+        function cec = getPropsSaved(this)
             cec = {...
                 'uiX', ...
                 'uiY' ...
@@ -119,7 +114,7 @@ classdef DCTWaferStage < mic.Base
         
         
         function st = save(this)
-             cecProps = this.getSaveLoadProps();
+             cecProps = this.getPropsSaved();
             
             st = struct();
             for n = 1 : length(cecProps)
@@ -134,7 +129,7 @@ classdef DCTWaferStage < mic.Base
         
         function load(this, st)
                         
-            cecProps = this.getSaveLoadProps();
+            cecProps = this.getPropsSaved();
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                if isfield(st, cProp)

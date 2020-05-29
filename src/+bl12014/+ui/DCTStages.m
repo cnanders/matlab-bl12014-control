@@ -111,6 +111,52 @@ classdef DCTStages < mic.Base
         end
         
         
+        function cec = getPropsSaved(this)
+            cec = {...
+                'uiStageAperture', ...
+                'uiStageWafer', ... 
+             };
+        end
+        
+        
+        function st = save(this)
+            cecProps = this.getPropsSaved();
+            
+            st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
+        end
+        
+        function load(this, st)
+                        
+            cecProps = this.getPropsSaved();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
+            end
+            
+            
+        end
+        
+        
+        function delete(this)
+            this.uiStageWafer = [];
+            this.uiStageAperture = [];
+            
+        end
+        
+        
+        
     end
     
 end

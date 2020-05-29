@@ -33,8 +33,7 @@ classdef DCTExposureControl < mic.Base
         dToleranceWaferX = 0.01 % mm
         dToleranceWaferY = 0.01 % mm
 
-        dColorGreen = [.85, 1, .85];
-        dColorRed = [1, .85, .85];
+       
         
     end
     
@@ -136,7 +135,7 @@ classdef DCTExposureControl < mic.Base
         hardware
             
         
-        
+        uiScannerPlotDCT
         uiStateM142ScanningDefault
         uiStateUndulatorIsCalibrated
         uiStateExitSlitIsCalibrated
@@ -145,14 +144,7 @@ classdef DCTExposureControl < mic.Base
         uiStateMonoGratingAtEUV
         uiStateM141SmarActOff
         uiStateApertureMatchesDiode
-        
-        uiTextReticleField
-        
-        hAxesFieldFill
-        hPlotFieldFill
-        hLineFieldFillAperture
-        dColorPlotFiducials = [0.7 0.7 0]
-        
+                        
         uiTextTimeCalibrated
         uiTextFluxDensityCalibrated
     end
@@ -278,26 +270,12 @@ classdef DCTExposureControl < mic.Base
             );
         
         
-           dSize = 100;
            dLeft = 10;
            
-           this.hAxesFieldFill = axes(...
-                'Parent', this.hPanelAdded,...
-                'Units', 'pixels',...
-                'Color', [0 0 0], ...
-                'Position',mic.Utils.lt2lb([...
-                dLeft, ...
-                dTop, ...
-                dSize, ...
-                dSize], this.hPanelAdded),...
-                'XColor', [0 0 0],...
-                'YColor', [0 0 0],...
-                'DataAspectRatio',[1 1 1],...
-                'HandleVisibility','on'...
-           );
+           this.uiScannerPlotDCT.build(this.hPanelAdded, dLeft, dTop)
        
            dSep = 30;
-           dTop = dTop + dSize + 10;
+           dTop = dTop + this.uiScannerPlotDCT.dHeight + 10;
            
            dWidthTask = 400;
             
@@ -420,89 +398,6 @@ classdef DCTExposureControl < mic.Base
         end
              
                 
-        function plotFieldFill(this)
-            
-            if isempty(this.hAxesFieldFill)
-                return
-            end
-            
-            if ~ishandle(this.hAxesFieldFill)
-                return
-            end
-            
-            % Returns the wavetable data loaded on the hardware.  Amplitude is
-            % relative [-1 : 1] to the max mechanical deflection of the hardware
-            % @typedef {struct 1x1} WavetableData
-            % @property {double 1xm} x - x amplitude [-1 : 1]
-            % @property {double 1xm} y - y amplitude [-1 : 1]
-            % @property {double 1xm} t - time (sec)
-            % @return {WavetableData 1x1}
-        
-            st = this.uiScannerM142.uiNPointLC400.getWavetables();
-            
-            % Calculate mm per wavetable amplitude
-            % +/- 3 mrad mechanical creates +/- 6 mrad optical in
-            % reflection.  Propagate lets assume 6 meters to DCT aperture
-            % so when amplitude of wavetable is 1, we have 36mm of
-            % deflection
-            % So a swing of 2 in wavetable amplitude (+/- 1) is a width of 72mm
-            % Need to draw the aperture in wavetable units.  So divide the
-            % width by 72 and that is the amplitude.
-            
- 
-            
-            if isempty(this.hPlotFieldFill)
-                this.hPlotFieldFill = plot(...
-                    this.hAxesFieldFill, ...
-                    st.x, st.y, 'm', ...
-                    'LineWidth', 2 ...
-                );
-            else
-                this.hPlotFieldFill.XData = st.x;
-                this.hPlotFieldFill.YData = st.y;
-            end
-            
-            
-            % Draw a border that represents the width of the field
-                
-            dWidthMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth;
-            dHeightMm = this.uiFluxDensity.uiDiode.uiPopupAperture.get().dHeight;
-
-            dWidth = dWidthMm / 72; % wavetable amplitude unuits
-            dHeight = dHeightMm / 72; % wavetable amplitude units
-
-            x = [-dWidth/2 dWidth/2 dWidth/2 -dWidth/2 -dWidth/2];
-            y = [dHeight/2 dHeight/2 -dHeight/2 -dHeight/2 dHeight/2];
-            
-            if isempty(this.hLineFieldFillAperture)
-                
-                this.hLineFieldFillAperture = line( ...
-                    x, y, ...
-                    'color', this.dColorPlotFiducials, ...
-                    'LineWidth', 2, ...
-                    'Parent', this.hAxesFieldFill ...
-                );
-                
-            else
-                
-                this.hLineFieldFillAperture.XData = x;
-                this.hLineFieldFillAperture.YData = y;
-            end
-            
-
-            
-            set(this.hAxesFieldFill, 'XTick', [], 'YTick', []);
-            
-            % Set background color based on if the scanner is on or not
-            if this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get()
-                set(this.hAxesFieldFill, 'Color', this.dColorGreen);
-            else
-                set(this.hAxesFieldFill, 'Color', this.dColorRed);
-            end
-            xlim(this.hAxesFieldFill, [-1 1])
-            ylim(this.hAxesFieldFill, [-1 1])
-            
-        end
         
         function build(this, hParent, dLeft, dTop)
             
@@ -543,8 +438,19 @@ classdef DCTExposureControl < mic.Base
         %% Destructor
         
         function delete(this)
-            this.uiAxes = [];
-            this.msg('delete');
+            
+            this.uiClock.remove(this.id());
+            this.uiShutter = []; 
+            this.uiStageWafer = []; 
+            this.uiStageAperture = []; 
+            this.uiStateUndulatorIsCalibrated = []; 
+            this.uiStateMonoGratingAtEUV = []; 
+            this.uiStateM141SmarActOff = [];
+            this.uiStateApertureMatchesDiode = []; 
+            this.uiStateExitSlitIsCalibrated = []; 
+            this.uiStateApertureIsCalibrated = []; 
+            this.uiStateApertureStageIsCalibrated = []; 
+            this.uiScannerPlotDCT = []; 
                         
         end
                             
@@ -748,12 +654,15 @@ classdef DCTExposureControl < mic.Base
                 'clock', this.uiClock ...
             );
         
-            this.uiClock.add(...
-                @this.updateScannerPlots, ...
-                [this.id(), '-update-scanner-plots'], ...
-                1 ...
+            this.uiScannerPlotDCT = bl12014.ui.ScannerPlotDCT(...
+                'cName', [this.cName, 'scanner-plot-dct'], ...
+                'uiClock', this.uiClock, ...
+                'fhGetWidthOfAperture', @() this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                'fhGetHeightOfAperture', @() this.uiFluxDensity.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                'fhGetWavetables', @() this.uiScannerM142.uiNPointLC400.getWavetables(), ...
+                'fhGetActive', @() this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get() ...
             );
-        
+       
             try
                 this.hDYMO =  bl12014.hardwareAssets.middleware.DymoLabelWriter450();
             catch
@@ -767,7 +676,7 @@ classdef DCTExposureControl < mic.Base
             
             this.uiClock.add(...
                 @this.updateTextsFluxCalibration, ...
-                [this.id(), '-update-text-flux-calibration'], ...
+                this.id(), ...
                 1 ...
             );
                        
@@ -969,9 +878,8 @@ classdef DCTExposureControl < mic.Base
         end
         
         function onClickClearPrescriptions(this, src, evt)
-            
             this.exposures.purgeExposuresScan();
-            this.uiListActive.setOptions(cell(1,0));
+            this.uiListActive.setOptions({});
         end
         
         function onChangeListActive(this)
@@ -1516,7 +1424,7 @@ classdef DCTExposureControl < mic.Base
              this.uiScan.reset();
              this.updateUiScanStatus();
              
-             this.uiListActive.setOptions({});
+             this.onClickClearPrescriptions([], []);
              
              if this.uicWaferLL.get()
                  % FIX ME
@@ -1597,8 +1505,7 @@ classdef DCTExposureControl < mic.Base
                 cMsg = 'The FEM was aborted.';
             end
             
-            this.uiListActive.setOptions(cell(1,0));
-            this.exposures.purgeExposuresScan();
+            this.onClickClearPrescriptions([], []);
             
              
             cMsg = sprintf('The FEM was aborted. The list of added prescriptions has been purged.');
@@ -1891,11 +1798,7 @@ classdef DCTExposureControl < mic.Base
         end
         
         
-        function updateScannerPlots(this, ~, ~)
-                         
-            this.plotFieldFill();
-            
-        end
+        
         
 
     end 

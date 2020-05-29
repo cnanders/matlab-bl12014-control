@@ -133,10 +133,14 @@ classdef DCTDiode < mic.Base
         
         
         function delete(this)
+            
+            this.uiCurrent = [];
+            this.uiVolts = [];
+            this.uiFluxDensity = [];
    
         end  
         
-        function cec = getSaveLoadProps(this)
+        function cec = getPropsSaved(this)
             cec = {...
                 'uiPopupSensitivity', ...
                 'uiPopupAperture', ...
@@ -147,7 +151,7 @@ classdef DCTDiode < mic.Base
         
         
         function st = save(this)
-             cecProps = this.getSaveLoadProps();
+             cecProps = this.getPropsSaved();
             
             st = struct();
             for n = 1 : length(cecProps)
@@ -162,7 +166,7 @@ classdef DCTDiode < mic.Base
         
         function load(this, st)
                         
-            cecProps = this.getSaveLoadProps();
+            cecProps = this.getPropsSaved();
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                if isfield(st, cProp)

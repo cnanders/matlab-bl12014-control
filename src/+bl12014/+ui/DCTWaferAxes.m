@@ -210,15 +210,10 @@ classdef DCTWaferAxes < mic.Base
             
             this.init();
             
-            
         end
-        
           
         function delete(this)
-            if isvalid(this.clock) &&...
-               this.clock.has(this.id())
-                this.clock.remove(this.id());
-            end
+            this.clock.remove(this.id());
         end
         
         function build(this, hParent, dLeft, dTop)
@@ -1350,7 +1345,7 @@ classdef DCTWaferAxes < mic.Base
             end
             
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
-            
+            dVMax = 1; % VALUE
             for k = 1:length(ceExposures)
                 dExposure = ceExposures{k};
                 dX = dExposure(1);
@@ -1364,7 +1359,7 @@ classdef DCTWaferAxes < mic.Base
     
                 dH = this.dHueExposure; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
-                dV = dDose / dDoseMax;
+                dV = dDose / dDoseMax * dVMax;
                 
                 dL = dX - dWidth/2;
                 dR = dX + dWidth/2;
@@ -1372,11 +1367,12 @@ classdef DCTWaferAxes < mic.Base
                 dB = dY - dHeight/2;
 
                 patch( ...
-                    [dL dL dR dR], ...
-                    [dB dT dT dB], ...
-                    hsv2rgb([dH, 1, dV]), ...
-                    'Parent', this.hExposures, ...
-                    'EdgeColor', 'none' ...
+                    'XData', [dL dL dR dR], ...
+                    'YData', [dB dT dT dB], ...
+                    'FaceColor', hsv2rgb([dH, 1, dV]), ...
+                    'EdgeColor', hsv2rgb([dH, 1, dVMax]), ...
+                    'LineWidth', this.getThicknessOfCrosshair(), ...
+                    'Parent', this.hExposures ...
                 );
             end
               
@@ -1404,7 +1400,7 @@ classdef DCTWaferAxes < mic.Base
             end
             
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
-            
+            dVMax = 0.4;
             for k = 1:length(ceExposures)
                 dExposure = ceExposures{k};
                 dX = dExposure(1);
@@ -1418,7 +1414,7 @@ classdef DCTWaferAxes < mic.Base
     
                 dH = this.dHueExposurePre; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
-                dV = (dDose / dDoseMax) * 0.4; % lower value so tends toward black
+                dV = (dDose / dDoseMax) * dVMax; % lower value so tends toward black
                 
                 dL = dX - dWidth/2;
                 dR = dX + dWidth/2;
@@ -1428,7 +1424,8 @@ classdef DCTWaferAxes < mic.Base
                 patch( ...
                     'XData', [dL dL dR dR], ...
                     'YData', [dB dT dT dB], ...
-                    'EdgeColor', 'none', ...
+                    'EdgeColor', hsv2rgb([dH, 1, dVMax]), ...
+                    'LineWidth', this.getThicknessOfCrosshair(), ...
                     'FaceColor', hsv2rgb([dH, 1, dV]), ... % low saturation
                     'Parent', this.hExposuresPre ...
                     ...'EdgeColor', 'none' ...
@@ -1461,7 +1458,7 @@ classdef DCTWaferAxes < mic.Base
             end
             
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
-            
+            dVMax = 0.4;
             for k = 1:length(ceExposures)
                 dExposure = ceExposures{k};
                 dX = dExposure(1);
@@ -1475,7 +1472,7 @@ classdef DCTWaferAxes < mic.Base
     
                 dH = this.dHueExposureScan; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
-                dV = dDose / dDoseMax;
+                dV = dDose / dDoseMax * dVMax;
                 
                 
                 dL = dX - dWidth/2;
@@ -1488,7 +1485,8 @@ classdef DCTWaferAxes < mic.Base
                     'XData', [dL dL dR dR], ...
                     'YData', [dB dT dT dB], ...
                     ...'FaceColor', 'none', ...
-                    'EdgeColor', 'none', ...
+                    'EdgeColor', hsv2rgb([dH, 1, dVMax]), ...
+                    'LineWidth', this.getThicknessOfCrosshair(), ...
                     'FaceColor', hsv2rgb([dH, 1, dV]), ... 
                     ...'LineWidth', this.getThicknessOfCrosshair(), ...
                     'Parent', this.hExposuresScan ...

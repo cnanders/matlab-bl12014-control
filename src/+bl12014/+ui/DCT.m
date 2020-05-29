@@ -23,14 +23,11 @@ classdef DCT < mic.Base
         uiBeamline
         uiScannerM142
         
-        % Eventually make private.
-        % Exposing for troubleshooting
-        clock
-        
         % { mic.ui.Clock 1x1}
         uiClockStages
         uiClockFluxDensity
         uiClockExposureControl
+        uiClockAxes
 
     end
     
@@ -49,6 +46,11 @@ classdef DCT < mic.Base
         lIsTabBuilt = false(1, 3);
         hardware
         uiTabGroup
+        
+        % Eventually make private.
+        % Exposing for troubleshooting
+        clock
+        
     end
     
         
@@ -85,9 +87,13 @@ classdef DCT < mic.Base
                 error('hardware must be bl12014.Hardware');
             end
             
+            % Needed since has a scan that needs to run even when not 
+            % active tab
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
+            
+            
             
             this.init();
             
@@ -117,13 +123,41 @@ classdef DCT < mic.Base
         
         %% Destructor
         
+        function cec = getPropsDelete(this)
+            cec = {...
+                'uiAxes', ...
+                'uiExposureControl', ... references FluxDensity
+                'uiStages', ...
+                'uiFluxDensity', ...
+                'uiClockStages', ...
+                'uiClockFluxDensity', ...
+                'uiClockExposureControl', ...
+                'uiClockAxes' ...
+            };
+        end
+            
+        
+        
         function delete(this)
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                this.(cProp) = [];
+            end
+             
+            return ;
+            
+            this.uiAxes = [];
             this.uiStages = [];
             this.uiFluxDensity = [];
-            this.uiExposureControl = [];          
+            this.uiExposureControl = [];
+            this.uiClockStages = []
+            this.uiClockFluxDensity
+            this.uiClockExposureControl
+            this.uiClockAxes
         end 
         
-        function cec = getSaveLoadProps(this)
+        function cec = getPropsSaved(this)
            
             cec = {...
                 'uiStages', ...
@@ -135,7 +169,7 @@ classdef DCT < mic.Base
         
         
         function st = save(this)
-             cecProps = this.getSaveLoadProps();
+             cecProps = this.getPropsSaved();
             
             st = struct();
             for n = 1 : length(cecProps)
@@ -150,7 +184,7 @@ classdef DCT < mic.Base
         
         function load(this, st)
                         
-            cecProps = this.getSaveLoadProps();
+            cecProps = this.getPropsSaved();
             for n = 1 : length(cecProps)
                cProp = cecProps{n};
                if isfield(st, cProp)
@@ -180,8 +214,13 @@ classdef DCT < mic.Base
                 cefhCallback{n} = @this.onUiTabGroup;
             end
             
+            this.uiClockAxes = mic.ui.Clock(this.clock);
+            this.uiClockStages = mic.ui.Clock(this.clock);
+            this.uiClockFluxDensity = mic.ui.Clock(this.clock);
+            this.uiClockExposureControl = mic.ui.Clock(this.clock);
+            
             this.uiAxes = bl12014.ui.DCTWaferAxes(...
-                'clock', this.clock, ...
+                'clock', this.uiClockAxes, ...
                 'dWidth', 700, ...
                 'dHeight', 700, ...
                 'hardware', this.hardware, ...
@@ -193,9 +232,7 @@ classdef DCT < mic.Base
                 'ceTabNames',  this.cecTabs ...
             );
                                    
-            this.uiClockStages = mic.ui.Clock(this.clock);
-            this.uiClockFluxDensity = mic.ui.Clock(this.clock);
-            this.uiClockExposureControl = mic.ui.Clock(this.clock);
+            
             
             
             this.uiStages = bl12014.ui.DCTStages(...

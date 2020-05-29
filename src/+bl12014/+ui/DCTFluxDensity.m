@@ -23,6 +23,7 @@ classdef DCTFluxDensity < mic.Base
                 
         % Must pass in
         uiScannerM142
+        uiScannerPlotDCT
         
         uiStateMonoGratingAtEUV
         uiStateWaferAtDiode
@@ -249,7 +250,10 @@ classdef DCTFluxDensity < mic.Base
             %}
             
             this.uiStateShutterOpen.build(hPanel, 10, dTop, dWidthTask);
-            dTop = dTop + dSep;
+            dTop = dTop + dSep;   
+            
+           
+            this.uiScannerPlotDCT.build(hPanel, 440, 10);
             
             dTop = dTop + 20;
                                     
@@ -308,21 +312,52 @@ classdef DCTFluxDensity < mic.Base
         
         
         function delete(this)
-                        
-            % delete(this.uiStateM142ScanningDefault);
-            delete(this.uiStateShutterOpen);
-            delete(this.uiStateWaferAtDiode);
-            delete(this.uiStateApertureMatchesDiode)
-            delete(this.uiShutter);
-            delete(this.uiExitSlit);
+            this.uiStageWafer = []; 
+            this.uiStageAperture = []; 
+            this.uiDiode = []; 
+            this.uiExitSlit = []; 
+            this.uiUndulator = []; 
+            this.uiShutter = []; 
+            this.uiStateMonoGratingAtEUV = []; 
+            this.uiStateWaferAtDiode = []; 
+            this.uiStateApertureMatchesDiode = []; 
+            this.uiStateShutterOpen = []; 
+            this.uiScannerPlotDCT = []; 
                         
         end
         
+        function cec = getPropsSaved(this)
+            cec = {...
+                'uiDiode' ...
+             };
+        end
+        
+        
         function st = save(this)
+             cecProps = this.getPropsSaved();
+            
             st = struct();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                if this.hasProp( cProp)
+                    st.(cProp) = this.(cProp).save();
+                end
+            end
+
+             
         end
         
         function load(this, st)
+                        
+            cecProps = this.getPropsSaved();
+            for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if isfield(st, cProp)
+                   if this.hasProp( cProp )
+                        this.(cProp).load(st.(cProp))
+                   end
+               end
+            end
             
         end
                
@@ -421,6 +456,7 @@ classdef DCTFluxDensity < mic.Base
         
        
             this.uiExitSlit = bl12014.ui.ExitSlit(...
+                'cName', [this.cName, 'exit-slit'], ...
                 'hardware', this.hardware, ...
                 'clock', this.uiClock);
             
@@ -552,6 +588,17 @@ classdef DCTFluxDensity < mic.Base
             
             this.uiTextApertureCalibrated = mic.ui.common.Text(...
                 'cVal', 'Aperture:');
+            
+            
+            this.uiScannerPlotDCT = bl12014.ui.ScannerPlotDCT(...
+               'cName', [this.cName, 'scanner-plot-dct'], ...
+                'uiClock', this.uiClock, ...
+                'fhGetWidthOfAperture', @() this.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                'fhGetHeightOfAperture', @() this.uiDiode.uiPopupAperture.get().dWidth * 1e-3, ...
+                'fhGetWavetables', @() this.uiScannerM142.uiNPointLC400.getWavetables(), ...
+                'fhGetActive', @() this.uiScannerM142.uiNPointLC400.uiGetSetLogicalActive.get() ...
+            );
+        
             
             this.loadLastFluxCalibration();
         end

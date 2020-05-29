@@ -18,7 +18,6 @@ classdef Scanner < mic.Base
         uiPupilFillGenerator
         
         
-        
     end
     
     properties (Access = protected)
@@ -80,7 +79,6 @@ classdef Scanner < mic.Base
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
-            
             
             if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
                 error('uiClock must be mic.Clock | mic.ui.Clock');
@@ -157,7 +155,6 @@ classdef Scanner < mic.Base
             % Delete the figure
             delete(this.uiNPointLC400)
             delete(this.uiPupilFillGenerator);
-            
             
         end 
         
