@@ -156,7 +156,7 @@ classdef GigECamera < mic.Base
         end
         
         function delete(this)
-            
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
             this.stopVideoPreview();
             
              if ~isempty(this.camera)

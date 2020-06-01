@@ -2,8 +2,11 @@ classdef App < mic.Base
         
     properties (Constant)
         
-        dWidth = 750
-        dHeight = 550
+
+        
+                    
+        dWidth = 1850;
+        dHeight = 1040;
         
         lUseDock = true;
         
@@ -140,7 +143,6 @@ classdef App < mic.Base
         uiTextDurationLabel
         uiTextDurationOfTimerExecution
         
-        hFigureNew
         uiTabGroup
     end
     
@@ -153,7 +155,7 @@ classdef App < mic.Base
 
     
     methods
-        
+
         
         function this = App(varargin)
             
@@ -195,65 +197,32 @@ classdef App < mic.Base
             this.msg('Hi!');
         end
         
-        function buildFigure(this)
-            
-            if ishghandle(this.hFigure)
-                % Bring to front
-                figure(this.hFigure);
-                return
-            else 
-            
                 
-                % Figure
-                this.hFigure = figure( ...
-                    'NumberTitle', 'off', ...
-                    'MenuBar', 'none', ...
-                    'Name', 'MET5', ...
-                    'Position', [50 50 400 250], ... % left bottom width height
-                    'Resize', 'off', ...
-                    'HandleVisibility', 'on', ... % lets close all close the figure
-                    'CloseRequestFcn', @this.onFigureCloseRequest, ...
-                    'Visible', 'on'...
-                );
-                % 'CloseRequestFcn', @this.onCloseRequestFcn ...
-
-                drawnow;                
-            end
-            
-        end
-        
-        function onFigureCloseRequest(this, src, evt)
-            this.delete();
-         end
-        
-        
         function build(this)
             
             % LSIControl is built separately now
             % this.uiLSIControl.build();
             
-            
-            dWidth = 1850;
-            dHeight = 1040;
+
             dScreenSize = get(0, 'ScreenSize');
             
             % Centered
-            dLeft = (dScreenSize(3) - dWidth)/2;
-            dBottom = (dScreenSize(4) - dHeight)/2;
+            dLeft = (dScreenSize(3) - this.dWidth)/2;
+            dBottom = (dScreenSize(4) - this.dHeight)/2;
             
             % Top Left
             dLeft = 10;
-            dBottom = dScreenSize(4) - dHeight - 10 - 60;
+            dBottom = dScreenSize(4) - this.dHeight - 10 - 60;
             
-            this.hFigureNew = figure( ...
+            this.hFigure = figure( ...
                 'NumberTitle', 'off',...
                 'MenuBar', 'none',...
                 'Name', 'MET5 Control',...
                 'Position', [ ...
                 dLeft ...
                 dBottom ...
-                dWidth ...
-                dHeight ...
+                this.dWidth ...
+                this.dHeight ...
                 ],... % left bottom width height
                 'Toolbar', 'figure', ... % zoom tools
                 'Resize', 'off',...
@@ -263,32 +232,29 @@ classdef App < mic.Base
                 'CloseRequestFcn', @this.onCloseRequest, ...
                 'Visible', 'on'...
             );
-            this.uiTabGroup.build(this.hFigureNew, 0, 25, dWidth, dHeight - 2);
+            this.uiTabGroup.build(this.hFigure, 0, 30, this.dWidth, this.dHeight - 40);
             
             this.uiTextDurationLabel.build(...
-                this.hFigureNew, ...
+                this.hFigure, ...
                 10, ... % left
                 5, ... % top
                 180, ... % width
                 12 ...
             );
             this.uiTextDurationOfTimerExecution.build(...
-                this.hFigureNew, ...
+                this.hFigure, ...
                 190, ... % left
                 5, ... % top
                 200, ... % width
                 12 ...
             );
         
-            this.uiButtonListClockTasks.build(this.hFigureNew, 290, 5, 100, 20);
-            this.uiCurrentOfRing.build(this.hFigureNew, 400, 5);
-            this.uiDMIPowerMonitor.build(this.hFigureNew, 600, 1);
-            this.uiPowerPmacHydraMotMinMonitor.build(this.hFigureNew, 1000, 1);
+            this.uiButtonListClockTasks.build(this.hFigure, 290, 5, 100, 20);
+            this.uiCurrentOfRing.build(this.hFigure, 400, 5);
+            this.uiDMIPowerMonitor.build(this.hFigure, 600, 1);
+            this.uiPowerPmacHydraMotMinMonitor.build(this.hFigure, 1000, 1);
         
-            if ~isempty(this.clock) && ...
-                ~this.clock.has(this.id())
-                this.clock.add(@this.onClock, this.id(), this.dDelay);
-            end
+            this.clock.add(@this.onClock, this.id(), this.dDelay);
             
             % Build the first tab.
             
@@ -297,20 +263,19 @@ classdef App < mic.Base
             hTab = this.uiTabGroup.getTabByName(cTab);
             this.uiHardware.build(hTab, 10, 10);
             
-            
         end
         
         
         function onFigureWindowMouseDown(this, src, evt)
            
-            if ~ishandle(this.hFigureNew)
+            if ~ishandle(this.hFigure)
                 return
             end
             cTab = this.uiTabGroup.getSelectedTabName();
             
             switch cTab
                case 'Beamline'
-                    this.uiBeamline.showSetAsZeroIfFigureClickIsInAxes(this.hFigureNew);
+                    this.uiBeamline.showSetAsZeroIfFigureClickIsInAxes(this.hFigure);
                
             end
             
@@ -319,7 +284,7 @@ classdef App < mic.Base
         
         function onFigureWindowMouseMotion(this, src, evt)
            
-            if ~ishandle(this.hFigureNew)
+            if ~ishandle(this.hFigure)
                 return
             end
             
@@ -327,9 +292,9 @@ classdef App < mic.Base
            cTab = this.uiTabGroup.getSelectedTabName();
            switch cTab
                case 'Beamline'
-                    this.uiBeamline.updateAxesCrosshair(this.hFigureNew);
+                    this.uiBeamline.updateAxesCrosshair(this.hFigure);
                case 'Log Plotter'
-                    this.uiLogPlotter.setTextPlotXPlotYBasedOnAxesCurrentPoint(this.hFigureNew);
+                    this.uiLogPlotter.setTextPlotXPlotYBasedOnAxesCurrentPoint(this.hFigure);
            end
            
         end
@@ -382,6 +347,7 @@ classdef App < mic.Base
                 'uiNetworkCommunication', ...
                 'uiCurrentOfRing', ...
                 ...
+                ... ui.clock instances
                 'uiClockHardware', ...
                 'uiClockNetworkCommunication', ...
                 'uiClockBeamline', ...
@@ -425,8 +391,8 @@ classdef App < mic.Base
                 delete(this.hFigure);
             end
             
-            if ishandle(this.hFigureNew)
-               delete(this.hFigureNew);
+            if ishandle(this.hFigure)
+               delete(this.hFigure);
             end
             
             cecProps = this.getPropsDelete();

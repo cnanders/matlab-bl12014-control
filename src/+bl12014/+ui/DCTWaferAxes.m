@@ -1415,7 +1415,7 @@ classdef DCTWaferAxes < mic.Base
             end
             
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
-            dVMax = 0.4;
+            dVMax = 0.6;
             for k = 1:length(ceExposures)
                 dExposure = ceExposures{k};
                 dX = dExposure(1);
@@ -1473,7 +1473,7 @@ classdef DCTWaferAxes < mic.Base
             end
             
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
-            dVMax = 0.4;
+            dVMax = 0.6;
             for k = 1:length(ceExposures)
                 dExposure = ceExposures{k};
                 dX = dExposure(1);

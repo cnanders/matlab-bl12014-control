@@ -93,13 +93,31 @@ classdef PowerPmacHydraMotMinMonitor < mic.Base
                         
         end
         
-                        
+        function cec = getPropsDelete(this)
+            
+            cec = {...
+                'uiWorkingMode', ...
+                'uiMotMin', ...
+                'uiStateOn', ...
+                'uiSequenceOn', ...
+            };
+        
+        end
         
         %% Destructor
         
         function delete(this)
             this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
             this.uiClock.remove(this.id());
+            
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                cMsg = sprintf('delete() deleting %s', cProp);
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE);  
+                this.(cProp).delete();
+            end
+            
         end
         
         function st = save(this)

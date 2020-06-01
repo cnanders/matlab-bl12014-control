@@ -181,24 +181,14 @@ classdef M142 < mic.Base
         
         function delete(this)
             
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
             
-            % {mic.ui.device.GetSetLogical 1x1}
-            this.uiCommMicronixMmc103 = [];
-
-            % {mic.ui.device.GetSetNumber 1x1}
-            this.uiStageX = [];
-
-            % {mic.ui.device.GetSetNumber 1x1}
-            this.uiStageTiltX = [];
-
-            % {mic.ui.device.GetSetNumber 1x1}
-            this.uiStageTiltYMf = [];
-
-            % {mic.ui.device.GetSetNumber 1x1}
-            this.uiStageTiltYMfr = [];
-
-            % {mic.ui.device.GetSetNumber 1x1}
-            this.uiStageTiltZMfr = [];
+            this.uiCommMicronixMmc103.delete();
+            this.uiStageX.delete();
+            this.uiStageTiltX.delete();
+            this.uiStageTiltYMf.delete();
+            this.uiStageTiltYMfr.delete();
+            this.uiStageTiltZMfr.delete();
             
            
         end    

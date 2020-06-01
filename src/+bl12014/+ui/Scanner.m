@@ -153,8 +153,8 @@ classdef Scanner < mic.Base
             this.msg('delete', this.u8_MSG_TYPE_CLASS_DELETE);
                         
             % Delete the figure
-            delete(this.uiNPointLC400)
-            delete(this.uiPupilFillGenerator);
+            this.uiNPointLC400.delete();
+            this.uiPupilFillGenerator.delete();
             
         end 
         

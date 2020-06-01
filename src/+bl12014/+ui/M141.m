@@ -116,12 +116,28 @@ classdef M141 < mic.Base
         end
         
         
-       
+        function cec = getPropsDelete(this)
+            
+            cec = {
+                'uiSwitch', ...
+                 'uiCommSmarActMcsM141', ...
+                 'uiStageX', ...
+                 'uiStageTiltX', ...
+                 'uiStageTiltY', ...
+                'uiCurrent', ...
+           };
+            
+        end
         
         
         function delete(this)
             
-            
+        	this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                this.(cProp).delete();
+            end
             
         end   
         

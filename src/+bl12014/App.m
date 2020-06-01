@@ -1,9 +1,7 @@
 classdef App < mic.Base
         
     properties (Constant)
-        
-        
-        
+
         dWidthButton = 210
         
         % Branchline Subnet
@@ -14,7 +12,6 @@ classdef App < mic.Base
         cTcpipSmarActLSIGoni = '192.168.20.24'
         cTcpipSmarActLSIHexapod = '192.168.20.25'
         cTcpipSmarActFocusMonitor = '192.168.20.26'
-       
         
     end
     
@@ -44,7 +41,6 @@ classdef App < mic.Base
         
         commSmarActRotary
                 
-
         
         % {micronix.Mmc103 1x1}
         % M142R tiltZ (clocking)
@@ -56,7 +52,6 @@ classdef App < mic.Base
         
         % {bl12014.MotMinReticleDaemon 1x1}
         motMinReticleDaemon 
-        
         
     end
     
@@ -117,17 +112,34 @@ classdef App < mic.Base
             
             this.destroyAndDisconnectAll();
             
-            this.logger.delete();
-            this.uiApp.delete();
+            if ~this.getIsDev()
+                this.logger.delete()
+            end
             
+            this.uiApp.delete();
             % uiApp uses hardware so delete hardware after
             this.hardware.delete();
+            this.clock.delete();
             
         end
         
     end
     
     methods (Access = private)
+        
+        
+        function l = getIsDev(this)
+            
+            cDirThis = fileparts(mfilename('fullpath'));
+                        
+            if contains(cDirThis, 'cnanderson') || ...
+               contains(cDirThis, 'ryanmiyakawa')
+                l = true;
+            else
+                l = false;
+            end
+        end
+        
         
         function initAndConnectMet5Instruments(this)
             
@@ -462,11 +474,8 @@ classdef App < mic.Base
             this.clock = mic.Clock('bl12014-control');
             this.hardware = bl12014.Hardware('clock', this.clock);
             
-            cDirThis = fileparts(mfilename('fullpath'));
             
-            
-            if ~contains(cDirThis, 'cnanderson') && ...
-               ~contains(cDirThis, 'ryanmiyakawa')
+            if ~this.getIsDev()
            
                 this.hardware.connectDataTranslation(); % force real hardware
                 this.hardware.connectMfDriftMonitor(); % force real hardware

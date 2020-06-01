@@ -66,10 +66,8 @@ classdef DMIPowerMonitor < mic.Base
         
         
         function delete(this)
-            
-            
-            
-            
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.ui.delete(); 
         end  
         
         function st = save(this)

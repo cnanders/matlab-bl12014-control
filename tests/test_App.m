@@ -7,7 +7,6 @@ end
 % Dependencies
 
 cDirVendor = fullfile(cDirThis, '..', 'vendor');
-
 addpath(genpath(fullfile(cDirThis, '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages')));
 

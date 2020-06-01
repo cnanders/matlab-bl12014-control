@@ -2,13 +2,6 @@ classdef M143 < mic.Base
     
     properties
         
-        % UI for hardware comm
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommGalil
-        
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDataTranslationMeasurPoint
                         
         % {mic.ui.device.GetSetNumber 1x1}}
         uiStageY
@@ -91,7 +84,9 @@ classdef M143 < mic.Base
         
         function delete(this)
             
-            this.msg('delete');
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.uiStageY.delete();
+            this.uiCurrent.delete();
                         
         end   
         

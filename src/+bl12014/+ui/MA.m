@@ -115,11 +115,28 @@ classdef MA < mic.Base
             
         end
         
+        
+        function cec = getPropsDelete(this)
+            cec = {
+                'uiScanner', ...
+                'uiDiagnostics', ...
+                'uiStateWaferNearPrint', ...
+                'uiVPFM', ...
+                'uiGigECamera', ...
+                'uiShutter', ...
+                'uiUndulatorGap', ...
+                'uiSwitch2Outlet2', ...
+            };
+        end
+        
         function delete(this)
             
-            this.msg('delete', this.u8_MSG_TYPE_CLASS_DELETE);
-            delete(this.uiScanner)
-            delete(this.uiGigECamera);
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            cecProps = this.getPropsDelete();
+            for n = 1 : length(cecProps)
+                cProp = cecProps{n};
+                this.(cProp).delete();
+            end
             
         end  
         
