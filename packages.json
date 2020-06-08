@@ -24,6 +24,7 @@
 		"matlab_mightex_led_controller",
 		"matlab_prolith_src",
 		"matlab_srs_sr570",
+		"matlab_pi_hydra_met5",
 		"matlab_ascii_comm"
 	]
 }
