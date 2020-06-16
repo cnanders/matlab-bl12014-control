@@ -167,11 +167,11 @@ classdef Wafer < mic.Base
             
             dTop = 20;
             dLeft = 720;
-            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 300);
+            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 500);
             
             dTop = 50;
             dLeft = 720;
-            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 300);
+            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 500);
             
             dLeft = 10;
             dTop = 140;
