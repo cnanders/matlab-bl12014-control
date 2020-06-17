@@ -300,7 +300,7 @@ classdef WaferTTZClosedLoop < mic.Base
         function device = createCLRxdevice(this)
             mrad2urad = 1e3;
             fhGetMotor      = @() this.uiTiltX.getValCal('urad'); % CNA 2019.02.01 can this be this.uiTiltX.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
+            fhSetMotor      = @(dVal) this.setMotorTiltX(dVal);
             fhIsReadyMotor  = @() this.uiTiltX.isReady();
             dTolerance      = this.dTiltXTol;
             fhGetSensor             = @() this.hardware.getMfDriftMonitorMiddleware().getHSValue(1) * mrad2urad;
@@ -320,6 +320,14 @@ classdef WaferTTZClosedLoop < mic.Base
             );
         end
         
+        function setMotorTiltY(this, dVal)
+            this.uiTiltY.setDestCalAndGo(dVal, 'urad')
+        end
+        
+        function setMotorTiltX(this, dVal)
+            this.uiTiltX.setDestCalAndGo(dVal, 'urad')
+        end
+        
         function device = createCLRydevice(this)
             mrad2urad = 1e3;
             
@@ -336,7 +344,7 @@ classdef WaferTTZClosedLoop < mic.Base
             
             
             fhGetMotor      = @() this.uiTiltY.getValCal('urad');% CNA 2019.02.01 can this be this.uiTiltY.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.uiTiltY.setDestCalAndGo(dVal, 'urad');
+            fhSetMotor      = @(dVal) this.setMotorTiltY(dVal);
             fhIsReadyMotor  = @() this.uiTiltY.isReady();
             dTolerance      = this.dTiltYTol;
             
