@@ -167,11 +167,11 @@ classdef Wafer < mic.Base
             
             dTop = 20;
             dLeft = 720;
-            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 500);
+            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 1100);
             
             dTop = 50;
             dLeft = 720;
-            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 500);
+            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 1100);
             
             dLeft = 10;
             dTop = 140;
@@ -182,10 +182,7 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            %{
-            this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
-            %}
+            
             
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
@@ -220,6 +217,10 @@ classdef Wafer < mic.Base
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.uiShutter.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiShutter.dHeight + dPad;
+            
+            this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
             
             
             %{
@@ -315,8 +316,10 @@ classdef Wafer < mic.Base
                 'clock', this.uiClock ...
             );
         
+            %{
             this.uiLsiCoarseStage.uiX.setDestCal(450, 'mm');
             this.uiLsiCoarseStage.uiX.moveToDest();
+            %}
             
             this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'cName', [this.cName, 'wafer-fine-stage'], ...

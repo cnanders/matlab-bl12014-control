@@ -164,6 +164,10 @@ classdef MFDriftMonitorMiddleware < mic.Base
             lVal = true;
         end
         
+        function l = areHSValid(this)
+            l = true;
+        end
+        
         function setSampleAverage(this, dNumSampleAverage)
             this.dNumSampleAverage = dNumSampleAverage;
         end

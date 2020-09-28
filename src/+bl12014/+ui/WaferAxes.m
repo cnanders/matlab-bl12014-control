@@ -1173,7 +1173,14 @@ classdef WaferAxes < mic.Base
             % Index shot
             row = 1;
             col = 1;
-            dYStep = dY(2, 1) - dY(1, 1);  
+            
+            [dRows, dCols] = size(dY);
+            if dRows > 1
+                dYStep = dY(2, 1) - dY(1, 1);
+            else
+                dYStep = 0.2;
+            end
+            
             
             dL = dX(row, col) - this.dWidthField/2;
             dR = dX(row, col) + this.dWidthField/2;

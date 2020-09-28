@@ -144,6 +144,7 @@ classdef Scan < mic.Base
         % two props: lRequired, lIssued
         stScanSetContract
         stScanAcquireContract
+        stScanTimingStore
         
         % {cell of struct} storage of state during each acquire
         ceValues
@@ -199,13 +200,8 @@ classdef Scan < mic.Base
             
             this.cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
-            this.cDirPrescriptions = fullfile(...
-                this.cDirSrc, ...
-                'save', ...
-                'prescriptions' ...
-            );
+            
             this.cDirSave = fullfile(this.cDirSrc, 'save', 'fem-scans');
-            this.cDirPrescriptions = mic.Utils.path2canonical(this.cDirPrescriptions);
 
                         
             for k = 1 : 2: length(varargin)
@@ -264,6 +260,7 @@ classdef Scan < mic.Base
                 'uiEditMjPerCm2PerSec', ...
                 'uiEditRowStart', ...
                 'uiEditColStart', ...
+                'uiPrescriptionTool', ...
              };
             
         end
@@ -667,9 +664,7 @@ classdef Scan < mic.Base
                         
         end
         
-        function ceReturn = refreshFcn(this)
-            ceReturn = mic.Utils.dir2cell(this.cDirPrescriptions, 'date', 'descend', '*.json');
-        end
+        
         
         
                     
@@ -997,6 +992,27 @@ classdef Scan < mic.Base
             
         end
         
+        
+        function initScanTimingStore(this)
+            ceFields = {...
+                'tracking', ...
+                'settle', ... % vibration settle from DMI
+                'pause', ...
+                'pupilFill', ...
+                'reticleX', ...
+                'reticleY', ...
+                'waferX', ...
+                'waferY', ...
+                'waferZ', ...
+                'xReticleFine', ...
+                'yReticleFine', ...
+                'workingMode', ...
+            };
+
+            for n = 1 : length(ceFields)
+                this.stScanTimingStore.(ceFields{n}) = 0;
+            end
+        end
         function initScanSetContract(this)
             
              ceFields = {...
@@ -1044,6 +1060,14 @@ classdef Scan < mic.Base
                 this.stScanSetContract.(ceFields{n}).lRequired = false;
                 this.stScanSetContract.(ceFields{n}).lIssued = false;
                 this.stScanSetContract.(ceFields{n}).lAchieved = false;
+            end
+            
+        end
+        
+        function resetScanTimingStore(this)
+            ceFields = fieldnames(this.stScanTimingStore);
+            for n = 1 : length(ceFields)
+                this.stScanTimingStore.(ceFields{n}) = 0;
             end
             
         end
@@ -1266,13 +1290,11 @@ classdef Scan < mic.Base
             % active list
             
             this.waferExposureHistory.deleteFemPreviewScan();
-
-            
             ceOptions = this.uiListActive.getOptions();
             for k = 1:length(ceOptions)
                 
                 % Read file, build recipe
-                cFile = fullfile(this.cDirPrescriptions, ceOptions{k});
+                cFile = fullfile(this.uiPrescriptionTool.uiListPrescriptions.getDir(), ceOptions{k});
                 [stRecipe, lError] = this.buildRecipeFromFile(cFile);
                 
                 [dX, dY] = this.getFemGrid(...
@@ -1343,6 +1365,13 @@ classdef Scan < mic.Base
 
         end
             
+        function d = getStageXFromWaferX(this, x)
+            d = x + this.uiWafer.uiAxes.dXChiefRay * 1e3; % mm
+        end
+        
+        function d = getStageYFromWaferY(this, y)
+            d = y + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
+        end
         
         
         
@@ -1515,7 +1544,7 @@ classdef Scan < mic.Base
                         % uiWafer.uiAxes.dYChiefRay (mm)
                         % to offset the stage correctly
                                     
-                        dX = stValue.waferX + this.uiWafer.uiAxes.dXChiefRay * 1e3; % mm
+                        dX = this.getStageXFromWaferX(stValue.waferX); % mm
                         this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dX, 'mm');
                         this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
                         this.stScanSetContract.waferX.lIssued = true;
@@ -1524,7 +1553,7 @@ classdef Scan < mic.Base
                         
                         % See comment for waferX
                         
-                        dY = stValue.waferY + this.uiWafer.uiAxes.dYChiefRay * 1e3; % mm
+                        dY = this.getStageYFromWaferY(stValue.waferY); 
                         this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
                         this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.waferY.lIssued = true;
@@ -1799,28 +1828,31 @@ classdef Scan < mic.Base
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
                                 case 'waferX'
+                                    
+                                    dGoal = this.getStageXFromWaferX(stValue.waferX);
                                     lReady =    ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
-                                                abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3 - stValue.waferX) <= this.dToleranceWaferX;
+                                                abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - dGoal) <= this.dToleranceWaferX;
                                             
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
-                                            this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - this.uiWafer.uiAxes.dXChiefRay * 1e3, ...
-                                            stValue.waferX ...
+                                            this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX), ...
+                                            dGoal ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
                                 case 'waferY'
+                                    dGoal = this.getStageYFromWaferY(stValue.waferY);
                                     lReady =    ...~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
-                                                abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3 - stValue.waferY) <= this.dToleranceWaferY;
+                                                abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - dGoal) <= this.dToleranceWaferY;
                                             
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
-                                            this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - this.uiWafer.uiAxes.dYChiefRay * 1e3, ...
-                                            stValue.waferY ...
+                                            this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY), ...
+                                            dGoal ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
@@ -1880,6 +1912,7 @@ classdef Scan < mic.Base
                         if lReady
                             
                             this.stScanSetContract.(cField).lAchieved = true;
+                            this.stScanTimingStore.(cField) = toc(this.dTicScanSetState); % added 2020.09
                         	
                             if lDebug
                                 cMsg = sprintf('%s %s set operation complete ELAPSED TIME = %1.3f sec', ...
@@ -2164,6 +2197,8 @@ classdef Scan < mic.Base
                 this.saveDmiHeightSensorDataFromExposure(stValue);
                 this.pauseScanIfCurrentOfALSIsTooLow()
                 
+                this.resetScanTimingStore();
+                
                 
             end
         end
@@ -2376,6 +2411,8 @@ classdef Scan < mic.Base
                     0.25 ... % Need larger than the PPMAC cache period of 0.2 s
                 );
                 
+            
+                this.initScanTimingStore();
                 this.scan.start();
             % end
             
@@ -2771,6 +2808,7 @@ classdef Scan < mic.Base
 %                 cePrescriptions{1} ...
 %             );
 
+
             c = fullfile(...
                 this.uiPrescriptionTool.uiListPrescriptions.getDir(), ...
                 cePrescriptions{1} ...
@@ -2858,32 +2896,103 @@ classdef Scan < mic.Base
             
             % st.z_height_sensor_nm = this.uiWafer.uiHeightSensorZClosedLoop.uiZHeightSensor.getDevice().getAveraged(); 
             st.shutter_ms = this.uiShutter.uiShutter.getDestCal('ms');
-            st.flux_mj_per_cm2_per_s = this.uiTuneFluxDensity.getFluxDensityCalibrated();
             
+            % ca update 2020.08 to store the override value from the UI if 
+            % it is being used during experiment.
+            if this.lUseMjPerCm2PerSecOverride
+                dFluxDensity = this.uiEditMjPerCm2PerSec.get();
+            else
+                dFluxDensity = this.uiTuneFluxDensity.getFluxDensityCalibrated();
+            end
+            st.flux_mj_per_cm2_per_s = dFluxDensity;
+            
+
             
             % st.temp_c_po_m2_0200 = this.hardware.getDataTranslation().measure_temperature_rtd(31, 'PT100');
             dData = this.hardware.getDataTranslation().getScanData();
             st.temp_c_po_m2_0200 = dData(31 + 1);
+            
+            
+            % Adding timing info
+            ceFields = {...
+                'tracking', ...
+                'settle', ... % vibration settle from DMI
+                'pause', ...
+                'pupilFill', ...
+                'reticleX', ...
+                'reticleY', ...
+                'waferX', ...
+                'waferY', ...
+                'waferZ', ...
+                'xReticleFine', ...
+                'yReticleFine', ...
+                'workingMode', ...
+            };
+            for n = 1 : length(ceFields)
+                cFieldSave = sprintf('time_%s', ceFields{n});
+                st.(cFieldSave) = this.stScanTimingStore.(ceFields{n});
+            end
+            
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
 
         end
         
         function stRecipe = getRecipeModifiedForSkippedColsAndRows(this, stRecipe)
            
+            % number of states per exposure (if you add pause back,
+            % increase by 1
+            dNumStatesSetup = 12;
+            dNumStatesNormal = 10;
             
-            dNumOfStatesSkipped = ...
+            % careful to convert all uint8 to type double or you can
+            % get type casting and things will max at 255
+            dNumDose = double(stRecipe.fem.u8DoseNum);
+            dRowStart = double(this.uiEditRowStart.get());
+            dColStart = double(this.uiEditColStart.get());
+            
+            dNumSkip = 0;
+            
+            if (...
+                dColStart > 1 || ...
+                dRowStart ...
+            )
+                dNumSkip = dNumSkip + dNumStatesSetup;
+            end
+            
+            % Skip full rows
+            dNumStatesInRow = dNumDose * dNumStatesNormal + 1;
+            dNumRows =  dRowStart - 1;
+            
+            dNumSkip = dNumSkip + dNumRows * dNumStatesInRow; 
+            
+            % Skip partial row with cols
+            if mod(dRowStart, 2) == 0 
+                % starting on even row, which goes right to left
+                dNumCols = dNumDose - dColStart;
+            else
+                % starting on odd row, which goes right to left
+                dNumCols = dColStart - 1;
+            end
+            
+            if dNumCols > 0
+                dNumSkip = dNumSkip + dNumCols * dNumStatesNormal + 1;
+            end
+                
+            %{
+            dNumSkip = ...
                 (this.uiEditColStart.get() - 1) * stRecipe.fem.u8FocusNum + ...
                 (this.uiEditRowStart.get() - 1);
+            %}
             
             ceValues = stRecipe.values;
             
-            if dNumOfStatesSkipped > 0
+            if dNumSkip > 0
                 
                 % Skip the first setup state
                 ceValues = ceValues(2 : end);
                 
                 % Skip states
-                for n = 1 : dNumOfStatesSkipped
+                for n = 1 : dNumSkip
                    ceValues = ceValues(2 : end); 
                 end
             end
@@ -2915,6 +3024,8 @@ classdef Scan < mic.Base
                 dCol = round(dCol);
             end
             
+            % 2020.07 cols are flipped so col 1 = col 19, col2 = col 18
+            dCol = 19 - dCol + 1;
             
             try
                 cNameOfField = bl12014.getNameOfReticleField(...
