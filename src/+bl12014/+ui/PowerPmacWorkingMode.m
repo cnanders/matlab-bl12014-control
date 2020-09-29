@@ -15,7 +15,7 @@ classdef PowerPmacWorkingMode < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 350
+        dWidth = 300
         dWidthName = 130
         dHeight = 160
         
