@@ -54,9 +54,8 @@ classdef Wafer < mic.Base
         uiButtonSyncDestinations
         
         uiSequenceHomeAndLevel
-        
         uiStateHydraWaferVelAccOK
-        
+        uiSequenceRecoverPpmacAndHydra
         
     end
     
@@ -166,12 +165,14 @@ classdef Wafer < mic.Base
             % this.uiMotMin.build(this.hParent, 800, 10);
             
             dTop = 20;
-            dLeft = 720;
-            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 1100);
+            dLeft = 680;
+            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 1160);
+            dTop = dTop + 30;
             
-            dTop = 50;
-            dLeft = 720;
-            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 1100);
+            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 1160);
+            dTop = dTop + 30;
+            
+            this.uiSequenceRecoverPpmacAndHydra.build(this.hParent, dLeft, dTop, 1160);
             
             dLeft = 10;
             dTop = 140;
@@ -443,11 +444,18 @@ classdef Wafer < mic.Base
                 'lShowIsDone', true, ...
                 'clock', this.uiClock ...
             );
-            
         
-            
-                        
-            
+        
+            this.uiSequenceRecoverPpmacAndHydra = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-sequence-recover-ppmac-and-hydra'], ...
+                'task', bl12014.Tasks.createSequenceRecoverPpmacAndHydra(...
+                    [this.cName, 'sequence-recover-ppmac-and-hydra'], ...
+                    this.hardware, ...
+                    this.clock ...
+                ), ...
+                'lShowIsDone', false, ...
+                'clock', this.uiClock ...
+            );
 
         end
         

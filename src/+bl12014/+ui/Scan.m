@@ -12,7 +12,7 @@ classdef Scan < mic.Base
         dHeight = 600
         
         
-        dWidthList = 500
+        dWidthList = 400
         dHeightList = 100
         dWidthUiScan = 270
         
@@ -21,8 +21,8 @@ classdef Scan < mic.Base
         dWidthPanelAvailable = 700
         dHeightPanelAvailable = 200
         
-        dWidthPanelAdded = 900
-        dHeightPanelAdded = 640
+        dWidthPanelAdded = 420
+        dHeightPanelAdded = 940
         
         dWidthPanelBorder = 1
         
@@ -173,6 +173,8 @@ classdef Scan < mic.Base
         uiStateHeightSensorLEDsOn
         uiStatePowerPmacAccelSetForFEM
         
+        uiSequenceRecoverFem
+        
         uiTextReticleField
         
         hAxesPupilFill
@@ -183,6 +185,11 @@ classdef Scan < mic.Base
         
         uiTextTimeCalibrated
         uiTextFluxDensityCalibrated
+        
+        lIsVib = false
+        lIsWFZ = false
+        dRmsDriftX = 0
+        dRmsDriftY = 0
     end
     
         
@@ -321,92 +328,9 @@ classdef Scan < mic.Base
             dLeft = this.dWidthPadFigure;
             dTop = this.dWidthPadFigure;
             
-            this.uiListActive.build(this.hPanelAdded, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthList, ...
-                40);
-            
-           dTop = 30;
-           dSep = 20;
-           dTop = 140;
-           
-           %dLeft = dPad + this.dWidthList + dPad;
-           
-           dTop = 70;
-           dLeft = this.dWidthPadFigure;
-           
-%            this.uibNewWafer.build(this.hPanelAdded, ...
-%                 dLeft, ...
-%                 dTop, ...
-%                 this.dWidthButton, ...
-%                 this.dHeightButton);
-%             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
-            
-            this.uiButtonClearPrescriptions.build(this.hPanelAdded, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthButton, ...
-                this.dHeightButton);
-            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
-            
-            this.uiButtonClearWafer.build(this.hPanelAdded, ...
-                dLeft, ...
-                dTop, ...
-                this.dWidthButton, ...
-                this.dHeightButton);
-            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
-            
-            
-            this.uibPrint.build(this.hPanelAdded, ...
-                dLeft, ...
-                dTop, ...
-                100, ...
-                this.dHeightButton);
             
            
-           dLeft = this.dWidthPadFigure;
-           dTop = dTop + 50;
            
-           dTopBelowList = dTop;
-           
-           dSep = 40;
-           
-           if this.lUseMjPerCm2PerSecOverride
-                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-                dTop = dTop + dSep;
-           end
-                      
-           this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-           dTop = dTop + dSep;
-           
-           this.uiEditRowStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-           dTop = dTop + dSep;
-           
-           dTop = dTop + 10;
-           
-           dSep = 20;
-           
-           this.uicWaferLL.build(this.hPanelAdded, ...
-               dLeft, ...
-               dTop, ...
-               200, ...
-               20);
-            
-           dTop = dTop + dSep;
-           this.uicAutoVentAtLL.build(this.hPanelAdded, ...
-               dLeft, ...
-               dTop, ...
-               200, ...
-               20);
-           dTop = dTop + 30;
-           
-           % dLeft = 150;
-           % dTop = 180
-           this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
-           
-           dTop = dTopBelowList;
-           dLeft = 480;
            dSep = 30;
            dSize = 100;
            
@@ -493,8 +417,95 @@ classdef Scan < mic.Base
            this.uiSequenceLevelWafer.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
+           %{
            this.uiStatePowerPmacAccelSetForFEM.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
+           %}
+           
+           dTop = dTop + 30
+           this.uiListActive.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthList, ...
+                40);
+            
+           dTop = dTop + 100;
+           dSep = 20;
+           
+           
+           dLeft = this.dWidthPadFigure;
+           
+%            this.uibNewWafer.build(this.hPanelAdded, ...
+%                 dLeft, ...
+%                 dTop, ...
+%                 this.dWidthButton, ...
+%                 this.dHeightButton);
+%             dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearPrescriptions.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthButton, ...
+                this.dHeightButton);
+            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            this.uiButtonClearWafer.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                this.dWidthButton, ...
+                this.dHeightButton);
+            dLeft = dLeft + this.dWidthButton + this.dWidthPadFigure;
+            
+            
+            this.uibPrint.build(this.hPanelAdded, ...
+                dLeft, ...
+                dTop, ...
+                100, ...
+                this.dHeightButton);
+            
+           
+           dLeft = this.dWidthPadFigure;
+           dTop = dTop + 50;
+           
+           dTopBelowList = dTop;
+           
+           dSep = 40;
+           
+           if this.lUseMjPerCm2PerSecOverride
+                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+                dTop = dTop + dSep;
+           end
+                      
+           this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+           dTop = dTop + dSep;
+           
+           this.uiEditRowStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+           dTop = dTop + dSep;
+           
+           dTop = dTop + 10;
+           
+           dSep = 20;
+           
+           this.uicWaferLL.build(this.hPanelAdded, ...
+               dLeft, ...
+               dTop, ...
+               200, ...
+               20);
+            
+           dTop = dTop + dSep;
+           this.uicAutoVentAtLL.build(this.hPanelAdded, ...
+               dLeft, ...
+               dTop, ...
+               200, ...
+               20);
+           dTop = dTop + 30;
+           
+           % dLeft = 150;
+           % dTop = 180
+           this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
+           
+           dTop = dTop + 70;
+           this.uiSequenceRecoverFem.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
 
            
             
@@ -633,10 +644,12 @@ classdef Scan < mic.Base
             
             this.buildPanelAdded()
             
-            dTop = 600;
+            
+            dTop = 20;
+            dLeft = this.uiPrescriptionTool.dWidth + this.dWidthPanelAdded + this.dWidthPadPanel * 3;
             %this.uiReticleAxes.build(this.hParent, 10, dTop);
-            this.uiWaferAxes.build(this.hParent, 10, dTop);
-            this.uiShutter.build(this.hParent, this.uiPrescriptionTool.dWidth + 25, 400);
+            this.uiWaferAxes.build(this.hParent, dLeft, dTop);
+            this.uiShutter.build(this.hParent, dLeft, 800);
             % this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             
@@ -713,8 +726,8 @@ classdef Scan < mic.Base
                 'ceOptions', cell(1,0), ...
                 'cLabel', 'Added prescriptions', ...
                 'fhDirectCallback', @this.onListActiveChange, ...
-                'lShowDelete', true, ...
-                'lShowMove', true, ...
+                'lShowDelete', false, ...
+                'lShowMove', false, ...
                 'lShowLabel', true, ...
                 'lShowRefresh', false ...
             );
@@ -801,11 +814,16 @@ classdef Scan < mic.Base
             
             this.uiWaferAxes = bl12014.ui.WaferAxes(...
                 'cName', [this.cName, 'wafer-axes'], ...
-                'dWidth', 350, ...
-                'dHeight', 350, ...
+                'dWidth', 750, ...
+                'dHeight', 750, ...
                 'clock', this.uiClock, ...
                 'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'waferExposureHistory', this.waferExposureHistory, ...
+                'fhGetVibX', @() this.dRmsDriftX, ...
+                'fhGetVibY', @() this.dRmsDriftY, ...
+                'fhGetIsVib', @() this.lIsVib, ...
+                'fhGetIsWFZ', @() this.lIsWFZ, ...
+                'fhGetIsDriftControl', @() this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == 4, ...
                 'fhGetXOfWafer', @() this.uiWafer.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
                 'fhGetYOfWafer', @() this.uiWafer.uiCoarseStage.uiY.getValCal('mm') / 1000, ...
                 'fhGetXOfLsi', @() this.uiWafer.uiLsiCoarseStage.uiX.getValCal('mm') / 1000 ...
@@ -978,6 +996,14 @@ classdef Scan < mic.Base
                 'cVal', 'Flux Density: ');
             
             this.uiClock.add(@this.onClock, this.id(), 1);
+            
+            
+            this.uiSequenceRecoverFem = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-sequence-recover-fem'], ...
+                'task', this.createSequenceRecoverFem(), ...
+                'lShowIsDone', false, ...
+                'clock', this.uiClock ...
+            );
                                    
         end
         
@@ -1007,6 +1033,7 @@ classdef Scan < mic.Base
                 'xReticleFine', ...
                 'yReticleFine', ...
                 'workingMode', ...
+                'shutter', ...
             };
 
             for n = 1 : length(ceFields)
@@ -1123,7 +1150,6 @@ classdef Scan < mic.Base
         function onUiScanPause(this, ~, ~)
             this.scan.pause();
             this.updateUiScanStatus()
-
         end
         
         function onUiScanResume(this, ~, ~)
@@ -1472,6 +1498,7 @@ classdef Scan < mic.Base
                         end
                         %}
                         this.stScanSetContract.settle.lIssued = true;
+                        this.lIsVib = true;
                         
                     
                     case 'pause'
@@ -1567,9 +1594,11 @@ classdef Scan < mic.Base
 %                         
                         
                         % Changed RM 12/2018 to new CL architecture:
+                       this.stScanSetContract.waferZ.lIssued = true;
+                        this.lIsWFZ = true;
+                        
                         this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
                         this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.moveToDest();
-                        this.stScanSetContract.waferZ.lIssued = true;
                         
                         
                         
@@ -1740,6 +1769,8 @@ classdef Scan < mic.Base
                                     end
 
                                     [dRmsX, dRmsY] = this.getDriftOfDmi();
+                                    this.dRmsDriftX = dRmsX;
+                                    this.dRmsDriftY = dRmsY;
 
                                     % Check values
                                     if dRmsX < dValue && dRmsY < dValue
@@ -1764,6 +1795,10 @@ classdef Scan < mic.Base
                                             this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                        end 
                                        lReady = true;
+                                    end
+                                    
+                                    if lReady
+                                        this.lIsVib = false;
                                     end
                                     
                                 case 'pause'
@@ -1829,6 +1864,12 @@ classdef Scan < mic.Base
                                     end
                                 case 'waferX'
                                     
+                                    % auto-recover on stage timeout
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+                                    if (dTimeElapsed > 20)
+                                        this.uiSequenceRecoverFem.execute();
+                                    end
+                                    
                                     dGoal = this.getStageXFromWaferX(stValue.waferX);
                                     lReady =    ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
                                                 abs(this.uiWafer.uiCoarseStage.uiX.getValCal(stUnit.waferX) - dGoal) <= this.dToleranceWaferX;
@@ -1843,6 +1884,13 @@ classdef Scan < mic.Base
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
                                 case 'waferY'
+                                    
+                                    % auto recover on stage timeout
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+                                    if (dTimeElapsed > 20)
+                                        this.uiSequenceRecoverFem.execute();
+                                    end
+                                    
                                     dGoal = this.getStageYFromWaferY(stValue.waferY);
                                     lReady =    ...~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt();
                                                 abs(this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY) - dGoal) <= this.dToleranceWaferY;
@@ -1881,12 +1929,15 @@ classdef Scan < mic.Base
                                    % a modal?
                                    
                                    lReasonable = this.checkWaferFineZDeltas();
+                                   if lReady
+                                       this.lIsWFZ = false;
+                                   end
 
                                 case 'workingMode'
                                     
-                                    
 
-                                    lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;   
+                                    lReady = this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == stValue.workingMode;
+                                    % lReady = true; % 2020.09 asume that working mode changes to 4/5 are instantaneous
                                     
                                     if lDebug
                                         cMsg = sprintf('%s %s value = %1.0f; goal = %1.0f', ...
@@ -1956,6 +2007,7 @@ classdef Scan < mic.Base
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state (possibly contains 
         % information about the task to execute during acquire)
+        % called after every state is reached
         function onScanAcquire(this, stUnit, stValue)
             
             this.dTicScanAcquire = tic;
@@ -2020,23 +2072,7 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lIssued = true;
             
             
-            if isfield(stValue, 'task')
-                % Store the state of the system
-                stState = this.getState(stUnit);
-                stState.dose_mj_per_cm2 = stValue.task.dose;
                 
-                % 2019.11.05 adding deltas of height sensor and WFZ to the
-                % data store so it is easy to plot in the log plotter.
-                if isempty(this.ceValues)
-                    stState.dz_height_sensor_nm = 0;
-                    stState.dz_wafer_fine_nm = 0;
-                else
-                    stState.dz_height_sensor_nm = stState.z_height_sensor_nm - this.ceValues{end}.z_height_sensor_nm;
-                    stState.dz_wafer_fine_nm = stState.z_wafer_fine_nm - this.ceValues{end}.z_wafer_fine_nm;
-                end
-                
-                this.ceValues{end + 1} = stState;
-            end
             
         end
 
@@ -2106,6 +2142,9 @@ classdef Scan < mic.Base
                         
                         
                         if lReady
+                            
+                            this.stScanTimingStore.(cField) = toc(this.dTicScanAcquire); % added 2020.09
+
                         	if lDebug
                                 this.msg(sprintf('%s %s set complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
                                 
@@ -2148,7 +2187,22 @@ classdef Scan < mic.Base
             
             if lOut
                 
-                % Write to log
+                % Store the state of the system
+                stState = this.getState(stUnit);
+                stState.dose_mj_per_cm2 = stValue.task.dose;
+                
+                % 2019.11.05 adding deltas of height sensor and WFZ to the
+                % data store so it is easy to plot in the log plotter.
+                if isempty(this.ceValues)
+                    stState.dz_height_sensor_nm = 0;
+                    stState.dz_wafer_fine_nm = 0;
+                else
+                    stState.dz_height_sensor_nm = stState.z_height_sensor_nm - this.ceValues{end}.z_height_sensor_nm;
+                    stState.dz_wafer_fine_nm = stState.z_wafer_fine_nm - this.ceValues{end}.z_wafer_fine_nm;
+                end
+                
+                this.ceValues{end + 1} = stState;
+                
                 
                 if lDebug
                     this.msg(sprintf('%s adding exposure to GUI', cFn), this.u8_MSG_TYPE_SCAN);
@@ -2425,6 +2479,9 @@ classdef Scan < mic.Base
         
         function abort(this, cMsg)
                            
+            
+            this.lIsVib = false;
+            this.lIsWFZ = false;
             if exist('cMsg', 'var') ~= 1
                 cMsg = 'The FEM was aborted.';
             end
@@ -2817,6 +2874,55 @@ classdef Scan < mic.Base
                 
         end
         
+        function l = getScanIsPausedSafe(this)
+            
+            if isempty(this.scan)
+                l = true;
+                return
+            end
+            l = this.scan.getIsPaused();
+        end
+                    
+            
+        
+        function task = createSequenceRecoverFem(this)
+            
+            taskPause = mic.Task( ...
+                'fhExecute', @() this.onUiScanPause(), ...
+                'fhIsDone', @() this.getScanIsPausedSafe(), ...
+                'fhAbort', @() [], ...
+                'fhGetMessage', @() sprintf('Pausing the FEM Scan') ...
+            );
+        
+            taskResume = mic.Task( ...
+                'fhExecute', @() this.onUiScanResume(), ...
+                'fhIsDone', @() ~this.getScanIsPausedSafe(), ...
+                'fhAbort', @() [], ...
+                'fhGetMessage', @() sprintf('Resuming the FEM Scan') ...
+            );
+        
+            taskRecoverPpmacAndHydra = bl12014.Tasks.createSequenceRecoverPpmacAndHydra(...
+                [this.cName, 'sequence-recover-ppmac-and-hydra'], ...
+                this.hardware, ...
+                this.clock ...
+            );
+        
+            ceTasks = {...
+                taskPause, ...
+                taskRecoverPpmacAndHydra, ...
+                taskResume ...
+            };
+            
+            task = mic.TaskSequence(...
+                'cName', [this.cName, 'sequence-recover-fem'], ...
+                'clock', this.clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'Recover FEM from PPMAC/Hydra Stall' ...
+            );
+            
+        end
+        
         
         function st = getState(this, stUnit)
             
@@ -2914,20 +3020,7 @@ classdef Scan < mic.Base
             
             
             % Adding timing info
-            ceFields = {...
-                'tracking', ...
-                'settle', ... % vibration settle from DMI
-                'pause', ...
-                'pupilFill', ...
-                'reticleX', ...
-                'reticleY', ...
-                'waferX', ...
-                'waferY', ...
-                'waferZ', ...
-                'xReticleFine', ...
-                'yReticleFine', ...
-                'workingMode', ...
-            };
+            ceFields = fieldnames(this.stScanTimingStore);
             for n = 1 : length(ceFields)
                 cFieldSave = sprintf('time_%s', ceFields{n});
                 st.(cFieldSave) = this.stScanTimingStore.(ceFields{n});

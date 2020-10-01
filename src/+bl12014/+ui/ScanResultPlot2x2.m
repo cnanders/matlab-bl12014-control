@@ -256,9 +256,14 @@ classdef ScanResultPlot2x2 < mic.Base
             % [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath);
             
             try
-                [ceData, ceFields] = this.getValuesStructFromCsvFileV2(cPath); % 70 fields 2020.09
+                 [ceData, ceFields] = this.getValuesStructFromCsvFileV3(cPath); % 71 fields 2020.10
             catch
-                [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath); % 58 fields
+              
+                try
+                    [ceData, ceFields] = this.getValuesStructFromCsvFileV2(cPath); % 70 fields 2020.09
+                catch
+                    [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath); % 58 fields
+                end
             end
         end
         
@@ -365,6 +370,58 @@ classdef ScanResultPlot2x2 < mic.Base
             fclose(hFile);
         end
         
+        function [ceData, ceFields] = getValuesStructFromCsvFileV3(this, cPath)
+            
+            hFile = fopen(cPath);
+            
+            % Get header fields
+            cFormat = repmat('%q', 1, 71);
+            ceHeader = textscan(...
+                hFile, cFormat, 1, ...
+                'delimiter', ',' ...
+                ...'whitespace', '' ...
+            );
+        
+            ceFields = cell(size(ceHeader));
+            for n = 1 : length(ceHeader)
+                ceFields{n} = ceHeader{n}{1};
+            end
+
+            % If any of the fields are an empty string, it means that the
+            % .csv file header does not match the header we expect. throw
+            % an error in this caes
+            if any(cellfun(@isempty, ceFields))
+                error('The header size does not match the expected size of 70 fields');
+            end
+
+            % %d = signed integer, 32-bit
+            cFormat = [...
+                '%f%f%f%f%f%f%f%f%f%f', ... 10
+                '%f%f%f%f%f%f%f%f%f%f', ... 20
+                '%f%f%f%f%f%f%f%f%f%f', ... 30
+                '%f%f%f%f%f%f%f%f%f%f', ... 40
+                '%f%f%f%f%f%f%f%f%f%f', ... 50
+                '%f%f%f%f', ... 54
+                '%f%f%f%f%f%f%f%f%f%f%f%f%f', ... 67 new timing info
+                '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
+                '%f%f%f' ... 
+            ];
+        
+            %the last three are:
+            % dose_mj_per_cm_per_s
+            % dz_height_sensor_nm
+            % dz_wafer_fine_nm
+
+            ceData = textscan(...
+                hFile, cFormat, -1, ... 
+                'delimiter', ',' ...
+                ...'whitespace', '', ...
+                ...'headerlines', 1 ...
+            );
+       
+            
+            fclose(hFile);
+        end
         
         function build(this, hParent, dLeft, dTop)
             
