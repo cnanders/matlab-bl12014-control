@@ -58,6 +58,7 @@ classdef Scan < mic.Base
         uiPOCurrent
         uiShutter
         uiPrescriptionTool
+        uiFocusLog
         
         cName = 'fem-scan-control'
     
@@ -657,7 +658,7 @@ classdef Scan < mic.Base
             % this.uiPOCurrent.build(this.hParent, 840, dTop);
             
             
-          
+            this.uiFocusLog.build(this.hParent, 10, 620);
         end
         
         function onClock(this, ~, ~)
@@ -1008,6 +1009,13 @@ classdef Scan < mic.Base
                 'lShowIsDone', false, ...
                 'clock', this.uiClock ...
             );
+        
+        
+            this.uiFocusLog = bl12014.ui.FocusLog( ...
+                'uiClock', this.uiClock, ...
+                'dWidth', 500, ...
+                'dHeight', 330, ...
+                'dNumResults', 20);
                                    
         end
         
