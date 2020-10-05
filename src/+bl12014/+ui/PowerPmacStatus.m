@@ -32,14 +32,14 @@ classdef PowerPmacStatus < mic.Base
         hParent
         
         clock
-        dWidthName = 130
+        dWidthName = 125
         lShowDevice = false
         lShowInitButton = false
         
         %{ cell of char 1xm } list of titles of each status category
         cecTitles 
         
-        dWidthColSep = 30
+        dWidthColSep = 25
         
         
     end

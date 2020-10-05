@@ -379,8 +379,7 @@ classdef Scan < mic.Base
             dTop = dTop + dSep;
            %}
             
-            this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
-            dTop = dTop  + dSep;
+            
             
             dWidthTask = 400;
             
@@ -429,7 +428,7 @@ classdef Scan < mic.Base
                 this.dWidthList, ...
                 40);
             
-           dTop = dTop + 100;
+           dTop = dTop + 70;
            dSep = 20;
            
            
@@ -473,8 +472,13 @@ classdef Scan < mic.Base
            
            if this.lUseMjPerCm2PerSecOverride
                 this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
+                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 110, dTop, dWidthText, dHeightText);
                 dTop = dTop + dSep;
+           else
+               this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
+               dTop = dTop  + dSep;
            end
+           
                       
            this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
            dTop = dTop + dSep;
