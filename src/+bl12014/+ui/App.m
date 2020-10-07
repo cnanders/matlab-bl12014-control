@@ -307,7 +307,8 @@ classdef App < mic.Base
             cVal = sprintf('%s (%1.0f tasks)', cDuration, dNum);
             this.uiTextDurationOfTimerExecution.set(cVal);
             
-            this.saveStateToDisk(); % save state every second or two
+            % 2020.10.06 try turning off for improved performance
+            % this.saveStateToDisk(); % save state every second or two
             
         end
         
