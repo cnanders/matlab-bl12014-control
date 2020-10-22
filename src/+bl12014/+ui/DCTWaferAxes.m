@@ -1359,6 +1359,10 @@ classdef DCTWaferAxes < mic.Base
                 return
             end
             
+            if isempty(ceExposures)
+                return % nothiung to draw
+            end
+            
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
             dVMax = 1; % VALUE
             for k = 1:length(ceExposures)
@@ -1375,6 +1379,10 @@ classdef DCTWaferAxes < mic.Base
                 dH = this.dHueExposure; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
                 dV = dDose / dDoseMax * dVMax;
+                
+                if dV < 0
+                    dV = 0;
+                end
                 
                 dL = dX - dWidth/2;
                 dR = dX + dWidth/2;
@@ -1414,6 +1422,10 @@ classdef DCTWaferAxes < mic.Base
                 return
             end
             
+            if isempty(ceExposures)
+                return % nothiung to draw
+            end
+            
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
             dVMax = 0.6;
             for k = 1:length(ceExposures)
@@ -1430,6 +1442,10 @@ classdef DCTWaferAxes < mic.Base
                 dH = this.dHueExposurePre; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
                 dV = (dDose / dDoseMax) * dVMax; % lower value so tends toward black
+                
+                if dV < 0
+                    dV = 0;
+                end
                 
                 dL = dX - dWidth/2;
                 dR = dX + dWidth/2;
@@ -1472,6 +1488,10 @@ classdef DCTWaferAxes < mic.Base
                 return
             end
             
+            if isempty(ceExposures)
+                return % nothiung to draw
+            end
+            
             dDoseMax = this.getDoseMaxOfExposures(ceExposures); % each exposure is a matrix of (x, y, width, height, dose)
             dVMax = 0.6;
             for k = 1:length(ceExposures)
@@ -1488,6 +1508,10 @@ classdef DCTWaferAxes < mic.Base
                 dH = this.dHueExposureScan; 
                 % dV = this.dMinV + (1 - this.dMinV)*dDose / dDoseMax;
                 dV = dDose / dDoseMax * dVMax;
+                
+                if dV < 0
+                    dV = 0;
+                end
                 
                 
                 dL = dX - dWidth/2;

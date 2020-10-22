@@ -229,6 +229,7 @@ classdef WaferTTZClosedLoop < mic.Base
             dTolerance      = this.dZTol;
            
             fhGetSensor     = @() this.hardware.getMfDriftMonitorMiddleware().getSimpleZ();
+            fhIsSensorValid = @() this.hardware.getMfDriftMonitorMiddleware().areHSValid();
             fhGetMotor      = @() this.uiFineZ.getValCal('nm');
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
@@ -242,7 +243,8 @@ classdef WaferTTZClosedLoop < mic.Base
                 dTolerance, ...
                 'cName', 'device-closed-loop-z',...
                 'dDelay', this.dDelayZ, ...
-                'dStageCheckPeriod', this.dStageCheckPeriodZ ...
+                'dStageCheckPeriod', this.dStageCheckPeriodZ, ...
+                'fhIsSensorValid', fhIsSensorValid ...
             ); % CA decreasing delay from 0.2 to 0.11
         end
         
@@ -298,8 +300,10 @@ classdef WaferTTZClosedLoop < mic.Base
         function device = createCLRxdevice(this)
             mrad2urad = 1e3;
             fhGetMotor      = @() this.uiTiltX.getValCal('urad'); % CNA 2019.02.01 can this be this.uiTiltX.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.uiTiltX.setDestCalAndGo(dVal, 'urad');
+            fhSetMotor      = @(dVal) this.setMotorTiltX(dVal);
             fhIsReadyMotor  = @() this.uiTiltX.isReady();
+            fhIsSensorValid = @() this.hardware.getMfDriftMonitorMiddleware().areHSValid();
+
             dTolerance      = this.dTiltXTol;
             fhGetSensor             = @() this.hardware.getMfDriftMonitorMiddleware().getHSValue(1) * mrad2urad;
             fhGetSensorDuringMove   = @()this.getFreshHSValue(this.hardware.getMfDriftMonitorMiddleware(), 1) * mrad2urad;   
@@ -314,8 +318,17 @@ classdef WaferTTZClosedLoop < mic.Base
                 dTolerance,...
                 'cName', 'device-closed-loop-rx', ...
                 'dDelay', this.dDelayTiltX, ...
-                'dStageCheckPeriod', this.dStageCheckPeriodTiltX ...
+                'dStageCheckPeriod', this.dStageCheckPeriodTiltX, ...
+                'fhIsSensorValid', fhIsSensorValid ...
             );
+        end
+        
+        function setMotorTiltY(this, dVal)
+            this.uiTiltY.setDestCalAndGo(dVal, 'urad')
+        end
+        
+        function setMotorTiltX(this, dVal)
+            this.uiTiltX.setDestCalAndGo(dVal, 'urad')
         end
         
         function device = createCLRydevice(this)
@@ -334,8 +347,10 @@ classdef WaferTTZClosedLoop < mic.Base
             
             
             fhGetMotor      = @() this.uiTiltY.getValCal('urad');% CNA 2019.02.01 can this be this.uiTiltY.getValCal('urad')?
-            fhSetMotor      = @(dVal) this.uiTiltY.setDestCalAndGo(dVal, 'urad');
+            fhSetMotor      = @(dVal) this.setMotorTiltY(dVal);
             fhIsReadyMotor  = @() this.uiTiltY.isReady();
+            fhIsSensorValid = @() this.hardware.getMfDriftMonitorMiddleware().areHSValid();
+
             dTolerance      = this.dTiltYTol;
             
             fhGetSensor             = @() this.hardware.getMfDriftMonitorMiddleware().getHSValue(2) * mrad2urad;
@@ -353,7 +368,8 @@ classdef WaferTTZClosedLoop < mic.Base
                 dTolerance,...
                 'cName', 'device-closed-loop-ry',...
                 'dDelay', this.dDelayTiltY, ...
-                'dStageCheckPeriod', this.dStageCheckPeriodTiltY ...
+                'dStageCheckPeriod', this.dStageCheckPeriodTiltY, ...
+                 'fhIsSensorValid', fhIsSensorValid ...
             );
         end 
         

@@ -1,0 +1,21 @@
+{
+	"delay": .5,
+	"units": [
+		{
+			"name": "um/s/s",
+			"slope": "1e6",
+			"offset": 0,
+			"precision": 0
+		},
+		{
+			"name": "inv (s2/m)",
+			"slope": "1",
+			"offset": 0,
+			"precision": 0,
+			"invert": "true"
+		}	
+	],
+    "step": 10
+}	
+	
+	

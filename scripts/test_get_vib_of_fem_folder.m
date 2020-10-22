@@ -6,7 +6,7 @@ addpath(genpath(fullfile(cDirThis, '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages', 'matlab-instrument-control')));
 %}
 
-cFolder = '20191220-123533__PRE_20191220-123445__RES_YATU1032__FEM_D15xF11__Cal 2 f2x contact';
+cFolder = '200702-004-MET8__FEM_D13xF11__20200702-150119__20200702-150820';
 
 % cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans', cFolder);
 cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');

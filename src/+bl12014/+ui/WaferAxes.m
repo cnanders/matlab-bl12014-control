@@ -147,6 +147,12 @@ classdef WaferAxes < mic.Base
         hFemPreviewScan
         hExposures
         hOverlay
+        hOverlayVib
+        hOverlayWFZ
+        hOverlayDriftControl
+        
+        
+        tTextVib % {text 1x1}
         
         clock
         
@@ -159,6 +165,12 @@ classdef WaferAxes < mic.Base
         
         % @returns {logical 1x1} true if shutter is open
         fhGetIsShutterOpen = @()false
+        fhGetIsVib = @() false
+        fhGetIsWFZ = @() false
+        fhGetIsDriftControl = @() false
+        fhGetVibX = @() 0
+        fhGetVibY = @() 0
+        
         
         % {bl12014.waferExposureHistory
         waferExposureHistory
@@ -166,6 +178,9 @@ classdef WaferAxes < mic.Base
         dDelay = 0.5
         
         lIsExposing
+        lIsVib
+        lIsWFZ
+        lIsDriftControl
         
         % Storage so only redraw when have to
         dXFemPreview = []
@@ -188,6 +203,10 @@ classdef WaferAxes < mic.Base
         
         
         function this = WaferAxes(varargin)
+            
+            
+            this.fhGetVibX = @() randn(1,1);
+            this.fhGetVibY = @() randn(1,1);
             
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
@@ -275,7 +294,11 @@ classdef WaferAxes < mic.Base
             this.hCrosshairChiefRay = hggroup('Parent', this.hTransformedGroup);
             this.hCrosshairZero = hggroup('Parent', this.hTransformedGroup);
             this.hCrosshairLoadLock = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlayVib = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlayWFZ = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlayDriftControl = hggroup('Parent', this.hTransformedGroup);
             this.hOverlay = hggroup('Parent', this.hTransformedGroup);
+
             this.hClockTimes = hggroup('Parent', this.hTransformedGroup);
             this.hCrosshairCap1 = hggroup('Parent', this.hTransformedGroup);
             this.hCrosshairCap2 = hggroup('Parent', this.hTransformedGroup);
@@ -322,6 +345,10 @@ classdef WaferAxes < mic.Base
             this.drawFemPreview('prescription');
             this.drawFemPreview('scan');
             this.setExposing();
+            this.setOverlayVib();
+            this.setOverlayWFZ();
+            this.setTextVib();
+            this.setOverlayDriftControl();
 
         end 
                                 
@@ -375,6 +402,18 @@ classdef WaferAxes < mic.Base
         
         function deleteOverlay(this)
             this.deleteChildren(this.hOverlay);                
+        end
+        
+        function deleteOverlayVib(this)
+            this.deleteChildren(this.hOverlayVib);                
+        end
+        
+        function deleteOverlayDriftControl(this)
+            this.deleteChildren(this.hOverlayDriftControl);                
+        end
+        
+        function deleteOverlayWFZ(this)
+            this.deleteChildren(this.hOverlayWFZ);                
         end
         
         function setXLsi(this)
@@ -443,6 +482,60 @@ classdef WaferAxes < mic.Base
                 this.drawOverlay();
             else
                 this.deleteOverlay();
+            end
+                            
+        end
+        
+        function setOverlayVib(this)
+            
+            lIsVib = this.fhGetIsVib();
+            
+            if (this.lIsVib == lIsVib)
+                return
+            end
+            
+            this.lIsVib = lIsVib;
+                
+            if this.lIsVib
+                this.drawOverlayVib();
+            else
+                this.deleteOverlayVib();
+            end
+                            
+        end
+        
+        function setOverlayDriftControl(this)
+            
+            lIsDriftControl = this.fhGetIsDriftControl();
+            
+            if (this.lIsDriftControl == lIsDriftControl)
+                return
+            end
+            
+            this.lIsDriftControl = lIsDriftControl;
+                
+            if this.lIsDriftControl
+                this.drawOverlayDriftControl();
+            else
+                this.deleteOverlayDriftControl();
+            end
+                            
+        end
+        
+        function setOverlayWFZ(this)
+            
+            lIsWFZ = this.fhGetIsWFZ();
+            
+            if (this.lIsWFZ == lIsWFZ)
+                return
+            end
+            
+            this.lIsWFZ = lIsWFZ;
+                
+            if this.lIsWFZ
+                this.drawOverlayWFZ();
+            else
+                this.deleteOverlayWFZ();
             end
                             
         end
@@ -1123,24 +1216,29 @@ classdef WaferAxes < mic.Base
                 case 'scan'
                    
                     [dX, dY] = this.waferExposureHistory.getCoordinatesOfFemPreviewScan();
+                    
+                    % if size and values have not changed, return
                     if all(size(dX) == size(this.dXFemPreviewScan)) && ... 
                        all(size(dY) == size(this.dYFemPreviewScan)) && ...
                        isequal(dX, this.dXFemPreviewScan) && ...
                        isequal(dY, this.dYFemPreviewScan)
                         return
                     end
-                    if isempty(dX) 
-                        return 
+                    
+                    % size or values have changed
+                    this.dXFemPreviewScan = dX;
+                    this.dYFemPreviewScan = dY;
+                    this.deleteFemPreviewScan();
+                    
+                    if isempty(dX)
+                       return
                     end
                     if isempty(dY) 
                         return 
                     end
                     
                     % update storage
-                    this.dXFemPreviewScan = dX;
-                    this.dYFemPreviewScan = dY;
                     
-                    this.deleteFemPreviewScan();
                     dColor = [1 0 1];
                     dAlpha = 0.5;
                     hParent = this.hFemPreviewScan;
@@ -1173,7 +1271,14 @@ classdef WaferAxes < mic.Base
             % Index shot
             row = 1;
             col = 1;
-            dYStep = dY(2, 1) - dY(1, 1);  
+            
+            [dRows, dCols] = size(dY);
+            if dRows > 1
+                dYStep = dY(2, 1) - dY(1, 1);
+            else
+                dYStep = 0.2;
+            end
+            
             
             dL = dX(row, col) - this.dWidthField/2;
             dR = dX(row, col) + this.dWidthField/2;
@@ -1469,15 +1574,194 @@ classdef WaferAxes < mic.Base
             dT = 1;
             dB = -1;
             
+            dColor = hsv2rgb(0.9, 1, 1);
+            
             patch( ...
                 [dL dL dR dR], ...
                 [dB dT dT dB], ...
-                hsv2rgb(0.9, 1, 1), ...
+                dColor, ...
                 'Parent', this.hOverlay, ...
                 'FaceAlpha', 0.5, ...
                 'LineWidth', 1, ...
                 'EdgeColor', [1, 1, 1] ...
             );
+        
+            ceProps = {
+               'Parent', this.hOverlay, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+                        
+            % 12:00
+            text( ...
+                0, 0, 'EXPOSE', ...
+                ceProps{:} ...
+            ); 
+            
+        end
+        
+        function setTextVib(this)
+            
+            if ~this.fhGetIsVib()
+                return
+            end
+            
+            if isempty(this.tTextVib)
+                return
+            end
+            
+            cMsg = {...
+                'VIB', ...
+                sprintf('X=%1.2f nm', this.fhGetVibX()), ...
+                sprintf('Y=%1.2f nm', this.fhGetVibY()) ...
+            };
+            set(this.tTextVib, 'String', cMsg);
+        end
+        
+        
+        function drawOverlayVib(this)
+            
+            this.msg('drawOverlayVib');
+            
+            
+            if isempty(this.hOverlayVib) || ...
+                ~ishandle(this.hOverlayVib)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            dColor = hsv2rgb(0.3, 1, 1);
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                dColor, ...
+                'Parent', this.hOverlayVib, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            ceProps = {
+               'Parent', this.hOverlayVib, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+        
+            cMsg = {...
+                'VIB', ...
+                sprintf('X=%1.2f nm', this.fhGetVibX()), ...
+                sprintf('Y=%1.2f nm', this.fhGetVibY()) ...
+            };
+                        
+            this.tTextVib = text( ...
+                0, 0, cMsg, ...
+                ceProps{:} ...
+            ); 
+
+        end
+        
+        
+        function drawOverlayDriftControl(this)
+            
+            this.msg('drawOverlayDriftControl');
+            
+            
+            if isempty(this.hOverlayDriftControl) || ...
+                ~ishandle(this.hOverlayDriftControl)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            dColor = hsv2rgb(0.2, 1, 1);
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                dColor, ...
+                'Parent', this.hOverlayDriftControl, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            ceProps = {
+               'Parent', this.hOverlayDriftControl, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+                                
+            this.tTextVib = text( ...
+                0, 0, 'Drift Control', ...
+                ceProps{:} ...
+            ); 
+
+        end
+        
+        function drawOverlayWFZ(this)
+            
+            this.msg('drawOverlayWFZ');
+            
+            
+            if isempty(this.hOverlayWFZ) || ...
+                ~ishandle(this.hOverlayWFZ)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            dColor = hsv2rgb(0.4, 1, 1);
+            
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                dColor, ...
+                'Parent', this.hOverlayWFZ, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            ceProps = {
+               'Parent', this.hOverlayWFZ, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+                        
+            % 12:00
+            text( ...
+                0, 0, 'WFZ', ...
+                ceProps{:} ...
+            ); 
             
         end
         

@@ -1,0 +1,20 @@
+{
+	"delay": .5,
+	"units": [
+        {
+			"name": "mm/s",
+			"slope": "1e3",
+			"offset": 0,
+			"precision": 0
+		},
+        {
+			"name": "m/s",
+			"slope": "1",
+			"offset": 0,
+			"precision": 3
+		}
+	],
+    "step": 1
+}	
+	
+	

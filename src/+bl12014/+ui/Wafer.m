@@ -54,9 +54,8 @@ classdef Wafer < mic.Base
         uiButtonSyncDestinations
         
         uiSequenceHomeAndLevel
-        
         uiStateHydraWaferVelAccOK
-        
+        uiSequenceRecoverPpmacAndHydra
         
     end
     
@@ -166,12 +165,14 @@ classdef Wafer < mic.Base
             % this.uiMotMin.build(this.hParent, 800, 10);
             
             dTop = 20;
-            dLeft = 720;
-            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 300);
+            dLeft = 680;
+            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 1160);
+            dTop = dTop + 30;
             
-            dTop = 50;
-            dLeft = 720;
-            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 300);
+            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 1160);
+            dTop = dTop + 30;
+            
+            this.uiSequenceRecoverPpmacAndHydra.build(this.hParent, dLeft, dTop, 1160);
             
             dLeft = 10;
             dTop = 140;
@@ -182,10 +183,7 @@ classdef Wafer < mic.Base
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
             
-            %{
-            this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
-            dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
-            %}
+            
             
             this.uiFineStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiFineStage.dHeight + dPad;
@@ -220,6 +218,10 @@ classdef Wafer < mic.Base
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.uiShutter.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiShutter.dHeight + dPad;
+            
+            this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
+            dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
             
             
             %{
@@ -315,8 +317,10 @@ classdef Wafer < mic.Base
                 'clock', this.uiClock ...
             );
         
+            %{
             this.uiLsiCoarseStage.uiX.setDestCal(450, 'mm');
             this.uiLsiCoarseStage.uiX.moveToDest();
+            %}
             
             this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'cName', [this.cName, 'wafer-fine-stage'], ...
@@ -440,11 +444,18 @@ classdef Wafer < mic.Base
                 'lShowIsDone', true, ...
                 'clock', this.uiClock ...
             );
-            
         
-            
-                        
-            
+        
+            this.uiSequenceRecoverPpmacAndHydra = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-sequence-recover-ppmac-and-hydra'], ...
+                'task', bl12014.Tasks.createSequenceRecoverPpmacAndHydra(...
+                    [this.cName, 'sequence-recover-ppmac-and-hydra'], ...
+                    this.hardware, ...
+                    this.clock ...
+                ), ...
+                'lShowIsDone', false, ...
+                'clock', this.uiClock ...
+            );
 
         end
         

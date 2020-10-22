@@ -17,7 +17,9 @@ classdef SampleData < handle
     methods
         
         function this = SampleData(varargin)
-            this.u32DmiData = randi(200, 4, 1) - 100;
+            this.u32DmiData = randi(16, 4, 1) - 8; % unisorm in [-8 8]
+            
+            % randi(200, 4, 1) - 100; % [ uniform in -50 to 50]
             this.u32HsData = randi(50e3, 24, 1) + 425e3;
         end
         

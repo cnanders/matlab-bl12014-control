@@ -130,7 +130,7 @@ classdef PrescriptionTool < mic.Base
                 'uieVibration', ...
                 'uieTimeToSettle', ...
                 ...'uiPupilFillTool', ...
-                ...'uiListPrescriptions', ...
+                'uiListPrescriptions', ...
                 'uiFemTool', ... 
              };
         end
@@ -161,7 +161,6 @@ classdef PrescriptionTool < mic.Base
                    end
                end
             end
-            
             
         end
         
@@ -358,7 +357,11 @@ classdef PrescriptionTool < mic.Base
             u8Count = u8Count + 1;
             
             % y position on wafer you want exposure to be
-            dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+            if length(this.uiFemTool.dY) > 1
+                dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+            else
+                dYStep = .2;
+            end
             stValue = struct();
             stValue.waferY = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME; 
             ceValues{u8Count} = stValue;
@@ -541,10 +544,12 @@ classdef PrescriptionTool < mic.Base
 
                         
                         % Pause for mechanical settling
+                        %{
                         stValue = struct();
                         stValue.pause = this.uiFemTool.uiePause.get();
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
+                        %}
 
                         % DMI-based settle of motion of reticle fine xy from big move to index shot to
                         % dissipate
@@ -674,10 +679,12 @@ classdef PrescriptionTool < mic.Base
 
 
                         % Pause for mechanical settling
+                        %{
                         stValue = struct();
                         stValue.pause = this.uiFemTool.uiePause.get();
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
+                        %}
 
                         % DMI-based settle of motion of reticle fine xy from big move to index shot to
                         % dissipate

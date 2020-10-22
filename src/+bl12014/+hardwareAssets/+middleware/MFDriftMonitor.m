@@ -300,6 +300,20 @@ classdef MFDriftMonitor < mic.Base
             this.initCalibrationInterpolant(stInterpolant)
         end
         
+                % Returns false if any of HS values are 888, 999, or -999
+        function lVal = areHSValid(this)
+            for k = 1:6
+                if (this.dHSChannelData(k) == 888) || ... % Low power
+                    (this.dHSChannelData(k) == -999) || ... % Out of range Low
+                    (this.dHSChannelData(k) == 999) % Out of range High
+                    
+                    lVal = false;
+                    return
+                end
+            end
+            lVal = true;
+        end
+        
     end
     
     
@@ -324,6 +338,8 @@ classdef MFDriftMonitor < mic.Base
 %             this.dDCPower = this.javaAPI;
 %             this.dACPower(idx);
         end
+        
+
         
         % Updates HS and DMI data from actual device
         function updateChannelData(this)
