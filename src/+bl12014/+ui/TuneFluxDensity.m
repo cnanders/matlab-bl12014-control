@@ -31,6 +31,7 @@ classdef TuneFluxDensity < mic.Base
         uiUndulator
         uiExitSlit
         uiGratingTiltX
+        uiCurrentOfALS
         
         uiMotMinSimple
         
@@ -69,6 +70,7 @@ classdef TuneFluxDensity < mic.Base
         hPlotSave
         uiTextSaveGapOfUndulator
         uiTextSaveGapOfExitSlit
+        uiTextSaveCurrentOfALS
         uiTextSaveValue
         uiTextSaveMean
         uiTextSaveStd
@@ -79,6 +81,7 @@ classdef TuneFluxDensity < mic.Base
         uiTextFluxDensityCalibrated
         uiTextGapOfUndulatorCalibrated
         uiTextGapOfExitSlitCalibrated
+        uiTextCurrentOfALSCalibrated
                 
     end
     
@@ -109,6 +112,8 @@ classdef TuneFluxDensity < mic.Base
         
         dFluxDensityAcc = [] % accumulated during calibration
         
+        
+        dCurrentOfALSCalibrated = 500; % mA
         dFluxDensityCalibrated = 0
         dGapOfUndulatorCalibrated = 40.24
         dGapOfExitSlitCalibrated = 300
@@ -162,7 +167,7 @@ classdef TuneFluxDensity < mic.Base
             if ~isa(this.uiScannerM142, 'bl12014.ui.Scanner')
                 error('uiScannerM142 must be bl12014.ui.Scanner');
             end
-            
+                        
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
@@ -179,11 +184,23 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
+        
+        
+        
         % Returns mJ/cm2/s flux density value currently loaded / saved
         % @return {double 1x1} flux density in mJ/cm2/s
         function d = getFluxDensityCalibrated(this)
             d = this.dFluxDensityCalibrated;
         end
+        
+        
+        % Returns current of the als ring in mA when the last
+        % flux density calibration was performend and saved. 
+        % @return {double 1x1} current of ALS in mA
+        function d = getCurrentOfALSCalibrated(this)
+            d = this.dCurrentOfALSCalibrated;
+        end
+        
         
         % Returns gap of the undulator in mm that was set when the last
         % flux density calibration was performend and saved.  The gap of
@@ -301,11 +318,19 @@ classdef TuneFluxDensity < mic.Base
             this.uiTextGapOfExitSlitCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
             dTop = dTop + dHeightText + dSep;
             
+            this.uiTextCurrentOfALSCalibrated.build(hTab, dLeft, dTop, dWidthText, dHeightText);
+            dTop = dTop + dHeightText + dSep;
+            
+            
             this.uiStateUndulatorIsCalibrated.build(hTab, dLeft, dTop, 300)
             
             
             dTop = dTopLast;
             dLeft = 10;
+              
+            
+            this.uiCurrentOfALS.build(hTab, dLeft, dTop); 
+            dTop = dTop + 24 + dPad;
             
             this.uiDiode.build(hTab, dLeft, dTop);
             dTop = dTop + this.uiDiode.dHeight + dPad;
@@ -474,13 +499,18 @@ classdef TuneFluxDensity < mic.Base
                 'uiClock', this.uiClock ...
             );
         
+        
+        
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
-            );
-
+            );  
+         
+        
+        this.initCurrentOfALS();
+        
 
             this.uiStateMonoGratingAtEUV = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-mono-grating-at-euv'], ...
@@ -618,6 +648,12 @@ classdef TuneFluxDensity < mic.Base
                 'dFontSize', 14, ...
                 'cFontWeight', 'bold' ...
             );
+        
+            this.uiTextSaveCurrentOfALS = mic.ui.common.Text(...
+                'cVal', 'Current of ALS', ...
+                'dFontSize', 14, ...
+                'cFontWeight', 'bold' ...
+            );
             this.uiTextSaveValue = mic.ui.common.Text(...
                 'cVal', 'Value');
             this.uiTextSaveMean = mic.ui.common.Text(...
@@ -640,6 +676,8 @@ classdef TuneFluxDensity < mic.Base
                 'cVal', 'Gap of Undulator:');
             this.uiTextGapOfExitSlitCalibrated = mic.ui.common.Text(...
                 'cVal', 'Gap of Exit Slit:');
+            this.uiTextCurrentOfALSCalibrated = mic.ui.common.Text(...
+                'cVal', 'Current of ALS:');
             
             this.uiStateUndulatorIsCalibrated = mic.ui.TaskSequence(...
                 'cName', [this.cName, 'ui-state-undulator-is-calibrated'], ...
@@ -666,7 +704,35 @@ classdef TuneFluxDensity < mic.Base
         end
         
 
+        function initCurrentOfALS(this)
+            
+            
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-number', ...
+                'config-current-of-ring.json' ...
+            );
         
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            ); 
+            this.uiCurrentOfALS = mic.ui.device.GetNumber(...
+                'clock', this.clock, ...
+                'lShowZero', false, ...
+                'lShowRel', false, ...
+                'dWidthName', 50, ...
+                'dWidthVal', 50, ...
+                'lShowLabels', false, ...
+                'lShowInitButton', false, ...
+                'fhGet', @() this.hardware.getALS().getCurrentOfRing(), ...
+                'fhIsVirtual', @() false, ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'current-of-ring'], ...
+                'config', uiConfig, ...
+                'cLabel', 'ALS mA' ...
+            );
+        
+        end
         
         function setMotMinToMax(this)
                         
@@ -818,6 +884,15 @@ classdef TuneFluxDensity < mic.Base
             );
             dTop = dTop + dHeightText + dSep;
             
+            this.uiTextSaveCurrentOfALS.build(...
+                this.hFigureSave, ...
+                dLeft, ...
+                dTop, ...
+                dWidthText, ...
+                dHeightText ...
+            );
+            dTop = dTop + dHeightText + dSep;
+            
             %{
             this.uiTextSaveValue.build(this.hFigureSave, dLeft, dTop, dWidthText, dHeightText);
             dTop = dTop + dHeightText + dSep;
@@ -834,6 +909,7 @@ classdef TuneFluxDensity < mic.Base
             
             this.uiTextSaveGapOfUndulator.hide();
             this.uiTextSaveGapOfExitSlit.hide();
+            this.uiTextSaveCurrentOfALS.hide();
             this.uiTextSaveValue.hide();
             this.uiTextSaveMean.hide();
             this.uiTextSaveStd.hide();
@@ -896,6 +972,7 @@ classdef TuneFluxDensity < mic.Base
                 set(this.hFigureSave, 'Visible', 'on');
                 this.uiTextSaveGapOfUndulator.hide();
                 this.uiTextSaveGapOfExitSlit.hide();
+                this.uiTextSaveCurrentOfALS.hide();
                 this.uiTextSaveValue.hide();
                 this.uiTextSaveMean.hide();
                 this.uiTextSaveStd.hide();
@@ -904,9 +981,6 @@ classdef TuneFluxDensity < mic.Base
                 this.uiButtonRedoSave.hide();
                 
             end
-            
-            
-
             
         end
         
@@ -987,6 +1061,10 @@ classdef TuneFluxDensity < mic.Base
             cMsgExitSlit = sprintf(...
                 '@ExitSlit = %1.2f um', ...
                 this.uiExitSlit.uiGap.getValCal('um') ...
+            ); 
+            cMsgALS = sprintf(...
+                '@ALS = %1.2f mA', ...
+                this.uiCurrentOfALS.getValCal('mA') ...
             );
         
             
@@ -1005,6 +1083,7 @@ classdef TuneFluxDensity < mic.Base
             this.uiTextSaveMean.set(cMsgMean);
             this.uiTextSaveGapOfUndulator.set(cMsgUndulator);
             this.uiTextSaveGapOfExitSlit.set(cMsgExitSlit);
+            this.uiTextSaveCurrentOfALS.set(cMsgALS);
             
             % this.uiTextSaveValue.set(cMsgValue);
             this.uiTextSaveStd.set(cMsgStd);
@@ -1014,6 +1093,7 @@ classdef TuneFluxDensity < mic.Base
             this.uiTextSaveMean.show();
             this.uiTextSaveGapOfUndulator.show();
             this.uiTextSaveGapOfExitSlit.show();
+            this.uiTextSaveCurrentOfALS.show();
             % this.uiTextSaveValue.show();
             this.uiTextSaveStd.show();
             this.uiTextSavePV.show();
@@ -1033,6 +1113,7 @@ classdef TuneFluxDensity < mic.Base
             st.dFluxDensity = abs(mean(this.dFluxDensityAcc));
             st.dGapOfUndulator = this.uiUndulator.uiGap.getValCal('mm');
             st.dGapOfExitSlit = this.uiExitSlit.uiGap.getValCal('um');
+            st.dCurrentOfALS = this.uiCurrentOfALS.getValCal('mA');
             st.dtTime = datetime('now');
             
             cTime = datestr(datevec(now), 'yyyy-mm-dd--HH-MM-SS', 'local');
@@ -1052,6 +1133,10 @@ classdef TuneFluxDensity < mic.Base
             
         end
         
+        
+        
+        
+ 
         
         function loadLastFluxCalibration(this)
             
@@ -1073,16 +1158,23 @@ classdef TuneFluxDensity < mic.Base
             end
             
             load(fullfile(this.cDirSave, ceReturn{1})); % populates variable st in local workspace
-            
+
             this.dFluxDensityCalibrated = st.dFluxDensity;
             this.dGapOfUndulatorCalibrated = st.dGapOfUndulator;
             this.dGapOfExitSlitCalibrated = st.dGapOfExitSlit;
             this.dtTimeCalibrated = st.dtTime;
+            
+            
+            cProp = 'dCurrentOfALS';
+            if isfield(st, cProp)
+               this.dCurrentOfALSCalibrated = st.(cProp);
+            end
                         
             this.uiTextTimeCalibrated.set(sprintf('Last Calibration: %s', this.dtTimeCalibrated));
             this.uiTextFluxDensityCalibrated.set(sprintf('Flux Density: %1.1f mJ/cm2/s', this.dFluxDensityCalibrated));
             this.uiTextGapOfUndulatorCalibrated.set(sprintf('Gap of Undulator: %1.2f mm', this.dGapOfUndulatorCalibrated));            
             this.uiTextGapOfExitSlitCalibrated.set(sprintf('Gap of Exit Slit: %1.1f um', this.dGapOfExitSlitCalibrated));
+            this.uiTextCurrentOfALSCalibrated.set(sprintf('Current of ALS: %1.1f mA', this.dCurrentOfALSCalibrated));
 
         end
         

@@ -387,7 +387,7 @@ classdef ReticleFiducializedMove < mic.Base
             fid = fopen(this.cFidStore, 'r');
             if (fid ~= -1)
                 cTxt = fread(fid, inf, 'uint8=>char');
-                this.stFiducials = jsondecode(cTxt);
+                this.stFiducials = jsondecode(cTxt');
                 fclose(fid);
             else
                 

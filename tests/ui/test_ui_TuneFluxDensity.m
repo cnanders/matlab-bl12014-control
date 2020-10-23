@@ -11,10 +11,8 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
 
-
 waferExposureHistory = bl12014.WaferExposureHistory();
 waferExposureHistory.addFakeExposures();
-
 
 clock = mic.Clock('Master');
 uiClock = mic.ui.Clock(clock);
@@ -55,7 +53,6 @@ ui = bl12014.ui.TuneFluxDensity(...
     'uiScannerM142', uiScannerM142, ...
     'waferExposureHistory', waferExposureHistory ...
 );
-
 
 
 dWidth = 800;
