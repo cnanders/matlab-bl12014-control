@@ -82,6 +82,12 @@ classdef TuneFluxDensity < mic.Base
         uiTextGapOfUndulatorCalibrated
         uiTextGapOfExitSlitCalibrated
         uiTextCurrentOfALSCalibrated
+        
+        
+        uiRowField1 % ref
+        uiColField1
+        uiRowField2
+        uiColField2
                 
     end
     
