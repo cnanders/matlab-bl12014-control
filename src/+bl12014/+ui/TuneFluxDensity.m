@@ -84,10 +84,9 @@ classdef TuneFluxDensity < mic.Base
         uiTextCurrentOfALSCalibrated
         
         
-        uiRowField1 % ref
-        uiColField1
-        uiRowField2
-        uiColField2
+        uiFluxDensityComparison
+        
+        
                 
     end
     
@@ -383,6 +382,8 @@ classdef TuneFluxDensity < mic.Base
             );
             % this.buildTab1();
             this.buildTab2();
+            
+            this.uiFluxDensityComparison.build(hParent, this.dWidth + 40, 10);
             
         end
         
@@ -707,8 +708,15 @@ classdef TuneFluxDensity < mic.Base
         
         
             this.loadLastFluxCalibration();
+            
+            
+            this.uiFluxDensityComparison = bl12014.ui.FluxDensityComparison(...
+                'clock', this.clock, ...
+                'hardware', this.hardware, ...
+                'uiClock', this.uiClock, ...
+                'uiReticle', this.uiReticle ...
+            );
         end
-        
 
         function initCurrentOfALS(this)
             
