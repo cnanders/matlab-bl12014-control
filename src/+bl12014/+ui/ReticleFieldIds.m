@@ -35,6 +35,8 @@ classdef ReticleFieldIds < mic.Base
         hPanel
         
         dWidthName = 30
+        
+        fhOnChange = @() [] % set to executed code if anything changes
 
 
         
@@ -215,11 +217,13 @@ classdef ReticleFieldIds < mic.Base
         
         function onChangeRow(this)
             this.setSaveName();
+            this.fhOnChange();
         end
         
         
         function onChangeCol(this)
             this.setSaveName();
+            this.fhOnChange();
         end
         
   

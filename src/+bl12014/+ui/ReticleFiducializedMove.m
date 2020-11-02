@@ -211,6 +211,23 @@ classdef ReticleFiducializedMove < mic.Base
          
         end
         
+        function makeFiducializedMove(this)
+            
+            dTargetR = this.uiRow.getDestRaw();
+            dTargetC = this.uiCol.getDestRaw();
+            
+            
+            dTargetXY = this.fhRC2XY([dTargetR; dTargetC]);
+
+            
+            % this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dTargetXY(1));
+            % this.hardware.getDeltaTauPowerPmac().setYReticleCoarse(dTargetXY(2));
+            this.uiX.setDestCalAndGo(dTargetXY(1), 'mm');
+            this.uiY.setDestCalAndGo(dTargetXY(2), 'mm');
+            
+        
+        end
+        
         
     end
     
@@ -232,22 +249,7 @@ classdef ReticleFiducializedMove < mic.Base
         
         
         
-        function makeFiducializedMove(this)
-            
-            dTargetR = this.uiRow.getDestRaw();
-            dTargetC = this.uiCol.getDestRaw();
-            
-            
-            dTargetXY = this.fhRC2XY([dTargetR; dTargetC]);
-
-            
-            % this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dTargetXY(1));
-            % this.hardware.getDeltaTauPowerPmac().setYReticleCoarse(dTargetXY(2));
-            this.uiX.setDestCalAndGo(dTargetXY(1), 'mm');
-            this.uiY.setDestCalAndGo(dTargetXY(2), 'mm');
-            
         
-        end
          
         function initUiRow(this)
             
@@ -452,7 +454,6 @@ classdef ReticleFiducializedMove < mic.Base
             this.uiCol.setDestRaw(dValues(2));
             
             this.makeFiducializedMove();
-          
 
             
         end

@@ -8,16 +8,17 @@ classdef FluxDensityComparison < mic.Base
         cNameReticleLevel = 'reticleLevel'
         cNameDiode = 'diode'
         
-        
         cTYPE_REF = 'ref'
         cTYPE_TEST = 'test'
-        dWidth      = 700 
-        dHeight     = 600
+        
+        dWidth      = 630 
+        dHeight     = 700
         dPeriodOfScan = 1;
         
-        dWidthAxes = 600;
+        dWidthAxes = 540;
         dHeightAxes = 200;
         dWidthUiScan = 400;
+        dSizeFont = 14
 
     end
     
@@ -26,6 +27,8 @@ classdef FluxDensityComparison < mic.Base
         uiReticle
         uiDiode
         uiScan
+        % {bl12014.Recorder 1x1}
+        recorder 
         
     end
     
@@ -38,7 +41,12 @@ classdef FluxDensityComparison < mic.Base
     end
     
     properties (Access = private)
-                      
+           
+        % props for storing scan progress
+        dCountOfScan = 1
+        dLengthOfScan = 10
+        dNumToRecord = 10;
+        
         clock
         uiClock
         dDelay = 0.5
@@ -51,10 +59,9 @@ classdef FluxDensityComparison < mic.Base
         % {bl12014.Hardware 1x1}
         hardware
         
-        dFluxDensityAcc1 = [] % accumulated during calibration
-        dFluxDensityAcc2 = []
+      
                 
-        hAxesSave
+        hAxes
         uiProgressBar
         uiReticleFieldIds
         
@@ -62,6 +69,17 @@ classdef FluxDensityComparison < mic.Base
         stScanSetContract = struct()
         stScanAcquireContract = struct()
         uiStateReticleLevel
+        
+        hPlot1
+        hPlot2
+        
+        uiTextRef
+        uiTextTest
+        uiTextRatio
+        uiTextStatus
+        
+        dCurrentRef = []
+        dCurrentTest = []
         
     end
     
@@ -148,14 +166,22 @@ classdef FluxDensityComparison < mic.Base
                 this.dHeight], hParent) ...
             );
         
-            dLeft = 20;
+            dLeft = 10;
             dTop = 20;
             dPad = 20;
             
-            this.uiReticleFieldIds.build(hPanel, dTop, dLeft)
+            this.uiReticleFieldIds.build(hPanel, dLeft, dTop)
             dTop = dTop + this.uiReticleFieldIds.dHeight + dPad;
             
-            this.hAxesSave = axes(...
+            dLeft = 200;
+            this.uiScan.build(...
+                hPanel,...
+                dLeft, ...
+                dTop);
+            
+            dTop = dTop + this.uiScan.dHeight + 20;
+            dLeft = 60;
+            this.hAxes = axes(...
                 'Parent', hPanel,...
                 'Units', 'pixels',...
                 'Position',mic.Utils.lt2lb([...
@@ -169,26 +195,28 @@ classdef FluxDensityComparison < mic.Base
                 'HandleVisibility','on'...
            );
        
-            cecLabels = {'Ref', 'Test'}
-            legend(this.hAxesSave, cecLabels);
-       
-            dTop = dTop + this.dHeightAxes + dPad;
+            
+            dTop = dTop + this.dHeightAxes + 30;
+            
+            dWidth = this.dWidth / 3 - 20;
+            dHeight = 80;
+            this.uiTextRef.build(hPanel, dLeft, dTop, dWidth, dHeight);
+            this.uiTextTest.build(hPanel, dLeft + dWidth, dTop, dWidth, dHeight);
+            this.uiTextRatio.build(hPanel, dLeft + 2 * dWidth, dTop, dWidth, dHeight);
+            % Put at very buttom
+            
+            dLeft = 0;
+            dTop = this.dHeight - 20;
+            
             this.uiProgressBar.build(...
                 hPanel, ...
                 dLeft, ...
                 dTop, ...
-                this.dWidthAxes, ...
-                10 ...
+                this.dWidth, ...
+                20 ...
             ); 
-        
-            dTop = dTop + 30;
-        
-            this.uiScan.build(...
-                hPanel,...
-                dLeft, ...
-                dTop);
-                            
-       
+            dLeft = 0;
+            this.uiTextStatus.build(hPanel, 20, dTop - 40, this.dWidth - 20, 2 * this.dSizeFont + 5);
             
         end
 
@@ -203,7 +231,9 @@ classdef FluxDensityComparison < mic.Base
             this.initScanSetContract();
             this.initScanAcquireContract();
             
-            this.uiReticleFieldIds = bl12014.ui.ReticleFieldIds();
+            this.uiReticleFieldIds = bl12014.ui.ReticleFieldIds(...
+                'fhOnChange', @this.onChangeReticleFieldIds ...
+            );
             this.uiProgressBar = mic.ui.common.ProgressBar();
 %             this.uiButtonMeasure = mic.ui.common.Button(...
 %                 'fhOnClick', @this.onClickMeasure, ...
@@ -221,6 +251,11 @@ classdef FluxDensityComparison < mic.Base
                 'clock', this.uiClock ...
             );
         
+            this.uiDiode = bl12014.ui.WaferDiode(...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+
             this.uiScan = mic.ui.Scan(...
                 'dWidthBorderPanel', 0, ...
                 'dWidth', this.dWidthUiScan, ...
@@ -234,6 +269,43 @@ classdef FluxDensityComparison < mic.Base
             addlistener(this.uiScan, 'eResume', @this.onUiScanResume);
             addlistener(this.uiScan, 'eAbort', @this.onUiScanAbort);
             
+            
+            this.recorder = bl12014.Recorder(...
+                'clock', this.clock, ...
+                'cUnit', "mJ/cm2/s (clear field)", ...
+                'ui', this.uiDiode.uiCurrent ...
+            );
+        
+            this.uiTextRef = mic.ui.common.Text(...
+                'dFontSize', this.dSizeFont, ...
+                'lShowLabel', true, ...
+                'cLabel', 'Ref:');
+            this.uiTextTest = mic.ui.common.Text(...
+                'dFontSize', this.dSizeFont, ...
+                'lShowLabel', true, ...
+                'cLabel', 'Test:');
+            this.uiTextRatio = mic.ui.common.Text(...
+                'dFontSize', this.dSizeFont, ...
+                'lShowLabel', true, ...
+                'cLabel', 'Ratio (Test/Ref):');
+            this.uiTextStatus = mic.ui.common.Text(...
+                'dFontSize', this.dSizeFont, ...
+                'lShowLabel', false, ...
+                'cLabel', 'Status:');
+
+        end
+        
+        
+        function onChangeReticleFieldIds(this)
+            
+            cVal = sprintf('Start [%1.0f,%1.0f] vs. [%1.0f,%1.0f]', ...
+                this.uiReticleFieldIds.uiRow1.get(), ...
+                this.uiReticleFieldIds.uiCol1.get(), ...
+                this.uiReticleFieldIds.uiRow2.get(), ...
+                this.uiReticleFieldIds.uiCol2.get() ...
+            );
+            this.uiScan.setStartLabel(cVal);
+                        
         end
         
         function updateUiScanStatus(this)
@@ -264,11 +336,34 @@ classdef FluxDensityComparison < mic.Base
         
         function startNewScan(this, ~, ~)
             
+            
+            % Reset state
+            this.dCurrentRef = [];
+            this.dCurrentTest = [];
+            this.uiTextRatio.set('Pending ...');
+            this.uiTextRef.set('Pending ...');
+            this.uiTextTest.set('Pending ...');
+            
+            if ~isempty(this.hPlot1)
+                this.hPlot1.XData = [];
+                this.hPlot1.YData = [];
+            end
+            
+            if ~isempty(this.hPlot2)
+                this.hPlot2.XData = [];
+                this.hPlot2.YData = [];
+            end
+            
+            % Build 
+            
+            
             stUnit = struct();
             
             ceValues = cell(0);
             
             % reticle ref field xy
+            
+            %{
             stValue = struct();
             stValue.(this.cNameReticleRow) = this.uiReticleFieldIds.uiRow1.get();
             ceValues{end+1} = stValue;
@@ -276,6 +371,17 @@ classdef FluxDensityComparison < mic.Base
             stValue = struct();
             stValue.(this.cNameReticleCol) = this.uiReticleFieldIds.uiCol1.get();
             ceValues{end+1} = stValue;
+            %}
+            
+            % special case where can't do parallel moves for x and y since
+            % it is a coupled axis from the hardware perspetive.
+            
+            stValue = struct();
+            stValue.(this.cNameReticleRowAndCol) = struct();
+            stValue.(this.cNameReticleRowAndCol).row = this.uiReticleFieldIds.uiRow1.get();
+            stValue.(this.cNameReticleRowAndCol).col = this.uiReticleFieldIds.uiCol1.get();
+            ceValues{end+1} = stValue;
+
             
             % reticle level
             stValue = struct();
@@ -289,12 +395,23 @@ classdef FluxDensityComparison < mic.Base
 
             
             % reticle test field xy
+            %{
             stValue = struct();
             stValue.(this.cNameReticleRow) = this.uiReticleFieldIds.uiRow2.get();
             ceValues{end+1} = stValue;
 
             stValue = struct();
             stValue.(this.cNameReticleCol) = this.uiReticleFieldIds.uiCol2.get();
+            ceValues{end+1} = stValue;
+            %}
+            
+            % special case where can't do parallel moves for x and y since
+            % it is a coupled axis from the hardware perspetive.
+            
+            stValue = struct();
+            stValue.(this.cNameReticleRowAndCol) = struct();
+            stValue.(this.cNameReticleRowAndCol).row = this.uiReticleFieldIds.uiRow2.get();
+            stValue.(this.cNameReticleRowAndCol).col = this.uiReticleFieldIds.uiCol2.get();
             ceValues{end+1} = stValue;
             
              % reticle level
@@ -307,10 +424,15 @@ classdef FluxDensityComparison < mic.Base
             stValue.(this.cNameDiode) = this.cTYPE_TEST;
             ceValues{end+1} = stValue;
 
+            this.dCountOfScan = 1;
+            this.dLengthOfScan = length(ceValues) - 2 + 2 * this.dNumToRecord;
+        
             
             stRecipe = struct();
             stRecipe.unit = struct();
             stRecipe.values = ceValues;
+            
+            
             
             this.scan = mic.Scan(...
                 [this.cName, 'scan'], ...
@@ -329,59 +451,6 @@ classdef FluxDensityComparison < mic.Base
             
         end
         
-                    
-        % Returns {struct 1x1}
-        % @return st.dMean {double 1x1} mean
-        % @return st.dStd { double 1x1} standard deviation
-        % @return st.dPV { double 1x1} peak-to-valley
-        
-            
-        function st = recordTimeAveragedFluxDensity(this, cType)
-            
-            % Build up an average flux density over 10 seconds
-            % with a progress bar
-            
-            this.lAbortSave = false;
-            this.uiProgressBar.show();
-                        
-            dValues = [];
-            dNum = 20;
-            
-            switch (cType)
-            case this.cTYPE_REF
-                hPlot = this.hPlot1;
-            case this.cTYPE_TEST
-                hPlot = this.hPlot2;
-            end
-            
-            for n = 1 : dNum
-                
-                if this.lAbortSave
-                    return
-                end
-                
-                dValues(end + 1) = this.uiDiode.uiCurrent.getValCal("mJ/cm2/s (clear field)");
-                  
-                if isempty(hPlot)
-                    hPlot = plot(1 : n, dValues,'.-');
-                    ylabel(this.hAxesSave, 'mJ/cm2/s');
-                else
-                    hPlot.XData = 1 : n;
-                    hPlot.YData = dValues;
-                end
-                
-                this.uiProgressBar.set(n / dNum);
-                pause(0.7);
-            end
-            
-            st = struct();
-            st.dMean = abs(mean(dValues));
-            st.dStd = std(dValues);
-            st.dPV = abs(max(dValues) - min(dValues));   
-            
-            this.uiProgressBar.hide();
-                            
-        end
         
         function cec = getContractProps(this)
             cec = {...
@@ -394,6 +463,7 @@ classdef FluxDensityComparison < mic.Base
         function initScanSetContract(this)
 
             ceFields = { ...
+                this.cNameReticleRowAndCol, ...
                 this.cNameReticleRow, ...
                 this.cNameReticleCol, ...
                 this.cNameReticleLevel, ...
@@ -410,8 +480,6 @@ classdef FluxDensityComparison < mic.Base
         end
 
         function initScanAcquireContract(this)
-
-            return;
             
             ceFields = {...
                 this.cNameDiode
@@ -457,8 +525,7 @@ classdef FluxDensityComparison < mic.Base
         % @returns {logical} - true if the system is at the state
         function lOut = onScanIsAtState(this, stUnit, stValue)
 
-                        this.updateUiScanStatus()
-
+            this.updateUiScanStatus()
                         
             cFn = 'onScanIsAtState';
             lOut = true; % default
@@ -504,6 +571,11 @@ classdef FluxDensityComparison < mic.Base
                 % !!! UPDATE ACHIEVED !!!
                 
                 switch cField
+                    case this.cNameReticleRowAndCol
+                        lReadyRow = this.uiReticle.uiReticleFiducializedMove.uiRow.isReady();
+                        lReadyCol = this.uiReticle.uiReticleFiducializedMove.uiCol.isReady();
+                        stContract.(cField).lAchieved = lReadyRow && lReadyCol;
+
                     case this.cNameReticleRow
                         stContract.(cField).lAchieved = this.uiReticle.uiReticleFiducializedMove.uiRow.isReady();
                     case this.cNameReticleCol
@@ -544,10 +616,27 @@ classdef FluxDensityComparison < mic.Base
 
             lOut = true;
             cFn = 'onScanIsAcquired';
-            stContract = this.stScanAcquireContract;
-            ceFields= fieldnames(stContract);
             lDebug = true;
 
+                        
+            stContract = this.stScanAcquireContract;
+            ceFields= fieldnames(stContract);
+            
+            dCount = this.dCountOfScan  ...
+                + length(this.dCurrentRef) ...
+                + length(this.dCurrentTest);
+            
+            this.uiProgressBar.set(dCount / this.dLengthOfScan);
+
+            
+            if ~any(isfield(stValue, ceFields))
+                if lDebug
+                    cMsg = sprintf('%s no acquire for this state', cFn);
+                    this.msg(cMsg,  this.u8_MSG_TYPE_SCAN);
+                end
+                return
+            end
+            
             for n = 1:length(ceFields)
 
                 cField = ceFields{n};
@@ -580,14 +669,77 @@ classdef FluxDensityComparison < mic.Base
                 end
 
                 % !!! UPDATE ACHIEVED !!! 
-                % Check if the set operation on the current device is
-                % complete by calling isReady() on devices.  This will
-                % often be a switch on cField that does something like:
-                % this.uiDeviceStage.getDevice().isReady()
-
+                
+                
+                % stValue.(cField) will be either:
+                % cTYPE_REF = 'ref'
+                % cTYPE_TEST = 'test'
+                
+                stContract.(cField).lAchieved = ~this.recorder.getIsRecording();
+                
+                dY = this.recorder.get();
+                dX = 1 : length(dY);
+                
+                % Generate the plots
+                switch stValue.(cField)
+                case this.cTYPE_REF
+                    if isempty(this.hPlot1)
+                        cLineSpec = '.-r';
+                        this.hPlot1 = plot(this.hAxes, dX, dY, cLineSpec);
+                        hold(this.hAxes, 'on')
+                    else 
+                        this.hPlot1.XData = dX;
+                        this.hPlot1.YData = dY;
+                        cecLabels = {'Ref', 'Test'};
+                        legend(this.hAxes, cecLabels);
+                    end
+                           
+                case this.cTYPE_TEST
+                    if isempty(this.hPlot2)
+                        cLineSpec = '.-b';
+                    	this.hPlot2 = plot(this.hAxes, dX, dY, cLineSpec);
+                        hold(this.hAxes, 'on')
+                    else 
+                        this.hPlot2.XData = dX;
+                        this.hPlot2.YData = dY;
+                        cecLabels = {'Ref', 'Test'};
+                        legend(this.hAxes, cecLabels);
+                    end
+                end
+                
+                dMean = abs(mean(dY));
+                dStd = std(dY);
+                dPV = abs(max(dY) - min(dY));
+                
+                ceVal = {...
+                    sprintf('Mean: %1.3f', dMean), ...
+                    sprintf('Std: %1.3f (%1.1f%%)', dStd, dStd/dMean*100), ...
+                    sprintf('PV: %1.3f (%1.1f%%)', dPV, dPV/dMean*100) ...
+                };
+                
+                switch stValue.(cField)
+                    case this.cTYPE_REF
+                        this.uiTextRef.set(ceVal);
+                        this.dCurrentRef = dY;
+                    case this.cTYPE_TEST
+                        this.uiTextTest.set(ceVal);
+                        this.dCurrentTest = dY;
+                end
+                
+                    
+                %{
+                st = struct();
+                st.dMean = abs(mean(dValues));
+                st.dStd = std(dValues);
+                st.dPV = abs(max(dValues) - min(dValues)); 
+                %}
+                
+                % do any other thing you want to do here!
+                
                 % !!! END  !!!
 
                 if ~stContract.(cField).lAchieved
+                    
                     if lDebug
                         cMsg = sprintf('%s %s required, issued, incomplete', cFn, cField);
                         this.msg(cMsg,  this.u8_MSG_TYPE_SCAN);
@@ -625,15 +777,32 @@ classdef FluxDensityComparison < mic.Base
                 this.stScanSetContract.(cField).lRequired = true;
                         
                switch cField
+                   case this.cNameReticleRowAndCol
+                        dRow = double(stValue.(cField).row);
+                        dCol = double(stValue.(cField).col);
+                        this.uiReticle.uiReticleFiducializedMove.uiRow.setDestRaw(dRow);
+                        this.uiReticle.uiReticleFiducializedMove.uiCol.setDestRaw(dCol);
+                        this.uiReticle.uiReticleFiducializedMove.makeFiducializedMove();
+                        cStatus = sprintf('Moving reticle to row,col %1.0f,%1.0f ...', dRow, dCol);
+                        this.uiTextStatus.set(cStatus);
                     case this.cNameReticleRow
-                        this.uiReticle.uiReticleFiducializedMove.uiRow.setDestCal(double(stValue.(cField)), 'cell');
+                        dRow = double(stValue.(cField));
+                        this.uiReticle.uiReticleFiducializedMove.uiRow.setDestCal(dRow, 'cell');
                         this.uiReticle.uiReticleFiducializedMove.uiRow.moveToDest();
+                        cStatus = sprintf('Moving reticle to row %1.0f ...', dRow);
+                        this.uiTextStatus.set(cStatus);
+                        
                     case this.cNameReticleCol
-                        this.uiReticle.uiReticleFiducializedMove.uiCol.setDestCal(double(stValue.(cField)), 'cell');
+                        dCol = double(stValue.(cField));
+                        this.uiReticle.uiReticleFiducializedMove.uiCol.setDestCal(dCol, 'cell');
                         this.uiReticle.uiReticleFiducializedMove.uiCol.moveToDest();
+                        cStatus = sprintf('Moving reticle to col %1.0f ...', dCol);
+                        this.uiTextStatus.set(cStatus);
                     case this.cNameReticleLevel
                         if this.hardware.getIsConnectedDeltaTauPowerPmac()
                             this.uiStateReticleLevel.execute();
+                            cStatus = sprintf('Leveling the reticle ...');
+                            this.uiTextStatus.set(cStatus);
                         end
                 end
                 
@@ -647,6 +816,38 @@ classdef FluxDensityComparison < mic.Base
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state (possibly contains information about the task to execute during acquire)
         function onScanAcquire(this, stUnit, stValue)
+            
+            % return if the state value doesn't contain any
+            % of the acquire properties
+            
+            cFn = 'onScanAcquire';
+            lDebug = true;
+            
+            this.dCountOfScan = this.dCountOfScan + 1;
+            
+            ceFields = fieldnames(this.stScanAcquireContract);
+            if ~any(isfield(stValue, ceFields))
+                if lDebug
+                    cMsg = sprintf('%s no acquire for this state', cFn);
+                    this.msg(cMsg,  this.u8_MSG_TYPE_SCAN);
+                end
+                return
+            end
+            
+            for n = 1 : length(ceFields)
+                cField = ceFields{n};
+                
+                this.stScanAcquireContract.(cField).lRequired = true;
+                        
+                switch cField
+                case this.cNameDiode
+                    this.recorder.record(10);
+                    cStatus = sprintf('Recording current from wafer diode ...');
+                    this.uiTextStatus.set(cStatus);
+                end
+                this.stScanAcquireContract.(cField).lIssued = true;
+
+            end
 
         end
 
@@ -659,6 +860,12 @@ classdef FluxDensityComparison < mic.Base
         function onScanComplete(this, stUnit)
              this.uiScan.reset();
              this.updateUiScanStatus();
+             
+             this.uiTextStatus.set('Complete!');
+             
+             dVal = mean(this.dCurrentTest) / mean(this.dCurrentRef);
+             cVal = sprintf('%1.2f', dVal);
+             this.uiTextRatio.set(cVal);
         end
 
         
