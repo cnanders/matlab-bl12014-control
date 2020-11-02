@@ -2,7 +2,7 @@ classdef PowerPmacHydraMotMinMonitor < mic.Base
         
     properties (Constant)
        
-        dWidth  = 250
+        dWidth  = 300
         
     end
     
