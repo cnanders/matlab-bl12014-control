@@ -2982,7 +2982,7 @@ classdef Scan < mic.Base
             
         	st = struct();
             
-            st.als_current_ma = 500; % FIX ME
+            st.als_current_ma = this.uiCurrentOfALS.getValCal('mA');
             st.exit_slit_um = this.uiBeamline.uiExitSlit.uiGap.getValCal('um');
             st.undulator_gap_mm = this.uiBeamline.uiUndulatorGap.getValCal('mm');
             st.wavelength_nm = this.uiBeamline.uiGratingTiltX.getValCal('wav (nm)');
