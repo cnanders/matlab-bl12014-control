@@ -2,7 +2,7 @@ classdef WaferDiode < mic.Base
     
     properties
 
-        % {mic.ui.device.GetNumber 1x1}}
+        % {mic.ui.device.GetNumber 1x1}
         uiCurrent
         
         

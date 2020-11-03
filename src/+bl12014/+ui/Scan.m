@@ -466,19 +466,19 @@ classdef Scan < mic.Base
             
            
            dLeft = this.dWidthPadFigure;
-           dTop = dTop + 50;
+           dTop = dTop + 25;
            
            dTopBelowList = dTop;
            
            dSep = 40;
            
+           % this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
+           
+           dTop = dTop + 30;
+           
            if this.lUseMjPerCm2PerSecOverride
-                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-                this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft + 110, dTop + 12, dWidthText, dHeightText);
-                dTop = dTop + dSep;
-           else
-               this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
-               dTop = dTop  + dSep;
+                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop);
+                dTop = dTop + this.uiEditMjPerCm2PerSec.dHeight + 10;
            end
            
                       
@@ -785,7 +785,7 @@ classdef Scan < mic.Base
             this.initScanSetContract();
             this.initScanAcquireContract();
             
-            
+            %{
             this.uiEditMjPerCm2PerSec = mic.ui.common.Edit(...
                 'cLabel', 'mJ/cm2/s', ...
                 'cType', 'd' ...
@@ -793,7 +793,9 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.set(10);
             this.uiEditMjPerCm2PerSec.setMin(0);
             this.uiEditMjPerCm2PerSec.setMax(1e5);
+            %}
             
+            this.uiEditMjPerCm2PerSec = bl12014.ui.FluxDensity();
             
             
             this.uiEditRowStart = mic.ui.common.Edit(...
@@ -1057,11 +1059,21 @@ classdef Scan < mic.Base
         
         function updateTextsFluxCalibration(this, src, evt)
             
+            
+        
+            %{
             this.uiTextFluxDensityCalibrated.set(...
                 sprintf('Flux Density: %1.1f mJ/cm2/s on %s', ...
                 this.uiTuneFluxDensity.getFluxDensityCalibrated(), ...
                 this.uiTuneFluxDensity.getTimeCalibrated() ...
             ));
+            %}
+            
+            cVal = sprintf('Flux Density Calc. (measured %1.1f mJ/cm2/s on %s)', ...
+                this.uiTuneFluxDensity.getFluxDensityCalibrated(), ...
+                this.uiTuneFluxDensity.getTimeCalibrated() ...
+            );
+            this.uiEditMjPerCm2PerSec.setTitle(cVal);
             
         end
         
@@ -2982,7 +2994,7 @@ classdef Scan < mic.Base
             
         	st = struct();
             
-            st.als_current_ma = 500; % FIX ME
+            st.als_current_ma = this.uiCurrentOfALS.getValCal('mA');
             st.exit_slit_um = this.uiBeamline.uiExitSlit.uiGap.getValCal('um');
             st.undulator_gap_mm = this.uiBeamline.uiUndulatorGap.getValCal('mm');
             st.wavelength_nm = this.uiBeamline.uiGratingTiltX.getValCal('wav (nm)');
