@@ -165,14 +165,15 @@ classdef Wafer < mic.Base
             % this.uiMotMin.build(this.hParent, 800, 10);
             
             dTop = 20;
-            dLeft = 680;
-            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, 1160);
+            dLeft = 660;
+            dWidthSequence = 1140;
+            this.uiSequenceHomeAndLevel.build(this.hParent, dLeft, dTop, dWidthSequence);
             dTop = dTop + 30;
             
-            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, 1160);
+            this.uiStateHydraWaferVelAccOK.build(this.hParent, dLeft, dTop, dWidthSequence);
             dTop = dTop + 30;
             
-            this.uiSequenceRecoverPpmacAndHydra.build(this.hParent, dLeft, dTop, 1160);
+            this.uiSequenceRecoverPpmacAndHydra.build(this.hParent, dLeft, dTop, dWidthSequence);
             
             dLeft = 10;
             dTop = 140;

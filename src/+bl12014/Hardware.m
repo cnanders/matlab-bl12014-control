@@ -615,10 +615,18 @@ classdef Hardware < mic.Base
         %% SmarAct M141
         
         function l = getIsConnectedSmarActM141(this)
-                       
+                  
+            
+            
             if this.notEmptyAndIsA(this.commSmarActM141, 'cxro.common.device.motion.Stage') && ...
-               this.commSmarActM141.isConnected() && ...
-               this.commSmarActM141.getAxesIsInitialized()
+               this.commSmarActM141.isConnected()
+                l = true;
+                return;
+            end
+            
+            if this.notEmptyAndIsA(this.commSmarActM141, 'cxro.common.device.motion.Stage') && ...
+               this.commSmarActM141.isConnected() ... &&
+               ...this.commSmarActM141.getAxesIsInitialized()
                 l = true;
                 return;
             end
@@ -647,7 +655,8 @@ classdef Hardware < mic.Base
                 
             catch mE
                 
-                error(getReport(mE));
+                getReport(mE);
+                % error(getReport(mE));
             end
         end
         
