@@ -233,7 +233,7 @@ classdef Hardware < mic.Base
             this.commALSVirtual= [];
             this.commBL1201CorbaProxyVirtual = [];
             this.commDataTranslationVirtual = [];
-            % this.commDCTCorbaProxyVirtual = [];
+            this.commDCTCorbaProxyVirtual = [];
             this.commDeltaTauPowerPmacVirtual = [];
             this.commExitSlitVirtual = [];
             this.commGalilD142Virtual = [];
@@ -290,7 +290,11 @@ classdef Hardware < mic.Base
         
         function disconnectALS(this)
             if this.getIsConnectedALS()
-                this.commALS.disconnect();
+                try
+                    this.commALS.disconnect();
+                catch mE
+                    
+                end
             end
             
             this.commALS = [];
@@ -1783,7 +1787,7 @@ classdef Hardware < mic.Base
             this.commWebSwitchEndstationVirtual = controlbyweb.WebSwitchVirtual();
             this.commWebSwitchVisVirtual = controlbyweb.WebSwitchVirtual();
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
-            % this.commDCTCorbaProxyVirtual = bl12014.hardwareAssets.virtual.DCTCorbaProxy();
+            this.commDCTCorbaProxyVirtual = bl12014.hardwareAssets.virtual.DCTCorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commSmarActVPFMVirtual = bl12014.hardwareAssets.virtual.Stage();
             this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();

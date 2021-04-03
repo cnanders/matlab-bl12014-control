@@ -4,24 +4,16 @@ end
 
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
 
-% bl12014 pkg
-cDirBl12014 = fullfile(cDirThis, '..', '..', 'src');
-addpath(genpath(cDirBl12014));
 
-% dependencies
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-
-cDirMic = fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src');
-addpath(genpath(cDirMic));
-
-try
-    addpath(genpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3')));
-    javaaddpath(fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v3', 'BL12PICOCorbaProxy.jar'));
-end
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 clock = mic.Clock('Master');
+hardware = bl12014.Hardware('clock', clock);
+
 
 ui = bl12014.ui.ExitSlit(...
+    'hardware', hardware, ...
     'clock', clock ...
 );
 
@@ -41,7 +33,7 @@ h = figure(...
 
 ui.build(h, 10, 10);
 
-
+%{
 commExitSlit = bl12pico_slits;
 [e,estr] = commExitSlit.checkServer();
 if e
@@ -51,4 +43,5 @@ if e
 end
 
 ui.connectExitSlit(commExitSlit);
+%}
 

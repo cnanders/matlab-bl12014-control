@@ -3,7 +3,7 @@ classdef PowerPmacHydraMotMinSimple < mic.Base
     properties (Constant)
        
         
-        dWidth      = 325
+        dWidth      = 130
         dHeight     = 80
         
     end

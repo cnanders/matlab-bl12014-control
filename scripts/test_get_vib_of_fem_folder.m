@@ -1,4 +1,4 @@
-[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+% [cDirThis, cNa201210-001-JSR_1__FEM_D20xF9__20201210-094031__20201210-094137me, cExt] = fileparts(mfilename('fullpath'));
 
 % Dependencies
 %{
@@ -6,7 +6,7 @@ addpath(genpath(fullfile(cDirThis, '..', 'src')));
 addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages', 'matlab-instrument-control')));
 %}
 
-cFolder = '200702-004-MET8__FEM_D13xF11__20200702-150119__20200702-150820';
+% cFolder = '200702-004-MET8__FEM_D13xF11__20200702-150119__20200702-150820';
 
 % cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans', cFolder);
 cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');

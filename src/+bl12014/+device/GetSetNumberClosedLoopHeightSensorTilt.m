@@ -230,7 +230,7 @@ classdef GetSetNumberClosedLoopHeightSensorTilt < mic.interface.device.GetSetNum
                     return
                 end
                 
-                cMsg = sprintf('Stage NOT ready, %d/%d pausing %0.2f sec', k, dNWaitCycles, this.dStageCheckPeriod);
+                cMsg = sprintf('Stage is moving ..., %d/%d pausing %0.2f sec', k, dNWaitCycles, this.dStageCheckPeriod);
                 
                 this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                 pause(this.dStageCheckPeriod);

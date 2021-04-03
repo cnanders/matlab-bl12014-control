@@ -50,10 +50,11 @@ classdef Scan < mic.Base
         
         hDYMO
         
-        lUseMjPerCm2PerSecOverride = true
         uiEditMjPerCm2PerSec
         uiEditRowStart
         uiEditColStart
+        
+        uiFluxDensity
         
         uiPOCurrent
         uiShutter
@@ -192,6 +193,9 @@ classdef Scan < mic.Base
         lIsWFZ = false
         dRmsDriftX = 0
         dRmsDriftY = 0
+        
+        
+        lSkipWorkingMode = false
     end
     
         
@@ -266,7 +270,7 @@ classdef Scan < mic.Base
             cec = {...
                 'uicWaferLL', ...
                 'uicAutoVentAtLL', ...
-                'uiEditMjPerCm2PerSec', ...
+                'uiFluxDensity', ...
                 'uiEditRowStart', ...
                 'uiEditColStart', ...
                 'uiPrescriptionTool', ...
@@ -330,9 +334,6 @@ classdef Scan < mic.Base
             dLeft = this.dWidthPadFigure;
             dTop = this.dWidthPadFigure;
             
-            
-           
-           
            dSep = 30;
            dSize = 100;
            
@@ -423,14 +424,14 @@ classdef Scan < mic.Base
            dTop = dTop + dSep;
            %}
            
-           dTop = dTop + 30
+           dTop = dTop + 15
            this.uiListActive.build(this.hPanelAdded, ...
                 dLeft, ...
                 dTop, ...
                 this.dWidthList, ...
                 40);
             
-           dTop = dTop + 70;
+           dTop = dTop + 60; % height of list does not include the label on top
            dSep = 20;
            
            
@@ -466,22 +467,17 @@ classdef Scan < mic.Base
             
            
            dLeft = this.dWidthPadFigure;
-           dTop = dTop + 25;
+           dTop = dTop + 30;
            
            dTopBelowList = dTop;
            
            dSep = 40;
            
            % this.uiTextFluxDensityCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthText, dHeightText);
-           
-           dTop = dTop + 30;
-           
-           if this.lUseMjPerCm2PerSecOverride
-                this.uiEditMjPerCm2PerSec.build(this.hPanelAdded, dLeft, dTop);
-                dTop = dTop + this.uiEditMjPerCm2PerSec.dHeight + 10;
-           end
-           
                       
+           this.uiFluxDensity.build(this.hPanelAdded, dLeft, dTop);
+           dTop = dTop + this.uiFluxDensity.dHeight + 10;
+           
            this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
            dTop = dTop + dSep;
            
@@ -665,7 +661,6 @@ classdef Scan < mic.Base
         function onClock(this, ~, ~)
             this.updateTextReticleField();
             this.updateScannerPlots();
-            this.updateTextsFluxCalibration();
         
         end 
         
@@ -795,7 +790,11 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.setMax(1e5);
             %}
             
-            this.uiEditMjPerCm2PerSec = bl12014.ui.FluxDensity();
+            this.uiFluxDensity = bl12014.ui.FluxDensity(...
+                'uiClock', this.uiClock, ...
+                'hardware', this.hardware, ...
+                'uiTuneFluxDensity', this.uiTuneFluxDensity ...
+            );
             
             
             this.uiEditRowStart = mic.ui.common.Edit(...
@@ -1045,7 +1044,8 @@ classdef Scan < mic.Base
                 'dWidthVal', 50, ...
                 'lShowLabels', false, ...
                 'lShowInitButton', false, ...
-                'fhGet', @() this.hardware.getALS().getCurrentOfRing(), ...
+                'fhGet', @() this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(), ...
+                ...'fhGet', @() this.hardware.getALS().getCurrentOfRing(), ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'current-of-ring'], ...
@@ -1056,26 +1056,6 @@ classdef Scan < mic.Base
         end
 
         
-        
-        function updateTextsFluxCalibration(this, src, evt)
-            
-            
-        
-            %{
-            this.uiTextFluxDensityCalibrated.set(...
-                sprintf('Flux Density: %1.1f mJ/cm2/s on %s', ...
-                this.uiTuneFluxDensity.getFluxDensityCalibrated(), ...
-                this.uiTuneFluxDensity.getTimeCalibrated() ...
-            ));
-            %}
-            
-            cVal = sprintf('Flux Density Calc. (measured %1.1f mJ/cm2/s on %s)', ...
-                this.uiTuneFluxDensity.getFluxDensityCalibrated(), ...
-                this.uiTuneFluxDensity.getTimeCalibrated() ...
-            );
-            this.uiEditMjPerCm2PerSec.setTitle(cVal);
-            
-        end
         
         
         function initScanTimingStore(this)
@@ -1596,6 +1576,10 @@ classdef Scan < mic.Base
                         
                     case 'workingMode'
                         
+                        if this.lSkipWorkingMode
+                            this.stScanSetContract.workingMode.lIssued = true;
+                            return
+                        end
                         
                         if stValue.workingMode == 4
                             % issue CommandCode 6 before going to wm4 -
@@ -1925,7 +1909,7 @@ classdef Scan < mic.Base
                                     
                                     % auto-recover on stage timeout
                                     dTimeElapsed = toc(this.dTicScanSetState);
-                                    if (dTimeElapsed > 20)
+                                    if dTimeElapsed > 20 && ~this.lSkipWorkingMode
                                         this.uiSequenceRecoverFem.execute();
                                     end
                                     
@@ -2006,6 +1990,12 @@ classdef Scan < mic.Base
                                             stValue.workingMode ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end
+                                    
+                                    
+                                    % OVERRIDE HACK 2020.11.09
+                                    if this.lSkipWorkingMode
+                                        lReady = true;
                                     end
 
 
@@ -2110,21 +2100,8 @@ classdef Scan < mic.Base
             
             end            
 
-            % Calculate the exposure time
-            % dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
             
-            if this.lUseMjPerCm2PerSecOverride
-                dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
-            else
-                dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
-            end
-            
-            % 2020.10.23
-            % Scale dSec by the ratio of ALS current during calibration vs.
-            % now
-            
-            dALSRatio = this.uiTuneFluxDensity.getCurrentOfALSCalibrated() / this.uiCurrentOfALS.getValCal('mA');
-            dSec = dSec * dALSRatio;
+            dSec = stValue.task.dose / this.uiFluxDensity.get();
             
             % Set the shutter UI time (ms)
             this.uiShutter.uiShutter.setDestCal(...
@@ -2141,6 +2118,8 @@ classdef Scan < mic.Base
                 
             
         end
+        
+        
 
         % @param {struct} stUnit - the unit definition structure 
         % @param {struct} stState - the state
@@ -2179,13 +2158,10 @@ classdef Scan < mic.Base
                         switch cField
                             case 'shutter'
                                 
-                                if this.lUseMjPerCm2PerSecOverride
-                                    dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
-                                else
-                                    dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
-                                end
+                                dSec = stValue.task.dose / this.uiFluxDensity.get();
+
                                 
-                                if lDebug
+                                                                if lDebug
                                     cMsg = sprintf('%s %s checking shutter: %1.1f mJ/cm2, %1.0f msec', ...
                                         cFn, ...
                                         cField, ...
@@ -2392,12 +2368,7 @@ classdef Scan < mic.Base
             try
                 
                 dTic = tic;
-                if this.lUseMjPerCm2PerSecOverride
-                    dSec = stValue.task.dose / this.uiEditMjPerCm2PerSec.get();
-                else
-                    dSec = stValue.task.dose / this.uiTuneFluxDensity.getFluxDensityCalibrated();
-                end
-            
+               dSec = stValue.task.dose / this.uiFluxDensity.get();           
                 dSamples = round(dSec * 1000);
                 
                 cPath = fullfile(...
@@ -3071,11 +3042,10 @@ classdef Scan < mic.Base
             
             % ca update 2020.08 to store the override value from the UI if 
             % it is being used during experiment.
-            if this.lUseMjPerCm2PerSecOverride
-                dFluxDensity = this.uiEditMjPerCm2PerSec.get();
-            else
-                dFluxDensity = this.uiTuneFluxDensity.getFluxDensityCalibrated();
-            end
+            
+            
+            dFluxDensity = this.uiFluxDensity.get();
+           
             st.flux_mj_per_cm2_per_s = dFluxDensity;
             
 
@@ -3184,7 +3154,7 @@ classdef Scan < mic.Base
             end
             
             % 2020.07 cols are flipped so col 1 = col 19, col2 = col 18
-            dCol = 19 - dCol + 1;
+            %dCol = 19 - dCol + 1;
             
             try
                 cNameOfField = bl12014.getNameOfReticleField(...

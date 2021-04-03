@@ -48,6 +48,10 @@ classdef DCTCorbaProxy < handle
             start(this.t);
             this.lOpen = true;
         end
+        
+        function d = SCA_getBeamCurrent(this)
+            d = 420;
+        end
                 
     end
     

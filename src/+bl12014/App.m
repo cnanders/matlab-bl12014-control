@@ -475,6 +475,7 @@ classdef App < mic.Base
             this.hardware = bl12014.Hardware('clock', this.clock);
             
             
+            
             if ~this.getIsDev()
            
                 this.hardware.connectDataTranslation(); % force real hardware 
@@ -491,6 +492,7 @@ classdef App < mic.Base
                 
         
             end
+            
             
             
             

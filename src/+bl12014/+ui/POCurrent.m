@@ -56,6 +56,12 @@ classdef POCurrent < mic.Base
         % {double 1xm} really an int that stores that last read index
         % of the circular memory buffer of the data translation
         dIndexOfBuffer
+        
+        cPath
+        
+        cDirThis
+        cDirSrc
+        cDirSave
                        
     end
     
@@ -67,6 +73,11 @@ classdef POCurrent < mic.Base
     methods
         
         function this = POCurrent(varargin)
+            
+            this.cDirThis = fileparts(mfilename('fullpath'));
+            this.cDirSrc = fullfile(this.cDirThis, '..', '..');
+            this.cDirSave = fullfile(this.cDirSrc, 'save', 'po-current');
+            
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -167,11 +178,16 @@ classdef POCurrent < mic.Base
             % Initialize index of buffer
             [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
             
+            this.cPath = this.getNewFilePath();
+            
             if ~isempty(this.clock)
                 this.clock.add(@this.onClock, this.id(), this.dPeriod);
             end
             
         end
+        
+        
+        
                
         function delete(this)
             this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
@@ -199,6 +215,16 @@ classdef POCurrent < mic.Base
             this.dValues = [];
             this.dtTimes = NaT(0, 0);
         end
+        
+        
+        function c = getNewFilePath(this)
+            
+            cTime = datestr(datevec(now), 'yyyymmdd-HHMMSS', 'local');
+            cName = sprintf('%s-po-shutter-log.csv', cTime);
+            c = fullfile(this.cDirSave, cName);
+            
+        end
+        
         
         
     end
@@ -233,6 +259,8 @@ classdef POCurrent < mic.Base
                 this.dValues(4, dLength + 1 : dLength + dRows) = results(:, 40); % ch 39 on hardware
                 
                 this.updateAxes(this.dtTimes, this.dValues);
+                
+                this.saveScanResultsCsv(dLength+1, dRows);
                
             catch mE
                 mE
@@ -495,7 +523,58 @@ classdef POCurrent < mic.Base
             % Initialize index of buffer
             [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
             
+            this.cPath = this.getNewFilePath();
             this.clearValues()
+        end
+        
+        
+        
+          function saveScanResultsCsv(this, dIdxStart, dNum)
+        
+            if isempty(this.dValues)
+                    return;
+            end
+                       
+            
+            % Open the file in append mode
+            % 2020.01.09 trying capital A to not automatically flush the
+            % output buffer when the file closes to see if it is faster
+            % was using 'a' before
+            fid = fopen(this.cPath, 'A');
+
+            
+            % write the header if this is the first value
+                       
+            
+           if dIdxStart == 1
+               
+                ceNames = {'time', 'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'};
+                dNum = length(ceNames);
+            
+                for n = 1:dNum
+                    fprintf(fid, '%s', ceNames{n});
+                    if n < dNum
+                        fprintf(fid, ',');
+                    end
+                end
+                fprintf(fid, '\n');
+            end
+            
+            
+            for n = dIdxStart : dIdxStart + dNum - 1
+                fprintf(fid, '%s,', this.dtTimes(n));
+                fprintf(fid, '%1.5e,', this.dValues(1,n));
+                fprintf(fid, '%1.5e,', this.dValues(2,n));
+                fprintf(fid, '%1.5e,', this.dValues(3,n));
+                fprintf(fid, '%1.5e', this.dValues(4,n));
+                fprintf(fid, '\n');
+            end
+            
+
+            % Close the file
+            fclose(fid);
+            
+
         end
         
         
