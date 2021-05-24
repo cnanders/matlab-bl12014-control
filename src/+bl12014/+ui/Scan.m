@@ -1910,7 +1910,8 @@ classdef Scan < mic.Base
                                     % auto-recover on stage timeout
                                     dTimeElapsed = toc(this.dTicScanSetState);
                                     if dTimeElapsed > 20 && ~this.lSkipWorkingMode
-                                        this.uiSequenceRecoverFem.execute();
+                                        % comment 2021.04.01
+                                        % this.uiSequenceRecoverFem.execute();
                                     end
                                     
                                     dGoal = this.getStageXFromWaferX(stValue.waferX);
@@ -1931,7 +1932,8 @@ classdef Scan < mic.Base
                                     % auto recover on stage timeout
                                     dTimeElapsed = toc(this.dTicScanSetState);
                                     if (dTimeElapsed > 20)
-                                        this.uiSequenceRecoverFem.execute();
+                                        % comment 2021.04.01
+                                        % this.uiSequenceRecoverFem.execute();
                                     end
                                     
                                     dGoal = this.getStageYFromWaferY(stValue.waferY);
