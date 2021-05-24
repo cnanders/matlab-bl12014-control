@@ -119,7 +119,8 @@ classdef App < mic.Base
             this.uiApp.delete();
             % uiApp uses hardware so delete hardware after
             this.hardware.delete();
-            this.clock.delete();
+           
+            % this.clock.delete();
             
         end
         

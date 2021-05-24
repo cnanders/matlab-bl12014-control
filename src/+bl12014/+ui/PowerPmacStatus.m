@@ -32,7 +32,7 @@ classdef PowerPmacStatus < mic.Base
         hParent
         
         clock
-        dWidthName = 125
+        dWidthName = 135
         lShowDevice = false
         lShowInitButton = false
         
