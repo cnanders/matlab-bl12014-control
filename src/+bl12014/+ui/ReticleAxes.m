@@ -144,10 +144,17 @@ classdef ReticleAxes < mic.Base
     properties (SetAccess = private)
         
         % location of EUV beam relative to 0, 0 coordinate of RCXY stages
-        % can determine this experimentally 
+        % can determine this experimentally
         
-        dXChiefRay = -42/1000
-        dYChiefRay = 3.42/1000 - 0.7/1000; % added 2019.04.03
+        % HOW TO GET THESE VALUES:
+        % 1) fiducialize the reticle
+        % 2) Go to R10C10 (the physical center of the reticle) using
+        % fiducialized moves.  
+        % 3) Level reticle
+        % 3) Get the values of reticle Coarse X and Coarse Y and take the negative
+        % and put them in here!.
+        dXChiefRay = -41.74/1000
+        dYChiefRay = 2.91/1000
         
         % These get set relative to dX/YChiefRay in constructor
         dXCap1 = 0

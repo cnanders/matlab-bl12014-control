@@ -3065,6 +3065,8 @@ classdef Scan < mic.Base
             end
             
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
+            
+            st.counts_dose_monitor = this.hardware.getDoseMonitor().getCounts();
 
         end
         

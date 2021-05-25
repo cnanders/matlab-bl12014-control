@@ -50,6 +50,8 @@ classdef Hardware < mic.Base
         
         cTcpipWebSwitchVis          = '192.168.20.32';
         
+        cTcpipDoseMonitor = '192.168.20.60'
+        
     end
     
 	properties
@@ -60,6 +62,8 @@ classdef Hardware < mic.Base
         cDirMet5InstrumentsConfig = ...
             fullfile(fileparts(mfilename('fullpath')), '..', '..', 'vendor', 'cwcork');
 
+        commDoseMonitor
+        commDoseMonitorVirtual
         
         % {cxro.common.device.motion.Stage 1x1}
         commLSIHexapod
@@ -379,6 +383,45 @@ classdef Hardware < mic.Base
                 comm = this.commWebSwitchEndstation;
             else
                 comm = this.commWebSwitchEndstationVirtual;
+            end            
+        end
+        
+        %% MET5/CXRO Dose Monitor
+        function l = getIsConnectedDoseMonitor(this)
+            
+            if this.notEmptyAndIsA(this.commDoseMonitor, 'cxro.DoseMonitor')
+                l = true;
+                return;
+                
+            end
+
+            l = false;
+        end
+        
+        function connectDoseMonitor(this)
+            
+            try
+                this.commDoseMonitor = cxro.DoseMonitor(...
+                    'cHost', this.cTcpipDoseMonitor ...
+                );
+            
+                this.commDoseMonitor.connect();
+                this.commDoseMonitor.getCounts(); % Make sure it can talk to hardware
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectDoseMonitor(this)
+            this.commDoseMonitor.disconnect();
+            this.commDoseMonitor = [];
+        end
+                
+        function comm = getDoseMonitor(this)
+            if this.getIsConnectedDoseMonitor()
+                comm = this.commDoseMonitor;
+            else
+                comm = this.commDoseMonitorVirtual;
             end            
         end
         
@@ -1733,6 +1776,7 @@ classdef Hardware < mic.Base
             ceGenpathLoad = { ...
                 fullfile(cDirVendor, 'pnaulleau', 'bl-1201-exit-slit-v5'), ...
                 fullfile(cDirVendor, 'cnanderson'), ...
+                fullfile(cDirVendor, 'fileexchange', 'ssh2_v2_m1_r7'), ... % needed by cxro.DoseMonitor
             };
         
              mic.Utils.map(...
@@ -1748,9 +1792,14 @@ classdef Hardware < mic.Base
             cDirMpm = fullfile(cDirThis, '..', '..', 'mpm-packages');
             cDirMpm = mic.Utils.path2canonical(cDirMpm);
             
+            
+            
             % Java
             ceJavaPathLoad = { ...
-                ... ALS Channel Access 
+                ... SSH2 I have found doing it explicitly here rather than relying on
+                ... the auto-include capability of the ssh2_v2_m1_r7 library, works better
+                fullfile(cDirVendor, 'fileexchange', 'ssh2_v2_m1_r7', 'ganymed-ssh2-m1', 'ganymed-ssh2-m1.jar'), ...
+                ... ALS Channel Access
                 fullfile(cDirMpm, 'matlab-cxro-als', 'src', 'ca_matlab-1.0.0.jar'), ...
                 fullfile(cDirVendor, 'cwcork', 'Met5Instruments_V2.2.0.jar'), ...
                 ... BL 12.0.1 Exit Slit
@@ -1773,6 +1822,7 @@ classdef Hardware < mic.Base
                 0);
             
             
+            this.commDoseMonitorVirtual = cxro.DoseMonitorVirtual();
             this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
