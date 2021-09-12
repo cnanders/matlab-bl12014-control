@@ -172,6 +172,8 @@ classdef Scan < mic.Base
         uiStateMonoGratingAtEUV
         uiStateEndstationLEDsOff
         uiStateVPFMOut
+                uiStateSR570MDMIsSet
+
         uiStateM141SmarActOff
         uiStateHeightSensorLEDsOn
         uiStatePowerPmacAccelSetForFEM
@@ -399,6 +401,9 @@ classdef Scan < mic.Base
            dTop = dTop + dSep;
            
            this.uiStateVPFMOut.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           this.uiStateSR570MDMIsSet.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
            this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
@@ -933,6 +938,17 @@ classdef Scan < mic.Base
                 'cName', [this.cName, 'ui-state-vpfm-out'], ...
                 'task', bl12014.Tasks.createStateVPFMOut(...
                     [this.cName, 'state-vpfm-out'], ...
+                    this.hardware, ...
+                    this.clock ...
+                ), ...
+                'lShowButton', true, ...
+                'clock', this.uiClock ...
+            );
+        
+        this.uiStateSR570MDMIsSet = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-sr570-mdm-is-set'], ...
+                'task', bl12014.Tasks.createStateSR570MDMIsSet(...
+                    [this.cName, 'state-sr570-mdm-is-set'], ...
                     this.hardware, ...
                     this.clock ...
                 ), ...
@@ -2233,6 +2249,43 @@ classdef Scan < mic.Base
                 
                 % Store the state of the system
                 stState = this.getState(stUnit);
+                
+                
+                stState.vib_x_nm_rms = 0;
+                stState.vib_y_nm_rms = 0;
+                stState.drift_x_nm = 0;
+                stState.drift_y_nm = 0;
+                
+                cPath = this.saveDmiHeightSensorDataFromExposure(stValue);
+                
+                % Update state with DMI data (vibration and drift)
+                
+                try
+                    ceData = bl12014.MfDriftMonitorUtilities.getDataFromLogFile(cPath);
+                    ceData = bl12014.MfDriftMonitorUtilities.removePartialsFromFileData(ceData);
+                    dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromFileData(ceData);
+
+                    stState.vib_x_nm_rms = std(dDmi(5, :));
+                    stState.vib_y_nm_rms = std(dDmi(6, :));
+
+                    dTime = [0 : length(dDmi(5, :)) - 1] * 1e-3;
+
+
+                    % Do a linear fit and then do peak to valley
+                    dCoeffX = polyfit(dTime, dDmi(5, :), 1);
+                    dCoeffY = polyfit(dTime, dDmi(6, :), 1);
+
+                    dFitX = polyval(dCoeffX, dTime);
+                    dFitY = polyval(dCoeffY, dTime);
+
+                    stState.drift_x_nm = max(dFitX) - min(dFitX);
+                    stState.drift_y_nm = max(dFitY) - min(dFitY);
+                    
+                catch mE
+                    
+                end
+                
+                
                 stState.dose_mj_per_cm2 = stValue.task.dose;
                 
                 % 2019.11.05 adding deltas of height sensor and WFZ to the
@@ -2279,7 +2332,7 @@ classdef Scan < mic.Base
                 ];
                 this.waferExposureHistory.addExposure(dExposure);
                 
-            
+                
                                 
                 dTic = tic;
                 this.saveScanResultsCsv(stUnit);
@@ -2292,7 +2345,6 @@ classdef Scan < mic.Base
                 drawnow;
                 
                 % 2018.11.15  
-                this.saveDmiHeightSensorDataFromExposure(stValue);
                 this.pauseScanIfCurrentOfALSIsTooLow()
                 
                 this.resetScanTimingStore();
@@ -2365,18 +2417,19 @@ classdef Scan < mic.Base
         end
 
         % Save 1 kHz DMI data collected during the shutter is open
-        function saveDmiHeightSensorDataFromExposure(this, stValue)
+        function cPath = saveDmiHeightSensorDataFromExposure(this, stValue)
+            
+            cPath = fullfile(...
+                this.cDirScan, ... 
+                this.getNameOfDmiHeightSensorLogFile(stValue) ...
+            );
             
             try
                 
                 dTic = tic;
-               dSec = stValue.task.dose / this.uiFluxDensity.get();           
+                dSec = stValue.task.dose / this.uiFluxDensity.get();           
                 dSamples = round(dSec * 1000);
                 
-                cPath = fullfile(...
-                    this.cDirScan, ... 
-                    this.getNameOfDmiHeightSensorLogFile(stValue) ...
-                );
                 this.uiMfDriftMonitorVibration.saveLastNSamplesToFile(dSamples, cPath)
                 dToc = toc(dTic);
                 
@@ -3066,7 +3119,7 @@ classdef Scan < mic.Base
             
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
             
-            st.counts_dose_monitor = this.hardware.getDoseMonitor().getCounts();
+            st.charge_dose_monitor = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
 
         end
         

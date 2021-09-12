@@ -84,6 +84,9 @@ classdef Hardware < mic.Base
         commDCTWaferStage
         commDCTWaferStageVirtual
         
+        commSR570MDM
+        commSR570MDMVirtual
+        
         commSR570DCT1
         commSR570DCT1Virtual
         
@@ -249,6 +252,7 @@ classdef Hardware < mic.Base
             
             this.commSR570DCT1Virtual = [];
             this.commSR570DCT2Virtual = [];
+            this.commSR570MDMVirtual = [];
             
             this.commKeithley6482ReticleVirtual = [];
             this.commKeithley6482WaferVirtual = [];
@@ -1398,6 +1402,48 @@ classdef Hardware < mic.Base
                 
         end
         
+        %% MDM SR570 1
+        
+        function l = getIsConnectedSR570MDM(this)
+            l = this.notEmptyAndIsA(this.commSR570MDM, 'srs.SR570');
+        end
+        
+        function disconnectSR570MDM(this)
+            if this.getIsConnectedSR570MDM()
+                this.commSR570MDM = [];
+            end
+        end
+        
+        
+        function connectSR570MDM(this)
+            
+            if this.getIsConnectedSR570MDM()
+                return
+            end
+
+            try
+                this.commSR570MDM = srs.SR570(...
+                    'cConnection', AsciiComm.cCONNECTION_TCPCLIENT, ...
+                    'cTcpipHost', '192.168.20.37' ...
+                );
+            catch mE
+                this.commSR570MDM = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+            end
+            
+        end
+        
+        function comm = getSR570MDM(this)
+            
+            if this.getIsConnectedSR570MDM()
+                comm = this.commSR570MDM;
+                return
+            end
+                
+            comm = this.commSR570MDMVirtual;
+                
+        end
+        
         %% DCT SR570 1
         
         function l = getIsConnectedSR570DCT1(this)
@@ -1852,6 +1898,7 @@ classdef Hardware < mic.Base
             
             this.commSR570DCT1Virtual = srs.SR570Virtual();
             this.commSR570DCT2Virtual = srs.SR570Virtual();
+            this.commSR570MDMVirtual = srs.SR570Virtual();
 
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();
             this.commMightex2Virtual = mightex.UniversalLedControllerVirtual();

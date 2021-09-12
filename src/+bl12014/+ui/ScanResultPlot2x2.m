@@ -105,7 +105,7 @@ classdef ScanResultPlot2x2 < mic.Base
         % {logical 1x1} 
         lLoading
         
-        c
+        lAutoRefresh
                 
     end
     
@@ -255,21 +255,37 @@ classdef ScanResultPlot2x2 < mic.Base
         function [ceData, ceFields] = getValuesStructFromCsvFile(this, cPath)
             % [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath);
             
+            try 
+                [ceData, ceFields] = this.getValuesStructFromCsvFileV5(cPath); % 76 fields 2021.05.26
+                return;
+            catch mE
+                
+            end
+            
             try
                  [ceData, ceFields] = this.getValuesStructFromCsvFileV4(cPath); % 72 fields 2021.05.24
-            catch
+                 return;
+            catch mE
                 
-                try
-                     [ceData, ceFields] = this.getValuesStructFromCsvFileV3(cPath); % 71 fields 2020.10
-                catch
-
-                    try
-                        [ceData, ceFields] = this.getValuesStructFromCsvFileV2(cPath); % 70 fields 2020.09
-                    catch
-                        [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath); % 58 fields
-                    end
-                end
             end
+            
+                
+            try
+                 [ceData, ceFields] = this.getValuesStructFromCsvFileV3(cPath); % 71 fields 2020.10
+                 return
+            catch mE
+
+            end
+
+            try
+                [ceData, ceFields] = this.getValuesStructFromCsvFileV2(cPath); % 70 fields 2020.09
+                return;
+            catch
+
+            end
+
+            [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath); % 58 fields
+
             
         end
         
@@ -410,7 +426,9 @@ classdef ScanResultPlot2x2 < mic.Base
                 '%f%f%f%f', ... 54
                 '%f%f%f%f%f%f%f%f%f%f%f%f%f', ... 67 timing info
                 '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
-                '%f%f%f%f' ... 
+                '%f', ... counts_dose_monitor
+                '%f', ... dose_mj_cm_2
+                '%f%f' ... dz_height sensor, dz_wafer_fine
             ];
         
             %the last four are:
@@ -484,6 +502,63 @@ classdef ScanResultPlot2x2 < mic.Base
             fclose(hFile);
         end
         
+        function [ceData, ceFields] = getValuesStructFromCsvFileV5(this, cPath)
+            
+            hFile = fopen(cPath);
+            
+            % Get header fields
+            cFormat = repmat('%q', 1, 76);
+            ceHeader = textscan(...
+                hFile, cFormat, 1, ...
+                'delimiter', ',' ...
+                ...'whitespace', '' ...
+            );
+        
+            ceFields = cell(size(ceHeader));
+            for n = 1 : length(ceHeader)
+                ceFields{n} = ceHeader{n}{1};
+            end
+
+            % If any of the fields are an empty string, it means that the
+            % .csv file header does not match the header we expect. throw
+            % an error in this caes
+            if any(cellfun(@isempty, ceFields))
+                error('The header size does not match the expected size of 72 fields');
+            end
+
+            % %d = signed integer, 32-bit
+            cFormat = [...
+                '%f%f%f%f%f%f%f%f%f%f', ... 10
+                '%f%f%f%f%f%f%f%f%f%f', ... 20
+                '%f%f%f%f%f%f%f%f%f%f', ... 30
+                '%f%f%f%f%f%f%f%f%f%f', ... 40
+                '%f%f%f%f%f%f%f%f%f%f', ... 50
+                '%f%f%f%f', ... 54
+                '%f%f%f%f%f%f%f%f%f%f%f%f%f', ... 67 (13 scan timing  info)
+                '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
+                '%f', ... counts_dose_monitor
+                '%f%f%f%f', ... dmi vib_x, vib_y, drift_x, drift_y (2021.05.26)
+                '%f', ... dose_mj_cm_2
+                '%f%f' ... dz_height sensor, dz_wafer_fine
+            ];
+        
+            %the last four are:
+            % counts_dose_monitor
+            % dose_mj_per_cm_per_s
+            % dz_height_sensor_nm
+            % dz_wafer_fine_nm
+
+            ceData = textscan(...
+                hFile, cFormat, -1, ... 
+                'delimiter', ',' ...
+                ...'whitespace', '', ...
+                ...'headerlines', 1 ...
+            );
+       
+            
+            fclose(hFile);
+        end
+
         function build(this, hParent, dLeft, dTop)
             
             this.hParent = hParent;
@@ -728,7 +803,7 @@ classdef ScanResultPlot2x2 < mic.Base
             
             if ~isempty(this.clock) && ...
                 ~this.clock.has(this.id())
-                this.clock.add(@this.onClock, this.id(), 1);
+                this.clock.add(@this.onClock, this.id(), 4);
             end
                 
             
@@ -769,16 +844,20 @@ classdef ScanResultPlot2x2 < mic.Base
             % save their current value and then re-select that value
             % when done
             
+            %{
             
             u8IndexStart = this.uiPopupIndexStart.getSelectedIndex();
             u8IndexEnd = this.uiPopupIndexEnd.getSelectedIndex();
+            %}
 
             this.refresh();
             
+            %{
             this.uiPopupIndexStart.setSelectedIndex(u8IndexStart);
             this.uiPopupIndexEnd.setSelectedIndex(u8IndexEnd);
             this.onPopupIndexEnd([], []);
             this.onPopupIndexStart([], []);
+            %}
             
         end
         
@@ -871,6 +950,7 @@ classdef ScanResultPlot2x2 < mic.Base
                 return
             end
             
+             this.uiButtonRefresh.setText('Refreshing ...');
             cPath = fullfile(this.cDir, this.cFile);
             this.uiTextFile.set(cPath);
             
@@ -929,6 +1009,9 @@ classdef ScanResultPlot2x2 < mic.Base
                  
             end
               
+            
+                         this.uiButtonRefresh.setText('Refresh');
+
             
         end
         

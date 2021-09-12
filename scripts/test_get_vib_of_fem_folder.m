@@ -9,6 +9,9 @@ addpath(genpath(fullfile(cDirThis, '..', 'mpm-packages', 'matlab-instrument-cont
 % cFolder = '200702-004-MET8__FEM_D13xF11__20200702-150119__20200702-150820';
 
 % cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans', cFolder);
+
+[cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
+
 cPathOfDir = fullfile(cDirThis, '..', 'src', 'save', 'fem-scans');
 cPathOfDir = mic.Utils.path2canonical(cPathOfDir); 
 cPathOfDir = uigetdir(cPathOfDir, 'Choose a FEM log directory');
