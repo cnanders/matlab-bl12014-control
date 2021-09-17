@@ -138,6 +138,7 @@ classdef DCTWaferAxes < mic.Base
         hOverlay
         
         clock
+        uiClock
         
         % @returns {double 1x1} x position of the stage in meters
         fhGetXOfWafer = @() -0.05
@@ -202,9 +203,13 @@ classdef DCTWaferAxes < mic.Base
                 error('hardware must be bl12014.Hardware');
             end
 
-            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
                 error('clock must be mic.Clock | mic.ui.Clock');
             end
+            
+             if ~isa(this.clock, 'mic.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
+             end
             
             this.init();
             
@@ -221,7 +226,7 @@ classdef DCTWaferAxes < mic.Base
         function delete(this)
             this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
 
-            this.clock.remove(this.id());
+            this.uiClock.remove(this.id());
             cecProps = this.getPropsDelete();
             for n = 1 : length(cecProps)
                 cProp = cecProps{n};
@@ -317,7 +322,7 @@ classdef DCTWaferAxes < mic.Base
             this.drawCrosshairWafer();
             
             
-            this.clock.add(@this.onClock, this.id(), this.dDelay);
+            this.uiClock.add(@this.onClock, this.id(), this.dDelay);
             
         end
 
@@ -495,19 +500,20 @@ classdef DCTWaferAxes < mic.Base
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
                 'hardware', this.hardware, ...
+                'uiClock', this.uiClock, ...
                 'clock', this.clock ...
             );
         
             this.uiStageWafer = bl12014.ui.DCTWaferStage(...
                 'cName', [this.cName, 'stage-wafer'], ...
                 'hardware', this.hardware, ...
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
         
             this.uiStageAperture = bl12014.ui.DCTApertureStage(...
                 'cName', [this.cName, 'stage-aperture'], ...
                 'hardware', this.hardware, ...
-                'clock', this.clock ...
+                'clock', this.uiClock ...
             );
         
             this.fhGetIsShutterOpen = @() this.uiShutter.uiOverride.get();

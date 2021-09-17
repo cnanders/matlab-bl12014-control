@@ -783,7 +783,10 @@ classdef Beamline < mic.Base
         
         function initUiDeviceShutter(this)
                         
-            this.uiShutter = bl12014.ui.Shutter('clock', this.uiClock, 'hardware', this.hardware);
+            this.uiShutter = bl12014.ui.Shutter(...
+                'clock', this.clock, ...
+                'uiClock', this.uiClock, ...
+                'hardware', this.hardware);
             addlistener(this.uiShutter.uiShutter, 'eUnitChange', @this.onUnitChange);
         end
         

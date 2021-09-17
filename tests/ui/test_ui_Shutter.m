@@ -1,13 +1,11 @@
+try 
+    purge
+catch mE
+end
+
 [cDirThis, cName, cExt] = fileparts(mfilename('fullpath'));
-
-% bl12014 pkg
-cDirSrc = fullfile(cDirThis, '..', '..', 'src');
-cDirVendor = fullfile(cDirThis, '..', '..', 'vendor');
-
-% src
-addpath(genpath(fullfile(cDirSrc)));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-instrument-control', 'src')));
-addpath(genpath(fullfile(cDirVendor, 'github', 'cnanders', 'matlab-rigol-dg1000z', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'src')));
+addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 
 purge
 

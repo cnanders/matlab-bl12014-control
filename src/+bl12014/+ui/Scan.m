@@ -61,6 +61,7 @@ classdef Scan < mic.Base
         uiPrescriptionTool
         uiFocusLog
         uiCurrentOfALS
+        uiDoseMonitorList
         
         cName = 'fem-scan-control'
     
@@ -483,35 +484,33 @@ classdef Scan < mic.Base
            this.uiFluxDensity.build(this.hPanelAdded, dLeft, dTop);
            dTop = dTop + this.uiFluxDensity.dHeight + 10;
            
-           this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-           dTop = dTop + dSep;
+           this.uiEditColStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);           
+           this.uiEditRowStart.build(this.hPanelAdded, dLeft, dTop + dSep, 100, 24);
            
-           this.uiEditRowStart.build(this.hPanelAdded, dLeft, dTop, 100, 24);
-           dTop = dTop + dSep;
+           dLeftTemp = 130;
            
-           dTop = dTop + 10;
-           
-           dSep = 20;
+           this.uiScan.build(this.hPanelAdded, dLeftTemp - 10, dTop + 13);
+
+           dTop = dTop + 80;
+          
+           dSep = 24;
            
            this.uicWaferLL.build(this.hPanelAdded, ...
-               dLeft, ...
+               dLeftTemp, ...
                dTop, ...
                200, ...
                20);
-            
+           
            dTop = dTop + dSep;
+            
            this.uicAutoVentAtLL.build(this.hPanelAdded, ...
-               dLeft, ...
+               dLeftTemp, ...
                dTop, ...
                200, ...
                20);
-           dTop = dTop + 30;
-           
-           % dLeft = 150;
-           % dTop = 180
-           this.uiScan.build(this.hPanelAdded, dLeft - 10, dTop);
-           
-           dTop = dTop + 70;
+                      
+          
+           dTop = dTop + dSep;
            this.uiSequenceRecoverFem.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
 
            
@@ -661,6 +660,7 @@ classdef Scan < mic.Base
             
             
             this.uiFocusLog.build(this.hParent, 10, 620);
+            this.uiDoseMonitorList.build(this.hParent, 430, 620, 100, 300);
         end
         
         function onClock(this, ~, ~)
@@ -795,9 +795,18 @@ classdef Scan < mic.Base
             this.uiEditMjPerCm2PerSec.setMax(1e5);
             %}
             
+             this.uiShutter = bl12014.ui.Shutter(...
+                'cName', [this.cName, 'shutter'], ...
+                'hardware', this.hardware, ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClock ...
+            );
+        
             this.uiFluxDensity = bl12014.ui.FluxDensity(...
                 'uiClock', this.uiClock, ...
+                'clock', this.clock, ...
                 'hardware', this.hardware, ...
+                'uiShutter', this.uiShutter, ...
                 'uiTuneFluxDensity', this.uiTuneFluxDensity ...
             );
             
@@ -817,11 +826,7 @@ classdef Scan < mic.Base
             this.uiEditColStart.setMin(uint8(0));
             
             
-            this.uiShutter = bl12014.ui.Shutter(...
-                'cName', [this.cName, 'shutter'], ...
-                'hardware', this.hardware, ...
-                'clock', this.uiClock ...
-            );
+           
             
             
             this.uiWaferAxes = bl12014.ui.WaferAxes(...
@@ -1031,9 +1036,16 @@ classdef Scan < mic.Base
         
             this.uiFocusLog = bl12014.ui.FocusLog( ...
                 'uiClock', this.uiClock, ...
-                'dWidth', 500, ...
+                'dWidth', 400, ...
                 'dHeight', 330, ...
                 'dNumResults', 20);
+            
+            this.uiDoseMonitorList = mic.ui.common.List(...
+                'lShowMove', false, ...
+                'lShowRefresh', false, ...
+                'lShowDelete', false, ...
+                'cLabel', 'MDM (millions of electrons)' ...
+                );
             
             this.initCurrentOfALS();
                                    
@@ -2331,6 +2343,12 @@ classdef Scan < mic.Base
                     stValue.task.femRows ...
                 ];
                 this.waferExposureHistory.addExposure(dExposure);
+                
+                % add mdm electrons to log
+                dVal = stState.charge_dose_monitor/ 1e6; % millions of electrons
+                dVal = round(dVal);
+                cVal = num2str(dVal);
+                this.uiDoseMonitorList.append(cVal);
                 
                 
                                 

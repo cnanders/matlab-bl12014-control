@@ -12,6 +12,9 @@ classdef FluxDensity < mic.Base
         
         uiCheckboxCorrectForALS
         
+        uiEditCharge
+        uiEditDose
+        uiSequenceCalibrate
         
         uiTextMult
         uiTextDivide
@@ -19,7 +22,7 @@ classdef FluxDensity < mic.Base
         uiTextALSCorrection
         
         dWidth = 380
-        dHeight = 130
+        dHeight = 165
         
         cName = 'flux-density-calculator'
 
@@ -32,8 +35,10 @@ classdef FluxDensity < mic.Base
         
          % must pass these in
         uiClock
+        clock
         hardware
         uiTuneFluxDensity
+        uiShutter
         
     end
     
@@ -53,13 +58,29 @@ classdef FluxDensity < mic.Base
              
              if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
                 error('uiClock must be mic.Clock | mic.ui.Clock');
+             end
+            
+              if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('uiClock must be mic.Clock | mic.ui.Clock');
             end
             
             if ~isa(this.uiTuneFluxDensity, 'bl12014.ui.TuneFluxDensity')
                 error('uiTuneFluxDensity must be bl12014.ui.TuneFluxDensity');
             end
+            
+             if ~isa(this.uiShutter, 'bl12014.ui.Shutter')
+                error('uiShutter must be bl12014.ui.Shutter');
+            end
+            
+            
                         
             this.init();
+        end
+        
+        function setMeasured(this, dVal)
+           
+            this.uiEditMeasured.set(dVal);
+            
         end
         
         % returns {double 1x1} mJ/cm2/s with all corrections added
@@ -154,11 +175,21 @@ classdef FluxDensity < mic.Base
             
             this.uiCheckboxCorrectForALS.build(this.hPanel, dLeft, dTop, 200, 24);
             this.uiTextALSCorrection.build(this.hPanel, dLeft + 110, dTop + 4, 250, 24);
-            dTop = dTop + 30;
+            dTop = dTop + 20;
             
             
             this.uiTextInfo.build(this.hPanel, dLeft, dTop, 300, 24);
             
+            dTop = dTop + 20;
+            dWidthEdit=120;
+            dWidthSep = 10;
+            this.uiEditCharge.build(this.hPanel, dLeft, dTop, dWidthEdit, 24);
+            dLeft = dLeft + dWidthEdit + dWidthSep;
+            this.uiEditDose.build(this.hPanel, dLeft, dTop, dWidthEdit, 24);            
+                        dLeft = dLeft + dWidthEdit + dWidthSep;
+            this.uiSequenceCalibrate.build(this.hPanel, dLeft, dTop + 13, 100);
+                        dLeft = 0;
+
             this.uiClock.add(@this.onClock, this.id(), 1);
 
         end
@@ -185,8 +216,110 @@ classdef FluxDensity < mic.Base
         function onChange(this, src, evt)
             this.onClock(src, evt);
         end
+        
+        function adjustFluxDensity(this)
+            
+            % dT = time shutter is opened for charge accumulation
+            % dC = measured charge fom exposure of dT seconds
+            % dC2 = charge from UI
+            % dT2 = time to get to charge dC2
+            % dD = dose from UI
+            % dF = flux density (the thing we will programmatically set)
+
+            
+             dT = 3; % s
+             dC = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+             
+             % convert measured charge into millions of electrons since
+             % that is what the UI is
+             dC = dC / 1e6;
+             
+             dC2 = this.uiEditCharge.get();
+             dD = this.uiEditDose.get(); 
+             
+             % Two equations, two unknowns
+             % 1) dT2 = dT * dC2 / dC
+             % 2) dT2 * dF = dD
+             % Solve for dF
+             % time to get to the charge from the UI
+             
+                          
+             % then we want dT2 * time dF to be equal to dD
+             
+             dF = dD * dC / (dC2 * dT);
+             this.uiEditMeasured.set(dF);
+            
+            
+        end
+        
+        
+        function task = getSequenceCalibrate(this)
+            
+            
+            % Create a task to trigger the shutter
+            
+            fhExecute = @() ...
+                mic.Utils.evalAll(...
+                    @() this.uiShutter.uiShutter.setDestCal(...
+                        3 * 1e3, ...
+                        'ms' ...
+                    ), ...
+                    @() this.uiShutter.uiShutter.moveToDest() ...
+                );
+            
+            
+        
+            
+            task1 = mic.Task(...
+                'fhExecute', fhExecute, ...
+                'fhAbort', @() [], ...
+                'fhIsExecuting', @() false, ...
+                'fhIsDone', @() this.uiShutter.uiShutter.isReady(), ...
+                'fhGetMessage', @() 'Open shutter 3s' ... 
+            );
+            
+            task2 = mic.Task(...
+                'fhExecute', @() this.adjustFluxDensity, ...
+                'fhGetMessage', @() 'Adjusting flux density' ...
+            );
+        
+        ceTasks = {...
+            task1, ...
+            task2
+       };
+        
+   task = mic.TaskSequence(...
+                'cName', 'flux-density-mdm-adjust', ...
+                'clock', this.clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'Calibrate' ...
+            );
+                
+
+                        
+        end
+        
+        
         function init(this)
             
+            this.uiEditCharge = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'cLabel', 'MDM (Melectrons)' ...
+            );
+        
+            this.uiEditDose    = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'cLabel', 'Dose (mJ/cm2)' ...
+            );
+        
+            this.uiSequenceCalibrate = mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-sequence-calibrate'], ...
+                'task', this.getSequenceCalibrate(), ...
+                'lShowIsDone', false, ...
+                'clock', this.uiClock ...
+            );
+       
             this.uiEditMeasured = mic.ui.common.Edit(...
                 'fhDirectCallback', @this.onChange, ...
                 'cType', 'd', ...

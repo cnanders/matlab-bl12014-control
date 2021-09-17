@@ -59,6 +59,10 @@ classdef Hardware < mic.Base
         hParent
         cName = 'ui-hardware-'
         
+        % {bl12014.Hardware 1x1}
+        hardware
+        
+        
     end
     
     properties (Access = private)
@@ -68,8 +72,6 @@ classdef Hardware < mic.Base
         uiClock
         dDelay = 0.5
         
-        % {bl12014.Hardware 1x1}
-        hardware
         
         % {bl120114.ui.App 1x1}
         uiApp
