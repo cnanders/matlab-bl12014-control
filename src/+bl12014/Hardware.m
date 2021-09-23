@@ -107,11 +107,13 @@ classdef Hardware < mic.Base
         commMfDriftMonitorMiddleware
         commMfDriftMonitorMiddlewareVirtual
         
+        
+        commTekAFG31021
+        commTekAFG31021Virtual
+        
         commRigolDG1000Z
         commRigolDG1000ZVirtual
-        lIsConnectedRigolDG1000Z = false
-        
-        
+                
         commMfDriftMonitor
         commMfDriftMonitorVirtual
         
@@ -230,6 +232,7 @@ classdef Hardware < mic.Base
             this.disconnectNPointM142();
             this.disconnectNPointMA();
             this.disconnectRigolDG1000Z();
+            this.disconnectTekAFG31021();
             this.disconnectSmarActM141();
             this.disconnectSmarActVPFM();
             this.disconnectWagoD141();
@@ -265,6 +268,7 @@ classdef Hardware < mic.Base
             this.commNPointM142Virtual = [];
             this.commNPointMAVirtual = [];
             this.commRigolDG1000ZVirtual = [];
+            this.commTekAFG31021Virtual = [];
             this.commSmarActM141Virtual = [];
             this.commSmarActVPFMVirtual = [];
             this.commWagoD141Virtual = [];
@@ -576,6 +580,39 @@ classdef Hardware < mic.Base
             comm = this.commMfDriftMonitorVirtual;
         end
         
+        
+        %% Tektronix AFG31021
+        
+        function l = getIsConnectedTekAFG31021(this)
+            
+            if this.notEmptyAndIsA(this.commTekAFG31021, 'tektronix.AFG31021')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+        
+        function connectTekAFG31021(this)
+            try
+                this.commTekAFG31021 = tektronix.AFG31021(...
+                    'cTcpipHost', '192.168.20.38' ...
+                );
+           catch mE
+                error(getReport(mE));
+           end
+        end
+        
+        function disconnectTekAFG31021(this)
+            this.commTekAFG31021 = [];
+        end
+                        
+        function comm = getTekAFG31021(this)
+            if this.getIsConnectedTekAFG31021()
+                comm = this.commTekAFG31021;
+            else
+                comm = this.commTekAFG31021Virtual;
+            end            
+        end
         
         %% Rigol DG1000Z
         
@@ -1870,6 +1907,7 @@ classdef Hardware < mic.Base
             
             this.commDoseMonitorVirtual = cxro.DoseMonitorVirtual();
             this.commRigolDG1000ZVirtual = rigol.DG1000ZVirtual();
+            this.commTekAFG31021Virtual = tektronix.AFG31021Virtual();
             this.commKeithley6482WaferVirtual = keithley.Keithley6482Virtual();
             this.commKeithley6482ReticleVirtual = keithley.Keithley6482Virtual();
             this.commDeltaTauPowerPmacVirtual = deltatau.PowerPmacVirtual();
