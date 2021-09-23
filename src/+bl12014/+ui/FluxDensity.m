@@ -238,7 +238,12 @@ classdef FluxDensity < mic.Base
              dD = this.uiEditDose.get(); 
              
              % Two equations, two unknowns
-             % 1) dT2 = dT * dC2 / dC
+             % Can define a "photocurrent" in units of electrons/s
+             % I = dC/dT (electrons/sec measured)
+             % Number of seconds to accumulate dC2 electrons =
+             % dT2 = dC2 / I 
+             % Dose delivered in dT2 seconds using current flux density
+             % dF * dT2
              % 2) dT2 * dF = dD
              % Solve for dF
              % time to get to the charge from the UI
