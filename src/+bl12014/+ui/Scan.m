@@ -199,6 +199,8 @@ classdef Scan < mic.Base
         
         
         lSkipWorkingMode = false
+        
+        dZHeightSensorTarget = 0;
     end
     
         
@@ -678,6 +680,7 @@ classdef Scan < mic.Base
             
             this.uiReticleAxes.delete();
             this.uiWaferAxes.delete();
+            this.uiFluxDensity.delete();
             %this.uiPOCurrent.delete();
             
                         
@@ -1044,7 +1047,7 @@ classdef Scan < mic.Base
                 'lShowMove', false, ...
                 'lShowRefresh', false, ...
                 'lShowDelete', false, ...
-                'cLabel', 'MDM (millions of electrons)' ...
+                'cLabel', 'MDM (num of e-)' ...
                 );
             
             this.initCurrentOfALS();
@@ -1072,8 +1075,8 @@ classdef Scan < mic.Base
                 'dWidthVal', 50, ...
                 'lShowLabels', false, ...
                 'lShowInitButton', false, ...
-                'fhGet', @() this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(), ...
-                ...'fhGet', @() this.hardware.getALS().getCurrentOfRing(), ...
+                ...'fhGet', @() this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(), ...
+                'fhGet', @() this.hardware.getALS().getCurrentOfRing(), ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'current-of-ring'], ...
@@ -1097,6 +1100,7 @@ classdef Scan < mic.Base
                 'waferX', ...
                 'waferY', ...
                 'waferZ', ...
+                'waferZThenDriftControl', ...
                 'xReticleFine', ...
                 'yReticleFine', ...
                 'workingMode', ...
@@ -1119,6 +1123,7 @@ classdef Scan < mic.Base
                 'waferX', ...
                 'waferY', ...
                 'waferZ', ...
+                'waferZThenDriftControl', ...
                 'xReticleFine', ...
                 'yReticleFine', ...
                 'workingMode', ...
@@ -1656,7 +1661,8 @@ classdef Scan < mic.Base
                         this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.waferY.lIssued = true;
                       
-                    case 'waferZ'
+                    case {'waferZ', 'waferZThenDriftControl'}
+                    
                         
                        
                         % this.uiWafer.uiFineStage.uiZ.setDestCalDisplay(
@@ -1665,13 +1671,14 @@ classdef Scan < mic.Base
 %                         
                         
                         % Changed RM 12/2018 to new CL architecture:
-                       this.stScanSetContract.waferZ.lIssued = true;
+                       this.stScanSetContract.(cField).lIssued = true;
+                       this.dZHeightSensorTarget = stValue.(cField);
                         this.lIsWFZ = true;
                         
-                        this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.setDestCalDisplay(stValue.waferZ, stUnit.waferZ);
+                        this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.setDestCalDisplay(stValue.(cField), stUnit.waferZ);
                         this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.moveToDest();
                         
-                        
+                    
                         
                     case 'reticleX'
                         
@@ -1977,20 +1984,41 @@ classdef Scan < mic.Base
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
-                                case 'waferZ'
+                                case {'waferZ', 'waferZThenDriftControl'}
                                    lReady =     ... (   ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferCoarseXYZTipTilt() && ...
                                                 ... ~this.hardware.getDeltaTauPowerPmac().getIsStartedWaferFineZ);
                                                 ... this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getDevice().isReady();
                                                 this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.isReady();
                                                 ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                                     
-                                            
+                                    
+                                   if lReady && strcmpi(cField, 'waferZThenDriftControl')
+                                       
+                                       % 2021.10 
+                                       % Immediately start tracking and set
+                                       % working mode to 4.  There will be
+                                       % another task to verify that
+                                       % working mode is set to 4
+                                       
+                                       this.hardware.getMfDriftMonitor().monitorStart();
+                                       
+                                        % issue CommandCode 6 before going to wm4 -
+                                        % this would kill hydra closed loop (which they
+                                        % theory is this causes a jump) before drift
+                                        % control takes effect.
+                                        this.hardware.getDeltaTauPowerPmac().sendCommandCode(uint8(6));
+                                        this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(4); 
+                                        this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
+                                       
+                                   end
+                                   
+                                   
                                    if lDebug
                                         cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
                                             cFn, ...
                                             cField, ...
                                             this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ), ...
-                                            stValue.waferZ ...
+                                            stValue.(cField) ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                    end
@@ -2310,6 +2338,14 @@ classdef Scan < mic.Base
                     stState.dz_wafer_fine_nm = stState.z_wafer_fine_nm - this.ceValues{end}.z_wafer_fine_nm;
                 end
                 
+                % 2021.10.18 add the target height sensor value
+                stState.z_height_sensor_target_nm = this.dZHeightSensorTarget;
+                
+                % 2021.10.18 store the error between the height sensor
+                % value and the target
+                stState.z_height_sensor_error_nm = stState.z_height_sensor_nm - this.dZHeightSensorTarget;
+                
+                
                 this.ceValues{end + 1} = stState;
                 
                 
@@ -2345,9 +2381,9 @@ classdef Scan < mic.Base
                 this.waferExposureHistory.addExposure(dExposure);
                 
                 % add mdm electrons to log
-                dVal = stState.charge_dose_monitor/ 1e6; % millions of electrons
+                dVal = stState.charge_dose_monitor; % millions of electrons
                 dVal = round(dVal);
-                cVal = num2str(dVal);
+                cVal = sprintf('%1.3e', dVal); %num2str(dVal);
                 this.uiDoseMonitorList.append(cVal);
                 
                 
@@ -2673,8 +2709,12 @@ classdef Scan < mic.Base
             
             % Shutter
             
-            if ~this.hardware.getIsConnectedRigolDG1000Z()
-                cMsg = sprintf('%s\n%s', cMsg, 'Rigol DG100Z (Shutter Signal Generator)');
+%             if ~this.hardware.getIsConnectedRigolDG1000Z()
+%                 cMsg = sprintf('%s\n%s', cMsg, 'Rigol DG100Z (Shutter Signal Generator)');
+%             end
+            
+            if ~this.hardware.getIsConnectedTekAFG31021()
+                cMsg = sprintf('%s\n%s', cMsg, 'Tektronix AFG31021 (Shutter Signal Generator)');
             end
             
             % PPMAC

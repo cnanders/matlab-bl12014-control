@@ -2,8 +2,8 @@ classdef Hardware < mic.Base
         
     properties (Constant)
        
-        dWidthName = 500
-        
+        dWidthName = 400
+        pur
     end
     
 	properties
@@ -135,14 +135,78 @@ classdef Hardware < mic.Base
             dTop = dTop + dSep;
             
             
-            this.uiDoseMonitor.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
+            
             
             this.uiALS.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiHydraWafer.build(this.hParent, dLeft, dTop);
+           
+            
+            this.uiWebSwitchBeamline.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
+            
+           
+            
+%             this.uiDCTCorbaProxy.build(hParent, dLeft, dTop);
+%             dTop = dTop + dSep;
+            
+            this.uiBL1201CorbaProxy.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+%             this.uiRigol.build(hParent, dLeft, dTop);
+%             dTop = dTop + dSep;
+            
+            this.uiTekAFG31021.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiSmarActM141.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            this.uiWagoD141.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiExitSlit.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiGalilD142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiGalilM143.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+             this.uiNPointM142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            this.uiNewFocus8742M142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            % ROW 2 Endstation
+            
+            dLeft = 680;
+            dTop = dTopStart;
+            
+           
+            
+            
+             this.uiDoseMonitor.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+           
+            this.uiSR570MDM.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiWebSwitchEndstation.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiWebSwitchVis.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            
+%              this.uiHydraWafer.build(this.hParent, dLeft, dTop);
+%             dTop = dTop + dSep;
             
             this.uiDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
@@ -163,21 +227,34 @@ classdef Hardware < mic.Base
             this.uiKeithleyWafer.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiWebSwitchBeamline.build(this.hParent, dLeft, dTop);
+            
+            
+            this.uiSmarActVPFM.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiWebSwitchEndstation.build(this.hParent, dLeft, dTop);
+            
+            
+            this.uiGalilVis.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiWebSwitchVis.build(this.hParent, dLeft, dTop);
+            this.uiMightex1.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiMightex2.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            
+            this.uiNPointMA.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
            
-            this.uiSR570MDM.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep; % DCT start
+            
+            this.uiNewFocus8742MA.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            
-            this.uiSR570DCT1.build(this.hParent, dLeft, dTop);
+             this.uiSR570DCT1.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             this.uiSR570DCT2.build(this.hParent, dLeft, dTop);
@@ -190,58 +267,7 @@ classdef Hardware < mic.Base
             this.uiSmarActStageDCTAperture.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            dLeft = 680;
-            dTop = dTopStart;
             
-            this.uiDCTCorbaProxy.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            this.uiBL1201CorbaProxy.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiRigol.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiTekAFG31021.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiSmarActM141.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiSmarActVPFM.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiWagoD141.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiExitSlit.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiGalilD142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiGalilM143.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiGalilVis.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiMightex1.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiMightex2.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiNPointM142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiNPointMA.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiNewFocus8742M142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiNewFocus8742MA.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
         end
         
@@ -956,7 +982,7 @@ classdef Hardware < mic.Base
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'bl1201-corba-proxy'], ...
-                'cLabel', 'BL1201 Corba Proxy (Angle of Mono Grating, Gap of Undulator)' ...
+                'cLabel', 'BL1201 Corba Proxy (Angle of Mono Grating)' ...
             );
         
          end

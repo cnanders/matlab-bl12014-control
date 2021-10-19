@@ -769,8 +769,11 @@ classdef FemTool < mic.Base
         function onClickUiButtonLoadDefault(this, ~, ~)
             
             this.uipPositionType.setSelectedValue(this.c_POSITION_TYPE_CENTER);
-            this.uiePositionX.set(12.5); % 6.5
-            this.uiePositionY.set(-3.5); % -4.5
+            
+            % x, y updated 2021.09.27 after fixing zero offset from print
+            % data
+            this.uiePositionX.set(7.87); % 6.5
+            this.uiePositionY.set(3.62); % -4.5
             this.uiePositionStepX.set(-0.25);
             this.uiePositionStepY.set(0.17);
             

@@ -22,8 +22,14 @@ classdef WaferAxes < mic.Base
         dHeight = 500
         
         
-        dXChiefRay = 1e-3 % m
-        dYChiefRay = 1e-3 % m
+        % OLD
+        %dXChiefRay = 1e-3 % m
+        %dYChiefRay = 1e-3 % m
+        
+        % 2021.09.27 after correction of (x,y) 1.37, 8.12 (see email 7/1 to
+        % Lauren Doyle
+        dXChiefRay = 2.37e-3
+        dYChiefRay = 9.12e-3
         
         
         % These are overwritten in constructor

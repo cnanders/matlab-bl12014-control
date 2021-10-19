@@ -25,6 +25,8 @@ classdef FluxDensity < mic.Base
         dHeight = 165
         
         cName = 'flux-density-calculator'
+        
+        dSecondsMDM = 4;
 
        
         
@@ -95,8 +97,8 @@ classdef FluxDensity < mic.Base
             
             if this.uiCheckboxCorrectForALS.get()
                 
-                dCurrentOfALSNow = this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(); % mA
-                %dCurrentOfALSNow = this.hardware.getALS().getCurrentOfRing();
+                %dCurrentOfALSNow = this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(); % mA
+                dCurrentOfALSNow = this.hardware.getALS().getCurrentOfRing();
                 
                 dALSRatio =  dCurrentOfALSNow / this.uiTuneFluxDensity.getCurrentOfALSCalibrated();
                 d = d * dALSRatio;
@@ -114,7 +116,11 @@ classdef FluxDensity < mic.Base
         
          function updateTextALSCorrected(this)
              
-            dCurrentOfALSNow = this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(); % mA
+            %dCurrentOfALSNow = this.hardware.getDCTCorbaProxy().SCA_getBeamCurrent(); % mA
+            dCurrentOfALSNow = this.hardware.getALS().getCurrentOfRing();
+
+            
+            
             cVal = sprintf('%1.1f mA now vs. %1.1f mA @cal', ...
                 dCurrentOfALSNow, ...
                 this.uiTuneFluxDensity.getCurrentOfALSCalibrated() ...
@@ -219,40 +225,33 @@ classdef FluxDensity < mic.Base
         
         function adjustFluxDensity(this)
             
+            % Charge units are num of electrons
+            
             % dT = time shutter is opened for charge accumulation
-            % dC = measured charge fom exposure of dT seconds
+            % dC = charge from exposure of dT seconds
             % dC2 = charge from UI
             % dT2 = time to get to charge dC2
             % dD = dose from UI
             % dF = flux density (the thing we will programmatically set)
 
+            % Example, say the ui SAYS
+            % 2e14 electrons = 50 mJ/cm2
+            % you open for 5 seconds and accumulate 3e14 electrons.
+            % this means you delivered a dose of 3/2 * 50 during that
+            % shutter open and your actual flux was 3/2 * 50 divided
+            % by five seconds
             
-             dT = 3; % s
+             dT = this.dSecondsMDM; % s
              dC = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+            
              
-             % convert measured charge into millions of electrons since
-             % that is what the UI is
-             dC = dC / 1e6;
+             dCui = this.uiEditCharge.get();
+             dDui = this.uiEditDose.get(); 
              
-             dC2 = this.uiEditCharge.get();
-             dD = this.uiEditDose.get(); 
-             
-             % Two equations, two unknowns
-             % Can define a "photocurrent" in units of electrons/s
-             % I = dC/dT (electrons/sec measured)
-             % Number of seconds to accumulate dC2 electrons =
-             % dT2 = dC2 / I 
-             % Dose delivered in dT2 seconds using current flux density
-             % dF * dT2
-             % 2) dT2 * dF = dD
-             % Solve for dF
-             % time to get to the charge from the UI
-             
-                          
-             % then we want dT2 * time dF to be equal to dD
-             
-             dF = dD * dC / (dC2 * dT);
-             this.uiEditMeasured.set(dF);
+             dD = dC / dCui * dDui;
+             dF = dD / dT;
+
+             this.uiEditMeasured.set(dFlux);
             
             
         end
@@ -266,7 +265,7 @@ classdef FluxDensity < mic.Base
             fhExecute = @() ...
                 mic.Utils.evalAll(...
                     @() this.uiShutter.uiShutter.setDestCal(...
-                        3 * 1e3, ...
+                        this.dSecondsMDM * 1e3, ...
                         'ms' ...
                     ), ...
                     @() this.uiShutter.uiShutter.moveToDest() ...
@@ -280,7 +279,7 @@ classdef FluxDensity < mic.Base
                 'fhAbort', @() [], ...
                 'fhIsExecuting', @() false, ...
                 'fhIsDone', @() this.uiShutter.uiShutter.isReady(), ...
-                'fhGetMessage', @() 'Open shutter 3s' ... 
+                'fhGetMessage', @() sprintf('Open shutter %1.1fs' , this.dSecondsMDM) ... 
             );
             
             task2 = mic.Task(...
@@ -310,7 +309,7 @@ classdef FluxDensity < mic.Base
             
             this.uiEditCharge = mic.ui.common.Edit(...
                 'cType', 'd', ...
-                'cLabel', 'MDM (Melectrons)' ...
+                'cLabel', 'MDM (num of e-)' ...
             );
         
             this.uiEditDose    = mic.ui.common.Edit(...
@@ -423,6 +422,13 @@ classdef FluxDensity < mic.Base
             end
             
         end
+        
+        
+        function delete(this)
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.uiClock.remove(this.id());
+        end
+        
         
         
     end

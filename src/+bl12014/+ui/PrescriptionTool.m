@@ -391,20 +391,33 @@ classdef PrescriptionTool < mic.Base
                 u8Count = u8Count + 1;
             end
             
-           
-% Val you want HS to read during exposure
+           %{
+            % Val you want HS to read during exposure
             stValue = struct();
             stValue.waferZ = this.uiFemTool.dFocus(nMid);
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
-            
-             % Start drift monitor tracking
+
+            % Start drift monitor tracking 
             stValue = struct();
             stValue.tracking = 'start';
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
             % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+            stValue = struct();
+            stValue.workingMode = 4; % drift closed loop for exposure
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            %}
+
+            % 2021.10 update to start drift control immediately after WFZ
+            stValue = struct();
+            stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
             stValue = struct();
             stValue.workingMode = 4; % drift closed loop for exposure
             ceValues{u8Count} = stValue;
@@ -565,6 +578,7 @@ classdef PrescriptionTool < mic.Base
 
                         
                         % Val you want HS to read during exposure
+                        %{
                         stValue = struct();
                         stValue.waferZ = dFocus(n);
                         ceValues{u8Count} = stValue;
@@ -576,15 +590,23 @@ classdef PrescriptionTool < mic.Base
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
                         
-                         % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                        
+                        
+                        %}
+                        
+                        stValue = struct();
+                        stValue.waferZThenDriftControl = dFocus(n);
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                        
+                        % Set it again so we can check to make sure it
+                        % took!
+                        % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
                         stValue = struct();
                         stValue.workingMode = 4; % Drift closed loop for exposure
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
-
                         
-
-                       
 
                         % Exposure task 
                         stValue = struct();
@@ -700,6 +722,7 @@ classdef PrescriptionTool < mic.Base
 
                        
                         % Val you want HS to read during exposure
+                        %{
                         stValue = struct();
                         stValue.waferZ = this.uiFemTool.dFocus(m);
                         ceValues{u8Count} = stValue;
@@ -708,6 +731,14 @@ classdef PrescriptionTool < mic.Base
                          % Start drift monitor tracking
                         stValue = struct();
                         stValue.tracking = 'start';
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                        %}
+                        
+                        % 2021.10 update to start tracking immediately
+                        % after WFZ
+                        stValue = struct();
+                        stValue.waferZThenDriftControl = this.uiFemTool.dFocus(m);
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
                         

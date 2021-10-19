@@ -158,11 +158,9 @@ classdef Shutter < mic.Base
             
              dVal = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
              
-             % convert measured charge into millions of electrons since
-             % that is what the UI is
-             dVal = dVal / 1e6;
-             dVal = round(dVal);
-             this.uiTextMDM.set(num2str(dVal));
+        
+             cVal = sprintf('%1.3e', dVal);
+             this.uiTextMDM.set(cVal);
             
         end
         
@@ -287,7 +285,7 @@ mic.Utils.ternEval(lVal, ...
             this.initUiOverride();
             
             this.uiTextMDM = mic.ui.common.Text(...
-                'cLabel', 'Last MDM (ME)', ...
+                'cLabel', 'MDM (e-)', ...
                 'lShowLabel', true, ...
                 'cVal', '...' ...
             );
