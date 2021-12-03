@@ -1473,6 +1473,33 @@ classdef Scan < mic.Base
         
         
         
+
+        
+        function startDriftControl(this, src, evt)
+            
+                                       
+           % 2021.10 
+           % Immediately start tracking and set
+           % working mode to 4.  There will be
+           % another task to verify that
+           % working mode is set to 4
+
+           this.hardware.getMfDriftMonitor().monitorStart();
+
+            % issue CommandCode 6 before going to wm4 -
+            % this would kill hydra closed loop (which they
+            % theory is this causes a jump) before drift
+            % control takes effect.
+            this.hardware.getDeltaTauPowerPmac().sendCommandCode(uint8(6));
+            this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(4); 
+            this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest(); 
+            
+            this.msg('startDriftControl');
+                                   
+        end
+        
+        
+        
         function onScanSetState(this, stUnit, stValue)
             
             cFn = 'onScanSetState';
@@ -1501,6 +1528,10 @@ classdef Scan < mic.Base
             for n = 1 : length(ceFields)
                 
                 cField = ceFields{n};
+                
+                if lDebug
+                    this.msg(sprintf('%s setting %s', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                end
                                 
                 switch cField
                     
@@ -1674,6 +1705,20 @@ classdef Scan < mic.Base
                        this.stScanSetContract.(cField).lIssued = true;
                        this.dZHeightSensorTarget = stValue.(cField);
                         this.lIsWFZ = true;
+                       
+                        
+                        %{
+                        if strcmpi(cField, 'waferZThenDriftControl')
+                            % update the 'onSetSuccess' callback of the
+                            % CLZ controller so that we start drift control
+                            % immediately after CLZ finishes, and not on 
+                            % the next clock cycle of the scan sequence
+                            this.uiWafer.uiWaferTTZClosedLoop.setOnSetSuccessCLZ(@this.startDriftControl)
+                        else
+                            this.uiWafer.uiWaferTTZClosedLoop.setOnSetSuccessCLZ(@(src,evt)[])
+
+                        end
+                        %}
                         
                         this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.setDestCalDisplay(stValue.(cField), stUnit.waferZ);
                         this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.moveToDest();
@@ -1742,9 +1787,7 @@ classdef Scan < mic.Base
                         
                 end % switch cField 
                 
-                if lDebug
-                    this.msg(sprintf('%s setting %s', cFn, cField), this.u8_MSG_TYPE_SCAN);
-                end
+               
             end % loop through fields
         end
         
@@ -1991,34 +2034,22 @@ classdef Scan < mic.Base
                                                 this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.isReady();
                                                 ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                                     
-                                    
-                                   if lReady && strcmpi(cField, 'waferZThenDriftControl')
-                                       
-                                       % 2021.10 
-                                       % Immediately start tracking and set
-                                       % working mode to 4.  There will be
-                                       % another task to verify that
-                                       % working mode is set to 4
-                                       
-                                       this.hardware.getMfDriftMonitor().monitorStart();
-                                       
-                                        % issue CommandCode 6 before going to wm4 -
-                                        % this would kill hydra closed loop (which they
-                                        % theory is this causes a jump) before drift
-                                        % control takes effect.
-                                        this.hardware.getDeltaTauPowerPmac().sendCommandCode(uint8(6));
-                                        this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(4); 
-                                        this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
-                                       
+                                   
+                                   if (lReady && strcmpi(cField, 'waferZThenDriftControl'))
+                                       this.startDriftControl()
                                    end
                                    
-                                   
                                    if lDebug
-                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f', ...
+                                       
+                                       dVal = this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ);
+                                       dTarget = stValue.(cField);
+                                       dError = dTarget - dVal;
+                                        cMsg = sprintf('%s %s value = %1.3f; goal = %1.3f; error = %1.1f nm', ...
                                             cFn, ...
                                             cField, ...
-                                            this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ), ...
-                                            stValue.(cField) ...
+                                            dVal, ...
+                                            dTarget, ...
+                                            dError ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                    end
@@ -2219,7 +2250,7 @@ classdef Scan < mic.Base
                                 dSec = stValue.task.dose / this.uiFluxDensity.get();
 
                                 
-                                                                if lDebug
+                                if lDebug
                                     cMsg = sprintf('%s %s checking shutter: %1.1f mJ/cm2, %1.0f msec', ...
                                         cFn, ...
                                         cField, ...
@@ -2343,8 +2374,13 @@ classdef Scan < mic.Base
                 
                 % 2021.10.18 store the error between the height sensor
                 % value and the target
-                stState.z_height_sensor_error_nm = stState.z_height_sensor_nm - this.dZHeightSensorTarget;
+                dError = stState.z_height_sensor_nm - this.dZHeightSensorTarget;
+                stState.z_height_sensor_error_nm = dError;
                 
+                
+                if lDebug
+                    this.msg(sprintf('%s height sensor z error %1.1f nm', cFn, dError), this.u8_MSG_TYPE_SCAN);
+                end
                 
                 this.ceValues{end + 1} = stState;
                 
@@ -2428,6 +2464,7 @@ classdef Scan < mic.Base
         % false.  During development, echo values. 
         function lOut = checkWaferFineZDeltas(this)
             
+           lDebug = false
            lOut = true;
            
            dZWafer = [];
@@ -2458,13 +2495,13 @@ classdef Scan < mic.Base
            end
            
            % echo the diff
-           fprintf("deltaWFZ minus deltaHS: like the discrepancy between the WFZ and what the HS sees\n");
+           lDebug & fprintf("deltaWFZ minus deltaHS: like the discrepancy between the WFZ and what the HS sees\n");
            dDeltaWafer - dDeltaHS;
            
            % find all indicies where the dDeltaHS is larger than some
            % minimum value, call it 5 nm.  Then take the aferage of all of
            % the delta wafers from those indicies. That should be
-           fprintf("delta wafer (nm) where a height sensor move was commanded\n");
+          lDebug &  fprintf("delta wafer (nm) where a height sensor move was commanded\n");
            lMoved = abs(dDeltaHS) >= 5;
            dDeltaWafer(lMoved);
            

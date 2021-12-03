@@ -1,4 +1,4 @@
-MMMME% [cDirThis, cNa201210-001-JSR_1__FEM_D20xF9__20201210-094031__20201210-094137me, cExt] = fileparts(mfilename('fullpath'));
+% [cDirThis, cNa201210-001-JSR_1__FEM_D20xF9__20201210-094031__20201210-094137me, cExt] = fileparts(mfilename('fullpath'));
 
 % Dependencies
 %{
@@ -71,7 +71,18 @@ for j = 1 : length(dRmsDriftX)
     dRmsDriftYFem(dFocus(j), dDose(j)) = dRmsDriftY(j);
 end
 
-dRmsSpec = 1.1;
+prompt = {'Enter the vibration spec in nm:'};
+dlgtitle = 'Input';
+dims = [1 35];
+definput = {'1.1'};
+answer = inputdlg(prompt,dlgtitle,dims,definput);
+
+if length(answer) > 0
+    dRmsSpec = str2num(answer{1});
+else
+    return
+end
+
 
 % For worst-case, take the max X and Y
 

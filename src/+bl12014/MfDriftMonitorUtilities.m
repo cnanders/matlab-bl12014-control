@@ -416,6 +416,304 @@ classdef MfDriftMonitorUtilities
             z(7, :) = (z(1, :) + z(2, :) + z(3, :))/3;
         end
         
+        % @param {char 1xm} cStage - 'wafer' or 'reticle'
+        % @param {char 1xm} cFolder - path to FEM log folder
+        % @param {handle 1x1} hX - handle to axes to plot x data
+        % @param {handle 1x1} hY - handle to axes to plot y data
+        function plotDriftOfStageDuringFEM(cStage, cPathOfDir, hX, hY)
+            
+            cSortBy = 'date';
+            cSortMode = 'ascend';
+            cFilter = '*.txt';
+            cecFiles = mic.Utils.dir2cell(...
+                cPathOfDir, ...
+                cSortBy, ...
+                cSortMode, ...
+                cFilter ...
+            );
+
+            dDriftX = zeros(1, length(cecFiles)); 
+            dDriftY = zeros(1, length(cecFiles));
+
+            dFocus = zeros(1, length(cecFiles)); 
+            dDose = zeros(1, length(cecFiles)); 
+
+
+            for j = 1 : length(cecFiles) 
+
+                cName = cecFiles{j};
+                cPath = fullfile(cPathOfDir, cName);
+
+                ceData = bl12014.MfDriftMonitorUtilities.getDataFromLogFile(cPath);
+                ceData = bl12014.MfDriftMonitorUtilities.removePartialsFromFileData(ceData);
+                dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromFileData(ceData);
+
+                switch cStage
+                    case 'reticle'
+                        dX = dDmi(1, :);
+                        dY = dDmi(2, :);
+                    case 'wafer'
+                        dX = dDmi(3, :);
+                        dY = dDmi(4, :);
+                
+                end
+                
+                % Perform linear fit then get magnitude of the fit
+
+                dSamples = 1:length(dX);
+                dPX = polyfit(dSamples, dX, 1);
+                dPY = polyfit(dSamples, dY, 1);
+                dXFit = polyval(dPX, dSamples);
+                dYFit = polyval( dPY, dSamples);
+
+
+                %dDriftX(j) = max(dXfit) - min(dXfit);
+                % dDriftY(j) = max(dYfit) - min(dYfit);
+                
+                dDriftX(j) = dXFit(end) - dXFit(1);
+                dDriftY(j) = dYFit(end) - dYFit(1);
+   
+                [dDoseNow, dFocusNow] = bl12014.MfDriftMonitorUtilities.getDoseAndFocusFromLogFilename(cName);
+                dFocus(j) = dFocusNow;
+                dDose(j) = dDoseNow;
+
+            end
+
+            % unset index shot, written first
+           
+            dDriftX(1) = [];
+            dDriftY(1) = [];
+            
+            dFocus(1) = [];
+            dDose(1) = [];
+
+            % build fem matrix
+
+            dNumDose = max(dDose);
+            dNumFocus = max(dFocus);
+
+            dDriftXFem = zeros(dNumFocus, dNumDose);
+            dDriftYFem = zeros(dNumFocus, dNumDose);
+           
+
+            for j = 1 : length(dDriftX)    
+                dDriftXFem(dFocus(j), dDose(j)) = dDriftX(j);
+                dDriftYFem(dFocus(j), dDose(j)) = dDriftY(j);
+            end
+
+            cColormapNormal = 'parula';
+
+
+            imagesc(hX, dDriftXFem)
+            colorbar(hX)
+            colormap(hX,  cColormapNormal) 
+            cTitle = [...
+                'X drift (nm) ', ...
+                sprintf('avg = %1.2f, ', mean2(dDriftXFem)), ...
+                sprintf('std = %1.2f, ', std2(dDriftXFem)), ...
+                sprintf('min = %1.2f, ', min(min(dDriftXFem))), ...
+                sprintf('max = %1.2f', max(max(dDriftXFem))) ...
+            ];
+            title(hX, cTitle);
+            xlabel(hX, 'Dose Col')
+            ylabel(hX, 'Focus Col')
+
+            % Y
+            imagesc(hY, dDriftYFem)
+            colorbar(hY)
+            colormap(hY, cColormapNormal) 
+            cTitle = [...
+                'Y drift (nm) ', ...
+                sprintf('avg = %1.2f, ', mean2(dDriftYFem)), ...
+                sprintf('std = %1.2f, ', std2(dDriftYFem)), ...
+                sprintf('min = %1.2f, ', min(min(dDriftYFem))), ...
+                sprintf('max = %1.2f', max(max(dDriftYFem))) ...
+            ];
+            title(hY, cTitle);
+            xlabel(hY, 'Dose Col')
+            ylabel(hY, 'Focus Col')
+
+            
+        end
+        
+        % Creates a quiver plot of the drift of a stage (wafer or reticle)
+        % from a folder of FEM DMI logs
+         % @param {char 1xm} cStage - 'wafer' or 'reticle'
+        % @param {char 1xm} cFolder - path to FEM log folder
+        % @param {handle 1x1} h - handle to axes to plot
+        function quiverDriftOfStageDuringFEM(varargin)
+            
+            % Input parsing
+            p = inputParser;
+            addParameter(p, 'cStage', 'wafer', @(x) ischar(x));
+            addParameter(p, 'cPathOfDir', '', @(x) ischar(x));
+            addParameter(p, 'h', @(x) isscalar(x) && ishandle(x));
+            addParameter(p, 'cTitle', 'Drift', @(x) ischar(x));
+            addParameter(p, 'lShowLabels', true, @(x) islogical(x));
+            addParameter(p, 'lShowAxis', true, @(x) islogical(x));
+            addParameter(p, 'lShowTitle', true, @(x) islogical(x));
+            addParameter(p, 'lNormalize', false, @(x) islogical(x));
+            addParameter(p, 'dMax', 10, @(x) isnumeric(x));
+            addParameter(p, 'lShowColorbar', true, @(x) islogical(x));
+            addParameter(p, 'dWidthOfAxesBorder', 1, @(x) isnumeric(x));
+
+            parse(p, varargin{:});
+            
+            cStage = p.Results.cStage;
+            cPathOfDir = p.Results.cPathOfDir;
+            h = p.Results.h;
+            cTitle = p.Results.cTitle;
+            lShowLabels = p.Results.lShowLabels;
+            lShowAxis = p.Results.lShowAxis;
+            lShowTitle = p.Results.lShowTitle;
+            lNormalize = p.Results.lNormalize;
+            dMax = p.Results.dMax;
+            lShowColorbar = p.Results.lShowColorbar;
+            dWidthOfAxesBorder = p.Results.dWidthOfAxesBorder;
+            
+            if ~lShowAxis
+                axis(h, 'off')
+            end
+            
+
+            
+            cSortBy = 'date';
+            cSortMode = 'ascend';
+            cFilter = '*.txt';
+            cecFiles = mic.Utils.dir2cell(...
+                cPathOfDir, ...
+                cSortBy, ...
+                cSortMode, ...
+                cFilter ...
+            );
+
+            dDriftX = zeros(1, length(cecFiles)); 
+            dDriftY = zeros(1, length(cecFiles));
+
+            dFocus = zeros(1, length(cecFiles)); 
+            dDose = zeros(1, length(cecFiles)); 
+            
+            if length(cecFiles) == 0
+                return
+            end
+            
+
+
+            for j = 1 : length(cecFiles) 
+
+                cName = cecFiles{j};
+                cPath = fullfile(cPathOfDir, cName);
+
+                ceData = bl12014.MfDriftMonitorUtilities.getDataFromLogFile(cPath);
+                ceData = bl12014.MfDriftMonitorUtilities.removePartialsFromFileData(ceData);
+                dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromFileData(ceData);
+
+                switch cStage
+                    case 'reticle'
+                        dX = dDmi(1, :);
+                        dY = dDmi(2, :);
+                    case 'wafer'
+                        dX = dDmi(3, :);
+                        dY = dDmi(4, :);
+                
+                end
+                
+                % Perform linear fit then get magnitude of the fit
+
+                dSamples = 1:length(dX);
+                dPX = polyfit(dSamples, dX, 1);
+                dPY = polyfit(dSamples, dY, 1);
+                dXFit = polyval(dPX, dSamples);
+                dYFit = polyval( dPY, dSamples);
+
+
+                %dDriftX(j) = max(dXfit) - min(dXfit);
+                % dDriftY(j) = max(dYfit) - min(dYfit);
+                
+                dDriftX(j) = dXFit(end) - dXFit(1);
+                dDriftY(j) = dYFit(end) - dYFit(1);
+   
+                [dDoseNow, dFocusNow] = bl12014.MfDriftMonitorUtilities.getDoseAndFocusFromLogFilename(cName);
+                dFocus(j) = dFocusNow;
+                dDose(j) = dDoseNow;
+
+            end
+
+            % unset index shot, written first
+           
+            dDriftX(1) = [];
+            dDriftY(1) = [];
+            
+            dFocus(1) = [];
+            dDose(1) = [];
+            
+            % build fem matrix
+
+            dNumDose = max(dDose);
+            dNumFocus = max(dFocus);
+
+            dDriftXFem = zeros(dNumFocus, dNumDose);
+            dDriftYFem = zeros(dNumFocus, dNumDose);
+            dDriftXYFem = zeros(dNumFocus, dNumDose);
+           
+
+            for j = 1 : length(dDriftX)    
+                dDriftXFem(dFocus(j), dDose(j)) = dDriftX(j);
+                dDriftYFem(dFocus(j), dDose(j)) = dDriftY(j);
+                dDriftXYFem(dFocus(j), dDose(j)) = sqrt(dDriftX(j)^2 + dDriftY(j)^2);
+            end
+
+            
+            dLimits = [0 max(max(dDriftXYFem))];
+            if lNormalize
+                dLimits(2) = dMax;
+            end
+
+            cColormapNormal = 'cool';
+            imagesc(dDriftXYFem, dLimits);
+            
+            if lShowColorbar
+                colorbar(h)
+            end
+            
+            colormap(h,  cColormapNormal) 
+            hold on;
+            
+            quiver(h, dDose, dFocus, dDriftX, dDriftY, 'k');
+            set(h, 'ydir', 'reverse');
+            %{
+            if lShowTitle
+                cTitle = [...
+                    'Drift (nm) ', ...
+                    sprintf('avg = %1.2f, ', mean2(dDriftXYFem)), ...
+                    sprintf('std = %1.2f, ', std2(dDriftXYFem)), ...
+                    sprintf('min = %1.2f, ', min(min(dDriftXYFem))), ...
+                    sprintf('max = %1.2f', max(max(dDriftXYFem))) ...
+                ];
+                title(h, cTitle);
+            end
+            %}
+            if lShowTitle
+                title(h, cTitle);
+            end
+            if lShowLabels
+                xlabel(h, 'Dose')
+                ylabel(h, 'Focus')
+            end
+            
+            if ~lShowAxis
+                % axis(h, 'off')
+                set(h, 'xtick', [], 'ytick', []);
+                
+            end
+
+            set(h, 'LineWidth', dWidthOfAxesBorder)
+           
+
+            
+        end
+        
+        
         
         
     end

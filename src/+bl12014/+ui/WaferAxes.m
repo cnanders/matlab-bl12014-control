@@ -31,6 +31,9 @@ classdef WaferAxes < mic.Base
         dXChiefRay = 2.37e-3
         dYChiefRay = 9.12e-3
         
+        dXTextOverlay = 2.37e-3;
+        dYTextOverlay = 9.12e-3;
+        
         
         % These are overwritten in constructor
         dXCap1 = -80e-3
@@ -44,6 +47,9 @@ classdef WaferAxes < mic.Base
         
         dXCap4 = 80e-3
         dYCap4 = -20e-3
+        
+       
+        
         
         cName = 'wafer-axes'
         
@@ -1605,7 +1611,7 @@ classdef WaferAxes < mic.Base
                         
             % 12:00
             text( ...
-                0, 0, 'EXPOSE', ...
+                this.dXTextOverlay, this.dYTextOverlay, 'EXPOSE', ...
                 ceProps{:} ...
             ); 
             
@@ -1674,7 +1680,7 @@ classdef WaferAxes < mic.Base
             };
                         
             this.tTextVib = text( ...
-                0, 0, cMsg, ...
+                this.dXTextOverlay, this.dYTextOverlay, cMsg, ...
                 ceProps{:} ...
             ); 
 
@@ -1719,7 +1725,7 @@ classdef WaferAxes < mic.Base
             };
                                 
             this.tTextVib = text( ...
-                0, 0, 'Drift Control', ...
+                this.dXTextOverlay, this.dYTextOverlay, 'Drift Control', ...
                 ceProps{:} ...
             ); 
 
@@ -1765,7 +1771,7 @@ classdef WaferAxes < mic.Base
                         
             % 12:00
             text( ...
-                0, 0, 'WFZ', ...
+                this.dXTextOverlay, this.dYTextOverlay, 'WFZ', ...
                 ceProps{:} ...
             ); 
             

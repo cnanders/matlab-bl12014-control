@@ -657,6 +657,8 @@ classdef PrescriptionTool < mic.Base
                 % Horizontal Serp
                 
                  % FEM for each focus (m), do each dose (n)
+                 
+                lSerpentine = false;
 
                 for m = 1 : length(this.uiFemTool.dFocus) % rows
 
@@ -676,7 +678,7 @@ classdef PrescriptionTool < mic.Base
                         dX = -this.uiFemTool.dX;
                         dDose = this.uiFemTool.dDose;
 
-                        if mod(m, 2) == 0 % even row, flip order of cols
+                        if lSerpentine && mod(m, 2) == 0 % even row, flip order of cols
                             dX = flip(dX);
                             dDose = flip(dDose);
                         end
@@ -760,7 +762,7 @@ classdef PrescriptionTool < mic.Base
                         
                         stTask.femRow = m;
 
-                        if mod(m, 2) == 0
+                        if lSerpentine && mod(m, 2) == 0
                             % even rows go backwards through cols  cols go backwards through rows
                             % n = row index
                             % m = col index

@@ -36,10 +36,13 @@ classdef WaferTTZClosedLoop < mic.Base
         uiCLTiltX
         uiCLTiltY
         uiCLZ
+        
+        deviceCLZ
+        
             
         dTiltXTol = 3; %urad
         dTiltYTol = 3; %urad
-        dZTol  = 4; %nm
+        dZTol  = 4; %nm % was 5 up until 2021.10.29
     end
     
     
@@ -120,6 +123,12 @@ classdef WaferTTZClosedLoop < mic.Base
         end
         
         
+        function setOnSetSuccessCLZ(this, fh)
+            this.deviceCLZ.setOnSetSuccess(fh)
+        end
+        
+            
+            
         % DEPRECATED 1/31/19
         function lVal = isLeveled(this)
             
@@ -221,7 +230,8 @@ classdef WaferTTZClosedLoop < mic.Base
         % Need to construct req function handles for GSNFromCLC device
         % implementations: fhGetSensor, fhGetMotor, fhSetMotor,
         % fhIsReadyMotor, dTolearnce
-        function device = createCLZdevice(this)
+        
+        function initDeviceCLZ(this)
             
             mm2nm           = 1e6;
             
@@ -234,7 +244,7 @@ classdef WaferTTZClosedLoop < mic.Base
             fhSetMotor      = @(dMotorDest) this.closedLoopZSet(dMotorDest);
             
             
-            device = mic.device.GetSetNumberFromClosedLoopControl(...
+            this.deviceCLZ = mic.device.GetSetNumberFromClosedLoopControl(...
                 this.uiClock, ...
                 fhGetSensor, ...
                 fhGetMotor, ...
@@ -485,7 +495,6 @@ classdef WaferTTZClosedLoop < mic.Base
                 'cPath',  cPathConfig ...
             );
         
-            device  = this.createCLZdevice();
             
             this.uiCLZ = mic.ui.device.GetSetNumber(...
                 'clock', this.uiClock, ...
@@ -496,9 +505,9 @@ classdef WaferTTZClosedLoop < mic.Base
                 'config', uiConfig, ...
                 'lShowRange', this.lShowRange, ...
                 'lShowStores', this.lShowStores, ...
-                'fhGet', @device.get, ...
-                'fhSet', @device.set, ...
-                'fhIsReady', @device.isReady, ...
+                'fhGet', @() this.deviceCLZ.get(), ...
+                'fhSet', @(dVal) this.deviceCLZ.set(dVal), ...
+                'fhIsReady', @() this.deviceCLZ.isReady(), ...
                 'fhIsVirtual', @() false, ...
                 'lUseFunctionCallbacks', true, ...
                 'cLabel', 'HS Simple Z' ...
@@ -600,7 +609,7 @@ classdef WaferTTZClosedLoop < mic.Base
             this.uibLevel = mic.ui.common.Button('fhDirectCallback', @(~, ~)this.onLevel(), 'cText', cText);
             
             
-            
+            this.initDeviceCLZ();
             this.initUiZ();
             this.initUiTiltX();
             this.initUiTiltY();
