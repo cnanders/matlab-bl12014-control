@@ -21,7 +21,7 @@ stResults = dir(cPathOfDir);
 
 
 % Filter results to folders containing the following pattern in the name
-cPattern = '211020-Intel_1';
+cPattern = '21121';
 
 % Initialize empty structure with correct fields
 stResultsFilt = struct(stResults(1));
