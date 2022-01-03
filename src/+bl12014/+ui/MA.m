@@ -15,10 +15,17 @@ classdef MA < mic.Base
         % {bl12014.ui.MADiagnostics 1x1}
         uiDiagnostics
         
+        % {bl12014.ui.SMSIFDiagnostics 1x1}
+        uiSMSIFDiagnostics
+        
         uiStateWaferNearPrint
         
         % {bl12014.ui.VPFM 1x1}
         uiVPFM
+        
+        
+        
+        
         
         % {bl12014.ui.Shutter 1x1}
         uiShutter
@@ -28,6 +35,8 @@ classdef MA < mic.Base
         
         % {mic.ui.device.GetSetLogical 1x1}
         uiSwitch2Outlet2
+        
+        
         
 
         
@@ -101,9 +110,14 @@ classdef MA < mic.Base
             this.uiSwitch2Outlet2.build(hParent, dLeft, dTop);
             dTop = dTop + 30;
             
-            this.uiDiagnostics.build(hParent, dLeft, dTop);
+            this.uiSMSIFDiagnostics.build(hParent, dLeft, dTop);
+            dTop = dTop + this.uiSMSIFDiagnostics.dHeight + 10;
             
+            
+            this.uiDiagnostics.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiDiagnostics.dHeight + 10;
+                        
+            
             
             this.uiVPFM.build(hParent, dLeft, dTop);
             dTop = dTop + this.uiVPFM.dHeight + 10;
@@ -120,6 +134,7 @@ classdef MA < mic.Base
             cec = {
                 'uiScanner', ...
                 'uiDiagnostics', ...
+                'uiSMSIFDiagnostics', ...
                 'uiStateWaferNearPrint', ...
                 'uiVPFM', ...
                 'uiGigECamera', ...
@@ -241,6 +256,11 @@ classdef MA < mic.Base
             );
         
             this.uiDiagnostics = bl12014.ui.MADiagnostics( ...
+                'hardware', this.hardware, ...
+                'clock', this.uiClock ...
+            );
+        
+        this.uiSMSIFDiagnostics = bl12014.ui.SMSIFDiagnostics( ...
                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
