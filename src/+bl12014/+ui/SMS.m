@@ -129,7 +129,19 @@ classdef SMS < mic.Base
         
         function delete(this)
             
-            
+            this.uiBeamlineOpen.delete()
+            this.uiBeamlineBusy.delete()
+            this.uiOnlineMode.delete()
+            this.uiRemoteMode.delete()
+            this.uiSourceOn.delete()
+            this.uiSourceError.delete()
+            this.uiVacuumOK.delete()
+            this.uiRoughingPumpsOK.delete()
+            this.uiSystemWarning.delete()
+            this.uiSystemError.delete()
+
+            this.uiDiagnostics.delete()
+                       
             
         end    
         
