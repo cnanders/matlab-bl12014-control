@@ -15,8 +15,6 @@ classdef PowerPmacStatus < mic.Base
         % These are the UI for activating the hardware that gives the 
         % software real data
         
-        % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDeltaTauPowerPmac
         
         
         % {cell of mic.ui.device.GetLogical m x n}
@@ -119,38 +117,8 @@ classdef PowerPmacStatus < mic.Base
             end
         end
         
-        function buildUiComm(this)
-            
-            dTop = 10;
-            dLeft = 10;
-            this.uiCommDeltaTauPowerPmac.build(this.hParent, dLeft, dTop);
-            
-        end
         
-        function initUiCommDeltaTauPowerPmac(this)
-            
-             % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
         
-            this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'fhGet', @() this.hardware.getIsConnectedDeltaTauPowerPmac(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cName', 'delta-tau-power-pmac-power-pmac-status-panel', ...
-                'cLabel', 'DeltaTau Power PMAC' ...
-            );
-        
-        end
         
         
         function buildUiGetLogicals(this)
@@ -195,8 +163,6 @@ classdef PowerPmacStatus < mic.Base
         function build(this, hParent, dLeft, dTop)
             
             this.hParent = hParent;
-            
-            this.buildUiComm();
             this.buildUiTexts();
             this.buildUiGetLogicals();
                         
@@ -218,7 +184,6 @@ classdef PowerPmacStatus < mic.Base
         function init(this)
             
             this.msg('init()');
-            this.initUiCommDeltaTauPowerPmac();
             this.initUiGetLogicals(); 
             this.initUiTexts();
             

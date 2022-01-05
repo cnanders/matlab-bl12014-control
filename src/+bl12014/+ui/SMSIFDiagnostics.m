@@ -8,13 +8,10 @@ classdef SMSIFDiagnostics < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         uiStageWheel
         
-       
-        uiButtonMALeft
-        uiButtonMARight
         uiButtonWheelLeft
         uiButtonWheelRight
         
-        dWidth = 480;
+        dWidth = 400;
         dHeight = 55;
         
                 
@@ -28,7 +25,7 @@ classdef SMSIFDiagnostics < mic.Base
         hPanel
         
         dWidthVal = 50
-        dWidthName = 140
+        dWidthName = 100
         dWidthPadName = 5
         dWidthPadUnit = 120
         
@@ -91,7 +88,7 @@ classdef SMSIFDiagnostics < mic.Base
             dTop = 20;
             dLeft = 10;
                         
-            dLeftButton = dLeft + 210;
+            dLeftButton = dLeft + 160;
             dWidthButton = 50;
             
             this.uiStageWheel.build(this.hPanel, dLeft, dTop);
@@ -195,6 +192,8 @@ classdef SMSIFDiagnostics < mic.Base
                 'lShowStepNeg', false, ...
                 'lShowStep', false, ...
                 'lShowStepPos', false, ...
+                'lShowZero', false, ...
+                'lShowRel', false, ...
                 'cName', sprintf('%s-subframe-wheel', this.cName), ...
                 'config', uiConfig, ...
                 'fhGet', @() this.hardware.getNewFocus8742MA().getPosition(u8Axis), ...

@@ -45,12 +45,10 @@ classdef Hardware < mic.Base
         cTcpipKeithley6482Wafer     = '192.168.20.28'
         cTcpipKeithley6482Reticle   = '192.168.20.28'
         cTcpipNewFocusMA            = '192.168.20.31'
-        
+        cTcpipWebSwitchVis          = '192.168.20.32'
+        cTcpipSMS                   = '192.168.20.33'
         cTcpipRigolDG1000Z          = '192.168.20.35'
-        
-        cTcpipWebSwitchVis          = '192.168.20.32';
-        
-        cTcpipDoseMonitor = '192.168.20.60'
+        cTcpipDoseMonitor           = '192.168.20.60'
         
     end
     
@@ -92,6 +90,10 @@ classdef Hardware < mic.Base
         
         commSR570DCT2
         commSR570DCT2Virtual
+        
+        commSMS
+        commSMSVirtual
+        
         
         commDCTApertureStage
         commDCTApertureStageVirtual
@@ -255,6 +257,10 @@ classdef Hardware < mic.Base
             
             this.commSR570DCT1Virtual = [];
             this.commSR570DCT2Virtual = [];
+            
+                        this.commSMSVirtual = [];
+
+            
             this.commSR570MDMVirtual = [];
             
             this.commKeithley6482ReticleVirtual = [];
@@ -1521,7 +1527,7 @@ classdef Hardware < mic.Base
         end
         
         
-        %% DCT SR570 1
+        %% DCT SR570 2
         
         function l = getIsConnectedSR570DCT2(this)
             l = this.notEmptyAndIsA(this.commSR570DCT2, 'srs.SR570');
@@ -1529,7 +1535,7 @@ classdef Hardware < mic.Base
         
         function disconnectSR570DCT2(this)
             if this.getIsConnectedSR570DCT2()
-                this.commSR570DCT = [];
+                this.commSR570DCT2 = [];
             end
         end
         
@@ -1557,6 +1563,48 @@ classdef Hardware < mic.Base
             end
                 
             comm = this.commSR570DCT2Virtual;
+                
+        end
+        
+        
+        %% EUV Tech SMS
+        
+        function l = getIsConnectedSMS(this)
+            l = this.notEmptyAndIsA(this.commSMS, 'euvtech.SMS');
+        end
+        
+        function disconnectSMS(this)
+            if this.getIsConnectedSMS()
+                this.commSMS = [];
+            end
+        end
+        
+        
+        function connectSMS(this)
+            
+            if this.getIsConnectedSMS()
+                return
+            end
+
+            try
+                this.commSMS = euvtech.SMS(...
+                    'cHost', this.cTcpipSMS ...
+                ); % FIX ME SET THE PORT
+            catch mE
+                this.commSMS = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+            end
+            
+        end
+        
+        function comm = getSMS(this)
+            
+            if this.getIsConnectedSMS()
+                comm = this.commSMS;
+                return
+            end
+                
+            comm = this.commSMSVirtual;
                 
         end
         
@@ -1936,6 +1984,9 @@ classdef Hardware < mic.Base
             
             this.commSR570DCT1Virtual = srs.SR570Virtual();
             this.commSR570DCT2Virtual = srs.SR570Virtual();
+            
+            this.commSMSVirtual = euvtech.SMSVirtual();
+            
             this.commSR570MDMVirtual = srs.SR570Virtual();
 
             this.commMightex1Virtual = mightex.UniversalLedControllerVirtual();

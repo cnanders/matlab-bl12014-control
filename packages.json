@@ -27,6 +27,7 @@
 		"matlab_pi_hydra_met5",
 		"matlab_ascii_comm",
 		"matlab_met5_dose_monitor",
-		"matlab_tektronix_afg_31021"
+		"matlab_tektronix_afg_31021",
+		"matlab_euvtech_sms"
 	]
 }

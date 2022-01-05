@@ -71,7 +71,7 @@ classdef WagoD141 < handle
             
             write(this.comm, 'coils', 1, double(lVal))
         end
-                
+                    
         
     end
     

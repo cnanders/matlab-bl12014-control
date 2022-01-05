@@ -47,6 +47,7 @@ classdef App < mic.Base
         uiDMIPowerMonitor
         uiPowerPmacHydraMotMinMonitor
         uiDCT
+        uiSMS
         
         uiCurrentOfRing
         
@@ -84,6 +85,7 @@ classdef App < mic.Base
         uiClockPowerPmacHydraMotMin
         uiClockDMIPowerMonitor
         uiClockPowerPmacHydraMotMinMonitor
+        uiClockSMS
         
         fhOnCloseFigure = @(src, evt)[];
 
@@ -99,6 +101,7 @@ classdef App < mic.Base
             'Hardware', ...
             'Beamline', ...
             'Field Scanner (M142)', ...
+            'SMS', ...
             'M143', ...
             'DCT', ...
             'MA', ...
@@ -317,6 +320,7 @@ classdef App < mic.Base
         function cec = getPropsDelete(this)
             
             cec = {
+                'uiSMS', ...
                 'uiDCT', ...
                 'uiScan', ...
                 'uiBeamline', ...
@@ -350,6 +354,7 @@ classdef App < mic.Base
                 ...
                 ... ui.clock instances
                 'uiClockHardware', ...
+                'uiClockSMS', ...
                 'uiClockNetworkCommunication', ...
                 'uiClockBeamline', ...
                 'uiClockM143', ...
@@ -570,6 +575,7 @@ classdef App < mic.Base
             this.uiClockBeamline = mic.ui.Clock(this.clock);
             this.uiClockM143 = mic.ui.Clock(this.clock);
             this.uiClockDCT = mic.ui.Clock(this.clock);
+            this.uiClockSMS = mic.ui.Clock(this.clock);
             this.uiClockVibrationIsolationSystem = mic.ui.Clock(this.clock);
             this.uiClockReticle = mic.ui.Clock(this.clock);
             this.uiClockWafer = mic.ui.Clock(this.clock);
@@ -633,6 +639,12 @@ classdef App < mic.Base
                'clock', this.clock, ...
                'uiClock', this.uiClockDCT ...
             );
+        
+            this.uiSMS = bl12014.ui.SMS(...
+                'hardware', this.hardware, ...
+               'clock', this.uiClockSMS ...
+            );
+                
 
             
             this.uiReticle = bl12014.ui.Reticle(...
@@ -873,6 +885,7 @@ classdef App < mic.Base
         
         function stopAllUiClocks(this)
             
+            this.uiClockSMS.stop();
             this.uiClockHardware.stop();
             this.uiClockNetworkCommunication.stop();
             this.uiClockBeamline.stop();
@@ -914,6 +927,8 @@ classdef App < mic.Base
                     this.uiClockM143.start();
                 case 'DCT'
                     this.uiClockDCT.start();
+                case 'SMS'
+                    this.uiClockSMS.start();
                 case 'MA'
                     this.uiClockMA.start();
                 case 'VIS'
@@ -978,6 +993,8 @@ classdef App < mic.Base
                     this.uiBeamline.build(hTab, 10, 30);
                 case 'Field Scanner (M142)'
                      this.uiScannerM142.build(hTab, 10, 30);
+                case 'SMS'
+                    this.uiSMS.build(hTab, 10, 30);
                 case 'M143'
                     this.uiM143.build(hTab, 10, 30);
                 case 'MA'
