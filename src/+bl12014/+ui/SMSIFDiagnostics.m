@@ -104,6 +104,10 @@ classdef SMSIFDiagnostics < mic.Base
         function delete(this)
             
             this.msg('delete');
+            
+            this.uiStageWheel.delete()
+            this.uiButtonWheelLeft.delete()
+            this.uiButtonWheelRight.delete()
                         
             
         end    
