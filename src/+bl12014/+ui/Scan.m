@@ -1124,6 +1124,7 @@ classdef Scan < mic.Base
                 'waferY', ...
                 'waferZ', ...
                 'waferZThenDriftControl', ...
+                'smsSlowShutter', ... % 2022.01
                 'xReticleFine', ...
                 'yReticleFine', ...
                 'workingMode', ...
@@ -1636,7 +1637,9 @@ classdef Scan < mic.Base
                         
                         this.stScanSetContract.tracking.lIssued = true;
                         
-                        
+                    case 'smsSlowShutter'
+                        this.hardware.getSMS().setBeamlineOpen(stValue.smsSlowShutter);
+                        this.stScanSetContract.smsSlowShutter.lIssued = true;
                         
                     case 'workingMode'
                         
@@ -2065,6 +2068,22 @@ classdef Scan < mic.Base
                                        this.lIsWFZ = false;
                                    end
 
+                                case 'smsSlowShutter'
+                                    lVal = this.hardware.getSMS().getBeamlineOpen();
+                                    lGoal = stValue.smsSlowShutter;
+                                    lReady = lVal == lGoal;
+                                    
+                                    if lDebug
+                                        cMsg = sprintf('%s %s value = %1.0f; goal = %1.0f', ...
+                                            cFn, ...
+                                            cField, ...
+                                            lVal, ...
+                                            lGoal ...
+                                        );
+                                        this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                        
+                                    end
+                                    
                                 case 'workingMode'
                                     
 
