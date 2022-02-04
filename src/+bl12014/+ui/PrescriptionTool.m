@@ -423,6 +423,12 @@ classdef PrescriptionTool < mic.Base
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
+            % 2022.01 update to open the SMS slow shutter (glass plate)
+            stValue = struct();
+            stValue.smsSlowShutter = true;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
 
             % State
             stValue = struct();
@@ -444,6 +450,13 @@ classdef PrescriptionTool < mic.Base
 
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+            
+            % 2022.01 update to close the SMS slow shutter (glass plate)
+            stValue = struct();
+            stValue.smsSlowShutter = false;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
             
             % wm_RUN
             stValue = struct();
@@ -607,6 +620,12 @@ classdef PrescriptionTool < mic.Base
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
                         
+                        % 2022.01 update to open the SMS slow shutter (glass plate)
+                        stValue = struct();
+                        stValue.smsSlowShutter = true;
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                        
 
                         % Exposure task 
                         stValue = struct();
@@ -633,6 +652,12 @@ classdef PrescriptionTool < mic.Base
 
                         stValue.task = stTask;
 
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                        
+                        % 2022.01 update to open the SMS slow shutter (glass plate)
+                        stValue = struct();
+                        stValue.smsSlowShutter = false;
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
 
@@ -749,6 +774,12 @@ classdef PrescriptionTool < mic.Base
                         stValue.workingMode = 4; % Drift closed loop for exposure
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
+                        
+                        % 2022.01 update to open the SMS slow shutter (glass plate)
+                        stValue = struct();
+                        stValue.smsSlowShutter = true;
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
                        
 
                         % Exposure task 
@@ -777,6 +808,12 @@ classdef PrescriptionTool < mic.Base
 
                         stValue.task = stTask;
 
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                        
+                        % 2022.01 update to open the SMS slow shutter (glass plate)
+                        stValue = struct();
+                        stValue.smsSlowShutter = false;
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
 
