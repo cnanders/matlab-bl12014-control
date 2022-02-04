@@ -189,7 +189,7 @@ classdef MfDriftMonitorUtilities
             pos(4, :) = dYDat_waf;
             
             % see getDmiPositionFromSampleData
-            pos(5, :) = (5 * pos(3, :) + pos(1, :)) / 5; % drift x
+            pos(5, :) = (-5 * pos(3, :) + pos(1, :)) / 5; % drift x
             pos(6, :) = (-5 * pos(4, :) + pos(2, :)) / 5; % drift y
             
             
@@ -275,7 +275,7 @@ classdef MfDriftMonitorUtilities
             % Drift signal of aerial image is the 
             % drift signal we use for reticle correction divided by
             % the magnification 
-            pos(5, :) = (5 * pos(3, :) + pos(1, :)) / 5; % drift x
+            pos(5, :) = (-5 * pos(3, :) + pos(1, :)) / 5; % drift x
             pos(6, :) = (-5 * pos(4, :) + pos(2, :)) / 5; % drift y
             
             

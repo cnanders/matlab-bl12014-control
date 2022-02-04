@@ -3,7 +3,7 @@ cDirVendor = fullfile(cDirThis, '..', 'vendor');
 
 % dependency
 cDirCwcork = fullfile(cDirVendor, 'cwcork');
-javaaddpath(fullfile(cDirCwcork, 'Met5Instruments.jar'));
+javaaddpath(fullfile(cDirCwcork, 'Met5Instruments_V2.2.0.jar'));
 
 % make canonical path
 jFile = java.io.File(cDirCwcork);
@@ -17,6 +17,9 @@ catch mE
     throw(mE)
     fprintf('fail\n');
 end
+
+
+jMet5Instruments.getMfDriftMonitor()
 
 
  
