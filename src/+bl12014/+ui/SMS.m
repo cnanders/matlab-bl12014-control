@@ -20,7 +20,7 @@ classdef SMS < mic.Base
         lShowInitButton = false        
         
         dWidth = 440
-        dHeight = 400  
+        dHeight = 480  
         
         
         uiBeamlineOpen
@@ -35,6 +35,7 @@ classdef SMS < mic.Base
         uiSystemError
         
         uiDiagnostics
+        uiAperture
         
     end
     
@@ -125,6 +126,12 @@ classdef SMS < mic.Base
             dTop = dTop + dSep;
             
             this.uiDiagnostics.build(hPanel, dLeft, dTop);
+            dTop = dTop + this.uiDiagnostics.dHeight + dSep;
+            
+            this.uiAperture.build(hPanel, dLeft, dTop);
+            dTop = dTop + this.uiAperture.dHeight + dSep;
+            
+            
         end
         
         function delete(this)
@@ -302,6 +309,13 @@ classdef SMS < mic.Base
                 'hardware', this.hardware, ...
                 'clock', this.clock ...
             );
+        
+            this.uiAperture = bl12014.ui.SMSIFAperture(...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+        
+            
 
             
         end
