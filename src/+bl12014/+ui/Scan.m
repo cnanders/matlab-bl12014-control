@@ -2294,7 +2294,43 @@ classdef Scan < mic.Base
                                 % comment for commit.
                                
                                lReady = this.uiShutter.uiShutter.isReady();
-                                 
+                               
+                               % 2022.05.17
+                               % If the shutter and the photocurrent
+                               % electrons are not virtualized, check the 
+                               
+                               if (lReady && ...
+                                   this.hardware.getIsConnectedDoseMonitor() && ...
+                                   this.hardware.getIsConnectedTekAFG31021())
+                               
+                                    charge_dose_monitor = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+    
+                                    % If the charge is larger than an
+                                    % absolute lower bound, assume the shutter
+                                    % failed to open.  Re-trigger the
+                                    % shutter and say that lReady is false
+                                    
+                                    if (abs(charge_dose_monitor) < 5e6)
+                                        
+                                        
+                                        if lDebug
+                                            cMsg = sprintf('%s %s abs(charge dose monitor) = %1.0f electrons < 5e6. SHUTTER FAILED TO OPEN.  Re-cycling', ...
+                                                cFn, ...
+                                                cField, ...
+                                                charge_dose_monitor ...
+                                            );
+                                            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    
+                                        end
+                                
+                                        
+                                        % Trigger the shutter UI again
+                                        lReady = false;
+                                        this.uiShutter.uiShutter.moveToDest();
+                                    end
+                                    
+                               end
+                                                                
                             otherwise
                                 
                                 % UNSUPPORTED
