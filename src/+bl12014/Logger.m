@@ -87,62 +87,8 @@ classdef Logger < mic.Base
         
         
         function init(this)
-            
-            
             this.createNewLogFile(this.cPath);
-            
-            % Show all MeasurePoint channel hardware types (These cannot be set)
-            [tc, rtd, volt] = this.hardware.getDataTranslation().channelType();
-            fprintf('bl12014.Logger.init():\n');
-            fprintf('DataTranslation MeasurPoint Hardware configuration:\n');
-            fprintf('TC   sensor channels = %s\n',num2str(tc,'%1.0f '))
-            fprintf('RTD  sensor channels = %s\n',num2str(rtd,'%1.0f '))
-            fprintf('Volt sensor channels = %s\n',num2str(volt,'%1.0f '))
-                        
-            channels = 0 : 7;
-            for n = channels
-               this.hardware.getDataTranslation().setSensorType(n, 'J');
-            end
-
-            channels = 8 : 15;
-            for n = channels
-                this.hardware.getDataTranslation().setSensorType(n, 'PT1000');
-            end
-
-            channels = 16 : 19;
-            for n = channels
-                this.hardware.getDataTranslation().setSensorType(n, 'PT100');
-            end
-
-            channels = 20 : 23;
-            for n = channels
-               this.hardware.getDataTranslation().setSensorType(n, 'PT1000');
-            end
-
-            channels = 24 : 31;
-            for n = channels
-                this.hardware.getDataTranslation().setSensorType(n, 'PT100');
-            end
-
-            channels = 32 : 47;
-            for n = channels
-                this.hardware.getDataTranslation().setSensorType(n, 'V');
-            end
-            
-            this.hardware.getDataTranslation().abortScan(); % stops scanning so the filter type can be set
-            this.hardware.getDataTranslation().setFilterTypeToRaw() % if you dont
-            % it uses its internal 16 point rolling averaging filter (1.6
-            % seconds)
-            
-            % echo the filter type:
-            this.hardware.getDataTranslation().getFilterType()
-            this.hardware.getDataTranslation().setScanList(0:47);
-            this.hardware.getDataTranslation().setScanPeriod(0.1);
-            this.hardware.getDataTranslation().initiateScan();
-            % this.hardware.getDataTranslation().abortScan();
-            this.hardware.getDataTranslation().clearBytesAvailable();
             this.clock.add(@this.onClock, this.id(), 30);
-            
         end
         
         

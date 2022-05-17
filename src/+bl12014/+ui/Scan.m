@@ -1105,6 +1105,7 @@ classdef Scan < mic.Base
                 'yReticleFine', ...
                 'workingMode', ...
                 'shutter', ...
+                'smsSlowShutter', ...
             };
 
             for n = 1 : length(ceFields)
@@ -1377,8 +1378,17 @@ classdef Scan < mic.Base
             for k = 1:length(ceSelected)
                 this.uiListActive.append(ceSelected{k});
             end
+            
+            % 2022.03.21 reset start row/col any time a new pre is added
+            
+            this.uiEditColStart.set(uint8(1));
+            this.uiEditRowStart.set(uint8(1));
            
             this.addFemPreviewOfAllAddedPrescriptionsToWaferExposureHistory();
+            
+            
+            
+            
            
             
         end 
@@ -1410,6 +1420,7 @@ classdef Scan < mic.Base
             
             
         end
+        
         
         function [stRecipe, lError] = buildRecipeFromFile(this, cPath)
            
@@ -2440,6 +2451,9 @@ classdef Scan < mic.Base
                 dVal = round(dVal);
                 cVal = sprintf('%1.3e', dVal); %num2str(dVal);
                 this.uiDoseMonitorList.append(cVal);
+                
+                ceOptions = this.uiDoseMonitorList.getOptions();
+                this.uiDoseMonitorList.setSelectedIndexes(uint8(length(ceOptions)));
                 
                 
                                 

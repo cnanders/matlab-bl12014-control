@@ -981,6 +981,58 @@ classdef Hardware < mic.Base
             this.commDataTranslation.connect();
             this.commDataTranslation.idn()
             this.commDataTranslation.enable();
+            
+            
+            % Show all MeasurePoint channel hardware types (These cannot be set)
+            [tc, rtd, volt] = this.commDataTranslation.channelType();
+            fprintf('bl12014.Logger.init():\n');
+            fprintf('DataTranslation MeasurPoint Hardware configuration:\n');
+            fprintf('TC   sensor channels = %s\n',num2str(tc,'%1.0f '))
+            fprintf('RTD  sensor channels = %s\n',num2str(rtd,'%1.0f '))
+            fprintf('Volt sensor channels = %s\n',num2str(volt,'%1.0f '))
+                        
+            channels = 0 : 7;
+            for n = channels
+               this.commDataTranslation.setSensorType(n, 'J');
+            end
+
+            channels = 8 : 15;
+            for n = channels
+                this.commDataTranslation.setSensorType(n, 'PT1000');
+            end
+
+            channels = 16 : 19;
+            for n = channels
+                this.commDataTranslation.setSensorType(n, 'PT100');
+            end
+
+            channels = 20 : 23;
+            for n = channels
+               this.commDataTranslation.setSensorType(n, 'PT1000');
+            end
+
+            channels = 24 : 31;
+            for n = channels
+                this.commDataTranslation.setSensorType(n, 'PT100');
+            end
+
+            channels = 32 : 47;
+            for n = channels
+                this.commDataTranslation.setSensorType(n, 'V');
+            end
+            
+            this.commDataTranslation.abortScan(); % stops scanning so the filter type can be set
+            this.commDataTranslation.setFilterTypeToRaw() % if you dont
+            % it uses its internal 16 point rolling averaging filter (1.6
+            % seconds)
+            
+            % echo the filter type:
+            this.commDataTranslation.getFilterType()
+            this.commDataTranslation.setScanList(0:47);
+            this.commDataTranslation.setScanPeriod(0.1);
+            this.commDataTranslation.initiateScan();
+            % this.commDataTranslation.abortScan();
+            this.commDataTranslation.clearBytesAvailable();
                 
         end
         

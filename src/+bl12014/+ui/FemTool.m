@@ -761,7 +761,7 @@ classdef FemTool < mic.Base
             
             this.uiButtonLoadDefault = mic.ui.common.Button(...
                 'fhOnClick', @this.onClickUiButtonLoadDefault, ...
-                'cText', 'Load Defaults' ...
+                'cText', 'Load Def. 2022.03' ...
             ); 
                         
         end
@@ -772,8 +772,8 @@ classdef FemTool < mic.Base
             
             % x, y updated 2021.09.27 after fixing zero offset from print
             % data
-            this.uiePositionX.set(7.87); % 6.5
-            this.uiePositionY.set(3.62); % -4.5
+            this.uiePositionX.set(-14.85); %-14.85 2022.03 % 7.87 2021.12; 6.5
+            this.uiePositionY.set(3.5); % -4.5
             this.uiePositionStepX.set(-0.25);
             this.uiePositionStepY.set(0.17);
             

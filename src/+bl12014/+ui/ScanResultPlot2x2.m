@@ -256,7 +256,14 @@ classdef ScanResultPlot2x2 < mic.Base
             % [ceData, ceFields] = this.getValuesStructFromCsvFileV1(cPath);
             
             try 
-                [ceData, ceFields] = this.getValuesStructFromCsvFileV6(cPath); % 78 fields 2021.10.18
+                [ceData, ceFields] = this.getValuesStructFromCsvFileV7(cPath); % 80 fields 2022.02.xx smsSlowShutter timing
+                return;
+            catch mE
+                
+            end
+            
+            try 
+                [ceData, ceFields] = this.getValuesStructFromCsvFileV6(cPath); % 79 fields 2021.10.18
                 return;
             catch mE
                 
@@ -566,6 +573,7 @@ classdef ScanResultPlot2x2 < mic.Base
             fclose(hFile);
         end
 
+
         function [ceData, ceFields] = getValuesStructFromCsvFileV6(this, cPath)
             
             hFile = fopen(cPath);
@@ -599,6 +607,63 @@ classdef ScanResultPlot2x2 < mic.Base
                 '%f%f%f%f%f%f%f%f%f%f', ... 50
                 '%f%f%f%f', ... 54
                 '%f%f%f%f%f%f%f%f%f%f%f%f%f%f', ... 68 (14 scan timing  info)
+                '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
+                '%f', ... counts_dose_monitor
+                '%f%f%f%f', ... dmi vib_x, vib_y, drift_x, drift_y (2021.05.26)
+                '%f', ... dose_mj_cm_2
+                '%f%f', ... dz_height sensor, dz_wafer_fine
+                '%f%f' ... z_height_sensor_target_nm, z_height_sensor_error_nm
+            ];
+        
+            %the last four are:
+            % counts_dose_monitor
+            % dose_mj_per_cm_per_s
+            % dz_height_sensor_nm
+            % dz_wafer_fine_nm
+
+            ceData = textscan(...
+                hFile, cFormat, -1, ... 
+                'delimiter', ',' ...
+                ...'whitespace', '', ...
+                ...'headerlines', 1 ...
+            );
+       
+            
+            fclose(hFile);
+        end
+        function [ceData, ceFields] = getValuesStructFromCsvFileV7(this, cPath)
+            
+            hFile = fopen(cPath);
+            
+            % Get header fields
+            cFormat = repmat('%q', 1, 80);
+            ceHeader = textscan(...
+                hFile, cFormat, 1, ...
+                'delimiter', ',' ...
+                ...'whitespace', '' ...
+            );
+        
+            ceFields = cell(size(ceHeader));
+            for n = 1 : length(ceHeader)
+                ceFields{n} = ceHeader{n}{1};
+            end
+
+            % If any of the fields are an empty string, it means that the
+            % .csv file header does not match the header we expect. throw
+            % an error in this caes
+            if any(cellfun(@isempty, ceFields))
+                error('The header size does not match the expected size of 72 fields');
+            end
+
+            % %d = signed integer, 32-bit
+            cFormat = [...
+                '%f%f%f%f%f%f%f%f%f%f', ... 10
+                '%f%f%f%f%f%f%f%f%f%f', ... 20
+                '%f%f%f%f%f%f%f%f%f%f', ... 30
+                '%f%f%f%f%f%f%f%f%f%f', ... 40
+                '%f%f%f%f%f%f%f%f%f%f', ... 50
+                '%f%f%f%f', ... 54
+                '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f', ... 69 (15 scan timing  info after adding smsSlowShutter)
                 '%{yyyy-MM-dd HH:mm:ss}D', ... !!! CAREFUL !!! here need to use DateTime format, not datestr format !! search datetime properties, the characters for month and year and maybe others are different. SO DUMB
                 '%f', ... counts_dose_monitor
                 '%f%f%f%f', ... dmi vib_x, vib_y, drift_x, drift_y (2021.05.26)
