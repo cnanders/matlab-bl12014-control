@@ -201,6 +201,7 @@ classdef Scan < mic.Base
         lSkipWorkingMode = false
         
         dZHeightSensorTarget = 0;
+        dChargeDoseMonitor = 0;
     end
     
         
@@ -2305,12 +2306,19 @@ classdef Scan < mic.Base
                                
                                     charge_dose_monitor = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
     
-                                    % If the charge is larger than an
+                                    % If the charge is less than an
                                     % absolute lower bound, assume the shutter
                                     % failed to open.  Re-trigger the
                                     % shutter and say that lReady is false
                                     
-                                    if (abs(charge_dose_monitor) < 5e6)
+                                    % If the charge is the same as the last
+                                    % charge, assume the shutter failed to
+                                    % open.
+                                    
+                                    if (...
+                                        abs(charge_dose_monitor) < 5e6 || ...
+                                        charge_dose_monitor == this.dChargeDoseMonitor ...
+                                     )
                                         
                                         
                                         if lDebug
@@ -2327,6 +2335,9 @@ classdef Scan < mic.Base
                                         % Trigger the shutter UI again
                                         lReady = false;
                                         this.uiShutter.uiShutter.moveToDest();
+                                    else
+                                        % update chage dose monitor
+                                        this.dChargeDoseMonitor = charge_dose_monitor;
                                     end
                                     
                                end
