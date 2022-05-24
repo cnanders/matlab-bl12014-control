@@ -37,6 +37,9 @@ classdef POCurrent < mic.Base
         hPlot22b
         hPlot22c
         
+        hLegend1
+        hLegend2
+        
         dNumPlot2 = 600;
         
         % {double 1xm} storage of values from two channels of the 
@@ -340,7 +343,11 @@ classdef POCurrent < mic.Base
                 xlabel(this.hAxes2, 'Time');
                 ylabel(this.hAxes2, 'Shutter');
                 
-                legend(this.hAxes2, {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'}); 
+                legend(...
+                    this.hAxes2, ...
+                    {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'}, ...
+                    'Location', 'southwest' ...
+                ); 
 
             else
                 yyaxis(this.hAxes2, 'right')
@@ -446,7 +453,11 @@ classdef POCurrent < mic.Base
             
                 xlabel(this.hAxes, 'Time');
                 ylabel(this.hAxes, 'Shutter');
-                legend(this.hAxes, {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'});
+                legend(...
+                    this.hAxes, ...
+                    {'PO Current (35)', 'Rigol Out (36)', 'Uniblitz (38)', 'Uniblitz (39)'}, ...
+                    'Location', 'southwest' ...
+                 );
 
             else
                 yyaxis(this.hAxes, 'right')
@@ -530,6 +541,9 @@ classdef POCurrent < mic.Base
         
         
           function saveScanResultsCsv(this, dIdxStart, dNum)
+              
+              % 2022.05.18 
+              return
         
             if isempty(this.dValues)
                     return;
