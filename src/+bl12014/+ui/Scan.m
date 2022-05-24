@@ -3424,13 +3424,23 @@ classdef Scan < mic.Base
         
         % Returns the low frequency drift (nm) of the aerial image relative to the
         % wafer over the last {dSec} seconds.  
-        function [dDriftX, dDriftY] = getDriftOfDmi(this, dSec)
+        function [dDriftX, dDriftY] = getVelocityOfAerialImage(this)
             
-            dNumSamples = round(dSec * 1000);            
-            dSamples = this.hardware.getMfDriftMonitor().getSampleData(dNumSamples);
-            dDmi = bl12014.MfDriftMonitorUtilities.getDmiDriftFromSampleData(dSAmples);
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(1000);
+            dDmi = bl12014.MfDriftMonitorUtilities.getVelocityOfAerialImageFromSampleData(dSAmples);
            
         end
+        
+        % Returns the low frequency drift (nm) of the aerial image relative to the
+        % wafer over the last {dSec} seconds.  
+        function [dX, dY] = getAccelerationOfAerialImage(this)
+            
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(1000);
+            [dX, dY] = bl12014.MfDriftMonitorUtilities.getAccelerationOfAerialImageFromSampleData(dSAmples);
+           
+        end
+        
+        
         
         % Returns the high frequency vibration (in nm) of the aerial image
         % relatifve to the wafer over the last 1 second.  Used by the
