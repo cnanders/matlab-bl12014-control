@@ -714,6 +714,29 @@ classdef MfDriftMonitorUtilities
         end
         
         
+        % Returns the low frequency drift (nm) of the aerial image relative to the
+        % wafer over the last {dSec} seconds. 
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
+        
+        function [dDriftX, dDriftY] = getDmiDriftFromSampleData(samples)
+            
+            dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(samples);
+            
+            % linear fit and then  peak to valley
+            dTime = [0 : length(dDmi(5, :)) - 1] * 1e-3;
+
+            dCoeffX = polyfit(dTime, dDmi(5, :), 1);
+            dCoeffY = polyfit(dTime, dDmi(6, :), 1);
+
+            dFitX = polyval(dCoeffX, dTime);
+            dFitY = polyval(dCoeffY, dTime);
+
+            dDriftX = max(dFitX) - min(dFitX);
+            dDriftY = max(dFitY) - min(dFitY);                         
+           
+        end
+        
+        
         
         
     end

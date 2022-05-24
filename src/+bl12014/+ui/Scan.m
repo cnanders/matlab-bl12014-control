@@ -1512,6 +1512,8 @@ classdef Scan < mic.Base
         
         
         
+        
+        
         function onScanSetState(this, stUnit, stValue)
             
             cFn = 'onScanSetState';
@@ -1565,13 +1567,13 @@ classdef Scan < mic.Base
                         end
                         
                         
-                        [dRmsX, dRmsY] = this.getDriftOfDmi();
+                        [dRmsX, dRmsY] = this.getVibrationOfDmi();
                         
                         
                         while dRmsX > dValue || dRmsY > dValue
                             
                             dTimeElapsed = toc(dTimeStart);
-                            [dRmsX, dRmsY] = this.getDriftOfDmi();
+                            [dRmsX, dRmsY] = this.getVibrationOfDmi();
                             
                             cMsg = [...
                                 sprintf('%s DMI vib settling to %1.2f nm RMS: ', cFn, dValue), ...
@@ -1886,7 +1888,8 @@ classdef Scan < mic.Base
                             
                             switch cField
                                 
-                                case 'settle'
+                                
+                                case 'settle' % high frequency vibration
                                     
                                     % defaults
                                     dValue = 1.0;
@@ -1903,7 +1906,7 @@ classdef Scan < mic.Base
                                         dTime = stValue.settle.time;
                                     end
 
-                                    [dRmsX, dRmsY] = this.getDriftOfDmi();
+                                    [dRmsX, dRmsY] = this.getVibrationOfDmi();
                                     this.dRmsDriftX = dRmsX;
                                     this.dRmsDriftY = dRmsY;
 
@@ -3419,7 +3422,21 @@ classdef Scan < mic.Base
         end
         
         
-        function [dRmsDriftX, dRmsDriftY] = getDriftOfDmi(this)
+        % Returns the low frequency drift (nm) of the aerial image relative to the
+        % wafer over the last {dSec} seconds.  
+        function [dDriftX, dDriftY] = getDriftOfDmi(this, dSec)
+            
+            dNumSamples = round(dSec * 1000);            
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(dNumSamples);
+            dDmi = bl12014.MfDriftMonitorUtilities.getDmiDriftFromSampleData(dSAmples);
+           
+        end
+        
+        % Returns the high frequency vibration (in nm) of the aerial image
+        % relatifve to the wafer over the last 1 second.  Used by the
+        % vibration settle routine.
+        
+        function [dRmsDriftX, dRmsDriftY] = getVibrationOfDmi(this)
             
             samples = this.hardware.getMfDriftMonitor().getSampleData(1000);
             dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(samples);
