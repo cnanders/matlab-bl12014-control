@@ -715,7 +715,7 @@ classdef MfDriftMonitorUtilities
         
         
         % Returns the low frequency drift (nm) of the aerial image relative to the
-        % wafer over the last {dSec} seconds. 
+        % wafer from provided sample data.
         % @param {ArrayList<SampleData> 1x1} samples - sample data
         
         function [dDriftX, dDriftY] = getDmiDriftFromSampleData(samples)
