@@ -713,12 +713,12 @@ classdef MfDriftMonitorUtilities
             
         end
         
-        
-        % Returns the low frequency drift (nm) of the aerial image relative to the
-        % wafer from provided sample data.
+
+        % Returns the low frequency velocity (nm) of the aerial image relative to the
+        % wafer over the last 1 second. 
         % @param {ArrayList<SampleData> 1x1} samples - sample data
         
-        function [dDriftX, dDriftY] = getDmiDriftFromSampleData(samples)
+        function [dVelX, dVelY] = getVelocityOfAerialImageFromSampleData(samples)
             
             dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(samples);
             
@@ -731,8 +731,27 @@ classdef MfDriftMonitorUtilities
             dFitX = polyval(dCoeffX, dTime);
             dFitY = polyval(dCoeffY, dTime);
 
-            dDriftX = max(dFitX) - min(dFitX);
-            dDriftY = max(dFitY) - min(dFitY);                         
+            dVelX = max(dFitX) - min(dFitX);
+            dVelY = max(dFitY) - min(dFitY);                         
+           
+        end
+        
+        % Returns the low frequency acceleration (nm) of the aerial image relative to the
+        % wafer over the last 1 second. 
+        % @param {ArrayList<SampleData> 1x1} samples - sample data
+        
+        function [dAccX, dAccY] = getAccelerationOfAerialImageFromSampleData(samples)
+            
+            dDmi = bl12014.MfDriftMonitorUtilities.getDmiPositionFromSampleData(samples);
+            
+            % 2nd order fit and then return 2 x 2nd order coefficient
+            dTime = [0 : length(dDmi(5, :)) - 1] * 1e-3;
+
+            dCoeffX = polyfit(dTime, dDmi(5, :), 2);
+            dCoeffY = polyfit(dTime, dDmi(6, :), 2);            
+
+            dAccX = 2*dCoeffX(1);
+            dAccY = 2*dCoeffY(1);                        
            
         end
         

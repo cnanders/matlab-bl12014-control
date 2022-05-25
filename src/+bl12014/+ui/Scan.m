@@ -284,15 +284,205 @@ classdef Scan < mic.Base
             
         end
         
-        % Returns the low frequency drift (nm) of the aerial image relative to the
-        % wafer over the last {dSec} seconds.  
-        function [dDriftX, dDriftY] = getDriftOfDmi(this, dSec)
+       
+        
+        % Returns the low frequency speed (nm/s) of the aerial image relative to the
+        % wafer over the last 2 seconds.  
+        function [dX, dY] = getVelocityOfAerialImage(this)
             
-            dNumSamples = round(dSec * 1000);            
-            dSamples = this.hardware.getMfDriftMonitor().getSampleData(dNumSamples);
-            [dDriftX, dDriftY] =  bl12014.MfDriftMonitorUtilities.getDmiDriftFromSampleData(dSamples);
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(1000);
+            [dX, dY] =  bl12014.MfDriftMonitorUtilities.getVelocityOfAerialImageFromSampleData(dSamples);
            
         end
+        
+        % Returns the low frequency acceleration (nm/s/s) of the aerial image relative to the
+        % wafer over the last 5 seconds
+        function [dX, dY] = getAccelerationOfAerialImage(this)
+            
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(5000);
+            [dX, dY] = bl12014.MfDriftMonitorUtilities.getAccelerationOfAerialImageFromSampleData(dSamples);
+           
+        end
+        
+        % @param {double 1x1} dFadeX - nm to fade image in X
+        % @param {double 1x1} dSec - seconds in which the fade of dFade nm
+        % is accomplished
+        function setSpeedOfReticleFineStageForImageFadeAndMove(this, dFadeX, dFadeY, dSec)
+            
+            
+            lDebug = true;
+            
+            if lDebug
+                cMsg = sprintf('Setting up image fade of %1.2f nm, %1.2f nm over %1.0f ms', ...
+                    dFadeX, ...
+                    dFadeY, ...
+                    dSec * 1000 ...  
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            
+            [dVelAIX, dVelAIY] = this.getVelocityOfAerialImage(); % nm/s
+            
+            if lDebug
+                cMsg = sprintf('Speed of aerial image: %1.3f, %1.3f nm/s', ...
+                    dVelAIX, ...
+                    dVelAIY ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            
+            % nm/s
+            dSpeedReticleX = 5*(dFadeX / dSec - dVelAIX); % test for correct sign flip
+            dSpeedReticleY = 5*(dFadeY / dSec - dVelAIY);
+            
+            if lDebug
+                cMsg = sprintf('Demand speed of reticle: %1.2f, %1.2f nm/s', ...
+                    dSpeedReticleX, ...
+                    dSpeedReticleY ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            
+            
+            % Convert nm/s to mm/s
+            this.hardware.getDeltaTauPowerPmac().setDemandSpeedReticleFine(dSpeedReticleX * 1e-6);
+            
+            % Set it to accelerate to the desired velocity over one second
+            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeReticleFine(500); % ms
+            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeBlendedReticleFine(1000); %ms
+
+            % Tell it to move for 5 * dSec worth of distance
+            dDeltaX = dSpeedReticleX * dSec * 5; % nm
+            dDeltaY = 0; % dSpeedReticleY * dSec * 5; % nm
+            
+            
+            
+            dPosX = this.hardware.getDeltaTauPowerPmac().getXReticleFine(); % mm
+            dPosY = this.hardware.getDeltaTauPowerPmac().getYReticleFine(); % mm
+
+            dDestX = dPosX + dDeltaX * 1e-6; % mm
+            dDestY = dPosY;
+            
+            if lDebug
+                cMsg = sprintf('Moving reticle fine x %1.2f nm from: %1.3f um, to %1.3f um', ...
+                    dDeltaX, ...
+                    dPosX * 1e3, ...
+                    dDestX * 1e3 ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                
+                cMsg = sprintf('Moving reticle fine y %1.2f nm from: %1.3f um, to %1.3f um', ...
+                    dDeltaY, ...
+                    dPosY * 1e3, ...
+                    dDestY * 1e3 ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                
+                
+            end
+            
+            
+            this.hardware.getDeltaTauPowerPmac().setXReticleFineNoMove(dDestX);
+            this.hardware.getDeltaTauPowerPmac().setYReticleFineNoMove(dDestY);
+            this.hardware.getDeltaTauPowerPmac().moveReticleFineToDest();
+            
+            % FIX ME don't issue y move for now since can't independently
+            % set speeds
+                        
+        end
+        
+        % @param {double 1x1} dFadeX - nm to fade image in X
+        % @param {double 1x1} dSec - seconds in which the fade of dFade nm
+        % is accomplished
+        function setReticleFineYForImageFade(this, dFadeY, dSec)
+                        
+            lDebug = true;
+            
+            if lDebug
+                cMsg = sprintf('Setting up y image fade of %1.2f nm over %1.0f ms', ...
+                    dFadeY, ...
+                    dSec * 1000 ...  
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            
+            [dVelAIX, dVelAIY] = this.getVelocityOfAerialImage(); % nm/s
+            
+            if lDebug
+                cMsg = sprintf('Speed of aerial image: %1.3f, %1.3f nm/s', ...
+                    dVelAIX, ...
+                    dVelAIY ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            % nm/s
+            dSpeedReticleY = 5*(dFadeY / dSec - dVelAIY);
+            
+            if lDebug
+                cMsg = sprintf('Demand speed of reticle y: %1.2f nm/s', ...
+                    dSpeedReticleY ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            end
+            
+            % Convert nm/s to mm/s
+            this.hardware.getDeltaTauPowerPmac().setDemandSpeedReticleFine(dSpeedReticleY * 1e-6);
+            
+            % Set it to accelerate to the desired velocity over one second
+            %this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeReticleFine(500); % ms
+           %this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeBlendedReticleFine(1000); %ms
+
+            % Tell it to move for 5 * dSec worth of distance
+            dDeltaX = 0; % nm
+            dDeltaY = dSpeedReticleY * dSec * 5; % nm
+
+            dPosX = this.hardware.getDeltaTauPowerPmac().getXReticleFine(); % mm
+            dPosY = this.hardware.getDeltaTauPowerPmac().getYReticleFine(); % mm
+
+            dDestX = dPosX + dDeltaX * 1e-6; % mm
+            dDestY = dPosY + dDeltaY * 1e-6; % mm
+            
+            if lDebug
+                cMsg = sprintf('Moving reticle fine x %1.2f nm from: %1.3f um, to %1.3f um', ...
+                    dDeltaX, ...
+                    dPosX * 1e3, ...
+                    dDestX * 1e3 ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                
+                cMsg = sprintf('Moving reticle fine y %1.2f nm from: %1.3f um, to %1.3f um', ...
+                    dDeltaY, ...
+                    dPosY * 1e3, ...
+                    dDestY * 1e3 ...   
+                );
+                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                
+            end
+            
+            this.hardware.getDeltaTauPowerPmac().setXReticleFineNoMove(dDestX);
+            this.hardware.getDeltaTauPowerPmac().setYReticleFineNoMove(dDestY);
+            this.hardware.getDeltaTauPowerPmac().moveReticleFineToDest();
+            
+            % FIX ME don't issue y move for now since can't independently
+            % set speeds
+                        
+        end
+        
+        function stopReticleFineStageAndResetSpeed(this)
+            
+            this.hardware.getDeltaTauPowerPmac().stopAll();
+            this.hardware.getDeltaTauPowerPmac().setDemandSpeedReticleFine(100); % mm/s
+            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeReticleFine(100); % ms
+            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeBlendedReticleFine(100); %ms
+
+        end
+        
+        
         
         
         function st = save(this)
@@ -3442,6 +3632,8 @@ classdef Scan < mic.Base
             
         end
         
+        
+
         
         
         
