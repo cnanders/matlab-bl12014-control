@@ -162,9 +162,13 @@ classdef WaferAxes < mic.Base
         hOverlayVib
         hOverlayWFZ
         hOverlayDriftControl
+        hOverlayAcc
+        hOverlayVel
         
         
         tTextVib % {text 1x1}
+        tTextVel
+        tTextAcc
         
         clock
         
@@ -179,10 +183,17 @@ classdef WaferAxes < mic.Base
         fhGetIsShutterOpen = @()false
         fhGetIsVib = @() false
         fhGetIsWFZ = @() false
+        fhGetIsVel = @() false
+        fhGetIsAcc = @() false
         fhGetIsDriftControl = @() false
         fhGetVibX = @() 0
         fhGetVibY = @() 0
         
+        fhGetAccX = @() 1.01
+        fhGetAccY = @() 1.02
+        
+        fhGetVelX = @() 0.91
+        fhGetVelY = @() 0.92
         
         % {bl12014.waferExposureHistory
         waferExposureHistory
@@ -191,6 +202,8 @@ classdef WaferAxes < mic.Base
         
         lIsExposing
         lIsVib
+        lIsVel
+        lIsAcc
         lIsWFZ
         lIsDriftControl
         
@@ -307,6 +320,9 @@ classdef WaferAxes < mic.Base
             this.hCrosshairZero = hggroup('Parent', this.hTransformedGroup);
             this.hCrosshairLoadLock = hggroup('Parent', this.hTransformedGroup);
             this.hOverlayVib = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlayVel = hggroup('Parent', this.hTransformedGroup);
+            this.hOverlayAcc = hggroup('Parent', this.hTransformedGroup);
+            
             this.hOverlayWFZ = hggroup('Parent', this.hTransformedGroup);
             this.hOverlayDriftControl = hggroup('Parent', this.hTransformedGroup);
             this.hOverlay = hggroup('Parent', this.hTransformedGroup);
@@ -359,7 +375,11 @@ classdef WaferAxes < mic.Base
             this.setExposing();
             this.setOverlayVib();
             this.setOverlayWFZ();
+            this.setOverlayVel();
+            this.setOverlayAcc();
             this.setTextVib();
+            this.setTextAcc();
+            this.setTextVel();
             this.setOverlayDriftControl();
 
         end 
@@ -414,6 +434,14 @@ classdef WaferAxes < mic.Base
         
         function deleteOverlay(this)
             this.deleteChildren(this.hOverlay);                
+        end
+        
+        function deleteOverlayAcc(this)
+            this.deleteChildren(this.hOverlayAcc);                
+        end
+        
+        function deleteOverlayVel(this)
+            this.deleteChildren(this.hOverlayVel);                
         end
         
         function deleteOverlayVib(this)
@@ -515,6 +543,44 @@ classdef WaferAxes < mic.Base
             end
                             
         end
+        
+        function setOverlayVel(this)
+            
+            lIsVel = this.fhGetIsVel();
+            
+            if (this.lIsVel == lIsVel)
+                return
+            end
+            
+            this.lIsVel = lIsVel;
+                
+            if this.lIsVel
+                this.drawOverlayVel();
+            else
+                this.deleteOverlayVel();
+            end
+                            
+        end
+        
+        
+         function setOverlayAcc(this)
+            
+            lIsAcc = this.fhGetIsAcc();
+            
+            if (this.lIsAcc == lIsAcc)
+                return
+            end
+            
+            this.lIsAcc = lIsAcc;
+                
+            if this.lIsAcc
+                this.drawOverlayAcc();
+            else
+                this.deleteOverlayAcc();
+            end
+                            
+        end
+        
         
         function setOverlayDriftControl(this)
             
@@ -1635,6 +1701,42 @@ classdef WaferAxes < mic.Base
             set(this.tTextVib, 'String', cMsg);
         end
         
+        function setTextVel(this)
+            
+            if ~this.fhGetIsVel()
+                return
+            end
+            
+            if isempty(this.tTextVel)
+                return
+            end
+            
+            cMsg = {...
+                'VEL', ...
+                sprintf('X=%1.2f nm/s', this.fhGetVelX()), ...
+                sprintf('Y=%1.2f nm/s', this.fhGetVelY()) ...
+            };
+            set(this.tTextVel, 'String', cMsg);
+        end
+        
+        function setTextAcc(this)
+            
+            if ~this.fhGetIsAcc()
+                return
+            end
+            
+            if isempty(this.tTextAcc)
+                return
+            end
+            
+            cMsg = {...
+                'Acc', ...
+                sprintf('X=%1.2f nm/s/s', this.fhGetAccX()), ...
+                sprintf('Y=%1.2f nm/s/s', this.fhGetAccY()) ...
+            };
+            set(this.tTextAcc, 'String', cMsg);
+        end
+        
         
         function drawOverlayVib(this)
             
@@ -1687,6 +1789,109 @@ classdef WaferAxes < mic.Base
         end
         
         
+        
+        
+        
+        function drawOverlayVel(this)
+            
+            this.msg('drawOverlayVel');
+            
+            
+            if isempty(this.hOverlayVel) || ...
+                ~ishandle(this.hOverlayVel)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            dColor = hsv2rgb(0.6, 1, 1);
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                dColor, ...
+                'Parent', this.hOverlayVel, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            ceProps = {
+               'Parent', this.hOverlayVel, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+        
+            cMsg = {...
+                'Vel', ...
+                sprintf('X=%1.2f nm/s', this.fhGetVelX()), ...
+                sprintf('Y=%1.2f nm/s', this.fhGetVelY()) ...
+            };
+                        
+            this.tTextVel = text( ...
+                this.dXTextOverlay, this.dYTextOverlay, cMsg, ...
+                ceProps{:} ...
+            ); 
+
+        end
+        
+        function drawOverlayAcc(this)
+            
+            this.msg('drawOverlayAcc');
+            
+            
+            if isempty(this.hOverlayAcc) || ...
+                ~ishandle(this.hOverlayAcc)
+                return
+            end
+            
+            dL = -1;
+            dR = 1;
+            dT = 1;
+            dB = -1;
+            
+            dColor = hsv2rgb(0.7, 1, 1);
+            patch( ...
+                [dL dL dR dR], ...
+                [dB dT dT dB], ...
+                dColor, ...
+                'Parent', this.hOverlayAcc, ...
+                'FaceAlpha', 0.5, ...
+                'LineWidth', 1, ...
+                'EdgeColor', [1, 1, 1] ...
+            );
+        
+            ceProps = {
+               'Parent', this.hOverlayAcc, ...
+                'Interpreter', 'none', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off', ...
+                'FontSize', 50, ...
+                ...% 'FontWeight', 'bold', ...
+                'HorizontalAlignment', 'center', ...
+                'Color', dColor ... 
+            };
+        
+            cMsg = {...
+                'Acc', ...
+                sprintf('X=%1.2f nm/s/s', this.fhGetAccX()), ...
+                sprintf('Y=%1.2f nm/s/s', this.fhGetAccY()) ...
+            };
+                        
+            this.tTextAcc = text( ...
+                this.dXTextOverlay, this.dYTextOverlay, cMsg, ...
+                ceProps{:} ...
+            ); 
+
+        end
+
         function drawOverlayDriftControl(this)
             
             this.msg('drawOverlayDriftControl');

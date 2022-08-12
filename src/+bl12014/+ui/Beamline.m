@@ -282,8 +282,8 @@ classdef Beamline < mic.Base
             this.uiGratingTiltX.build(hParent, dLeft + dOffsetLeft, dTop);
             dTop = dTop + 24 + dSep;
             
-            this.uiExitSlit.build(hParent, dLeft + dOffsetLeft, dTop);
-            dTop = dTop + this.uiExitSlit.dHeight + dSep;
+%             this.uiExitSlit.build(hParent, dLeft + dOffsetLeft, dTop);
+%             dTop = dTop + this.uiExitSlit.dHeight + dSep;
            
             
             this.uiM141.build(hParent, dLeft + dOffsetLeft, dTop);

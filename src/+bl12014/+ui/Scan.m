@@ -192,10 +192,18 @@ classdef Scan < mic.Base
         uiTextTimeCalibrated
         uiTextFluxDensityCalibrated
         
+        lIsWaitingForAccOfAIToSettle = false
+        lIsWaitingForVelOfAIToSettle = false
         lIsVib = false
         lIsWFZ = false
         dRmsDriftX = 0
         dRmsDriftY = 0
+        
+        dAccXOfAI = 0;
+        dAccYOfAI = 0;
+        
+        dVelXOfAI = 0;
+        dVelYOfAI = 0;
         
         
         lSkipWorkingMode = false
@@ -290,7 +298,7 @@ classdef Scan < mic.Base
         % wafer over the last 2 seconds.  
         function [dX, dY] = getVelocityOfAerialImage(this)
             
-            dSamples = this.hardware.getMfDriftMonitor().getSampleData(1000);
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(4000);
             [dX, dY] =  bl12014.MfDriftMonitorUtilities.getVelocityOfAerialImageFromSampleData(dSamples);
            
         end
@@ -299,104 +307,23 @@ classdef Scan < mic.Base
         % wafer over the last 5 seconds
         function [dX, dY] = getAccelerationOfAerialImage(this)
             
-            dSamples = this.hardware.getMfDriftMonitor().getSampleData(5000);
+            dSamples = this.hardware.getMfDriftMonitor().getSampleData(4000);
             [dX, dY] = bl12014.MfDriftMonitorUtilities.getAccelerationOfAerialImageFromSampleData(dSamples);
            
         end
         
-        % @param {double 1x1} dFadeX - nm to fade image in X
-        % @param {double 1x1} dSec - seconds in which the fade of dFade nm
-        % is accomplished
-        function setSpeedOfReticleFineStageForImageFadeAndMove(this, dFadeX, dFadeY, dSec)
-            
-            
-            lDebug = true;
-            
-            if lDebug
-                cMsg = sprintf('Setting up image fade of %1.2f nm, %1.2f nm over %1.0f ms', ...
-                    dFadeX, ...
-                    dFadeY, ...
-                    dSec * 1000 ...  
-                );
-                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-            end
-            
-            
-            [dVelAIX, dVelAIY] = this.getVelocityOfAerialImage(); % nm/s
-            
-            if lDebug
-                cMsg = sprintf('Speed of aerial image: %1.3f, %1.3f nm/s', ...
-                    dVelAIX, ...
-                    dVelAIY ...   
-                );
-                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-            end
-            
-            
-            % nm/s
-            dSpeedReticleX = 5*(dFadeX / dSec - dVelAIX); % test for correct sign flip
-            dSpeedReticleY = 5*(dFadeY / dSec - dVelAIY);
-            
-            if lDebug
-                cMsg = sprintf('Demand speed of reticle: %1.2f, %1.2f nm/s', ...
-                    dSpeedReticleX, ...
-                    dSpeedReticleY ...   
-                );
-                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-            end
-            
-            
-            
-            % Convert nm/s to mm/s
-            this.hardware.getDeltaTauPowerPmac().setDemandSpeedReticleFine(dSpeedReticleX * 1e-6);
-            
-            % Set it to accelerate to the desired velocity over one second
-            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeReticleFine(500); % ms
-            this.hardware.getDeltaTauPowerPmac().setDemandAccelTimeBlendedReticleFine(1000); %ms
-
-            % Tell it to move for 5 * dSec worth of distance
-            dDeltaX = dSpeedReticleX * dSec * 5; % nm
-            dDeltaY = 0; % dSpeedReticleY * dSec * 5; % nm
-            
-            
-            
-            dPosX = this.hardware.getDeltaTauPowerPmac().getXReticleFine(); % mm
-            dPosY = this.hardware.getDeltaTauPowerPmac().getYReticleFine(); % mm
-
-            dDestX = dPosX + dDeltaX * 1e-6; % mm
-            dDestY = dPosY;
-            
-            if lDebug
-                cMsg = sprintf('Moving reticle fine x %1.2f nm from: %1.3f um, to %1.3f um', ...
-                    dDeltaX, ...
-                    dPosX * 1e3, ...
-                    dDestX * 1e3 ...   
-                );
-                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-                
-                cMsg = sprintf('Moving reticle fine y %1.2f nm from: %1.3f um, to %1.3f um', ...
-                    dDeltaY, ...
-                    dPosY * 1e3, ...
-                    dDestY * 1e3 ...   
-                );
-                this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
-                
-                
-            end
-            
-            
-            this.hardware.getDeltaTauPowerPmac().setXReticleFineNoMove(dDestX);
-            this.hardware.getDeltaTauPowerPmac().setYReticleFineNoMove(dDestY);
-            this.hardware.getDeltaTauPowerPmac().moveReticleFineToDest();
-            
-            % FIX ME don't issue y move for now since can't independently
-            % set speeds
-                        
-        end
+       
         
         % @param {double 1x1} dFadeX - nm to fade image in X
         % @param {double 1x1} dSec - seconds in which the fade of dFade nm
         % is accomplished
+        % Most likeley going to want to blur horizontal lines
+        % Note that we can't independently set the speed of the X and Y
+        % stages so we need to wait for both to be moving slowly enough
+        % that the fade of the other direction is negligible or we say
+        % we don't care because it is in the direction of the line edge and
+        % may actually help.
+        
         function setReticleFineYForImageFade(this, dFadeY, dSec)
                         
             lDebug = true;
@@ -413,7 +340,7 @@ classdef Scan < mic.Base
             [dVelAIX, dVelAIY] = this.getVelocityOfAerialImage(); % nm/s
             
             if lDebug
-                cMsg = sprintf('Speed of aerial image: %1.3f, %1.3f nm/s', ...
+                cMsg = sprintf('Speed of aerial image: %1.3f nm/s (x), %1.3f nm/s (y)', ...
                     dVelAIX, ...
                     dVelAIY ...   
                 );
@@ -1040,9 +967,19 @@ classdef Scan < mic.Base
                 'clock', this.uiClock, ...
                 'fhGetIsShutterOpen', @() this.uiShutter.uiOverride.get(), ...
                 'waferExposureHistory', this.waferExposureHistory, ...
+                ...
                 'fhGetVibX', @() this.dRmsDriftX, ...
                 'fhGetVibY', @() this.dRmsDriftY, ...
                 'fhGetIsVib', @() this.lIsVib, ...
+                ...
+                'fhGetVelX', @() this.dVelXOfAI, ...
+                'fhGetVelY', @() this.dVelYOfAI, ...
+                'fhGetIsVel', @() this.lIsWaitingForVelOfAIToSettle, ...
+                ...
+                'fhGetAccX', @() this.dAccXOfAI, ...
+                'fhGetAccY', @() this.dAccYOfAI, ...
+                'fhGetIsAcc', @() this.lIsWaitingForAccOfAIToSettle, ...
+                ...
                 'fhGetIsWFZ', @() this.lIsWFZ, ...
                 'fhGetIsDriftControl', @() this.uiWafer.uiWorkingMode.uiWorkingMode.getValCalDisplay() == 4, ...
                 'fhGetXOfWafer', @() this.uiWafer.uiCoarseStage.uiX.getValCal('mm') / 1000, ...
@@ -1318,6 +1255,10 @@ classdef Scan < mic.Base
              ceFields = {...
                 'tracking', ...
                 'settle', ... % vibration settle from DMI
+                'waitForAccOfAIToSettle', ...
+                'waitForVelOfAIToSettle', ...
+                'fadeY', ...
+                'stopFadeY', ...
                 'pause', ...
                 'pupilFill', ...
                 'reticleX', ...
@@ -1423,17 +1364,31 @@ classdef Scan < mic.Base
         end
         
         function onUiScanPause(this, ~, ~)
+            
+            if isempty(this.scan)
+                return
+            end
+            
             this.scan.pause();
             this.updateUiScanStatus()
         end
         
         function onUiScanResume(this, ~, ~)
+            
+            if isempty(this.scan)
+                return
+            end
+            
             this.scan.resume();
             this.updateUiScanStatus()
 
         end
         
         function onUiScanAbort(this, ~, ~)
+            
+            if isempty(this.scan)
+                return
+            end
             this.scan.stop(); % calls onScanAbort()
         end
         
@@ -1750,6 +1705,13 @@ classdef Scan < mic.Base
                                 
                 switch cField
                     
+                    case 'waitForAccOfAIToSettle'
+                         this.stScanSetContract.waitForAccOfAIToSettle.lIssued = true;
+                        this.lIsWaitingForAccOfAIToSettle = true;
+                     case 'waitForVelOfAIToSettle'
+                         this.stScanSetContract.waitForVelOfAIToSettle.lIssued = true;
+                        this.lIsWaitingForVelOfAIToSettle = true;
+                        
                     case 'settle'
                         
                         %{
@@ -1855,6 +1817,17 @@ classdef Scan < mic.Base
                         this.hardware.getSMS().setBeamlineOpen(stValue.smsSlowShutter);
                         this.stScanSetContract.smsSlowShutter.lIssued = true;
                         
+                    case 'fadeY'
+                        
+                        dSec = stValue.fadeY.dose / this.uiFluxDensity.get();
+                        this.setReticleFineYForImageFade(stValue.fadeY.value, dSec);
+                        this.stScanSetContract.fadeY.lIssued = true;
+                        
+                    case 'stopFadeY'
+                        
+                        this.stopReticleFineStageAndResetSpeed();
+                        this.stScanSetContract.stopFadeY.lIssued = true;
+                     
                     case 'workingMode'
                         
                         if this.lSkipWorkingMode
@@ -2089,6 +2062,73 @@ classdef Scan < mic.Base
                             
                             switch cField
                                 
+                                case 'waitForAccOfAIToSettle'
+                                    
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+
+                                    % defaults
+                                    dValue = 0.2; % nm/s/s
+                                    lReady = false;
+                                    
+                                    % eventually maybe add to pre but
+                                    % hard-code for now
+                                    [dX, dY] = this.getAccelerationOfAerialImage();
+                                    this.dAccXOfAI = dX;
+                                    this.dAccYOfAI = dY;
+                                    
+                                    if abs(dX) < dValue && abs(dY) < dValue
+                                        lReady = true;
+                                    end
+
+                                    if lDebug
+                                        cMsg = [...
+                                            sprintf('%s acc of AI settling to %1.2f nm RMS: ', cFn, dValue), ...
+                                            sprintf('accX = %1.2f nm/s/s, accY = %1.2f nm/s/s ', dX, dY), ...
+                                            sprintf('(%1.1f sec elapsed)',dTimeElapsed) ...
+                                        ];
+                                        this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end 
+                                    
+                                    if lReady
+                                        this.lIsWaitingForAccOfAIToSettle = false;
+                                    end
+                                    
+                                    
+                                case 'waitForVelOfAIToSettle'
+                                    
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+
+                                    % defaults
+                                    
+                                    dValueX = 0.8;
+                                    dValueY = 0.5;
+                                    lReady = false;
+                                    
+                                    
+                                    
+                                    % eventually maybe add to pre but
+                                    % hard-code for now
+                                    [dX, dY] = this.getVelocityOfAerialImage();
+                                    this.dVelXOfAI = dX;
+                                    this.dVelYOfAI = dY;
+                                    
+                                    if abs(dX) < dValueX && abs(dY) < dValueY
+                                        lReady = true;
+                                    end
+
+                                    if lDebug
+                                        cMsg = [...
+                                            sprintf('%s velX/Y of AI settling to %1.2f/%1.2f nm RMS: ', cFn, dValueX, dValueY), ...
+                                            sprintf('velX = %1.2f nm/s, velY = %1.2f nm/s ', dX, dY), ...
+                                            sprintf('(%1.1f sec elapsed)',dTimeElapsed) ...
+                                        ];
+                                        this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end  
+                                    
+                                    if lReady
+                                        this.lIsWaitingForVelOfAIToSettle = false;
+                                    end
+                                    
                                 
                                 case 'settle' % high frequency vibration
                                     
@@ -2139,7 +2179,11 @@ classdef Scan < mic.Base
                                     if lReady
                                         this.lIsVib = false;
                                     end
-                                    
+                                
+                                case 'fadeY'
+                                    lReady = true; % assume it starts moving correctly immediately
+                                case 'stopFadeY'
+                                    lReady = true;
                                 case 'pause'
                                     lReady = true;
                                 case 'tracking'
@@ -2148,6 +2192,7 @@ classdef Scan < mic.Base
                                 case 'pupilFill'
                                     % FIX ME
                                     lReady = true;
+                                    
 
                                 case 'xReticleFine'
                                     lReady =    abs(this.uiReticle.uiFineStage.uiX.getValCal(stUnit.xReticleFine) - stValue.xReticleFine) <= this.dToleranceReticleFineX;
@@ -2335,7 +2380,11 @@ classdef Scan < mic.Base
                         if lReady
                             
                             this.stScanSetContract.(cField).lAchieved = true;
-                            this.stScanTimingStore.(cField) = toc(this.dTicScanSetState); % added 2020.09
+                            
+                            timeElapsed = toc(this.dTicScanSetState);
+                            if isfield(this.stScanTimingStore, cField)
+                                this.stScanTimingStore.(cField) = timeElapsed; % added 2020.09
+                            end
                         	
                             if lDebug
                                 cMsg = sprintf('%s %s set operation complete ELAPSED TIME = %1.3f sec', ...
@@ -2553,8 +2602,11 @@ classdef Scan < mic.Base
                         
                         
                         if lReady
-                            
-                            this.stScanTimingStore.(cField) = toc(this.dTicScanAcquire); % added 2020.09
+                                                        
+                            timeElapsed = toc(this.dTicScanAcquire);
+                            if isfield(this.stScanTimingStore, cField)
+                                this.stScanTimingStore.(cField) = timeElapsed; % added 2020.09
+                            end
 
                         	if lDebug
                                 this.msg(sprintf('%s %s set complete', cFn, cField), this.u8_MSG_TYPE_SCAN);
@@ -2747,8 +2799,10 @@ classdef Scan < mic.Base
         % false.  During development, echo values. 
         function lOut = checkWaferFineZDeltas(this)
             
-           lDebug = false
+           lDebug = false;
            lOut = true;
+           
+           return; % 2022.06 
            
            dZWafer = [];
            dZHS = [];
@@ -2776,17 +2830,20 @@ classdef Scan < mic.Base
                    dDeltaHS(n - 1) = dZHS(n) - dZHS(n - 1);
                end
            end
-           
-           % echo the diff
-           lDebug & fprintf("deltaWFZ minus deltaHS: like the discrepancy between the WFZ and what the HS sees\n");
+                      
+               
+           cMsg = sprintf("deltaWFZ minus deltaHS: the discrepancy between the WFZ and what the HS sees");
+           this.msg(cMsg, this.u8_MSG_TYPE_INFO);
            dDeltaWafer - dDeltaHS;
-           
+
            % find all indicies where the dDeltaHS is larger than some
-           % minimum value, call it 5 nm.  Then take the aferage of all of
+           % minimum value, call it 5 nm.  Then take the average of all of
            % the delta wafers from those indicies. That should be
-          lDebug &  fprintf("delta wafer (nm) where a height sensor move was commanded\n");
+           cMsg = sprintf("delta wafer (nm) where a height sensor move was commanded");
+           this.msg(cMsg, this.u8_MSG_TYPE_INFO);
            lMoved = abs(dDeltaHS) >= 5;
            dDeltaWafer(lMoved);
+           
            
         end
 
@@ -2948,6 +3005,9 @@ classdef Scan < mic.Base
             
             this.lIsVib = false;
             this.lIsWFZ = false;
+            this.lIsWaitingForAccOfAIToSettle = false;
+            this.lIsWaitingForVelOfAIToSettle = false;
+            
             if exist('cMsg', 'var') ~= 1
                 cMsg = 'The FEM was aborted.';
             end

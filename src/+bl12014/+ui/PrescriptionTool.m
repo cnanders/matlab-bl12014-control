@@ -48,6 +48,9 @@ classdef PrescriptionTool < mic.Base
         uieVibration
         uieTimeToSettle
         
+        uicbFadeY
+        uieFadeY
+        
         uiProcessTool              
         uiReticleTool                
         uiPupilFillTool            
@@ -129,6 +132,8 @@ classdef PrescriptionTool < mic.Base
                 'uieName', ...
                 'uieVibration', ...
                 'uieTimeToSettle', ...
+                'uieFadeY', ...
+                'uicbFadeY', ...
                 ...'uiPupilFillTool', ...
                 'uiListPrescriptions', ...
                 'uiFemTool', ... 
@@ -212,7 +217,7 @@ classdef PrescriptionTool < mic.Base
             dLeft = dLeft + this.uiProcessTool.dWidth + dPad;
             %}
             
-            dWidth = 300;
+            dWidth = 200;
             dHeight = 24;
             
             this.uieName.build(...
@@ -224,7 +229,7 @@ classdef PrescriptionTool < mic.Base
            );
        
             dLeft = dLeft + dWidth + 10;
-            dWidth = 100;
+            dWidth = 75;
             this.uieVibration.build(...
                 this.hPanel, ...
                 dLeft, ...
@@ -241,9 +246,34 @@ classdef PrescriptionTool < mic.Base
                 dWidth, ...
                 dHeight ...
            );
+                        
+            dLeft = dLeft + dWidth + 10;
             
-            dLeft = 10;
+            this.uicbFadeY.build(...
+                this.hPanel, ...
+                dLeft, ...
+                dTop, ...
+                dWidth, ...
+                dHeight ...
+            );
+            dLeft = dLeft + dWidth + 10;            
+            this.uieFadeY.build(...
+                this.hPanel, ...
+                dLeft, ...
+                dTop, ...
+                dWidth, ...
+                dHeight ...
+           );
+            if this.uicbFadeY.get()
+                this.uieFadeY.show()
+            else
+                this.uieFadeY.hide();
+            end
+            
+        
+        
             dTop = dTop + dHeight + 15 + dPad;
+            dLeft = 10;
             
             this.uiFemTool.build( ...
                 this.hPanel, ...
@@ -297,8 +327,385 @@ classdef PrescriptionTool < mic.Base
         end
         
         
+        function stRecipe = getRecipeFadeY(this)
+            
+            ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
+            
+             u8Count = 1;
+                        
+            % Use other states for wafer pos and exposure task FEM
+            % working mode to allow  x y move
+            stValue = struct();
+            stValue.workingMode = 5; % allow xy move
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            
+            % Center the reticle fine stage in x and y
+            
+            stValue = struct();
+            stValue.xReticleFine = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            stValue = struct();
+            stValue.yReticleFine = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            %%  Index shot
+            
+            mMid = ceil(length(this.uiFemTool.dDose)/2);
+            nMid = ceil(length(this.uiFemTool.dFocus)/2);
+            
+
+            % x position on wafer you want the exposure to be
+            stValue = struct();
+            stValue.waferX = -this.uiFemTool.dX(1); 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % y position on wafer you want exposure to be
+            if length(this.uiFemTool.dY) > 1
+                dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+            else
+                dYStep = .2;
+            end
+            
+            stValue = struct();
+            stValue.waferY = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME; 
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+             % Start drift monitor tracking
+            stValue = struct();
+            stValue.tracking = 'start';
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+
+            
+            % DMI-based settle vibration
+            if this.uieTimeToSettle.get() > 0.1
+                stValue = struct();
+                stSettle = struct();
+                stSettle.value = this.uieVibration.get();
+                stSettle.time = this.uieTimeToSettle.get();
+                stValue.settle = stSettle;
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+            end
+            
+           
+            
+             % WM 4 (drift control)
+            %{
+            stValue = struct();
+            stValue.workingMode = 4; % Drift closed loop for exposure
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            %}
+            
+          
+            
+            % wait for acc of aerial image to settle
+            stValue = struct();
+            stValue.waitForAccOfAIToSettle = true;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % wait for velocity of aerial image to settle
+            stValue = struct();
+            stValue.waitForVelOfAIToSettle = true;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+             % WFZ
+            stValue = struct();
+            stValue.waferZ = this.uiFemTool.dFocus(nMid);
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+           
+            
+            % fadeY
+            stValue = struct();
+            stFadeY = struct();
+            stFadeY.value = this.uieFadeY.get();
+            stFadeY.dose = this.uiFemTool.dDose(mMid);
+            stValue.fadeY = stFadeY;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+           
+            
+            % 2022.01 update to open the SMS slow shutter (glass plate)
+            stValue = struct();
+            stValue.smsSlowShutter = true;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+
+            % State
+            stValue = struct();
+            stValue.type = 'exposure';
+
+            % Exposure task this info is used to color the exposures
+            stTask = struct();
+            stTask.dose = this.uiFemTool.dDose(mMid);
+            stTask.femCols = length(this.uiFemTool.dDose);
+            stTask.femCol = mMid;
+            stTask.femRows = length(this.uiFemTool.dFocus);
+            stTask.femRow = nMid;
+            
+            % Enough time for resonant motion of frame excited from stage move
+            % to settle
+            % stTask.pausePreExpose = 30; % FIX ME
+
+            stValue.task = stTask;
+
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % 2022.01 update to close the SMS slow shutter (glass plate)
+            stValue = struct();
+            stValue.smsSlowShutter = false;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % wm_RUN
+            %{
+            stValue = struct();
+            stValue.workingMode = 5;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            %}
+            
+            % stop fadeY
+            stValue = struct();
+            stValue.stopFadeY = true;
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+            
+            % Stop drift monitor tracking
+            stValue = struct();
+            stValue.tracking = 'stop';
+            ceValues{u8Count} = stValue;
+            u8Count = u8Count + 1;
+                            
+            % Horizontal Serp
+
+            lSerpentine = false;
+
+            for m = 1 : length(this.uiFemTool.dFocus) % rows
+
+                % y position on wafer you want the exposure to be
+                stValue = struct();
+                stValue.waferY = -this.uiFemTool.dY(m); 
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1; 
+
+                for n = 1 : length(this.uiFemTool.dDose) % cols
+
+                    % For even numbered columns, expose the row in reverse
+                    % order so there are never large wafer z changes during
+                    % the FEM and never any large wafer y changes during
+                    % FEM
+
+                    dX = -this.uiFemTool.dX;
+                    dDose = this.uiFemTool.dDose;
+
+                    if lSerpentine && mod(m, 2) == 0 % even row, flip order of cols
+                        dX = flip(dX);
+                        dDose = flip(dDose);
+                    end
+
+
+                    stValue = struct();
+                    stValue.waferX = dX(n); 
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    % Center the reticle fine stage in x and y
+
+                    stValue = struct();
+                    stValue.xReticleFine = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    stValue = struct();
+                    stValue.yReticleFine = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                     % Start drift monitor tracking after WFZ
+                      % 2022.06: Important to have this before the waif for
+                      % Acc and waitForVel to settle because resetting the
+                      % DMI will artifically inflate the accel and velocity
+                      % values.  Need to make sure that the velocity used
+                      % in the fadeY function represents actual velocity
+                      % and not something artifically altered by issuing
+                      % the start/stop tracking
+                    
+                      
+                    stValue = struct();
+                    stValue.tracking = 'start';
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    % DMI-based vibration settle
+                    if this.uieTimeToSettle.get() > 0.1
+                        stValue = struct();
+                        stSettle = struct();
+                        stSettle.value = this.uieVibration.get();
+                        stSettle.time = this.uieTimeToSettle.get();
+                        stValue.settle = stSettle;
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                    end
+
+
+                     
+                    
+                    
+                    
+                    
+                    % wait for acc of aerial image to settle
+                    stValue = struct();
+                    stValue.waitForAccOfAIToSettle = true;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    % wait for velocity of aerial image to settle
+                    stValue = struct();
+                    stValue.waitForVelOfAIToSettle = true;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    
+                    % Val you want HS to read during exposure
+                    
+                    stValue = struct();
+                    stValue.waferZ = this.uiFemTool.dFocus(m);
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                   
+
+                    % fadeY
+                    stValue = struct();
+                    stFadeY = struct();
+                    stFadeY.value = this.uieFadeY.get();
+                    stFadeY.dose = dDose(n);
+                    stValue.fadeY = stFadeY;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                     % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                     %{
+                    stValue = struct();
+                    stValue.workingMode = 4; % Drift closed loop for exposure
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                     %}
+
+                    % 2022.01 update to open the SMS slow shutter (glass plate)
+                    stValue = struct();
+                    stValue.smsSlowShutter = true;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+
+                    % Exposure task 
+                    stValue = struct();
+                    stValue.type = 'exposure';
+
+                    stTask = struct();
+                    stTask.dose = dDose(n); % cant use this since the flip each row. this.uiFemTool.dDose(n);
+                    stTask.femCols = length(this.uiFemTool.dDose);
+                    stTask.femRows = length(this.uiFemTool.dFocus);
+
+                    stTask.femRow = m;
+
+                    if lSerpentine && mod(m, 2) == 0
+                        % even rows go backwards through cols  cols go backwards through rows
+                        % n = row index
+                        % m = col index
+                        stTask.femCol = length(this.uiFemTool.dDose) + 1 - n;
+                    else
+                        stTask.femCol = n;
+                    end
+
+                    % Enough time for resonant motion of frame excited from stage move
+                    % to settle
+                    % stTask.pausePreExpose = 5;
+
+                    stValue.task = stTask;
+
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    % 2022.01 update to open the SMS slow shutter (glass plate)
+                    stValue = struct();
+                    stValue.smsSlowShutter = false;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    
+                    % wm_RUN
+                    %{
+                    stValue = struct();
+                    stValue.workingMode = 5;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    %}
+                    
+                    % stop fadeY
+                    stValue = struct();
+                    stValue.stopFadeY = true;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    % Stop drift monitor tracking
+                    stValue = struct();
+                    stValue.tracking = 'stop';
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                    
+                    
+
+                end
+               
+                
+            end
+                                
+            stUnit = struct();
+            stUnit.waferX = 'mm';
+            stUnit.waferY = 'mm';
+            stUnit.waferZ = 'nm';
+            stUnit.reticleX = 'mm';
+            stUnit.reticleY = 'mm';
+            stUnit.xReticleFine = 'um';
+            stUnit.yReticleFine = 'um';
+            stUnit.pupilFill = 'n/a';
+            stUnit.workingMode = 'n/a';
+            
+            stRecipe = struct();
+            stRecipe.process = this.uiProcessTool.savePublic();
+            stRecipe.fem = this.uiFemTool().savePublic();
+            stRecipe.unit = stUnit;
+            stRecipe.values = ceValues;
+            
+            
+            
+        end
+        
         
         function stRecipe = getRecipe(this)
+            
+            if this.uicbFadeY.get()
+                stRecipe = this.getRecipeFadeY();
+                return
+            end
             
             
             % There is order to the states.
@@ -313,14 +720,16 @@ classdef PrescriptionTool < mic.Base
             
             % Use first state to set reticle field and pupil fill 
             
-                        u8Count = 1;
-                        
+            u8Count = 1;
+            
+            %{
             stValue = struct();
             stValue.type = 'setup';
             stValue.reticleX = this.uiReticleTool.dX;
             stValue.reticleY = this.uiReticleTool.dY;
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+            %}
             
             % stValue.pupilFill = this.uiPupilFillTool.get();
             
@@ -870,6 +1279,19 @@ classdef PrescriptionTool < mic.Base
             
             
          end
+         
+         function onUiCbFadeY(this, src, evt)
+             
+             if this.uicbFadeY.get()
+                this.uieFadeY.show();
+             else
+                this.uieFadeY.hide();
+             end
+             
+         end
+         
+         function onUiEditFadeY(this, src, evt)
+         end
         
           function onUiEditVibration(this, src, evt)
             
@@ -888,14 +1310,27 @@ classdef PrescriptionTool < mic.Base
         
             this.uieVibration = mic.ui.common.Edit(...
                 'cType', 'd', ...
-                'cLabel', 'Vibration (nm)', ...
+                'cLabel', 'Vib nm', ...
                 'fhDirectCallback', @this.onUiEditVibration ...
             );
             this.uieVibration.set(1);
+            
+            this.uicbFadeY = mic.ui.common.Checkbox(...
+                'cLabel', 'Fade Y', ...
+                'fhDirectCallback', @this.onUiCbFadeY ...
+            );
+                        
+            this.uieFadeY = mic.ui.common.Edit(...
+                'cType', 'd', ...
+                'cLabel', 'Fade Y nm', ...
+                'fhDirectCallback', @this.onUiEditFadeY ...
+            );
+            this.uieFadeY.set(1.1);
+            
         
             this.uieTimeToSettle = mic.ui.common.Edit(...
                 'cType', 'd', ...
-                'cLabel', 'Time To Settle (sec)', ...
+                'cLabel', 'Settle sec', ...
                 'fhDirectCallback', @this.onUiEditVibration ...
             );
             this.uieTimeToSettle.set(120);

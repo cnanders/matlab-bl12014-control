@@ -302,7 +302,7 @@ classdef Hardware < mic.Base
             try
                 this.commALS = cxro.ALS();
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -347,7 +347,7 @@ classdef Hardware < mic.Base
                     'cHost', this.cTcpipWebSwitchBeamline ...
                 );
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -384,7 +384,7 @@ classdef Hardware < mic.Base
                     'cHost', '192.168.20.30' ...
                 );
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -422,7 +422,7 @@ classdef Hardware < mic.Base
                 this.commDoseMonitor.connect();
                 this.commDoseMonitor.getCounts(); % Make sure it can talk to hardware
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -462,7 +462,7 @@ classdef Hardware < mic.Base
                 % controller.
                 this.commWebSwitchVis.turnOnRelay1();
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -495,7 +495,7 @@ classdef Hardware < mic.Base
             try
                 this.commBL1201CorbaProxy = cxro.bl1201.beamline.BL1201CorbaProxy();
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -529,7 +529,7 @@ classdef Hardware < mic.Base
             try
                 this.commDCTCorbaProxy = cxro.bl1201.dct.DctCorbaProxy();
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -570,7 +570,7 @@ classdef Hardware < mic.Base
                 this.commMfDriftMonitor = this.jMet5Instruments.getMfDriftMonitor();
                 this.commMfDriftMonitor.connect();
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -604,7 +604,7 @@ classdef Hardware < mic.Base
                     'cTcpipHost', '192.168.20.38' ...
                 );
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -640,7 +640,7 @@ classdef Hardware < mic.Base
                 );
                 this.commRigolDG1000Z.idn()                       
            catch mE
-                error(getReport(mE));
+                % error(getReport(mE));
            end
         end
         
@@ -687,7 +687,8 @@ classdef Hardware < mic.Base
                 
             catch mE
                 
-                error(getReport(mE));
+                getReport(mE);
+                % error(getReport(mE));
             end
         end
         
@@ -792,7 +793,8 @@ classdef Hardware < mic.Base
             catch mE
                 
                 this.commMightex1 = [];
-                error(getReport(mE));
+                getReport(mE);
+                % error(getReport(mE));
             end
             
         end
@@ -837,7 +839,7 @@ classdef Hardware < mic.Base
             catch mE
                 
                 this.commNewFocus8742M142 = [];
-                error(getReport(mE));
+                % error(getReport(mE));
             end
             
         end
@@ -880,7 +882,7 @@ classdef Hardware < mic.Base
             catch mE
                 
                 this.commNewFocus8742MA = [];
-                error(getReport(mE));
+                % error(getReport(mE));
             end
             
         end
@@ -923,7 +925,7 @@ classdef Hardware < mic.Base
             catch mE
                 
                 this.commMightex2 = [];
-                error(getReport(mE));
+                % error(getReport(mE));
             end
             
         end
@@ -1227,7 +1229,7 @@ classdef Hardware < mic.Base
             catch mE
                 
                 % Will crash the app, but gives lovely stack trace.
-                error(getReport(mE));
+                % error(getReport(mE));
                 
                 this.commWagoD141 = [];
                 
@@ -1270,7 +1272,7 @@ classdef Hardware < mic.Base
             [e,estr] = this.commExitSlit.checkServer();
             if e
                 this.commExitSlit = [];
-                error('Problem attaching to pico server');
+                % error('Problem attaching to pico server');
             end
             
         end
