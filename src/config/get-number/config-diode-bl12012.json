@@ -1,0 +1,13 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "uA",
+			"slope": 1000,
+			"offset": 0,
+			"precision": 3
+		}
+	]
+}	
+	
+	
