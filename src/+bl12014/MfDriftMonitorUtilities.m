@@ -713,7 +713,7 @@ classdef MfDriftMonitorUtilities
             
         end
         
-        
+
         % Returns the low frequency velocity (nm) of the aerial image relative to the
         % wafer over the last 1 second. 
         % @param {ArrayList<SampleData> 1x1} samples - sample data
@@ -736,7 +736,7 @@ classdef MfDriftMonitorUtilities
            
         end
         
-        % Returns the low frequency velocity (nm) of the aerial image relative to the
+        % Returns the low frequency acceleration (nm) of the aerial image relative to the
         % wafer over the last 1 second. 
         % @param {ArrayList<SampleData> 1x1} samples - sample data
         

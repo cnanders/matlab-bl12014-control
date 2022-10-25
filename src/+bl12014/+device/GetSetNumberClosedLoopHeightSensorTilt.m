@@ -65,7 +65,7 @@ classdef GetSetNumberClosedLoopHeightSensorTilt < mic.interface.device.GetSetNum
         u8MovesMax = uint8(5);
         
         % Amount of time to wait for set move before timeout
-        dStageWaitTime = 30 % seconds
+        dStageWaitTime = 90 % seconds
         
         % Delay between successive polling of fhGet calls
         dStageCheckPeriod = 1 %seconds

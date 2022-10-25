@@ -154,12 +154,13 @@ classdef Hardware < mic.Base
             this.uiBL1201CorbaProxy.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
+            % this.uiExitSlit.build(hParent, dLeft, dTop);
+%             dTop = dTop + dSep;
+            
 %             this.uiRigol.build(hParent, dLeft, dTop);
 %             dTop = dTop + dSep;
             
-            this.uiTekAFG31021.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
+           
             this.uiSmarActM141.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
@@ -167,20 +168,32 @@ classdef Hardware < mic.Base
             this.uiWagoD141.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiExitSlit.build(hParent, dLeft, dTop);
+            this.uiDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
+            
+            
+            %%% END FRONT BEAMLINE STUFF
+            
+            
+            dTop = dTop + dSep;
+            
+
             
             this.uiGalilD142.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiGalilM143.build(hParent, dLeft, dTop);
+             this.uiTekAFG31021.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
+                       
             
              this.uiNPointM142.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             
             this.uiNewFocus8742M142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+             this.uiGalilM143.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             
@@ -221,8 +234,7 @@ classdef Hardware < mic.Base
             this.uiMfDriftMonitorMiddleware.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
+            
             
             this.uiKeithleyReticle.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
