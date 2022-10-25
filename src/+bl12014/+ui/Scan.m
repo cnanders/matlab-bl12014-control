@@ -519,6 +519,8 @@ classdef Scan < mic.Base
             
             dWidthTask = 400;
             
+            % 2022.09 comment out ALS beamline stuff
+            
            this.uiStateUndulatorIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
            
@@ -527,6 +529,12 @@ classdef Scan < mic.Base
            
            this.uiStateExitSlitIsCalibrated.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
+
+           
+           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
+           dTop = dTop + dSep;
+           
+           % END of SMS stuff that is not relevent
            
            this.uiStateEndstationLEDsOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
@@ -536,9 +544,7 @@ classdef Scan < mic.Base
            
            this.uiStateSR570MDMIsSet.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
            dTop = dTop + dSep;
-           
-           this.uiStateM141SmarActOff.build(this.hPanelAdded, dLeft, dTop, dWidthTask);
-           dTop = dTop + dSep;
+
            
            
            %{
@@ -2252,7 +2258,7 @@ classdef Scan < mic.Base
                                     dTimeElapsed = toc(this.dTicScanSetState);
                                     if dTimeElapsed > 20 && ~this.lSkipWorkingMode
                                         % comment 2021.04.01
-                                        % this.uiSequenceRecoverFem.execute();
+                                        this.uiSequenceRecoverFem.execute();
                                     end
                                     
                                     dGoal = this.getStageXFromWaferX(stValue.waferX);
@@ -2274,7 +2280,7 @@ classdef Scan < mic.Base
                                     dTimeElapsed = toc(this.dTicScanSetState);
                                     if (dTimeElapsed > 20)
                                         % comment 2021.04.01
-                                        % this.uiSequenceRecoverFem.execute();
+                                        this.uiSequenceRecoverFem.execute();
                                     end
                                     
                                     dGoal = this.getStageYFromWaferY(stValue.waferY);

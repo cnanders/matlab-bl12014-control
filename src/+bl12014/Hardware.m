@@ -36,9 +36,9 @@ classdef Hardware < mic.Base
         % Endstation 1 Subnet
         cTcpipLc400MA               = '192.168.20.20'
         % cTcpipGalilVibrationIsolationSystem = '192.168.20.21'
-        cTcpipAcromag               = '192.168.20.22'
+        cTcpipAcromag               = '192.168.20.22' % met5vme.dhcp.lbl.gov
         cTcpipDeltaTau              = '192.168.20.23'
-        cTcpipSmarActLSIGoni        = '192.168.20.24'
+        cTcpipSmarActLSIGoni        = '192.168.20.24' % 
         cTcpipSmarActLSIHexapod     = '192.168.20.25'
         cTcpipSmarActFocusMonitor   = '192.168.20.26'
         cTcpipDataTranslation       = '192.168.20.27'

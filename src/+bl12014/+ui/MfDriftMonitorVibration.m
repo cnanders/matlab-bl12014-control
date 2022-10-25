@@ -47,6 +47,7 @@ classdef MfDriftMonitorVibration < mic.Base
         hLinesCas = []
         hLinesTime = []
         
+        uiButtonZeroDMI
         uiTogglePlayPause
         uiButtonSave
         uiButtonLoad
@@ -805,7 +806,10 @@ classdef MfDriftMonitorVibration < mic.Base
             dLeft = 10;
             dSep = 30;
             
+            this.uiButtonZeroDMI.build(this.hParent, dLeft, dTop, 100, 24);
+            
             dTop = dTop + 30;
+            
             this.uiTogglePlayPause.build(this.hParent, dLeft, dTop, 100, 24);
             % dTop = dTop + dSep;
             
@@ -813,8 +817,12 @@ classdef MfDriftMonitorVibration < mic.Base
             this.uiEditNumOfSamples.build(this.hParent, dLeft, dTop - 10, 150, 24);
             dTop = dTop + dSep;
             
+            
+            
             dLeft = 10;
             this.uiCheckboxAutoSave.build(this.hParent, dLeft, dTop, 200, 24);
+            
+            
             
             this.buildPanelSaveLoad();
             this.buildPanelCasSettings();
@@ -2001,6 +2009,11 @@ classdef MfDriftMonitorVibration < mic.Base
                 'fhDirectCallback', @this.onUiButtonLoad ...
             );
         
+           this.uiButtonZeroDMI = mic.ui.common.Button(...
+               'cText', 'Zero DMI',...
+               'fhDirectCallback', @(src, evt) this.hardware.getMfDriftMonitorMiddleware().setDMIZero() ...
+           );
+
             cDirThis = fileparts(mfilename('fullpath'));
 
             cPath = mic.Utils.path2canonical(fullfile(cDirThis, '..', '..', 'save', 'hs-dmi'));

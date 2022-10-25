@@ -73,6 +73,7 @@ classdef GetSetNumberClosedLoopHeightSensorTilt < mic.interface.device.GetSetNum
         % {logical 1x1} 
         lReady = true
         
+        dSensorDestination
          
     end
     
@@ -134,6 +135,7 @@ classdef GetSetNumberClosedLoopHeightSensorTilt < mic.interface.device.GetSetNum
         % Called when destination is set
         function set(this, dSensorDestination)
             
+            this.dSensorDestination = dSensorDestination;
             u8iterationCt = 0;
             dLastError = 0;
             
@@ -230,7 +232,18 @@ classdef GetSetNumberClosedLoopHeightSensorTilt < mic.interface.device.GetSetNum
                     return
                 end
                 
-                cMsg = sprintf('Stage is moving ..., %d/%d pausing %0.2f sec', k, dNWaitCycles, this.dStageCheckPeriod);
+                dMotor = this.fhGetMotor();
+                dSensorValue    = this.fhGetSensorDuringMove();
+                                
+                cMsg = sprintf(...
+                    'Moving. Sensor: %1.1f Goal: %1.1f Motor: %1.1f %d/%d pausing %0.2f sec', ...
+                    dSensorValue, ...
+                    this.dSensorDestination, ...
+                    dMotor, ...
+                    k, ...
+                    dNWaitCycles, ...
+                    this.dStageCheckPeriod ...
+                );
                 
                 this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                 pause(this.dStageCheckPeriod);

@@ -3,7 +3,7 @@ classdef Hardware < mic.Base
     properties (Constant)
        
         dWidthName = 400
-        pur
+ 
     end
     
 	properties
@@ -134,20 +134,13 @@ classdef Hardware < mic.Base
 
             this.uiStateConnected.build(this.hParent, dLeft, dTop, 630);
             dTop = dTop + dSep;
-            
-            
-            
-            
+
             this.uiALS.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
-            
-           
-            
+
             this.uiWebSwitchBeamline.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
-            
-           
-            
+
 %             this.uiDCTCorbaProxy.build(hParent, dLeft, dTop);
 %             dTop = dTop + dSep;
             
@@ -168,43 +161,70 @@ classdef Hardware < mic.Base
             this.uiWagoD141.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
+             this.uiNPointM142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+             this.uiNewFocus8742M142.build(hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+             
+            this.uiGalilD142.build(hParent, dLeft, dTop);
+            
+            % DCT devices
+            
+            dTop = dTop + dSep;
+            dTop = dTop + dSep;
+            dTop = dTop + dSep;
+            dTop = dTop + dSep;
+           
+            
+             this.uiSR570DCT1.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiSR570DCT2.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            this.uiAerotechStageDCTWafer.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            this.uiSmarActStageDCTAperture.build(this.hParent, dLeft, dTop);
+            dTop = dTop + dSep;
+            
+            
+            
+            % .20 devices
+            % col 2
+
+            
+            dLeft = 680;
+            dTop = dTopStart;
+            
+            dTop = dTop + dSep;
+            
             this.uiDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-            
-            %%% END FRONT BEAMLINE STUFF
-            
-            
-            dTop = dTop + dSep;
-            
-
-            
-            this.uiGalilD142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
              this.uiTekAFG31021.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
                        
             
-             this.uiNPointM142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
             
-            this.uiNewFocus8742M142.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
+            
+           
             
              this.uiGalilM143.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
             
-            % ROW 2 Endstation
-            
-            dLeft = 680;
-            dTop = dTopStart;
+
             
            
             
-              this.uiSMS.build(this.hParent, dLeft, dTop);
+            this.uiSMS.build(this.hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
              this.uiDoseMonitor.build(this.hParent, dLeft, dTop);
@@ -263,24 +283,10 @@ classdef Hardware < mic.Base
             this.uiNPointMA.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
             
-           
-            dTop = dTop + dSep; % DCT start
-            
+                       
             this.uiNewFocus8742MA.build(hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-             this.uiSR570DCT1.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiSR570DCT2.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
             
-            this.uiAerotechStageDCTWafer.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiSmarActStageDCTAperture.build(this.hParent, dLeft, dTop);
-            dTop = dTop + dSep;
             
             
             

@@ -19,7 +19,7 @@ catch mE
 end
 
 
-jMet5Instruments.getMfDriftMonitor()
+% jMet5Instruments.getMfDriftMonitor()
 
 
  
