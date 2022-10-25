@@ -40,6 +40,7 @@ classdef Beamline < mic.Base
         cNameOutputM141Diode = 'output-m141-diode'
         cNameOutputD141Diode = 'output-d141-diode'
         cNameOutputD142Diode = 'output-d142-diode'
+        cNameOutputDiodeBL12012 = 'output-diode-bl12012'
         
         cNameDeviceExitSlit = 'exit_slit'
         cNameDeviceUndulatorGap = 'undulator_gap'
@@ -49,11 +50,13 @@ classdef Beamline < mic.Base
         cNameDeviceD141Current = 'measur_point_d141'
         cNameDeviceM141Current = 'measur_point_m141'
         cNameDeviceD142Current = 'measur_point_d142'
+        cNameDeviceDiodeBL12012 = 'measur_point_bl12012'
         
         
         cScanAcquireTypeM141Current = 'scan_acquire_type_m141_current'
         cScanAcquireTypeD141Current = 'scan_acquire_type_d141_current'
         cScanAcquireTypeD142Current = 'scan_acquire_type_d142_current'
+        cScanAcquireTypeDiodeBL12012 = 'scan_acquire_type_diode_bl12012'
 
         
         dColorFigure = [200 200 200]./255
@@ -88,6 +91,7 @@ classdef Beamline < mic.Base
         uiD141
         uiM142
         uiD142
+        uiDiodeBL12012
         
         % {mic.ui.device.GetSetLogical 1x1}}
         uiSwitch1Outlet1
@@ -210,47 +214,6 @@ classdef Beamline < mic.Base
         
         end
         
-        %{
-        function connectKeithley6482(this, comm)
-            % Temporary Hack using Keithley to get D141 photo current
-            % Need to click "connect" button from Wafer Module since
-            % there is not one in this UI
-            device = bl12014.device.GetNumberFromKeithley6482(comm, 1);
-            this.uiD141.uiCurrent.setDevice(device);
-            this.uiD141.uiCurrent.turnOn();
-        end
-        
-        function disconnectKeithley6482(this)
-            this.uiD141.uiCurrent.turnOff()
-            this.uiD141.uiCurrent.setDevice([]);
-        end
-        %}
-        
-        function connectGalil(this, comm)
-            device = bl12014.device.GetSetNumberFromStage(comm, 0);
-            this.uiD142.uiStageY.setDevice(device);
-            this.uiD142.uiStageY.turnOn()
-            this.uiD142.uiStageY.syncDestination()
-            
-        end
-        
-        function disconnectGalil(this, comm)
-            this.uiD142.uiStageY.turnOff()
-            this.uiD142.uiStageY.setDevice([]);
-        end
-        
-        function connectExitSlit(this, comm)
-            this.uiExitSlit.connectExitSlit(comm);
-        end
-        
-        function disconnectExitSlit(this)
-            this.uiExitSlit.disconnectExitSlit();
-
-        end
-        
-        
-        
-        
         
         function build(this, hParent, dLeft, dTop)
             
@@ -270,6 +233,8 @@ classdef Beamline < mic.Base
             
             this.uiSwitch1Outlet2.build(hParent, dLeft, dTop);
             dTop = dTop + dSep;
+            
+            this.uiDiodeBL12012.build(hParent, dLeft, dTop);
             
             dTop = 20;
             dSep = 10;
@@ -297,6 +262,8 @@ classdef Beamline < mic.Base
             
             this.uiD142.build(hParent, dLeft + dOffsetLeft, dTop);
             dTop = dTop + this.uiD142.dHeight + dSep;
+            
+            % Don't build uiDiodeBL12012
             
             this.uiShutter.build(hParent, dLeft + dOffsetLeft, dTop);
             dTop = dTop + this.uiShutter.dHeight + dSep;
@@ -471,36 +438,6 @@ classdef Beamline < mic.Base
             
             this.msg('delete', this.u8_MSG_TYPE_CLASS_DELETE);
                         
-            
-            %{
-            % Get properties:
-            ceProperties = properties(this);
-            
-            % Delete all props that are objects and handles
-            
-            for k = 1:length(ceProperties)
-                
-                this.msg(sprintf('delete checking prop %s ', ceProperties{k}), this.u8_MSG_TYPE_PROP_DELETE_CHECK);
-                
-                if  isobject(this.(ceProperties{k}))  | ... 
-                    ishandle(this.(ceProperties{k}))
-                    
-                    this.msg(sprintf('delete deleting %s ', ceProperties{k}), this.u8_MSG_TYPE_PROP_DELETED);
-                    delete(this.(ceProperties{k}));
-                else
-                    cMsg = [ ...
-                        sprintf('delete skipping %s', ceProperties{k}), ...
-                        sprintf('isobject = %d, ',  isobject(this.(ceProperties{k}))), ...
-                        sprintf('ishandle = %d', ishandle(this.(ceProperties{k}))) ...
-                    ];
-                    this.msg(cMsg, this.u8_MSG_TYPE_PROP_DELETE_SKIPPED);
-                end
-            end
-            %}
-            
-            
-            % delete(this.deviceShutterVirtual)
-            
             
             delete(this.uiExitSlit)
             delete(this.uiUndulatorGap)
@@ -898,11 +835,17 @@ classdef Beamline < mic.Base
             stOutputTypeD142Diode = struct( ...
                 'cLabel', 'D142 Diode', ...
                 'cValue', this.cNameOutputD142Diode ...
-            ); 
+            );
+            stOutputTypeDiodeBL12012Diode = struct( ...
+                'cLabel', 'BL12012 Diode', ...
+                'cValue', this.cNameOutputDiodeBL12012 ...
+            );
+        
             ceOptions = { ...
                 stOutputTypeM141Diode, ...
                 stOutputTypeD141Diode, ...
-                stOutputTypeD142Diode ...
+                stOutputTypeD142Diode, ...
+                stOutputTypeDiodeBL12012Diode ...
             };
         
             this.uiPopupRecipeOutput = mic.ui.common.PopupStruct(...
@@ -1004,6 +947,11 @@ classdef Beamline < mic.Base
                 'hardware', this.hardware ...
             );
             this.uiD142 = bl12014.ui.D142(...
+                'clock', this.uiClock, ...
+                'hardware', this.hardware ...
+            );
+        
+            this.uiDiodeBL12012 = bl12014.ui.DiodeBL12012(...
                 'clock', this.uiClock, ...
                 'hardware', this.hardware ...
             );
@@ -1352,6 +1300,10 @@ classdef Beamline < mic.Base
                         stTask.type = this.cScanAcquireTypeD141Current;
                     case this.cNameOutputD142Diode
                         stTask.type = this.cScanAcquireTypeD142Current;
+                    case this.cNameOutputDiodeBL12012
+                        stTask.type = this.cScanAcquireTypeDiodeBL12012;
+
+                        
                 end
                 
                 stTask.pause = 0.25;
@@ -1395,6 +1347,8 @@ classdef Beamline < mic.Base
             st.(this.cNameDeviceD141Current) = this.uiD141.uiCurrent.getUnit().name;
             st.(this.cNameDeviceM141Current) = this.uiM141.uiCurrent.getUnit().name;
             st.(this.cNameDeviceD142Current) = this.uiD142.uiCurrent.getUnit().name;
+            st.(this.cNameDeviceDiodeBL12012) = this.uiDiodeBL12012.uiCurrent.getUnit().name;
+
         end
         
         % For every field of this.stScanSetContract, set its lSetRequired and 
@@ -1715,6 +1669,9 @@ classdef Beamline < mic.Base
                 case this.cScanAcquireTypeD142Current
                     this.stScanAcquireContract.(this.cNameDeviceD142Current).lRequired = true;
                     this.stScanAcquireContract.(this.cNameDeviceD142Current).lIssued = false;
+                case this.cScanAcquireTypeDiodeBL12012
+                    this.stScanAcquireContract.(this.cNameDeviceDiodeBL12012).lRequired = true;
+                    this.stScanAcquireContract.(this.cNameDeviceDiodeBL12012).lIssued = false;
                 
                 otherwise
                     % Do nothing
@@ -1786,6 +1743,21 @@ classdef Beamline < mic.Base
                     this.stScanAcquireContract.(this.cNameDeviceD142Current).lIssued = true;
                     
                 
+                case this.cScanAcquireTypeDiodeBL12012
+                    
+                    % Pause
+                    pause(stTask.pause);
+                    
+                    % Get the state of the system
+                    stValue = this.getState(stUnit);
+                    this.ceValues{this.scan.u8Index} = stValue;
+            
+                    % Update the plot data with MeasurPoint value
+                    this.dScanDataValue(this.scan.u8Index) = stValue.(this.cNameDeviceDiodeBL12012);
+                                        
+                    % Update the contract lIssued
+                    this.stScanAcquireContract.(this.cNameDeviceDiodeBL12012).lIssued = true;
+                    
                 otherwise 
                     % do nothing
             end
@@ -2002,6 +1974,9 @@ classdef Beamline < mic.Base
             st.(this.cNameDeviceM141Current) = this.uiM141.uiCurrent.getValCal(stUnit.(this.cNameDeviceM141Current));
             st.(this.cNameDeviceD141Current) = this.uiD141.uiCurrent.getValCal(stUnit.(this.cNameDeviceD141Current));
             st.(this.cNameDeviceD142Current) = this.uiD142.uiCurrent.getValCal(stUnit.(this.cNameDeviceD142Current));
+            st.(this.cNameDeviceDiodeBL12012) = this.uiDiodeBL12012.uiCurrent.getValCal(stUnit.(this.cNameDeviceDiodeBL12012));
+
+            
             st.(this.cNameDeviceExitSlit) = this.uiExitSlit.uiGap.getValCal(stUnit.(this.cNameDeviceExitSlit));
             st.(this.cNameDeviceUndulatorGap) = this.uiUndulatorGap.getValCal(stUnit.(this.cNameDeviceUndulatorGap));
             st.(this.cNameDeviceGratingTiltX) = this.uiGratingTiltX.getValCal(stUnit.(this.cNameDeviceGratingTiltX));
@@ -2010,16 +1985,7 @@ classdef Beamline < mic.Base
 
         end
         
-        
-        
-        
-   
-        
-        
-        
        
-        
-        
         
         
         function initUiPositionRecaller(this)
