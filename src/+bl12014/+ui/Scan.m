@@ -210,6 +210,9 @@ classdef Scan < mic.Base
         
         dZHeightSensorTarget = 0;
         dChargeDoseMonitor = 0;
+        
+        dSpeedWCXBeforeScan = 2; % mm/s
+        dSpeedWCXDuringScan = 20; % mm/s
     end
     
         
@@ -1023,6 +1026,7 @@ classdef Scan < mic.Base
                 'task', bl12014.Tasks.createSequenceLevelWafer(...
                     [this.cName, 'task-sequence-level-wafer'], ...
                     this.uiWafer.uiWaferTTZClosedLoop, ...
+                    this.hardware, ...
                     ...% this.uiWafer.uiWaferTTZClosedLoopuiHeightSensorLEDs, ...
                     this.clock ...
                  ), ...
@@ -2893,6 +2897,8 @@ classdef Scan < mic.Base
 
         function onScanComplete(this, stUnit)
             
+             this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXBeforeScan);
+
              this.saveScanResultsCsv(stUnit);
              this.saveScanResultsJson(stUnit, false);
              
@@ -2994,8 +3000,13 @@ classdef Scan < mic.Base
                     0.25 ... % Need larger than the PPMAC cache period of 0.2 s
                 );
                 
-            
+                this.dSpeedWCXBeforeScan = this.hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse();
+
+                this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXDuringScan);
+                            
                 this.initScanTimingStore();
+                
+                
                 this.scan.start();
             % end
             
@@ -3022,6 +3033,8 @@ classdef Scan < mic.Base
             % Send to working mode 5
             this.hardware.getMfDriftMonitor().monitorStop();
             this.hardware.getDeltaTauPowerPmac().setWorkingModeRun();
+            this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXBeforeScan);
+
             %this.uiWafer.uiWorkingMode.uiWorkingMode.setDestCalDisplay(5); 
             %this.uiWafer.uiWorkingMode.uiWorkingMode.moveToDest();
             
