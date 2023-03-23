@@ -1,4 +1,4 @@
-try
+ try
     purge
 catch mE
 end

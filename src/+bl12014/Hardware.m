@@ -660,7 +660,14 @@ classdef Hardware < mic.Base
         %% SmarAct VPFM
         
         function l = getIsConnectedSmarActVPFM(this)
-                       
+            
+            if this.notEmptyAndIsA(this.commSmarActVPFM, 'smaract.MCS')
+                l = true;
+                return;
+            end
+            l = false;
+               
+            %{
             if ( ...
                 this.notEmptyAndIsA(this.commSmarActVPFM, 'cxro.common.device.motion.Stage') || ...
                 this.notEmptyAndIsA(this.commSmarActVPFM, 'cxro.common.device.motion.SmarActMcsController') ...
@@ -670,9 +677,26 @@ classdef Hardware < mic.Base
                 return;
             end
             l = false;
+            %}
         end
         
         function connectSmarActVPFM(this)
+            
+            try
+                % NOTE TO CHRIS 2023.02.14 - this is for MCS1 controller
+                % current hardware configuration is MCS2 controller stollen
+                % from DCT2.  The MCS does not work
+                this.commSmarActVPFM = smaract.MCS(....
+                    'cHost', '192.168.20.24', ...
+                    'cPort', '5000' ...
+                );
+            catch mE
+                getReport(mE)
+                % error(getReport(mE))
+            end
+            
+            % 2022.11.02 commenting Java code from Carl/Will
+            %{
             
             this.getjMet5Instruments();
              try
@@ -690,12 +714,13 @@ classdef Hardware < mic.Base
                 getReport(mE);
                 % error(getReport(mE));
             end
+            %}
         end
         
         function disconnectSmarActVPFM(this)
-             if this.getIsConnectedSmarActVPFM()
-                 this.commSmarActVPFM.disconnect();
-             end
+%              if this.getIsConnectedSmarActVPFM()
+%                  this.commSmarActVPFM.disconnect();
+%              end
             this.commSmarActVPFM = [];
         end
                         
@@ -2025,7 +2050,8 @@ classdef Hardware < mic.Base
             this.commBL1201CorbaProxyVirtual = bl12014.hardwareAssets.virtual.BL1201CorbaProxy();
             this.commDCTCorbaProxyVirtual = bl12014.hardwareAssets.virtual.DCTCorbaProxy();
             this.commSmarActM141Virtual = bl12014.hardwareAssets.virtual.Stage();
-            this.commSmarActVPFMVirtual = bl12014.hardwareAssets.virtual.Stage();
+            % this.commSmarActVPFMVirtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commSmarActVPFMVirtual = smaract.MCSVirtual();
             this.commWagoD141Virtual = bl12014.hardwareAssets.virtual.WagoD141();
             this.commExitSlitVirtual = bl12014.hardwareAssets.virtual.BL12PicoExitSlit();
             this.commGalilD142Virtual = bl12014.hardwareAssets.virtual.Stage();

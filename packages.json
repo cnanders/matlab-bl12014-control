@@ -28,6 +28,8 @@
 		"matlab_ascii_comm",
 		"matlab_met5_dose_monitor",
 		"matlab_tektronix_afg_31021",
-		"matlab_euvtech_sms"
+		"matlab_euvtech_sms",
+		"matlab_smaract_mcs",
+		"matlab_aerotech_ensemble"
 	]
 }
