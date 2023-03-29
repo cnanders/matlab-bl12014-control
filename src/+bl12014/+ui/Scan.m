@@ -72,6 +72,7 @@ classdef Scan < mic.Base
         
         dTicScanSetState
         dTicScanAcquire
+        dTicSaveCSV
         dWidthButton = 100
         dWidthPadPanel = 10
         dWidthPadFigure = 10
@@ -1253,7 +1254,8 @@ classdef Scan < mic.Base
                 'yReticleFine', ...
                 'workingMode', ...
                 'shutter', ...
-                'smsSlowShutter', ...
+                'smsSlowShutter' ...
+                % saveCSV is hacked on inside the saveCSV function
             };
 
             for n = 1 : length(ceFields)
@@ -3290,6 +3292,8 @@ classdef Scan < mic.Base
                     return;
             end
             
+            dTicStart = tic;
+            
             
             cName = 'result.csv';
             
@@ -3319,10 +3323,15 @@ classdef Scan < mic.Base
             if length(this.ceValues) == 1
                 for n = 1:dNum
                     fprintf(fid, '%s', ceNames{n});
-                    if n < dNum
+                    
+                    
+                    
+                    %if n < dNum
                         fprintf(fid, ',');
-                    end
+                    %end
+                    
                 end
+                fprintf(fid, 'time_saveCSV');
                 fprintf(fid, '\n');
             end
             
@@ -3338,13 +3347,18 @@ classdef Scan < mic.Base
                             fprintf(fid, '%1.5e', stValue.(ceNames{m}));
                     end
                     
-                    if m < dNum
+                    
+                    %if m < dNum
                         fprintf(fid, ',');
-                    end
+                    %end
+                    
                 end
+                
+                dTimeElapsed = toc(dTicStart);
+                fprintf(fid, '%1.5e', dTimeElapsed);                
                 fprintf(fid, '\n');
             end
-
+                                        
             % Close the file
             fclose(fid);
             
