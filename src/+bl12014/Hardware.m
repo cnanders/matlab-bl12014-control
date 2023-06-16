@@ -460,7 +460,7 @@ classdef Hardware < mic.Base
             
                 % SPECIAL case, also turn on relay 1 so we power on the
                 % controller.
-                this.commWebSwitchVis.turnOnRelay1();
+                % this.commWebSwitchVis.turnOnRelay1();
            catch mE
                 % error(getReport(mE));
            end
