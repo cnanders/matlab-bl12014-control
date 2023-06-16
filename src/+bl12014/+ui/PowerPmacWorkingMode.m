@@ -275,6 +275,8 @@ classdef PowerPmacWorkingMode < mic.Base
         
         function setWorkingMode(this, dVal)
 
+
+          %{
             if (dVal == 7)
               % Send the Hydra MotMin MotGrad "High" settings from PPMAC to the Hydra
               this.uiSendMotMinGradHighToHydras.execute();
@@ -294,6 +296,7 @@ classdef PowerPmacWorkingMode < mic.Base
               end
   
             end
+            %}
   
               
             switch dVal
