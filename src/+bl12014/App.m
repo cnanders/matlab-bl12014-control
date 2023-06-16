@@ -489,7 +489,7 @@ classdef App < mic.Base
                 this.hardware.connectDataTranslation(); % force real hardware 
                 % 2020.07.21
                 % this.hardware.connectMfDriftMonitor(); % force real hardware
-                this.hardware.connectWebSwitchVis(); % force real hardware (connects WebSwitch VIS, turns on power to relay1 - VIS Galil)
+                % this.hardware.connectWebSwitchVis(); % force real hardware (connects WebSwitch VIS, turns on power to relay1 - VIS Galil)
                 % this.hardware.connectGalilVis(); % connects to VIS galil
                
              
