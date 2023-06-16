@@ -280,6 +280,7 @@ classdef Tasks < mic.Base
             dTol = 5;
             
             dVal = 100;
+            
             taskTAW = mic.Task(...
                'fhExecute', @() hardware.getDeltaTauPowerPmac().setDemandAccelTimeWaferCoarse(dVal), ...
                'fhIsDone', @() abs(hardware.getDeltaTauPowerPmac().getDemandAccelTimeWaferCoarse() - dVal) < dTol, ...
@@ -439,7 +440,7 @@ classdef Tasks < mic.Base
             
         
             % PPMAC control max velocity of WCX units of m/s
-            dVal = 2; % 20 % m/s
+            dVal = 4; % 20 % m/s
             dTol = 0.1 * dVal; % 10%
             taskSpeed = mic.Task(...
                'fhExecute', @() hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(dVal), ...
@@ -1406,12 +1407,14 @@ classdef Tasks < mic.Base
             
 
             % wcx, wcy, rcx, rcy, lsix
+            % max for min = 5
+            % max for grad = 6
             dMinLow = [1 1 1 1 1];
             dGradLow = [1 1 1 1 1];
-            dMinNorm = [3.5 3.5 3.5 3.5 0];
-            dGradNorm = [3.5 3.5 3.5 3.5 0];
-            dMinHigh = [4.5 3.5 3.5 3.5 0];
-            dGradHigh = [4.5 3.5 3.5 3.5 0];
+            dMinNorm = [4 4 4 4 0];
+            dGradNorm = [4 4 4 4 0];
+            dMinHigh = [4.9 4 4 4 0];
+            dGradHigh = [4.9 4 4 4 0];
 
 
             dHydra = uint8([1 1 2 2 3]);
