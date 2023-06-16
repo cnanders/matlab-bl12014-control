@@ -115,30 +115,28 @@ classdef Reticle < mic.Base
             dSep = 30;
             
             
-           
-           
-            
             %{
             this.uiCommDataTranslationMeasurPoint.build(this.hParent, dLeft, dTop);
             dTop = dTop + 15 + dSep;
             %}
             
             
-            dTop = 20;
+            dTop = 10;
             dLeft = 10;
             
+            %{
             this.uiMotMinSimple.build(this.hParent, dLeft, dTop);
-            
-            dLeft = 350;
+            dLeft =  dLeft + this.uiMotMinSimple.dWidth + 10;
+            %}
+
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             % this.uiMotMin.build(this.hParent, 800, dTop);
             
 
-            dLeft = 10;
-            dTop = 140;
+
             
-            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             dTop = 190;
+            dLeft = 10;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
@@ -172,6 +170,11 @@ classdef Reticle < mic.Base
             dTop = 220;
             this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
+
+
+            dLeft = 160;
+            dTop = 190;
+            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
                   
             
         end
@@ -237,7 +240,8 @@ classdef Reticle < mic.Base
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', [this.cName, 'pmac-working-mode'], ...
                 'hardware', this.hardware, ...
-                'clock', this.uiClock ...
+                'uiClock', this.uiClock, ...
+                'clock', this.clock ...
             );
         
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...

@@ -15,11 +15,14 @@ classdef PowerPmacWorkingMode < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 300
+        dWidth = 430
         dWidthName = 130
-        dHeight = 160
+        dHeight = 170
         
         cName = 'power-pmac-working-mode'
+
+        uiSendMotMinGradNormToHydras
+        uiSendMotMinGradHighToHydras
         
     end
     
@@ -29,6 +32,7 @@ classdef PowerPmacWorkingMode < mic.Base
         hPanel
         % {bl12014.Hardware 1x1}
         hardware
+        uiClock
         
         
     end
@@ -47,6 +51,10 @@ classdef PowerPmacWorkingMode < mic.Base
             if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
                 error('clock must be mic.Clock | mic.ui.Clock');
             end
+
+            if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
+              error('uiClock must be mic.Clock | mic.ui.Clock');
+            end
             
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
@@ -63,7 +71,7 @@ classdef PowerPmacWorkingMode < mic.Base
             this.hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', 'Working Mode and EPS IO',...
+                'Title', 'PPMAC Working Mode and EPS IO, Hydra Low/Norm/High Push',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -72,7 +80,7 @@ classdef PowerPmacWorkingMode < mic.Base
                 this.dHeight], hParent) ...
             );
         
-			drawnow;            
+			      drawnow;            
 
             dTop = 20;
             dLeft = 10;
@@ -94,6 +102,14 @@ classdef PowerPmacWorkingMode < mic.Base
             
             this.uiWaferPositionLocked.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
+
+
+            dLeft = 180;
+            dTop = 100;
+            dWidth = 230;
+            this.uiSendMotMinGradNormToHydras.build(this.hPanel, dLeft, dTop, dWidth);
+            dTop = dTop + dSep;
+            this.uiSendMotMinGradHighToHydras.build(this.hPanel, dLeft, dTop, dWidth);
             
                        
                         
@@ -102,6 +118,9 @@ classdef PowerPmacWorkingMode < mic.Base
         function delete(this)
             
             this.msg('delete');
+
+            this.uiSendMotMinGradNormToHydras.delete();
+            this.uiSendMotMinGradHighToHydras.delete();
                         
             % Delete the figure
             
@@ -122,7 +141,7 @@ classdef PowerPmacWorkingMode < mic.Base
                 'lShowLabels', false, ...
                 'lShowInitButton', false, ...
                 'dWidthName', this.dWidthName, ...
-                'clock', this.clock ...  
+                'clock', this.uiClock ...  
             };
         end
         
@@ -193,7 +212,7 @@ classdef PowerPmacWorkingMode < mic.Base
             this.uiWorkingMode = mic.ui.device.GetSetNumber(...
                 'cName', this.cName, ...
                 'cLabel', 'Working Mode', ...
-                'clock', this.clock, ...
+                'clock', this.uiClock, ...
                 'config', uiConfig, ...
                 'lShowDest', false, ...
                 'lShowPlay', false, ...
@@ -214,10 +233,39 @@ classdef PowerPmacWorkingMode < mic.Base
                 'lShowStores', true ...
             );
         end
+
+        
         
         
         function init(this)
             this.msg('init()');
+
+           
+
+            this.uiSendMotMinGradNormToHydras = mic.ui.TaskSequence( ...
+                'cName', [this.cName, 'ui-sequence-set-norm'], ...
+                'task', bl12014.Tasks.createSequenceSendMotMinGradNormToHydras(...
+                  [this.cName, 'sequence-set-norm'], ...
+                  this.hardware, ...
+                  this.clock ...
+                ), ...
+                'dDelay', 0.25, ...
+                'lShowIsDone', false, ...
+                'clock', this.clock ...
+            );
+
+            this.uiSendMotMinGradHighToHydras = mic.ui.TaskSequence( ...
+                'cName', [this.cName, 'ui-sequence-set-high'], ...
+                'task', bl12014.Tasks.createSequenceSendMotMinGradHighToHydras(...
+                  [this.cName, 'sequence-set-high'], ...
+                  this.hardware, ...
+                  this.clock ...
+                ), ...
+                'dDelay', 0.25, ...
+                'lShowIsDone', false, ...
+                'clock', this.clock ...
+            );
+
             this.initUiWorkingMode();
             this.initUiWaferPositionLocked();
             this.initUiReticlePositionLocked();
@@ -226,7 +274,28 @@ classdef PowerPmacWorkingMode < mic.Base
         end
         
         function setWorkingMode(this, dVal)
-            
+
+            if (dVal == 7)
+              % Send the Hydra MotMin MotGrad "High" settings from PPMAC to the Hydra
+              this.uiSendMotMinGradHighToHydras.execute();
+
+              % wait until done executing
+              while (this.uiSendMotMinGradHighToHydras.isExecuting())
+                  pause(0.1);
+              end
+  
+            else
+              % Send the Hydra MotMin MotGrad "Norm" settings from PPMAC to the Hydra
+              this.uiSendMotMinGradNormToHydras.execute();
+
+              % wait until done executing
+              while (this.uiSendMotMinGradNormToHydras.isExecuting())
+                  pause(0.1);
+              end
+  
+            end
+  
+              
             switch dVal
                 case 0
                     this.hardware.getDeltaTauPowerPmac().setWorkingModeUndefined();

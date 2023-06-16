@@ -162,8 +162,11 @@ classdef Wafer < mic.Base
             
             dTop = 10;
             dLeft = 10;
+
+            %{
             this.uiMotMinSimple.build(this.hParent, dLeft, dTop);
             dLeft =  dLeft + this.uiMotMinSimple.dWidth + 10;
+            %}
             this.uiWorkingMode.build(this.hParent, dLeft, dTop);
             % this.uiMotMin.build(this.hParent, 800, 10);
             
@@ -188,11 +191,9 @@ classdef Wafer < mic.Base
             
             this.uiSequenceRecoverPpmacAndHydra.build(this.hParent, dLeft, dTop, dWidthSequence);
             
-            dLeft = 10;
-            dTop = 140;
             
-            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
-            dTop = 180;
+            dTop = 190;
+            dLeft = 10;
                         
             this.uiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiCoarseStage.dHeight + dPad;
@@ -247,6 +248,11 @@ classdef Wafer < mic.Base
             dTop = 180;
             this.uiAxes.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiAxes.dHeight + dPad;
+
+            dTop = 180;
+            dLeft = 160
+            
+            this.uiButtonSyncDestinations.build(this.hParent, dLeft, dTop, 120, 24);
             
             
             
@@ -302,7 +308,8 @@ classdef Wafer < mic.Base
             this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
                 'cName', [this.cName, 'pmac-working-mode'], ...
                 'hardware', this.hardware, ...
-                'clock', this.uiClock ...
+                'uiClock', this.uiClock, ...
+                'clock', this.clock ...
             );
         
             this.uiMotMin = bl12014.ui.PowerPmacHydraMotMin(...

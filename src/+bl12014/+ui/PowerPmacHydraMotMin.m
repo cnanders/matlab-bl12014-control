@@ -1,242 +1,282 @@
 classdef PowerPmacHydraMotMin < mic.Base
-    
+
     properties
 
         % {mic.ui.device.GetSetNumber 1x1}}
-        ui1
-        ui2
-        ui3
-        ui4
-        ui5
-        
+
+        % "NORM" values
+        ui1 %wx
+        ui2 %wy
+        ui3 %rx
+        ui4 %ry
+        ui5 %lsix
+
+        % cell of mic.ui.device.GetSetNumber
+        uis = {}
+
+
         uiPositionRecaller
-        
+
         % {mic.ui.device.GetSetLogical 1x1}
-        uiCommDeltaTauPowerPmac
+        
         uiWorkingMode
         uiSequenceSetAll
-        
+
+        uiSequenceSetLow
+        uiSequenceSetNorm
+        uiSequenceSetHigh
+
     end
-    
+
     properties (SetAccess = private)
-        
-        dWidth = 665
-        dHeight = 230
-        
-        cName = 'power-pmac-hydra-mot-min'
-        
+
+        dWidth = 1360
+        dHeight = 200
+
+        cName = 'power-pmac-hydra-mot-min-grad-low-norm-high'
+
         lShowStores = false
         lShowZero = false
         lShowRel = false
-        
+
         commDeltaTau
 
     end
-    
+
     properties (Access = private)
-        
+
         clock
         uiClock
-        
+
         hPanel
-        
+
         dWidthName = 70
         dWidthUnit = 80
-        dWidthVal = 100
+        dWidthVal = 40
+
         dWidthPadUnit = 0 % 280
-        
+
         % {bl12014.Hardware 1x1}
         hardware
 
-        
     end
-    
+
     methods
-        
+
         function this = PowerPmacHydraMotMin(varargin)
-            
-            for k = 1 : 2: length(varargin)
+
+            for k = 1:2:length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
-                if this.hasProp( varargin{k})
+
+                if this.hasProp(varargin{k})
                     this.msg(sprintf(' settting %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_SET);
                     this.(varargin{k}) = varargin{k + 1};
                 end
+
             end
-            
+
             if ~isa(this.clock, 'mic.Clock')
                 error('clock must be mic.Clock');
             end
-            
+
             if ~isa(this.uiClock, 'mic.Clock') && ~isa(this.uiClock, 'mic.ui.Clock')
                 error('uiClock must be mic.Clock | mic.ui.Clock');
             end
-            
+
             if ~isa(this.hardware, 'bl12014.Hardware')
                 error('hardware must be bl12014.Hardware');
             end
-            
+
             this.init();
-            
-            
-        
+
         end
-            
 
         function build(this, hParent, dLeft, dTop)
-                                    
-            this.hPanel = uipanel(...
-                'Parent', hParent,...
-                'Units', 'pixels',...
-                'Title', 'PPMAC Hyrda Mot Min',...
-                'Clipping', 'on',...
+
+            this.hPanel = uipanel( ...
+                'Parent', hParent, ...
+                'Units', 'pixels', ...
+                'Title', 'PPMAC Hyrda Mot Min/Grad Low/Norm/High', ...
+                'Clipping', 'on', ...
                 'Position', mic.Utils.lt2lb([ ...
-                dLeft ...
-                dTop ...
-                this.dWidth ...
-                this.dHeight], hParent) ...
+                                   dLeft ...
+                                   dTop ...
+                                   this.dWidth ...
+                                   this.dHeight], hParent) ...
             );
-        
-            dTop = 20;
+
+            dTopStart = 20;
+            dTop = dTopStart;
             dLeft = 10;
             dSep = 24;
-            
-                       
-            this.uiCommDeltaTauPowerPmac.build(this.hPanel, dLeft, dTop);
-            dTop = dTop + 5 + dSep;
-            
+            dSepCol = 150;
+
+           
+            for j = 1:length(this.uis)
+              
+
+                this.uis{j}.build(this.hPanel, dLeft, dTop);
+                dTop = dTop + dSep;
+
+                % if j mod 5 is zero
+                % shift left
+                % reset dTop
+                if mod(j, 5) == 0
+                  dLeft = dLeft + dSepCol;
+                  dTop = dTopStart;
+                end
+                
+
+            end
+
+            %{
             this.ui1.build(this.hPanel, dLeft, dTop);
             dTop = dTop + 15 + dSep;
-            
+
             this.ui2.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
-            
+
             this.ui3.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
-            
+
             this.ui4.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
-            
+
             this.ui5.build(this.hPanel, dLeft, dTop);
             dTop = dTop + dSep;
-            dTop = dTop + 10;
-            this.uiSequenceSetAll.build(this.hPanel, dLeft, dTop, 280);
+
+            %}
+
             
-            dLeft = 320;
-            dTop = 20;
-            dHeight = 180
-            this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 330, dHeight);
             
+
+            dTop = 160;
+            dLeft = 10;
+            dWidth = 2 * dSepCol - 10;
+           % this.SetAll.build(this.hPanel, dLeft, dTop, 280);
+           this.uiSequenceSetLow.build(this.hPanel, dLeft, dTop, dWidth);
+           this.uiSequenceSetNorm.build(this.hPanel, dLeft + 2 * dSepCol, dTop, dWidth);
+           this.uiSequenceSetHigh.build(this.hPanel, dLeft + 4 * dSepCol, dTop, dWidth);
            
-            
+
+          dLeft = 10 + 6 * dSepCol + 100;
+          dTop = 10;
+          dHeight = 180
+           this.uiPositionRecaller.build(this.hPanel, dLeft, dTop, 330, dHeight);
+
         end
-        
+
         function cec = getPropsDelete(this)
-            cec = {...
-                'ui1', ...
-                'ui2', ... 
-                'ui3', ...
-                'ui4', ...
-                'ui5', ...
-                'uiCommDeltaTauPowerPmac', ...
-                'uiWorkingMode', ...
-                'uiSequenceSetAll', ...
-            };
+            cec = { ...
+                       'ui1', ...
+                       'ui2', ...
+                       'ui3', ...
+                       'ui4', ...
+                       'ui5', ...
+                       'uiWorkingMode', ...
+                       'uiSequenceSetLow', ...
+                       'uiSequenceSetNorm', ...
+                       'uiSequenceSetHigh' ...
+                       ...'uiSequenceSetAll', ...
+                   };
         end
-                    
+
         function delete(this)
-            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);
             cecProps = this.getPropsDelete();
-            for n = 1 : length(cecProps)
+
+
+            for j = 1:length(this.uis)
+              this.uis{j}.delete()
+            end
+
+            for n = 1:length(cecProps)
                 cProp = cecProps{n};
                 cMsg = sprintf('delete() deleting %s', cProp);
-                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE); 
+                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE);
                 this.(cProp).delete();
             end
-        end   
-        
-        
+
+        end
+
     end
-    
+
     methods (Access = private)
-           
-        
+
         function d = getMotMinRcx(this)
             d = this.ui1.get();
         end
-        
+
         function d = getMotMinRcy(this)
             d = this.ui2.get();
         end
-                 
+
         function d = getMotMinWcx(this)
             d = this.ui3.get();
         end
-        
+
         function d = getMotMinWcy(this)
             d = this.ui4.get();
         end
-                
+
         function d = getMotMinLsix(this)
             d = this.ui5.get();
         end
-        
+
         % Returns {double 1x5} list of mot min values of wcx, wcy, rcx,
         % rcy, lsix in that order
-        
+
         function d = getMotMin(this)
             d = [
-               this.ui1.get() ...
-               this.ui2.get() ...
-               this.ui3.get() ...
-               this.ui4.get() ...
-               this.ui5.get() ...
-            ];
+                 this.ui1.get() ...
+                     this.ui2.get() ...
+                     this.ui3.get() ...
+                     this.ui4.get() ...
+                     this.ui5.get() ...
+                 ];
         end
-        
+
         function onCloseRequest(this, src, evt)
             this.msg('HeightSensorLEDs.closeRequestFcn()');
             delete(this.hPanel);
             this.hPanel = [];
         end
-        
+
         function x = getConfig(this)
-            cPathConfig = fullfile(...
+            cPathConfig = fullfile( ...
                 bl12014.Utils.pathUiConfig(), ...
                 'get-set-number', ...
                 'config-power-pmac-hydra-mot-min.json' ...
             );
-        
-            x = mic.config.GetSetNumber(...
-                'cPath',  cPathConfig ...
+
+            x = mic.config.GetSetNumber( ...
+                'cPath', cPathConfig ...
             );
-            
+
         end
-        
-        
-        
+
         function ce = getCommonProps(this)
-            ce = {...
-                'dWidthName', this.dWidthName, ...
-                'dWidthUnit', this.dWidthUnit, ...
-                'dWidthVal', this.dWidthVal, ...
-                'dWidthPadUnit', this.dWidthPadUnit, ...
-                'lShowStores', this.lShowStores, ...
-                'lShowZero', this.lShowZero, ...
-                'lShowLabels', false, ...
-                'lShowStepNeg', false, ...
-                'lShowStep', false, ...
-                'lShowStepPos', false, ...
-                'lShowPlay', false, ...
-                'lShowRel', this.lShowRel ...
-            };
-            
+            ce = { ...
+                      'dWidthName', this.dWidthName, ...
+                      'dWidthUnit', this.dWidthUnit, ...
+                      'dWidthVal', this.dWidthVal, ...
+                      'dWidthPadUnit', this.dWidthPadUnit, ...
+                      'lShowStores', this.lShowStores, ...
+                      'lShowZero', this.lShowZero, ...
+                      'lShowLabels', false, ...
+                      'lShowStepNeg', false, ...
+                      'lShowStep', false, ...
+                      'lShowStepPos', false, ...
+                      'lShowPlay', false, ...
+                      'lShowRel', this.lShowRel ...
+                  };
+
         end
-        
-        
+
         function initUi1(this)
-              
+
             ceProps = this.getCommonProps();
-            this.ui1 = mic.ui.device.GetSetNumber(...
+            this.ui1 = mic.ui.device.GetSetNumber( ...
                 'clock', this.clock, ...
                 'cName', sprintf('%s-wcx', this.cName), ...
                 'config', this.getConfig(), ...
@@ -249,12 +289,12 @@ classdef PowerPmacHydraMotMin < mic.Base
                 'cLabel', 'WCX' ...
             );
         end
-        
+
         function initUi2(this)
-            
+
             ceProps = this.getCommonProps();
-            
-            this.ui2 = mic.ui.device.GetSetNumber(...
+
+            this.ui2 = mic.ui.device.GetSetNumber( ...
                 'clock', this.clock, ...
                 'cName', sprintf('%s-wcy', this.cName), ...
                 'config', this.getConfig(), ...
@@ -266,12 +306,11 @@ classdef PowerPmacHydraMotMin < mic.Base
                 'cLabel', 'WCY' ...
             );
         end
-        
+
         function initUi3(this)
-            
-            
+
             ceProps = this.getCommonProps();
-            this.ui3 = mic.ui.device.GetSetNumber(...
+            this.ui3 = mic.ui.device.GetSetNumber( ...
                 'clock', this.clock, ...
                 'cName', sprintf('%s-rcx', this.cName), ...
                 'config', this.getConfig(), ...
@@ -283,11 +322,11 @@ classdef PowerPmacHydraMotMin < mic.Base
                 'cLabel', 'RCX' ...
             );
         end
-        
+
         function initUi4(this)
-            
+
             ceProps = this.getCommonProps();
-            this.ui4 = mic.ui.device.GetSetNumber(...
+            this.ui4 = mic.ui.device.GetSetNumber( ...
                 'clock', this.clock, ...
                 'cName', sprintf('%s-rcy', this.cName), ...
                 'config', this.getConfig(), ...
@@ -299,12 +338,11 @@ classdef PowerPmacHydraMotMin < mic.Base
                 'cLabel', 'RCY' ...
             );
         end
-        
+
         function initUi5(this)
-            
-            
+
             ceProps = this.getCommonProps();
-            this.ui5 = mic.ui.device.GetSetNumber(...
+            this.ui5 = mic.ui.device.GetSetNumber( ...
                 'clock', this.clock, ...
                 'cName', sprintf('%s-lsicx', this.cName), ...
                 'config', this.getConfig(), ...
@@ -316,132 +354,193 @@ classdef PowerPmacHydraMotMin < mic.Base
                 'cLabel', 'LSIX' ...
             );
         end
-        
-        
-        
-        
-        function initUiCommDeltaTauPowerPmac(this)
-            
-            
-            % Configure the mic.ui.common.Toggle instance
-            ceVararginCommandToggle = {...
-                'cTextTrue', 'Disconnect', ...
-                'cTextFalse', 'Connect' ...
-            };
 
-            this.uiCommDeltaTauPowerPmac = mic.ui.device.GetSetLogical(...
-                'clock', this.clock, ...
-                'ceVararginCommandToggle', ceVararginCommandToggle, ...
-                'dWidthName', 130, ...
-                'lShowLabels', false, ...
-                'lShowDevice', false, ...
-                'lShowInitButton', false, ...
-                'cName', sprintf('%s-pppmac-comm', this.cName), ...
-                'fhGet', @() this.hardware.getIsConnectedDeltaTauPowerPmac(), ...
-                'fhSet', @(lVal) this.hardware.setIsConnectedDeltaTauPowerPmac(lVal), ...
-                'fhIsVirtual', @() false, ...
-                'lUseFunctionCallbacks', true, ...
-                'cLabel', 'PowerPmac' ...
-            );
-        
-        end
-        
         function initUiPositionRecaller(this)
-            
+
             cDirThis = fileparts(mfilename('fullpath'));
             cPath = fullfile(cDirThis, '..', '..', 'save', 'position-recaller');
-            this.uiPositionRecaller = mic.ui.common.PositionRecaller(...
-                'cConfigPath', cPath, ... 
+            this.uiPositionRecaller = mic.ui.common.PositionRecaller( ...
+                'cConfigPath', cPath, ...
                 'cName', sprintf('%s-position-recaller', this.cName), ...
                 'hGetCallback', @this.onUiPositionRecallerGet, ...
-                'lShowLabelOfList', false, ... 
+                'lShowLabelOfList', false, ...
                 'cTitleOfPanel', 'Saved Configurations', ...
                 'hSetCallback', @this.onUiPositionRecallerSet ...
             );
         end
-        
-       
-        
+
         function task = getTaskSetAll(this)
-            
-            ceTasks = {...
-                mic.Task.fromUiGetSetNumber(this.uiWorkingMode.uiWorkingMode, 0, 0.1, 'mode', 'Working Mode'), ...
-                mic.Task.fromUiGetSetNumberMoveToDest(this.ui1, 0.1, 'MotMin RCX'), ...
-                mic.Task.fromUiGetSetNumberMoveToDest(this.ui2, 0.1, 'MotMin RCX'), ...
-                mic.Task.fromUiGetSetNumberMoveToDest(this.ui3, 0.1, 'MotMin RCX'), ...
-                mic.Task.fromUiGetSetNumberMoveToDest(this.ui4, 0.1, 'MotMin RCX'), ...
-                mic.Task.fromUiGetSetNumberMoveToDest(this.ui5, 0.1, 'MotMin RCX'), ...
-                mic.Task.fromUiGetSetNumber(this.uiWorkingMode.uiWorkingMode, 1, 0.1, 'mode', 'Working Mode') ...
-            };
-            
-            task = mic.TaskSequence(...
+
+            ceTasks = { ...
+                           mic.Task.fromUiGetSetNumber(this.uiWorkingMode.uiWorkingMode, 0, 0.1, 'mode', 'Working Mode'), ...
+                           mic.Task.fromUiGetSetNumberMoveToDest(this.ui1, 0.1, 'MotMin RCX'), ...
+                           mic.Task.fromUiGetSetNumberMoveToDest(this.ui2, 0.1, 'MotMin RCX'), ...
+                           mic.Task.fromUiGetSetNumberMoveToDest(this.ui3, 0.1, 'MotMin RCX'), ...
+                           mic.Task.fromUiGetSetNumberMoveToDest(this.ui4, 0.1, 'MotMin RCX'), ...
+                           mic.Task.fromUiGetSetNumberMoveToDest(this.ui5, 0.1, 'MotMin RCX'), ...
+                           ... Setting Working mode to 1 sets the "norm" MotMin and MotGrad values
+                           ... on all Hydras (WX, WY, RX, RY, LSIX)
+                           mic.Task.fromUiGetSetNumber(this.uiWorkingMode.uiWorkingMode, 1, 0.1, 'mode', 'Working Mode') ...
+                       };
+
+            task = mic.TaskSequence( ...
                 'cName', [this.cName, 'sequence-set-all'], ...
                 'clock', this.clock, ...
                 'ceTasks', ceTasks, ...
                 'dPeriod', 0.1, ...
                 'fhGetMessage', @() 'Set All Mot Min' ...
             );
-            
+
         end
-        
-        
+
+        function initUis(this)
+
+            cParams = {'Min', 'Grad'};
+            cLevels = {'Low', 'Norm', 'High'};
+            ceProps = this.getCommonProps();
+
+                        
+            for j = 1:length(cLevels)
+
+              for k = 1:length(cParams)
+
+
+                    for l = 1:3 % hydras
+                        mEnd = 2;
+
+                        if l == 3
+                            mEnd = 1;
+                        end
+
+                        lShowUnit = false;
+                        if k == length(cParams) && j == length(cLevels)
+                          lShowUnit = true;
+                        end
+
+                        lShowName = true;
+                        if j == 1 && k == 1
+                          lShowName = true;
+                        end
+
+
+                        for m = 1:mEnd % axis
+                            
+                            cLabel = sprintf('H%d%s%s%d', l, cParams{k}, cLevels{j}, m);
+
+                            this.uis{end + 1} = mic.ui.device.GetSetNumber( ...
+                                'clock', this.clock, ...
+                                'cName', sprintf('%s-%s', this.cName, cLabel), ...
+                                'config', this.getConfig(), ...
+                                ceProps{:}, ...
+                                'fhGet', @() this.hardware.getDeltaTauPowerPmac().getMot(cParams{k}, cLevels{j}, l, m), ...
+                                'fhSet', @(dVal) this.hardware.getDeltaTauPowerPmac().setMot(cParams{k}, cLevels{j}, l, m, dVal), ...
+                                'fhIsVirtual', @() false, ...
+                                'lUseFunctionCallbacks', true, ...
+                                'lShowUnit', lShowUnit, ...
+                                'lShowName', lShowName, ...
+                                'cLabel', cLabel ...
+                            );
+
+                        end
+
+                    end
+
+                end
+
+            end
+
+        end
+
         function init(this)
             this.msg('init()');
-            
-            this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode(...
+
+            this.uiWorkingMode = bl12014.ui.PowerPmacWorkingMode( ...
                 'cName', [this.cName, 'pmac-working-mode'], ...
                 'hardware', this.hardware, ...
-                'clock', this.uiClock ...
+                'uiClock', this.uiClock, ...
+                'clock', this.clock ...
             );
-        
+
             this.initUi1();
             this.initUi2();
             this.initUi3();
             this.initUi4();
             this.initUi5();
-            this.initUiCommDeltaTauPowerPmac();
+
             this.initUiPositionRecaller();
-            
-            this.uiSequenceSetAll = mic.ui.TaskSequence(...
+            this.initUis();
+
+            %{
+            this.uiSequenceSetAll = mic.ui.TaskSequence( ...
                 'cName', [this.cName, 'ui-sequence-set-all'], ...
                 'task', this.getTaskSetAll(), ...
                 'lShowIsDone', false, ...
                 'clock', this.clock ...
             );
-            
+            %}
+
+            this.uiSequenceSetLow = mic.ui.TaskSequence( ...
+                'cName', [this.cName, 'ui-sequence-set-low'], ...
+                'task', bl12014.Tasks.createSequenceSendMotMinGradLowToHydras(...
+                  [this.cName, 'sequence-set-low'], ...
+                  this.hardware, ...
+                  this.clock ...
+                ), ...
+                'dDelay', 0.5, ...
+                'lShowIsDone', false, ...
+                'clock', this.clock ...
+            );
+
+            this.uiSequenceSetNorm = mic.ui.TaskSequence( ...
+                'cName', [this.cName, 'ui-sequence-set-norm'], ...
+                'task', bl12014.Tasks.createSequenceSendMotMinGradNormToHydras(...
+                  [this.cName, 'sequence-set-norm'], ...
+                  this.hardware, ...
+                  this.clock ...
+                ), ...
+                'dDelay', 0.5, ...
+                'lShowIsDone', false, ...
+                'clock', this.clock ...
+            );
+
+            this.uiSequenceSetHigh = mic.ui.TaskSequence( ...
+                'cName', [this.cName, 'ui-sequence-set-high'], ...
+                'task', bl12014.Tasks.createSequenceSendMotMinGradHighToHydras(...
+                  [this.cName, 'sequence-set-high'], ...
+                  this.hardware, ...
+                  this.clock ...
+                ), ...
+                'dDelay', 0.5, ...
+                'lShowIsDone', false, ...
+                'clock', this.clock ...
+            );
+
         end
-        
-         % Return list of values from your app
+
+        % Return list of values from your app
         function dValues = onUiPositionRecallerGet(this)
+
+            dValues = [];
+            for j = 1:length(this.uis)
+              dValues(end + 1) = this.uis{j}.getValRaw();
+            end
+
             
-            dValues = [...
-                this.ui1.getValRaw(), ...
-                this.ui2.getValRaw(), ...
-                this.ui3.getValRaw(), ...
-                this.ui4.getValRaw(), ...
-                this.ui5.getValRaw(), ...
-            ];
+
         end
-        
+
         % Set recalled values into your app
         function onUiPositionRecallerSet(this, dValues)
-                           
-            
-            % Update the UI destinations
-            this.ui1.setDestRaw(dValues(1));
-            this.ui2.setDestRaw(dValues(2));
-            this.ui3.setDestRaw(dValues(3));
-            this.ui4.setDestRaw(dValues(4));
-            this.ui5.setDestRaw(dValues(5));
-            
-            this.uiSequenceSetAll.execute();
-            
-        end
-        
-        
-        
-    end
-    
-    
-end
+          for j = 1:length(dValues)
+            this.uis{j}.setDestRaw(dValues(j));
+            this.uis{j}.moveToDest();
+          end
 
+        end
+
+
+        
+
+    end
+
+end
