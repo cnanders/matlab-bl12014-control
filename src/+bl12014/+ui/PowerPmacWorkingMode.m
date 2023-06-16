@@ -119,8 +119,8 @@ classdef PowerPmacWorkingMode < mic.Base
             
             this.msg('delete');
 
-            this.uiSendMotMinGradNormToHydras.delete();
-            this.uiSendMotMinGradHighToHydras.delete();
+            delete(this.uiSendMotMinGradNormToHydras);
+            delete(this.uiSendMotMinGradHighToHydras);
                         
             % Delete the figure
             
