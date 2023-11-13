@@ -264,6 +264,8 @@ classdef Wafer < mic.Base
         %% Destructor
         
         function delete(this)
+            
+            this.uiAxes = [];
                 this.uiCoarseStage = [];
                 this.uiFineStage = [];
                 this.uiLsiCoarseStage = [];

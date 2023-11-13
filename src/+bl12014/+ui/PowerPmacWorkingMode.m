@@ -276,13 +276,15 @@ classdef PowerPmacWorkingMode < mic.Base
         function setWorkingMode(this, dVal)
 
 
-          %{
+          
+            %{
             if (dVal == 7)
               % Send the Hydra MotMin MotGrad "High" settings from PPMAC to the Hydra
               this.uiSendMotMinGradHighToHydras.execute();
 
               % wait until done executing
               while (this.uiSendMotMinGradHighToHydras.isExecuting())
+                  this.msg('Waiting for isExecuting complete');
                   pause(0.1);
               end
   
@@ -292,11 +294,14 @@ classdef PowerPmacWorkingMode < mic.Base
 
               % wait until done executing
               while (this.uiSendMotMinGradNormToHydras.isExecuting())
+                              this.msg('Waiting for isExecuting complete');
+
                   pause(0.1);
               end
   
             end
             %}
+           
   
               
             switch dVal

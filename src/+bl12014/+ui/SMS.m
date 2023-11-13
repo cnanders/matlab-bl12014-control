@@ -31,8 +31,8 @@ classdef SMS < mic.Base
         uiSourceError
         uiVacuumOK
         uiRoughingPumpsOK
-        uiSystemWarning
-        uiSystemError
+%         uiSystemWarning
+%         uiSystemError
         
         uiDiagnostics
         uiAperture
@@ -119,11 +119,11 @@ classdef SMS < mic.Base
             this.uiRoughingPumpsOK.build(hPanel, dLeft, dTop);
             dTop = dTop + dSep;
             
-            this.uiSystemWarning.build(hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
-            
-            this.uiSystemError.build(hPanel, dLeft, dTop);
-            dTop = dTop + dSep;
+%             this.uiSystemWarning.build(hPanel, dLeft, dTop);
+%             dTop = dTop + dSep;
+%             
+%             this.uiSystemError.build(hPanel, dLeft, dTop);
+%             dTop = dTop + dSep;
             
             this.uiDiagnostics.build(hPanel, dLeft, dTop);
             dTop = dTop + this.uiDiagnostics.dHeight + dSep;
@@ -144,8 +144,8 @@ classdef SMS < mic.Base
             this.uiSourceError.delete()
             this.uiVacuumOK.delete()
             this.uiRoughingPumpsOK.delete()
-            this.uiSystemWarning.delete()
-            this.uiSystemError.delete()
+%             this.uiSystemWarning.delete()
+%             this.uiSystemError.delete()
 
             this.uiDiagnostics.delete()
                        
@@ -182,7 +182,7 @@ classdef SMS < mic.Base
                 'fhGet', @() this.hardware.getSMS().getBeamlineOpen(), ...
                 'fhSet', @(lVal) this.hardware.getSMS().setBeamlineOpen(lVal), ...
                 'lUseFunctionCallbacks', true, ...
-                'ceVararginCommandToggle', {'cTextTrue', 'Turn Off', 'cTextFalse', 'Turn On'}, ...
+                'ceVararginCommandToggle', {'cTextTrue', 'Close', 'cTextFalse', 'Open'}, ...
                 'cName', [this.cName, 'BeamlineOpen'], ...
                 'cLabel', 'BeamlineOpen' ...
             );
@@ -279,6 +279,7 @@ classdef SMS < mic.Base
                 'cLabel', 'RoughingPumpsOK' ...
             );
         
+        %{
             this.uiSystemWarning = mic.ui.device.GetLogical(...
                 'clock', this.clock, ...
                 'config', config, ...
@@ -304,7 +305,7 @@ classdef SMS < mic.Base
                 'cName', [this.cName, 'SystemError'], ...
                 'cLabel', 'SystemError' ...
             );
-        
+        %}
             this.uiDiagnostics = bl12014.ui.SMSIFDiagnostics(...
                 'hardware', this.hardware, ...
                 'clock', this.clock ...

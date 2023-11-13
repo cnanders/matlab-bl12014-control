@@ -46,7 +46,7 @@ classdef Hardware < mic.Base
         cTcpipKeithley6482Reticle   = '192.168.20.28'
         cTcpipNewFocusMA            = '192.168.20.31'
         cTcpipWebSwitchVis          = '192.168.20.32'
-        cTcpipSMS                   = '192.168.20.33'
+        cTcpipSMS                   = '192.168.10.31'
         cTcpipRigolDG1000Z          = '192.168.20.35'
         cTcpipDoseMonitor           = '192.168.20.60'
         
@@ -2020,7 +2020,7 @@ classdef Hardware < mic.Base
                 fullfile(cDirVendor, 'cwcork', 'bl1201', 'jar_jdk6', 'DctCorbaProxy.jar'), ...
                 ... Java SSH2 Communication With DeltaTau Power PMAC Motion Controller (uses JSch)
                 ... needed by github/cnanders/matlab-deltatau-ppmac-met5
-                fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-jre1.7.jar'), ...
+                fullfile(cDirVendor, 'cnanderson', 'deltatau-power-pmac-comm-8192buffer-jre1.7.jar'), ...
                 ... Java utility to check if a network device (host + port) is reachable
                 ... Used by GetLogicalPing
                 fullfile(cDirVendor, 'cnanderson', 'network-device-jre1.7.jar'), ...
