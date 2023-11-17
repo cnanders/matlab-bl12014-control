@@ -1,0 +1,13 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "Ne-",
+			"slope": 1e6,
+			"offset": 0,
+			"precision": 3
+		}
+	]
+}	
+	
+	
