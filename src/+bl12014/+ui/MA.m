@@ -24,9 +24,6 @@ classdef MA < mic.Base
         uiVPFM
         
         
-        
-        
-        
         % {bl12014.ui.Shutter 1x1}
         uiShutter
         
