@@ -345,6 +345,10 @@ classdef DCPupilFillGenerator < mic.Base
             c = this.cPathOfRecipe;
         end
 
+        function onFocus(this)
+            this.uipType.setSelectedIndex(uint8(3))
+        end
+
         function setDCX(this, dVal)
             this.uiEditDCx.set(dVal);
         end
@@ -1641,6 +1645,8 @@ classdef DCPupilFillGenerator < mic.Base
             this.uipType.setSelectedIndex(uint8(3))
                                     
         end
+
+
         
         
         

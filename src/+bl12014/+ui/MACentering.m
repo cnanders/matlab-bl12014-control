@@ -71,7 +71,7 @@ classdef MACentering < mic.Base
     
     properties (SetAccess = protected)
         
-        cName = 'MA'
+        cName = 'MACentering'
     end
     
     methods
@@ -101,6 +101,8 @@ classdef MACentering < mic.Base
             end
                        
             this.init();
+
+            this.onFocus();
         
         end
         
@@ -128,6 +130,11 @@ classdef MACentering < mic.Base
              );
 
             
+        end
+
+        function onFocus(this)
+            this.uiScanner.uiPupilFillGenerator.onFocus();
+
         end
         
         
@@ -192,7 +199,7 @@ classdef MACentering < mic.Base
 
             this.uiScanner = bl12014.ui.Scanner(...
                 'fhGetNPoint', @() this.hardware.getNPointMA(), ...
-                'cName', 'MA Scanner', ...
+                'cName', 'DC MA Scanner', ...
                 'clock', this.clock, ...
                 'uiClock', this.uiClock, ...
                 'cDirSave', cDirSave, ...
@@ -238,7 +245,12 @@ classdef MACentering < mic.Base
         end
         
         function stopScan(this)
-            this.lIsScanning = false
+            this.lIsScanning = false;
+            this.scanHandler.stop();
+        end
+
+        function onScanAbort(this, dInitialState, fhSetState, fhIsAtState)
+            this.lIsScanning = false;
         end
         
        
@@ -265,9 +277,9 @@ classdef MACentering < mic.Base
             fhIsAcquired    = @(stUnit, stState) this.scanIsAcquired(stState, u8OutputIdx);
             fhOnComplete    = @(stUnit, stState) this.onScanComplete(dInitialState, fhSetState);
             fhOnAbort       = @(stUnit, stState) this.onScanAbort(dInitialState, fhSetState, fhIsAtState);
-            dDelay          = 0.05;
+            dDelay          = 0.4;
             % Create a new scan:
-            this.scanHandler = mic.Scan('LSI-control-scan', ...
+            this.scanHandler = mic.Scan('MA MDM centering scan', ...
                                         this.clock, ...
                                         stRecipe, ...
                                         fhSetState, ...
@@ -290,10 +302,16 @@ classdef MACentering < mic.Base
            dInitialState = struct;
            dInitialState.values = [];
            dInitialState.axes = u8ScanAxisIdx;
-
+        end
+        
+        function onScanComplete(this, dInitialState, fhSetState)
+            this.lIsScanning = false;
+            
+            
         end
 
         function setScanAxisDevicesToState(this, stState)
+            fprintf('Setting axes to state');
             dAxes = stState.axes;
             dVals = stState.values;
             
@@ -308,6 +326,7 @@ classdef MACentering < mic.Base
                 end
             end
 
+            this.uiScanner.uiNPointLC400.setWritingIllum(true)
             this.uiScanner.uiNPointLC400.executePupilFillWriteSequence();
         end
 
@@ -315,8 +334,10 @@ classdef MACentering < mic.Base
             dAxes = stState.axes;
             dVals = stState.values;
             
-            lOut = true;
-            lOut = lOut && this.uiScanner.uiNPointLC400.checkIsSequenceFinished();
+
+            lOut = ~this.uiScanner.uiNPointLC400.isExecutingPupilFillSequence();
+
+            fprintf('Scan at state: %d\n', lOut);
         end
 
 
@@ -326,8 +347,11 @@ classdef MACentering < mic.Base
 
         function lAcquisitionFinished = scanIsAcquired(this, stState, outputIdx)
             lAcquisitionFinished = true;
-            dAcquiredValue = this.uiMDMCurrent.uiCurrent.get();
-            this.handleUpdateScanOutput(u8Idx, stState, dAcquiredValue)
+            dAcquiredValue = this.uiMDMCurrent.uiCurrent.getValRaw();
+            
+           
+            
+            this.handleUpdateScanOutput(stState, dAcquiredValue)
         end
 
         function handleUpdateScanSetup(this, ceScanStates, u8ScanAxisIdx, lUseDeltas, cAxisNames, ceScanRanges)
@@ -339,13 +363,18 @@ classdef MACentering < mic.Base
                     plot(this.haScanAxis, ceScanRanges{1}, zeros(size(ceScanRanges{1})), 'b-');
 
                 case 2
-                    this.dImg = zeros(length(ceScanRanges{1}), length(ceScanRanges{2}));
+                    this.dImg = zeros(length(ceScanRanges{2}), length(ceScanRanges{1}));
                     imagesc(this.haScanAxis, ceScanRanges{1}, ceScanRanges{2}, this.dImg);
   
             end
         end
 
-        function handleUpdateScanOutput(this, u8Idx, stState, dAcquiredValue)
+        function handleUpdateScanOutput(this, stState, dAcquiredValue)
+            u8Idx = this.scanHandler.getCurrentStateIndex();
+            
+            if u8Idx == 0
+                this.dImg = zeros(size(this.dImg));
+            end
             switch length(stState.axes)
                 case 1
                     this.dImg(u8Idx) = dAcquiredValue;
@@ -354,7 +383,8 @@ classdef MACentering < mic.Base
                 case 2
                     this.dImg(u8Idx) = dAcquiredValue;
                     imagesc(this.haScanAxis, this.ceScanRanges{1}, this.ceScanRanges{2}, this.dImg);
-  
+                    set(this.haScanAxis, 'YDir', 'normal')
+                    colorbar
             end
         end
 

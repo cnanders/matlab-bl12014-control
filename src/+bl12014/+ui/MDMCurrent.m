@@ -17,6 +17,8 @@ classdef MDMCurrent < mic.Base
         % {bl12014.Hardware 1x1}
         hardware
         
+        dIndexOfBuffer = -1
+        
     end
     
     properties (SetAccess = private)
@@ -135,7 +137,35 @@ classdef MDMCurrent < mic.Base
         end
 
         function current = getCurrent(this)
-            current = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+%             current = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+
+             if this.dIndexOfBuffer == -1
+                [dIndexStart, this.dIndexOfBuffer] = this.hardware.getDataTranslation().getIndiciesOfScanBuffer();
+             end
+            
+            [results, this.dIndexOfBuffer] = this.hardware.getDataTranslation.getScanDataAheadOfIndex(this.dIndexOfBuffer);                
+            [dRows, dCols] = size(results);
+
+            if dRows == 0
+                current = 0;
+                return % no new data
+            end
+
+
+
+            % HARDWARE HAS A CHANNEL ZERO - SO DUMB
+            % CHANNEL 0 ON THE DEVICE IS INDEX 1 OF THE MATLAB LIST
+            dValues = [];
+
+            
+%             dtTimes(dLength + 1 : dLength + dRows) = datetime(results(:,49), 'ConvertFrom', 'posixtime');
+            dValues(1, 1 : dRows) = results(:, 36); % CH 35 on hardware matlab index shifted 1
+            dValues(2, 1 : dRows)  = results(:, 37); % ch 36 on hardware 37 is the DMI laser ref
+            dValues(3,  1 : dRows) = results(:, 39); % ch 38 on hardware
+            dValues(4, 1 : dRows) = results(:, 40); % ch 39 on hardware
+            
+            current = mean(results(:,40));
+                
         end
         
         

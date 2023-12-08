@@ -1550,7 +1550,7 @@ classdef Hardware < mic.Base
                 );
             catch mE
                 this.commSR570MDM = [];
-                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+                this.msg(mE.message, this.u8_MSG_TYPE_ERROR);
             end
             
         end
