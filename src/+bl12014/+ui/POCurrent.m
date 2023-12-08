@@ -313,6 +313,8 @@ classdef POCurrent < mic.Base
                 );
                 xlabel(this.hAxes2, 'Time');
                 ylabel(this.hAxes2, 'Photocurrent');
+                
+
 
             else
                 yyaxis(this.hAxes2, 'left')
@@ -320,11 +322,17 @@ classdef POCurrent < mic.Base
                     'XData', dX, ...
                     'YData', dY(1, :) ...
                 );
+            
+                if length(dY(1,:)) > 10
+                    fprintf('Photocurrent last 10: %0.3f\n', dY(1, end-10:end))
+                end
                 
             end
             
             % Plot channel 2 on right
             if isempty(this.hPlot22a) % now using 22a,b,c
+           
+
                 
                 yyaxis(this.hAxes2, 'right')
                 hold(this.hAxes2, 'on');
@@ -423,6 +431,9 @@ classdef POCurrent < mic.Base
                 xlabel(this.hAxes, 'Time');
                 ylabel(this.hAxes, 'Photocurrent');
 
+%                 if length(dY(1,:)) > 10
+%                 fprintf('Photocurrent last 10: %0.2f\n', dY(1, end-10:end))
+%                 end
             else
                 yyaxis(this.hAxes, 'left')
                 set(this.hPlot1, ...

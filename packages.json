@@ -30,6 +30,7 @@
 		"matlab_tektronix_afg_31021",
 		"matlab_euvtech_sms",
 		"matlab_smaract_mcs",
-		"matlab_aerotech_ensemble"
+		"matlab_aerotech_ensemble",
+		"mic_plus"
 	]
 }

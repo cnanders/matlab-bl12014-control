@@ -38,6 +38,8 @@ classdef Scan < mic.Base
 
         dColorGreen = [.85, 1, .85];
         dColorRed = [1, .85, .85];
+
+
         
     end
     
@@ -69,7 +71,10 @@ classdef Scan < mic.Base
     
     properties (Access = private)
         
-        
+        hScanLog
+        cScanLogDir
+        ceScanHeaders = {'Action', 'State'}
+
         dTicScanSetState
         dTicScanAcquire
         dTicSaveCSV
@@ -233,6 +238,8 @@ classdef Scan < mic.Base
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
             
             this.cDirSave = fullfile(this.cDirSrc, 'save', 'fem-scans');
+
+            this.cScanLogDir = fullfile(this.cDirSrc, 'save', 'fem-scan-time-logs');
 
                         
             for k = 1 : 2: length(varargin)
@@ -1683,6 +1690,7 @@ classdef Scan < mic.Base
         
         
         function onScanSetState(this, stUnit, stValue)
+
             
             cFn = 'onScanSetState';
             lDebug = true;
@@ -1697,6 +1705,9 @@ classdef Scan < mic.Base
                     case {'task', 'type'}
                         % Do nothing
                     otherwise
+                        % Write log
+                        this.hScanLog.writeLine({ceFields{n}, 'Setting state'});
+
                         this.stScanSetContract.(ceFields{n}).lRequired = true;
                         this.stScanSetContract.(ceFields{n}).lIssued = false;
                 end
@@ -1714,6 +1725,8 @@ classdef Scan < mic.Base
                 if lDebug
                     this.msg(sprintf('%s setting %s', cFn, cField), this.u8_MSG_TYPE_SCAN);
                 end
+
+                
                                 
                 switch cField
                     
@@ -1841,6 +1854,11 @@ classdef Scan < mic.Base
                         this.stScanSetContract.stopFadeY.lIssued = true;
                      
                     case 'workingMode'
+
+                        if stValue.workingMode == 5
+                            % Assume fem element starts with workingmode = 5
+                             this.hScanLog.writeLine({'FEM Element', 'Start'});
+                        end
                         
                         if this.lSkipWorkingMode
                             this.stScanSetContract.workingMode.lIssued = true;
@@ -2452,7 +2470,9 @@ classdef Scan < mic.Base
                 return
             end
             
-            
+            % Write log
+            this.hScanLog.writeLine({stValue.type, 'Setting state'});
+
             
             
             
@@ -2482,8 +2502,9 @@ classdef Scan < mic.Base
                     );
                 end
             
-            end            
-
+            end         
+            
+            
             
             dSec = stValue.task.dose / this.uiFluxDensity.get();
             
@@ -2523,6 +2544,8 @@ classdef Scan < mic.Base
             for n = 1:length(ceFields)
                 
                 cField = ceFields{n};
+
+
                 
                 if this.stScanAcquireContract.(cField).lRequired
                     if lDebug
@@ -2891,6 +2914,9 @@ classdef Scan < mic.Base
              this.saveScanResultsCsv(stUnit);
              this.saveScanResultsJson(stUnit, true);
              this.abort();
+
+             this.hScanLog.writeLine({'FEM aborted', '======'});
+             this.hScanLog.appendElapsedTime();
              
              
              
@@ -2920,6 +2946,10 @@ classdef Scan < mic.Base
              else
                  cMsg = sprintf('FEM is complete. The list of added prescriptions has been purged.');
              end
+
+            this.hScanLog.writeLine({'FEM complete', '======'});
+            this.hScanLog.appendElapsedTime();
+             
              
              
             cTitle = 'Success';
@@ -2988,7 +3018,7 @@ classdef Scan < mic.Base
                 
                 this.ceValues = cell(0); % cell(size(stRecipe.values));
                 this.ceValuesFast = cell(0);
-                
+                 
                 this.scan = mic.Scan(...
                     'ui-fem-scan', ...
                     this.clock, ...
@@ -3007,6 +3037,11 @@ classdef Scan < mic.Base
                 this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXDuringScan);
                             
                 this.initScanTimingStore();
+
+                % Initialize scan log:
+                [~, p, ~] = fileparts(cFile);
+                cLogName = sprintf('FEM-timelog-%s-%s', p, datestr(now,30));
+                this.hScanLog = micPlus.Log(this.cScanLogDir, cLogName, this.ceScanHeaders);
                 
                 
                 this.scan.start();
