@@ -114,7 +114,7 @@ classdef DCT < mic.Base
             hTab = this.uiTabGroup.getTabByName(cTab);
             
             dLeft = 30;
-            dTop = 30;
+            dTop = 50;
             this.uiStages.build(hTab, dLeft, dTop);
             
         end
@@ -296,7 +296,7 @@ classdef DCT < mic.Base
             hTab = this.uiTabGroup.getTabByName(cTab);
             
             dLeft = 10;
-            dTop = 30;
+            dTop = 50;
 
             switch cTab
                 case 'Stages'
