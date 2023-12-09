@@ -236,6 +236,8 @@ classdef DCTApertureStage < mic.Base
         function onUiPositionRecallerSet(this, dValues)
             this.uiX.setDestRaw(dValues(1));
             this.uiY.setDestRaw(dValues(2));
+            this.uiX.moveToDest();
+            this.uiY.moveToDest();
         end
         
         function initUiPositionRecaller(this)

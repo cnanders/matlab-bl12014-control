@@ -2059,7 +2059,7 @@ classdef Hardware < mic.Base
             this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
             
             
-            this.commDCTWaferStageVirtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commDCTWaferStageVirtual = aerotech.EnsembleVirtual(); % bl12014.hardwareAssets.virtual.Stage();
             this.commDCTApertureStageVirtual = bl12014.hardwareAssets.virtual.Stage();
             
             this.commSR570DCT1Virtual = srs.SR570Virtual();
