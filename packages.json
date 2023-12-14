@@ -30,6 +30,7 @@
 		"matlab_euvtech_sms",
 		"matlab_smaract_mcs",
 		"matlab_aerotech_ensemble",
-		"mic_plus"
+		"mic_plus",
+		"matlab_smaract_mcs2"
 	]
 }

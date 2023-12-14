@@ -11,6 +11,9 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('master');
 uiClock = mic.ui.Clock(clock);
 hardware = bl12014.Hardware('clock', clock);
+hardware.connectDCTApertureStage();
+hardware.connectDCTWaferStage();
+% hardware.connectDataTranslation();
 
 uiScannerM142 = bl12014.ui.Scanner(...
     'fhGetNPoint', @() hardware.getNPointM142(), ...

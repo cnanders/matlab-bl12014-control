@@ -15,6 +15,9 @@ classdef DCTWaferAxes < mic.Base
     properties (SetAccess = private)
         
         
+        dWidthChamber = 0.5 % m
+        dHeightChamber = 0.6 % m
+        
         % {double 1x1} width of the mic.ui.axes.ZoomPanAxes in pixels
         dWidth = 600
         
@@ -93,17 +96,17 @@ classdef DCTWaferAxes < mic.Base
         dXZero = 0
         dYZero = 0
         
-        dXDiode = 130e-3
-        dYDiode = 0e-3
+        dXDiode = 30e-3
+        dYDiode = 72e-3
         
         dXDiode2 = 5e-3
         dYDiode2 = -5e-3
         
-        dXYag = 130e-3
-        dYYag = -30e-3
+        dXYag = 0e-3
+        dYYag = 72e-3
         
-        dXLoadLock = -0.45
-        dYLoadLock = 0
+        dXLoadLock = 0
+        dYLoadLock = -0.45
         
         dZoomMax = 700;
         
@@ -245,7 +248,10 @@ classdef DCTWaferAxes < mic.Base
             % Allows global transformations to everything.
             % Allows you do draw it with one frame of reference and let you
             % view it in another frame of reference
-            this.hTransformedGroup = hgtransform('Parent', this.uiZoomPanAxes.hHggroup);  
+            this.hTransformedGroup = hgtransform('Parent', this.uiZoomPanAxes.hHggroup); 
+            
+%             Rz = makehgtform('zrotate', pi/2);
+%             set(this.hTransformedGroup,'Matrix',Rz)
             
                 
             % For some reason when I build the hg* instances as shown above
@@ -302,11 +308,7 @@ classdef DCTWaferAxes < mic.Base
             
             
             
-            % Rotate around z axis by 180
-            %{
-            dRotation = makehgtform('zrotate', pi);
-            set(this.hTransformedGroup, 'Matrix', dRotation);
-            %}
+            
             
             
                        
@@ -495,7 +497,12 @@ classdef DCTWaferAxes < mic.Base
         
         function init(this)
             this.msg('init()');
-            this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(-1, 1, -1, 1, this.dWidth, this.dHeight, this.dZoomMax);
+            this.uiZoomPanAxes = mic.ui.axes.ZoomPanAxes(...
+                -this.dWidthChamber/2, ... 
+                this.dWidthChamber/2, ...
+                -this.dHeightChamber/2, ...
+                this.dHeightChamber/2, ...
+                this.dWidth, this.dHeight, this.dZoomMax);
             
             this.uiShutter = bl12014.ui.Shutter(...
                 'cName', [this.cName, 'shutter'], ...
@@ -598,10 +605,10 @@ classdef DCTWaferAxes < mic.Base
            
            % Base is 1500 x 500 perfectly centered
            
-           dL = -750e-3;
-           dR = 750e-3;
-           dT = 250e-3;
-           dB = -250e-3;
+           dL = -250e-3;
+           dR = 250e-3;
+           dT = 350e-3;
+           dB = -350e-3;
            
            patch( ...
                [dL dL dR dR], ...
@@ -612,17 +619,17 @@ classdef DCTWaferAxes < mic.Base
            
            % Track
            
-           dL = -1450e-3/2;
-           dR = 1450e-3/2;
-           dT = 200e-3;
-           dB = -200e-3;
-           
-           patch( ...
-               [dL dL dR dR], ...
-               [dB dT dT dB], ...
-               [0.6, 0.6, 0.6], ...
-               'Parent', this.hTrack, ...
-               'EdgeColor', 'none');
+%            dL = -1450e-3/2;
+%            dR = 1450e-3/2;
+%            dT = 200e-3;
+%            dB = -200e-3;
+%            
+%            patch( ...
+%                [dL dL dR dR], ...
+%                [dB dT dT dB], ...
+%                [0.6, 0.6, 0.6], ...
+%                'Parent', this.hTrack, ...
+%                'EdgeColor', 'none');
             
         end
         
@@ -650,6 +657,7 @@ classdef DCTWaferAxes < mic.Base
         
         function drawCarriage(this)
             
+            return
 
             dL = -200e-3;
             dR = 200e-3;
@@ -1144,7 +1152,7 @@ classdef DCTWaferAxes < mic.Base
             text( ...
                 dLeft + dWidth/2, ...
                 dBottom + 0.12 * dHeight, ...
-                '12:00 (-Y)', ...
+                '06:00 (-Y)', ...
                 ceProps{:} ...
             ); 
         
@@ -1152,7 +1160,7 @@ classdef DCTWaferAxes < mic.Base
             text( ...
                 dLeft + 0.1 * dWidth, ...
                 dBottom + dHeight * 0.5, ...
-                '03:00 (-X)', ...
+                '09:00 (-X)', ...
                 ceProps{:} ...
             );
         
@@ -1160,7 +1168,7 @@ classdef DCTWaferAxes < mic.Base
             text( ...
                 dLeft + dWidth/2, ...
                 dBottom + dHeight - 0.02 * dHeight, ...
-                '06:00 (+Y)', ...
+                '12:00 (+Y)', ...
                 ceProps{:} ...
             );
         
@@ -1168,7 +1176,7 @@ classdef DCTWaferAxes < mic.Base
             text( ...
                 dLeft + dWidth - 0.06 * dWidth, ...
                 dBottom + dHeight * 0.5, ...
-                '09:00 (+X)', ...
+                '03:00 (+X)', ...
                 ceProps{:} ...
             );
             
@@ -1178,8 +1186,8 @@ classdef DCTWaferAxes < mic.Base
         function drawAperture(this)
          
             % Plate
-            dWidth = 100;
-            dHeight = 50;
+            dWidth = 50;
+            dHeight = 100;
             
            
             % Plate left/right/top/bottom
@@ -1205,30 +1213,30 @@ classdef DCTWaferAxes < mic.Base
             %}
             
             % Aperture 1
-            dX1 = 25;
-            dY1 = 0;
+            dX1 = 0;
+            dY1 = 25;
             dWidth1 = 25.4;
             dHeight1 = 25.4;
             
             % Aperture 2
-            dX2 = -5;
-            dY2 = 0;
+            dX2 = 0;
+            dY2 = -5;
             dWidth2 = 10;
             dHeight2 = 10;
             
             % Aperture 3
-            dX3 = -25;
-            dY3 = 0;
+            dX3 = 0;
+            dY3 = -25;
             dWidth3 = 5;
             dHeight3 = 5;
             
             % Aperture 4
-            dX4 = -35;
-            dY4 = 0;
+            dX4 = 0;
+            dY4 = -35;
             dWidth4 = 1;
             dHeight4 = 1;
             
-            % left/right/top/bottom
+            % left/right/top/bottom of each diode
             
             dL1 = dX1 - dWidth1/2;
             dR1 = dX1 + dWidth1/2;
@@ -1250,25 +1258,16 @@ classdef DCTWaferAxes < mic.Base
             dT4 = dY4 + dHeight4/2;
             dB4 = dY4 - dHeight4/2;
             
+            dShiftY = 50;
             
-            %top half start bottom left
-            xtop = [
-                dLP dLP ...
-                dL1 dL1 ...
-                dR1 dR1 ...
-                dL2 dL2 ...
-                dR2 dR2 ...
-                dL3 dL3 ...
-                dR3 dR3 ...
-                dL4 dL4 ...
-                dR4 dR4 ...
-                dRP dRP];
+            x = [dLP dLP 0   0   dL1 dL1 0   0   dL2 dL2 0   0   dL3 dL3 0   0   dL4 dL4 0   0];
+            y = [dBP dTP dTP dT1 dT1 dB1 dB1 dT2 dT2 dB2 dB2 dT3 dT3 dB3 dB3 dT4 dT4 dB4 dB4 dBP];
+                 
+            % shift entire thing up
+            y = y + dShiftY;
             
-            ytop = [dTP 0 0 dT1 dT1 0 0 dT2 dT2 0 0 dT3 dT3 0 0 dT4 dT4 0 0 dTP];            
-            ybot = [dBP 0 0 dB1 dB1 0 0 dB2 dB2 0 0 dB3 dB3 0 0 dB4 dB4 0 0 dBP];
-                
-            x = xtop * 1e-3;
-            y = ytop * 1e-3;
+            x = x * 1e-3;
+            y = y * 1e-3;
                         
             hPatch = patch( ...
                 x, ...
@@ -1279,8 +1278,15 @@ classdef DCTWaferAxes < mic.Base
                 'FaceAlpha', this.dAlphaYag ...
             );
         
-            x = xtop * 1e-3;
-            y = ybot * 1e-3;
+            x = [dRP dRP 0   0   dR1 dR1 0   0   dR2 dR2 0   0   dR3 dR3 0   0   dR4 dR4 0   0];
+            y = [dBP dTP dTP dT1 dT1 dB1 dB1 dT2 dT2 dB2 dB2 dT3 dT3 dB3 dB3 dT4 dT4 dB4 dB4 dBP];
+                      
+            
+            % shift entire thing up
+            y = y + dShiftY;
+            
+            x = x * 1e-3;
+            y = y * 1e-3;
             
             hPatch = patch( ...
                 x, ...
@@ -1290,6 +1296,18 @@ classdef DCTWaferAxes < mic.Base
                 'EdgeColor', 'none', ...
                 'FaceAlpha', this.dAlphaYag ...
             );
+        
+%             x = xtop * 1e-3;
+%             y = ybot * 1e-3;
+%             
+%             hPatch = patch( ...
+%                 x, ...
+%                 y, ...
+%                 this.dColorYag, ...
+%                 'Parent', this.hAperture, ...
+%                 'EdgeColor', 'none', ...
+%                 'FaceAlpha', this.dAlphaYag ...
+%             );
             
             
         end
@@ -1319,9 +1337,11 @@ classdef DCTWaferAxes < mic.Base
             
             dTheta = dTheta + 90*pi/180;
             
+            
+            dShiftY = -60e-3;
             hPatch = patch( ...
                 dR .* sin(dTheta), ...
-                dR .* cos(dTheta), ...
+                dR .* cos(dTheta) + dShiftY, ...
                 [0, 0, 0], ...
                 'Parent', this.hWafer, ...
                 'EdgeColor', 'none');
@@ -1596,7 +1616,7 @@ classdef DCTWaferAxes < mic.Base
             % is if you double the zoom, halve the thickness.  Keep doing
             % this until you get to this.dZoomMax
             
-            dThickStart = 5e-3;
+            dThickStart = 1e-3;
             dZoomStart = 1.25;
             
             % Compute number of zoom levels.  If dZoomStart is 1.5, they

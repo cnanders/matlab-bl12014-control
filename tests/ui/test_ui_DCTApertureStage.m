@@ -11,6 +11,8 @@ addpath(genpath(fullfile(cDirThis, '..', '..', 'mpm-packages')));
 clock = mic.Clock('Master');
 hardware = bl12014.Hardware('clock', clock);
 
+hardware.connectDCTApertureStage();
+
 
 ui = bl12014.ui.DCTApertureStage(...
     'hardware', hardware, ...
