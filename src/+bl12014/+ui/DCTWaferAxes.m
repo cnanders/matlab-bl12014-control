@@ -1186,8 +1186,8 @@ classdef DCTWaferAxes < mic.Base
         function drawAperture(this)
          
             % Plate
-            dWidth = 50;
-            dHeight = 100;
+            dWidth = 60;
+            dHeight = 111;
             
            
             % Plate left/right/top/bottom
@@ -1214,9 +1214,9 @@ classdef DCTWaferAxes < mic.Base
             
             % Aperture 1
             dX1 = 0;
-            dY1 = 25;
-            dWidth1 = 25.4;
-            dHeight1 = 25.4;
+            dY1 = 27.5;
+            dWidth1 = 25;
+            dHeight1 = 25;
             
             % Aperture 2
             dX2 = 0;
@@ -1232,7 +1232,7 @@ classdef DCTWaferAxes < mic.Base
             
             % Aperture 4
             dX4 = 0;
-            dY4 = -35;
+            dY4 = -40;
             dWidth4 = 1;
             dHeight4 = 1;
             
@@ -1326,16 +1326,16 @@ classdef DCTWaferAxes < mic.Base
             
             dTheta = 1;
             dTheta = [...
-                0 : dTheta : 170 , ...
+                0 : dTheta : 175 , ...
                 180, ...
-                190 : dTheta : 360 ...
+                185 : dTheta : 360 ...
             ] * 2 * pi / 360;
             
             
             dR = ones(size(dTheta)) * 100e-3;
-            dR(ceil(length(dTheta)/2)) = 80e-3;
+            dR(ceil(length(dTheta)/2)) = 90e-3;
             
-            dTheta = dTheta + 90*pi/180;
+            dTheta = dTheta;
             
             
             dShiftY = -60e-3;
