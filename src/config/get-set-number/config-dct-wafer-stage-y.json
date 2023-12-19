@@ -14,9 +14,9 @@
 			"precision": 3
 		}
 	],
-    "step": 1,
-    "min": -100,
-    "max": 100
+    "step": 10,
+    "min": 0,
+    "max": 60
 }	
 	
 	

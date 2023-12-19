@@ -12,7 +12,6 @@
 		"matlab_quasar",
 		"matlab_npoint_lc400",
 		"LSI_control",
-		"LSI_analyze",
 		"ryan_toolbox",
 		"matlab_controlbyweb_webswitch",
 		"matlab_deltatau_ppmac_met5",
@@ -31,6 +30,7 @@
 		"matlab_euvtech_sms",
 		"matlab_smaract_mcs",
 		"matlab_aerotech_ensemble",
-		"mic_plus"
+		"mic_plus",
+		"matlab_smaract_mcs2"
 	]
 }

@@ -164,7 +164,7 @@ classdef MDMCurrent < mic.Base
             dValues(3,  1 : dRows) = results(:, 39); % ch 38 on hardware
             dValues(4, 1 : dRows) = results(:, 40); % ch 39 on hardware
             
-            current = mean(results(:,40));
+            current = mean(results(:,36));
                 
         end
         

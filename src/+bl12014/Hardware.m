@@ -50,6 +50,7 @@ classdef Hardware < mic.Base
         cTcpipRigolDG1000Z          = '192.168.20.35'
         cTcpipDoseMonitor           = '192.168.20.60'
         
+        cSNSM_MCS2_DCT              = 'network:sn:MCS2-00005705'
     end
     
 	properties
@@ -79,6 +80,7 @@ classdef Hardware < mic.Base
         commDataTranslation
         commDataTranslationVirtual
         
+       
         commDCTWaferStage
         commDCTWaferStageVirtual
         
@@ -1692,13 +1694,7 @@ classdef Hardware < mic.Base
         
         
         function l = getIsConnectedDCTWaferStage(this)
-            
-            if this.notEmptyAndIsA(this.commDCTWaferStage, 'cxro.common.device.motion.Stage') && ...
-               this.commDCTWaferStage.isConnected()
-                l = true;
-            else
-                l = false;
-            end
+            l = this.notEmptyAndIsA(this.commDCTWaferStage, 'aerotech.Ensemble');
         end
         
         function disconnectDCTWaferStage(this)
@@ -1717,9 +1713,7 @@ classdef Hardware < mic.Base
             end
 
             try
-                this.getjMet5Instruments();
-                this.commDCTWaferStage = this.jMet5Instruments.getDCTWaferStage();
-                this.commDCTWaferStage.connect();
+                this.commDCTWaferStage = aerotech.Ensemble();
                 
             catch mE
                 this.commDCTWaferStage = [];
@@ -1746,8 +1740,8 @@ classdef Hardware < mic.Base
         
         function l = getIsConnectedDCTApertureStage(this)
             
-            if this.notEmptyAndIsA(this.commDCTApertureStage, 'cxro.common.device.motion.Stage') && ...
-               this.commDCTApertureStage.isConnected()
+            if this.notEmptyAndIsA(this.commDCTApertureStage, 'smaract.MCS2') && ...
+               this.commDCTApertureStage.getIsConnected()
                 l = true;
             else
                 l = false;
@@ -1770,9 +1764,10 @@ classdef Hardware < mic.Base
             end
 
             try
-                this.getjMet5Instruments();
-                this.commDCTApertureStage = this.jMet5Instruments.getDCTApertureStage();
-                this.commDCTApertureStage.connect();
+             
+                cDeviceLocation = this.cSNSM_MCS2_DCT;
+                this.commDCTApertureStage = smaract.MCS2();
+                this.commDCTApertureStage.connect(cDeviceLocation);
                 
             catch mE
                 this.commDCTApertureStage = [];
@@ -2059,8 +2054,8 @@ classdef Hardware < mic.Base
             this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
             
             
-            this.commDCTWaferStageVirtual = bl12014.hardwareAssets.virtual.Stage();
-            this.commDCTApertureStageVirtual = bl12014.hardwareAssets.virtual.Stage();
+            this.commDCTWaferStageVirtual = aerotech.EnsembleVirtual(); % bl12014.hardwareAssets.virtual.Stage();
+            this.commDCTApertureStageVirtual = smaract.MCS2Virtual();
             
             this.commSR570DCT1Virtual = srs.SR570Virtual();
             this.commSR570DCT2Virtual = srs.SR570Virtual();
