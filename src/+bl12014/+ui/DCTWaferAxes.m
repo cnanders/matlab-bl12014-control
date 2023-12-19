@@ -96,14 +96,14 @@ classdef DCTWaferAxes < mic.Base
         dXZero = 0
         dYZero = 0
         
-        dXDiode = 30e-3
-        dYDiode = 72e-3
+        dXDiode = 18e-3
+        dYDiode = 117e-3
         
-        dXDiode2 = 5e-3
-        dYDiode2 = -5e-3
+        dXDiode2 = 0e-3
+        dYDiode2 = 32e-3
         
-        dXYag = 0e-3
-        dYYag = 72e-3
+        dXYag = -18e-3
+        dYYag = 117e-3
         
         dXLoadLock = 0
         dYLoadLock = -0.45
@@ -1214,11 +1214,11 @@ classdef DCTWaferAxes < mic.Base
             
             % Aperture 1
             dX1 = 0;
-            dY1 = 27.5;
+            dY1 = 22.5;
             dWidth1 = 25;
             dHeight1 = 25;
             
-            % Aperture 2
+            % Aperture 2 bottom edge of 10 mm aperture is at 0,0 of EUV
             dX2 = 0;
             dY2 = -5;
             dWidth2 = 10;
@@ -1232,7 +1232,7 @@ classdef DCTWaferAxes < mic.Base
             
             % Aperture 4
             dX4 = 0;
-            dY4 = -40;
+            dY4 = -42.5;
             dWidth4 = 1;
             dHeight4 = 1;
             
@@ -1258,7 +1258,9 @@ classdef DCTWaferAxes < mic.Base
             dT4 = dY4 + dHeight4/2;
             dB4 = dY4 - dHeight4/2;
             
-            dShiftY = 50;
+            % When aperture stage is at loading (y = +18 mm), the bottom of
+            % the 10 mm aperture (located at -10) is at EUV
+            dShiftY = -8; % puts bottom 
             
             x = [dLP dLP 0   0   dL1 dL1 0   0   dL2 dL2 0   0   dL3 dL3 0   0   dL4 dL4 0   0];
             y = [dBP dTP dTP dT1 dT1 dB1 dB1 dT2 dT2 dB2 dB2 dT3 dT3 dB3 dB3 dT4 dT4 dB4 dB4 dBP];
