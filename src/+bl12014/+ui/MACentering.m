@@ -348,7 +348,7 @@ classdef MACentering < mic.Base
         function lAcquisitionFinished = scanIsAcquired(this, stState, outputIdx)
             lAcquisitionFinished = true;
             dAcquiredValue = this.uiMDMCurrent.uiCurrent.getValRaw();
-            
+            pause(5);
            
             
             this.handleUpdateScanOutput(stState, dAcquiredValue)
@@ -389,6 +389,10 @@ classdef MACentering < mic.Base
         end
 
 
+        function saveScan(this)
+            1
+            
+        end
 
         
         function ce = getCommandToggleParams(this) 
