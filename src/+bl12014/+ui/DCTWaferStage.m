@@ -158,7 +158,7 @@ classdef DCTWaferStage < mic.Base
             );
         
             u8Index = 1;
-            u8Axis = 0;
+            u8Axis = 1; % hardware channel x/y is 90 degrees from the x/y we want so we switched for GUI
             
             this.uiX = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
@@ -199,7 +199,7 @@ classdef DCTWaferStage < mic.Base
             );
             
             u8Index = 1;
-            u8Axis = 1;
+            u8Axis = 0; % hardware channel x/y is 90 degrees from the x/y we want so we switched for GUI
             
             this.uiY = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...

@@ -3,26 +3,26 @@
 	"units": [
 		{
 			"name": "mm",
-			"slope": 1e-9,
-			"offset": 0,
+			"slope": -1e-9,
+			"offset": -22e9,
 			"precision": 3
 		},
 		{
 			"name": "um",
-			"slope": 1e-6,
-			"offset": 0,
+			"slope": -1e-6,
+			"offset": -22e9,
 			"precision": 3
 		},
         {
 			"name": "nm",
-			"slope": 1e-3,
-			"offset": 0,
+			"slope": -1e-3,
+			"offset": -22e9,
 			"precision": 3
 		},
         {
 			"name": "pm",
-			"slope": 1,
-			"offset": 0,
+			"slope": -1,
+			"offset": -22e9,
 			"precision": 3
 		}
 	],
