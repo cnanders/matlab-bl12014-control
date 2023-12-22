@@ -459,6 +459,10 @@ classdef MACentering < mic.Base
         end
 
 
+        function saveScan(this)
+            1
+            
+        end
 
         
         function ce = getCommandToggleParams(this) 
