@@ -47,12 +47,13 @@ classdef DCTWaferAxes < mic.Base
         dSizeCrosshairWafer = 100e-3;
         
         % {double 1x1} size in mm of crosshair of chief ray (stays fixed)
-        dSizeCrosshairChiefRay = 20e-3;
+        dSizeCrosshairChiefRay = 120e-3;
+        dSizeCrosshairZero = 30e-3
         
         dSizeCrosshairDiode = 10e-3;
         
-        dWidthDiode = 22.05e-3
-        dHeightDiode = 15.85e-3
+        dWidthDiode = 15.85e-3
+        dHeightDiode = 22.05e-3
         
         dDiameterYag = 25.4e-3
         dSizeCrosshairYag = 10e-3;
@@ -97,13 +98,13 @@ classdef DCTWaferAxes < mic.Base
         dYZero = 0
         
         dXDiode = 18e-3
-        dYDiode = 117e-3
+        dYDiode = 116e-3
         
         dXDiode2 = 0e-3
-        dYDiode2 = 32e-3
+        dYDiode2 = 50e-3
         
         dXYag = -18e-3
-        dYYag = 117e-3
+        dYYag = 116e-3
         
         dXLoadLock = 0
         dYLoadLock = -0.45
@@ -815,12 +816,14 @@ classdef DCTWaferAxes < mic.Base
         
         function drawCrosshairZero(this)
             
+            return
+            
             % Vertical Line
             
             dL = -this.dThicknessOfCrosshair/2 + this.dXZero;
             dR = this.dThicknessOfCrosshair/2 + this.dXZero;
-            dT = this.dSizeCrosshairChiefRay/2 + this.dYZero;
-            dB = -this.dSizeCrosshairChiefRay/2 + this.dYZero;
+            dT = this.dSizeCrosshairZero/2 + this.dYZero;
+            dB = -this.dSizeCrosshairZero/2 + this.dYZero;
 
             
             hPatch = patch( ...
@@ -836,8 +839,8 @@ classdef DCTWaferAxes < mic.Base
             
             % Horizontal Line
             
-            dL = -this.dSizeCrosshairChiefRay/2 + this.dXZero;
-            dR = this.dSizeCrosshairChiefRay/2 + this.dXZero;
+            dL = -this.dSizeCrosshairZero/2 + this.dXZero;
+            dR = this.dSizeCrosshairZero/2 + this.dXZero;
             dT = this.dThicknessOfCrosshair/2 + this.dYZero;
             dB = -this.dThicknessOfCrosshair/2 + this.dYZero;
 
@@ -1083,8 +1086,8 @@ classdef DCTWaferAxes < mic.Base
                        
             dL = -this.dThicknessOfCrosshair/2 + this.dXLoadLock;
             dR = this.dThicknessOfCrosshair/2 + this.dXLoadLock;
-            dT = this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
-            dB = -this.dSizeCrosshairChiefRay/2 + this.dYLoadLock;
+            dT = this.dSizeCrosshairZero/2 + this.dYLoadLock;
+            dB = -this.dSizeCrosshairZero/2 + this.dYLoadLock;
 
             
             hPatch = patch( ...
@@ -1100,8 +1103,8 @@ classdef DCTWaferAxes < mic.Base
             
             % Horizontal Line
             
-            dL = -this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
-            dR = this.dSizeCrosshairChiefRay/2 + this.dXLoadLock;
+            dL = -this.dSizeCrosshairZero/2 + this.dXLoadLock;
+            dR = this.dSizeCrosshairZero/2 + this.dXLoadLock;
             dT = this.dThicknessOfCrosshair/2 + this.dYLoadLock;
             dB = -this.dThicknessOfCrosshair/2 + this.dYLoadLock;
 
@@ -1258,9 +1261,13 @@ classdef DCTWaferAxes < mic.Base
             dT4 = dY4 + dHeight4/2;
             dB4 = dY4 - dHeight4/2;
             
-            % When aperture stage is at loading (y = +18 mm), the bottom of
-            % the 10 mm aperture (located at -10) is at EUV
-            dShiftY = -8; % puts bottom 
+            % When SmarAct aperture stage at x=22,y=-22
+            % centered in y on apertures and the bottom of the 10 mm
+            % aperture is centered on EUV (0,0) so need so do a 
+            % software
+            
+            
+            dShiftY = 10; % puts bottom
             
             x = [dLP dLP 0   0   dL1 dL1 0   0   dL2 dL2 0   0   dL3 dL3 0   0   dL4 dL4 0   0];
             y = [dBP dTP dTP dT1 dT1 dB1 dB1 dT2 dT2 dB2 dB2 dT3 dT3 dB3 dB3 dT4 dT4 dB4 dB4 dBP];
@@ -1339,11 +1346,9 @@ classdef DCTWaferAxes < mic.Base
             
             dTheta = dTheta;
             
-            
-            dShiftY = -60e-3;
             hPatch = patch( ...
                 dR .* sin(dTheta), ...
-                dR .* cos(dTheta) + dShiftY, ...
+                dR .* cos(dTheta), ...
                 [0, 0, 0], ...
                 'Parent', this.hWafer, ...
                 'EdgeColor', 'none');

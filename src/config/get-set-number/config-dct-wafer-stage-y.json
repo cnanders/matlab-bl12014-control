@@ -4,19 +4,19 @@
 		{
 			"name": "mm",
 			"slope": 1,
-			"offset": 0,
+			"offset": 135,
 			"precision": 3
 		},
 		{
 			"name": "um",
 			"slope": 1000,
-			"offset": 0,
+			"offset": 135,
 			"precision": 3
 		}
 	],
     "step": 10,
     "min": 0,
-    "max": 60
+    "max": 160
 }	
 	
 	

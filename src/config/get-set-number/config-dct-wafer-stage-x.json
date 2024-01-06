@@ -3,20 +3,20 @@
 	"units": [
 		{
 			"name": "mm",
-			"slope": 1,
-			"offset": 0,
+			"slope": -1,
+			"offset": 30,
 			"precision": 3
 		},
 		{
 			"name": "um",
-			"slope": 1000,
-			"offset": 0,
+			"slope": -1000,
+			"offset": 30,
 			"precision": 3
 		}
 	],
     "step": 1,
-    "min": -100,
-    "max": 100
+    "min": 0,
+    "max": 60
 }	
 	
 	
