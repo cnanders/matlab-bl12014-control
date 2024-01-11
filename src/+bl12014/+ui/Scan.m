@@ -1704,18 +1704,25 @@ classdef Scan < mic.Base
             % Update the stScanSetContract properties listed in stValue 
             
             ceFields = fieldnames(stValue);
+
+            % cAction = [];
             for n = 1 : length(ceFields)
                 switch ceFields{n}
                     case {'task', 'type'}
                         % Do nothing
                     otherwise
                         % Write log
+                        cAction = [ceFields{n} '-'];
                         this.hScanLog.writeLine({ceFields{n}, 'Setting state'});
 
                         this.stScanSetContract.(ceFields{n}).lRequired = true;
                         this.stScanSetContract.(ceFields{n}).lIssued = false;
                 end
             end
+
+            % if ~isempty(cAction)
+            %     this.hScanLog.writeLine(cAction(1:end-1), 'Setting state')
+            % end
             
             % Setting the state programatically does
             % exactly what would happen if the user were to do it manually
@@ -1741,7 +1748,7 @@ classdef Scan < mic.Base
                          this.stScanSetContract.waitForVelOfAIToSettle.lIssued = true;
                         this.lIsWaitingForVelOfAIToSettle = true;
                         
-                    case 'settle'
+                    case {'settle', 'settleThenDriftControl'}
                         
                         %{
                         dTimeStart = tic;
@@ -2116,12 +2123,17 @@ classdef Scan < mic.Base
             cFn = 'onScanIsAtState';
             lDebug = true;           
             lOut = true;
+            lStartDriftControlWhenReady = false;
                         
             ceFields= fieldnames(stValue);
             
             for n = 1:length(ceFields)
                 
                 cField = ceFields{n};
+                
+                if strcmpi(cField, 'settleThenDriftControl')
+                    lStartDriftControlWhenReady = true;
+                end
                 
                 switch cField
                     case {'task', 'type'}
@@ -2143,7 +2155,7 @@ classdef Scan < mic.Base
                         if this.stScanSetContract.(cField).lAchieved
                             
                             if lDebug
-                                %this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
+                                this.msg(sprintf('% %s set has been achieved', cFn, cField), this.u8_MSG_TYPE_SCAN);
                             end
                             
                             continue % no need to check this property
@@ -2225,7 +2237,7 @@ classdef Scan < mic.Base
                                     end
                                     
                                 
-                                case 'settle' % high frequency vibration
+                                case {'settle', 'settleThenDriftControl'} % high frequency vibration
                                     
                                     % defaults
                                     dValue = 1.0;
@@ -2338,6 +2350,9 @@ classdef Scan < mic.Base
                                         end
 
                                         lReady = dXWithinTolerance && dYWithinTolerance;
+                                        if lReady
+                                            this.msg('Reticle XY Fine are within tolerance',  this.u8_MSG_TYPE_SCAN);
+                                        end
                                     end
                                     
                                 case 'reticleX'
@@ -2412,6 +2427,7 @@ classdef Scan < mic.Base
                                     end
 
                                 case 'waferXY'
+                                    lReady = false;
 
                                     % auto recover on stage timeout
                                     dTimeElapsed = toc(this.dTicScanSetState);
@@ -2441,6 +2457,7 @@ classdef Scan < mic.Base
 
                                     if (dXWithinTolerance && dYWithinTolerance)
                                         lReady = true;
+                                        this.msg('Wafer X and Y are now within tolerance', this.u8_MSG_TYPE_SCAN);
                                     end
 
                                     if lDebug
@@ -2462,9 +2479,7 @@ classdef Scan < mic.Base
                                                 ...abs(this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal(stUnit.waferZ) - stValue.waferZ) <= this.dToleranceWaferZ;
                                                     
                                    
-                                   if (lReady && strcmpi(cField, 'waferZThenDriftControl'))
-                                       this.startDriftControl()
-                                   end
+                                   
                                    
                                    if lDebug
                                        
@@ -2586,6 +2601,12 @@ classdef Scan < mic.Base
                     end
                    % don't need to move, this param is OK. Don't false. 
                 end
+            end
+
+            % Trigger drift control immediately if necessary
+            if lStartDriftControlWhenReady && lOut
+                this.msg('Enabling drift control', this.u8_MSG_TYPE_SCAN);
+                this.startDriftControl()
             end
         end
         
