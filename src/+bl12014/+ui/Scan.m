@@ -1914,6 +1914,13 @@ classdef Scan < mic.Base
                             this.stScanSetContract.xyReticleFine.lAchieved = true;
                         end
 
+                        if dXWithinTolerance
+                            this.stScanSetContract.xyReticleFine.lXAchieved = true;
+                        end
+                        if dYWithinTolerance
+                            this.stScanSetContract.xyReticleFine.lYAchieved = true;
+                        end
+
                     case 'waferX'
                         
                         % The FEM is constructed with positions relative to
@@ -2302,6 +2309,31 @@ classdef Scan < mic.Base
                                             stValue.yReticleFine ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end
+                                
+                                case 'xyReticleFine'
+
+                                    if this.stScanSetContract.xyReticleFine.lAchieved
+                                        lReady = true;
+                                    else
+                                        
+                                        if this.stScanSetContract.xyReticleFine.lXAchieved 
+                                            dXWithinTolerance = true;
+                                        else
+                                            dX = stValue.xyReticleFine(1);
+                                            dXCurr = this.uiReticle.uiFineStage.uiX.getValCal('um');
+                                            dXWithinTolerance = abs(dX - dXCurr) < this.dToleranceReticleFineX;
+                                        end
+
+                                        if this.stScanSetContract.xyReticleFine.lYAchieved 
+                                            dYWithinTolerance = true;
+                                        else
+                                            dY = stValue.xyReticleFine(2);
+                                            dYCurr = this.uiReticle.uiFineStage.uiY.getValCal('um');
+                                            dYWithinTolerance = abs(dY - dYCurr) < this.dToleranceReticleFineY;
+                                        end
+
+                                        lReady = dXWithinTolerance && dYWithinTolerance;
                                     end
                                     
                                 case 'reticleX'
