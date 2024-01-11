@@ -4,4 +4,5 @@ save
 vendor-legacy
 
 
+scripts/lube-logs/*
 mpm-packages

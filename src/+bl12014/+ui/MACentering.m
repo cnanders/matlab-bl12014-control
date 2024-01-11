@@ -307,7 +307,10 @@ classdef MACentering < mic.Base
         function dVal = getDTChannelVal(this, dChannel)
             dVal = this.hardware.getDataTranslation().getScanDataOfChannel(dChannel);
             if dChannel == 41
-%                 fprintf('channel 41: %0.3f\n', dVal * 1000);
+                 fprintf('channel 41: %0.3f\n', dVal * 1000);
+            end
+            if dChannel == 42
+                 fprintf('channel 42: %0.3f\n', dVal * 1000);
             end
         end
         
