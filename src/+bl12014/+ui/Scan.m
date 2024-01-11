@@ -1711,12 +1711,25 @@ classdef Scan < mic.Base
                     case {'task', 'type'}
                         % Do nothing
                     otherwise
-                        % Write log
-                        cAction = [ceFields{n} '-'];
-                        this.hScanLog.writeLine({ceFields{n}, 'Setting state'});
-
                         this.stScanSetContract.(ceFields{n}).lRequired = true;
                         this.stScanSetContract.(ceFields{n}).lIssued = false;
+                end
+
+                % Log
+                switch ceFields{n}
+                    case {'task', 'type'}
+                        % Do nothing
+                    case 'xyReticleFine'
+                        % capture this in wafer
+                    case 'tracking'
+                    case 'workingMode'
+                        this.hScanLog.writeLine({'Working mode change', 'Setting state'});
+                    case 'waferXY'
+                        this.hScanLog.writeLine({'Wafer and Reticle XY', 'Setting state'});
+                    case 'waferZThenDriftControl'
+                        this.hScanLog.writeLine({'Wafer Z', 'Setting state'});
+                    otherwise
+                        this.hScanLog.writeLine({ceFields{n}, 'Setting state'});
                 end
             end
 
@@ -2131,7 +2144,7 @@ classdef Scan < mic.Base
                 
                 cField = ceFields{n};
                 
-                if strcmpi(cField, 'settleThenDriftControl')
+                if strcmpi(cField, 'waferZThenDriftControl') || strcmpi(cField, 'settleThenDriftControl')
                     lStartDriftControlWhenReady = true;
                 end
                 

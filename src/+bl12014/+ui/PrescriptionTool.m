@@ -623,7 +623,7 @@ classdef PrescriptionTool < mic.Base
             u8Count = u8Count + 1;
 
             
-            % All motions: Ret XY, Wafer XY, WaferZ
+            % Reticle and wafer: Ret XY, Wafer XY, 
             stValue = struct();
                 stValue.xyReticleFine = [5, 5];
 
@@ -644,9 +644,6 @@ classdef PrescriptionTool < mic.Base
 
                 stValue.waferXY = [dXVal, dYVal]; 
 
-                % 2021.10 update to start drift control immediately after WFZ
-
-                stValue.waferZ = this.uiFemTool.dFocus(nMid);
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
             
@@ -658,10 +655,16 @@ classdef PrescriptionTool < mic.Base
                 stSettle = struct();
                 stSettle.value = this.uieVibration.get();
                 stSettle.time = this.uieTimeToSettle.get();
-                stValue.settleThenDriftControl = stSettle;
+                stValue.settle = stSettle;
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
             end
+
+             % Wafer Z then drift control
+             stValue = struct();
+             stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
+             ceValues{u8Count} = stValue;
+             u8Count = u8Count + 1;
             
             % WORKING MODE 4
             stValue = struct();
@@ -718,10 +721,8 @@ classdef PrescriptionTool < mic.Base
                         stValue.tracking = 'stop';
                         ceValues{u8Count} = stValue;
 
-
-                        stValue.waferXY = [dX(n), dWaferY];
                         stValue.xyReticleFine = [5, 5];
-                        stValue.waferZ = this.uiFemTool.dFocus(m);
+                        stValue.waferXY = [dX(n), dWaferY];
 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
@@ -735,10 +736,16 @@ classdef PrescriptionTool < mic.Base
                         stSettle = struct();
                         stSettle.value = this.uieVibration.get();
                         stSettle.time = this.uieTimeToSettle.get();
-                        stValue.settleThenDriftControl = stSettle;
+                        stValue.settle = stSettle;
                         ceValues{u8Count} = stValue;
                         u8Count = u8Count + 1;
                     end
+
+                     % Wafer Z then drift control
+                    stValue = struct();
+                    stValue.waferZThenDriftControl = this.uiFemTool.dFocus(m);
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
 
                     % WORKING MODE 4
                     stValue = struct();
