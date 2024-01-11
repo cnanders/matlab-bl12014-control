@@ -1861,7 +1861,7 @@ classdef Scan < mic.Base
 
                         if stValue.workingMode == 5
                             % Assume fem element starts with workingmode = 5
-                             this.hScanLog.writeLine({'FEM Element', 'Start'});
+%                              this.hScanLog.writeLine({'FEM Element', 'Start'});
                         end
                         
                         if this.lSkipWorkingMode
@@ -1916,9 +1916,13 @@ classdef Scan < mic.Base
 
                         if dXWithinTolerance
                             this.stScanSetContract.xyReticleFine.lXAchieved = true;
+                        else 
+                            this.stScanSetContract.xyReticleFine.lXAchieved = false;
                         end
                         if dYWithinTolerance
                             this.stScanSetContract.xyReticleFine.lYAchieved = true;
+                        else
+                            this.stScanSetContract.xyReticleFine.lYAchieved = false;
                         end
 
                     case 'waferX'

@@ -219,6 +219,7 @@ classdef App < mic.Base
             % Top Left
             dLeft = 10;
             dBottom = dScreenSize(4) - this.dHeight - 10 - 60;
+            dBottom = max([dBottom, 0]);
             
             this.hFigure = figure( ...
                 'NumberTitle', 'off',...
