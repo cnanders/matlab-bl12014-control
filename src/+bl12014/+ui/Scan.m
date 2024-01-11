@@ -2383,20 +2383,21 @@ classdef Scan < mic.Base
                                         % comment 2021.04.01
                                         this.uiSequenceRecoverFem.execute();
                                     end
-                                    
+                                                                        
+                                    dX = this.getStageXFromWaferX(stValue.waferXY(1)); % mm
                                     if this.stScanSetContract.waferXY.lXAchieved 
                                         dXWithinTolerance = true;
+                                        this.msg('Wafer X already within tolearnce \n', this.u8_MSG_TYPE_SCAN);
                                     else
-                                        dX = this.getStageXFromWaferX(stValue.waferXY(1)); % mm
                                         dXCurr = this.uiWafer.uiCoarseStage.uiX.getValCal('mm');
                                         dXWithinTolerance = abs(dX - dXCurr) < this.dToleranceWaferX;
                                     end
 
-
+                                    dY = this.getStageYFromWaferY(stValue.waferXY(2)); % mm
                                     if this.stScanSetContract.waferXY.lYAchieved 
                                         dYWithinTolerance = true;
+                                        this.msg('Wafer Y already within tolearnce \n', this.u8_MSG_TYPE_SCAN);
                                     else
-                                        dY = this.getStageYFromWaferY(stValue.waferXY(2)); % mm
                                         dYCurr = this.uiWafer.uiCoarseStage.uiY.getValCal('mm');
                                         dYWithinTolerance = abs(dY - dYCurr) < this.dToleranceWaferY;
                                     end
