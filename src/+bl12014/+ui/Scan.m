@@ -1255,10 +1255,12 @@ classdef Scan < mic.Base
                 'reticleY', ...
                 'waferX', ...
                 'waferY', ...
+                'waferXY', ...
                 'waferZ', ...
                 'waferZThenDriftControl', ...
                 'xReticleFine', ...
                 'yReticleFine', ...
+                'xyReticleFine', ...
                 'workingMode', ...
                 'shutter', ...
                 'smsSlowShutter' ...
@@ -1284,11 +1286,13 @@ classdef Scan < mic.Base
                 'reticleY', ...
                 'waferX', ...
                 'waferY', ...
+                'waferXY', ...
                 'waferZ', ...
                 'waferZThenDriftControl', ...
                 'smsSlowShutter', ... % 2022.01
                 'xReticleFine', ...
                 'yReticleFine', ...
+                'xyReticleFine', ...
                 'workingMode', ...
             };
 
@@ -1886,7 +1890,30 @@ classdef Scan < mic.Base
                         
                         this.uiReticle.uiFineStage.uiY.setDestCalAndGo(stValue.yReticleFine, 'um');
                         this.stScanSetContract.yReticleFine.lIssued = true;
-                        
+                    
+                    case 'xyReticleFine'
+
+                        % Issue moves only if the value and goal are different:
+                        dX = stValue.xyReticleFine(1);
+                        dXCurr = this.uiReticle.uiFineStage.uiX.getValCal('um');
+                        dXWithinTolerance = abs(dX - dXCurr) < this.dToleranceReticleFineX;
+                        if ~dXWithinTolerance
+                            this.uiReticle.uiFineStage.uiX.setDestCalAndGo(dX, 'um');
+                        end
+
+                        dY = stValue.xyReticleFine(2);
+                        dYCurr = this.uiReticle.uiFineStage.uiY.getValCal('um');
+                        dYWithinTolerance = abs(dY - dYCurr) < this.dToleranceReticleFineY;
+                        if ~dYWithinTolerance
+                            this.uiReticle.uiFineStage.uiY.setDestCalAndGo(dY, 'um');
+                        end
+
+                        this.stScanSetContract.xyReticleFine.lIssued = true;
+
+                        if (dXWithinTolerance && dYWithinTolerance)
+                            this.stScanSetContract.xyReticleFine.lAchieved = true;
+                        end
+
                     case 'waferX'
                         
                         % The FEM is constructed with positions relative to
@@ -1906,11 +1933,38 @@ classdef Scan < mic.Base
                     case 'waferY'
                         
                         % See comment for waferX
-                        
                         dY = this.getStageYFromWaferY(stValue.waferY); 
                         this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
                         this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
                         this.stScanSetContract.waferY.lIssued = true;
+
+                    case 'waferXY'
+                            
+                            % See comment for waferX
+
+                            % Issue moves only if the value and goal are different:
+                            dX = this.getStageXFromWaferX(stValue.waferXY(1)); % mm
+                            dXCurr = this.uiWafer.uiCoarseStage.uiX.getValCal('mm');
+                            if abs(dX - dXCurr) > this.dToleranceWaferX  
+                                this.uiWafer.uiCoarseStage.uiX.setDestCalDisplay(dX, 'mm');
+                                this.uiWafer.uiCoarseStage.uiX.moveToDest(); % click
+                                this.stScanSetContract.waferXY.lXAchieved = false;
+                            else 
+                                this.stScanSetContract.waferXY.lXAchieved = true;
+                            end
+
+
+                            dY = this.getStageYFromWaferY(stValue.waferXY(2)); % mm
+                            dYCurr = this.uiWafer.uiCoarseStage.uiY.getValCal('mm');
+                            if abs(dY - dYCurr) >  this.dToleranceWaferY 
+                                this.uiWafer.uiCoarseStage.uiY.setDestCalDisplay(dY, 'mm');
+                                this.uiWafer.uiCoarseStage.uiY.moveToDest(); % click
+                                this.stScanSetContract.waferXY.lYAchieved = false;
+                            else
+                                this.stScanSetContract.waferXY.lYAchieved = true;
+                            end
+                          
+                            this.stScanSetContract.waferXY.lIssued = true;
                       
                     case {'waferZ', 'waferZThenDriftControl'}
                     
@@ -2317,6 +2371,49 @@ classdef Scan < mic.Base
                                             cField, ...
                                             this.uiWafer.uiCoarseStage.uiY.getValCal(stUnit.waferY), ...
                                             dGoal ...
+                                        );
+                                        this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                    end
+
+                                case 'waferXY'
+
+                                    % auto recover on stage timeout
+                                    dTimeElapsed = toc(this.dTicScanSetState);
+                                    if (dTimeElapsed > 20)
+                                        % comment 2021.04.01
+                                        this.uiSequenceRecoverFem.execute();
+                                    end
+                                    
+                                    if this.stScanSetContract.waferXY.lXAchieved 
+                                        dXWithinTolerance = true;
+                                    else
+                                        dX = this.getStageXFromWaferX(stValue.waferXY(1)); % mm
+                                        dXCurr = this.uiWafer.uiCoarseStage.uiX.getValCal('mm');
+                                        dXWithinTolerance = abs(dX - dXCurr) < this.dToleranceWaferX;
+                                    end
+
+
+                                    if this.stScanSetContract.waferXY.lYAchieved 
+                                        dYWithinTolerance = true;
+                                    else
+                                        dY = this.getStageYFromWaferY(stValue.waferXY(2)); % mm
+                                        dYCurr = this.uiWafer.uiCoarseStage.uiY.getValCal('mm');
+                                        dYWithinTolerance = abs(dY - dYCurr) < this.dToleranceWaferY;
+                                    end
+
+
+                                    if (dXWithinTolerance && dYWithinTolerance)
+                                        lReady = true;
+                                    end
+
+                                    if lDebug
+                                        cMsg = sprintf('%s %s value = %1.3f/%1.3f; goal = %1.3f/%1.3f', ...
+                                            cFn, ...
+                                            cField, ...
+                                            this.uiWafer.uiCoarseStage.uiX.getValCal('mm'), ...
+                                            this.uiWafer.uiCoarseStage.uiY.getValCal('mm'), ...
+                                            dX, ...
+                                            dY ...
                                         );
                                         this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                     end
