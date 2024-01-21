@@ -1,16 +1,16 @@
 {  
     "tiltX": {
-        "value":-9250,
+        "value":-18518,
         "unit": "urad",
         "displayTol": 50
     },
     "tiltY": {
-        "value":890,
+        "value":-630,
         "unit": "urad",
         "displayTol": 50
     },
     "Z": {
-        "value":-203.6,
+        "value":-46.85,
         "unit": "um",
         "displayTol": 0.4
     }

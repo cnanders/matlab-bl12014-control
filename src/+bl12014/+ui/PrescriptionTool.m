@@ -52,6 +52,7 @@ classdef PrescriptionTool < mic.Base
         uieFadeY
 
         uicbUseFastMode
+        uicbSkipIndex
         
         uiProcessTool              
         uiReticleTool                
@@ -268,6 +269,14 @@ classdef PrescriptionTool < mic.Base
                 dHeight ...
             );
 
+            this.uicbSkipIndex.build(...
+                this.hPanel, ...
+                dLeft + 80, ...
+                dTop , ...
+                dWidth + 40, ...
+                dHeight ...
+            )
+
             dLeft = dLeft + dWidth + 10;            
             this.uieFadeY.build(...
                 this.hPanel, ...
@@ -340,267 +349,6 @@ classdef PrescriptionTool < mic.Base
                         
         end
         
-        function stRecipe = getRecipeFastMode(this)
-
-             
-            % There is order to the states.
-            % We need to move stage (x,y)
-            % once there, move height sensor z via wafer coarse and fine z closed loop,
-            % once there, set working mode to drift control
-            % once there, perform exposure task
-            % when exposure task is done, set working mode to normal
-            % Is it possible to achieve this with one state?
-            
-            ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
-            
-            % Use first state to set reticle field and pupil fill 
-            
-            u8Count = 1;
-            
-            
-            % Use other states for wafer pos and exposure task FEM
-            % working mode to allow  x y move
-            stValue = struct();
-            stValue.workingMode = 5; % allow xy move
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-
-            
-            % Center the reticle fine stage in x and y
-            stValue = struct();
-            stValue.xyReticleFine = [5, 5];
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            
-            %%  Index shot
-            mMid = ceil(length(this.uiFemTool.dDose)/2);
-            nMid = ceil(length(this.uiFemTool.dFocus)/2);
-            
-
-            % x position on wafer you want the exposure to be
-            dXVal = -this.uiFemTool.dX(1); 
-            % y position on wafer you want exposure to be
-            if length(this.uiFemTool.dY) > 1
-                dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
-            else
-                dYStep = .2;
-            end
-            dYVal = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME;
-            
-            stValue = struct();
-            stValue.waferXY = [dXVal, dYVal]; 
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % DMI-based settle of motion of reticle fine xy from big move to index shot to
-            % dissipate
-            if this.uieTimeToSettle.get() > 0.1
-                stValue = struct();
-                stSettle = struct();
-                stSettle.value = this.uieVibration.get();
-                stSettle.time = this.uieTimeToSettle.get();
-                stValue.settle = stSettle;
-                ceValues{u8Count} = stValue;
-                u8Count = u8Count + 1;
-            end
-            
-
-            % 2021.10 update to start drift control immediately after WFZ
-            stValue = struct();
-            stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            stValue = struct();
-            stValue.workingMode = 4; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % 2022.01 update to open the SMS slow shutter (glass plate)
-
-            % 2024.01 no longer do this
-            % stValue = struct();
-            % stValue.smsSlowShutter = true;
-            % ceValues{u8Count} = stValue;
-            % u8Count = u8Count + 1;
-            
-
-            % State
-            stValue = struct();
-            stValue.type = 'exposure';
-
-            % Exposure task this info is used to color the exposures
-            stTask = struct();
-            stTask.dose = this.uiFemTool.dDose(mMid);
-            stTask.femCols = length(this.uiFemTool.dDose);
-            stTask.femCol = mMid;
-            stTask.femRows = length(this.uiFemTool.dFocus);
-            stTask.femRow = nMid;
-
-            stValue.task = stTask;
-
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % 2022.01 update to close the SMS slow shutter (glass plate)
-            % 2024.01 no longer do this
-
-            % stValue = struct();
-            % stValue.smsSlowShutter = false;
-            % ceValues{u8Count} = stValue;
-            % u8Count = u8Count + 1;
-            
-            
-            % wm_RUN
-            stValue = struct();
-            stValue.workingMode = 5; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % Stop drift monitor tracking
-            stValue = struct();
-            stValue.tracking = 'stop';
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            
-            % Horizontal Serp
-            % FEM for each focus (m), do each dose (n)
-
-            for m = 1 : length(this.uiFemTool.dFocus) % rows
-                % y position on wafer you want the exposure to be
-                % stValue = struct();
-                % stValue.waferY = -this.uiFemTool.dY(m); 
-                % ceValues{u8Count} = stValue;
-                % u8Count = u8Count + 1; 
-
-                dWaferY = -this.uiFemTool.dY(m); 
-
-                for n = 1 : length(this.uiFemTool.dDose) % cols
-
-                    % For even numbered columns, expose the row in reverse
-                    % order so there are never large wafer z changes during
-                    % the FEM and never any large wafer y changes during
-                    % FEM
-
-                    dX = -this.uiFemTool.dX;
-                    dDose = this.uiFemTool.dDose;
-
-%                     if lSerpentine && mod(m, 2) == 0 % even row, flip order of cols
-%                         dX = flip(dX);
-%                         dDose = flip(dDose);
-%                     end
-
-
-                    stValue = struct();
-                    stValue.waferXY = [dX(n), dWaferY]; 
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-
-                    % Center the reticle fine stage in x and y
-                    stValue = struct();
-                    stValue.xyReticleFine = [5, 5];
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-
-
-                    % DMI-based settle of motion of reticle fine xy from big move to index shot to
-                    % dissipate
-                    if this.uieTimeToSettle.get() > 0.1
-                        stValue = struct();
-                        stSettle = struct();
-                        stSettle.value = this.uieVibration.get();
-                        stSettle.time = this.uieTimeToSettle.get();
-                        stValue.settle = stSettle;
-                        ceValues{u8Count} = stValue;
-                        u8Count = u8Count + 1;
-                    end
-
-                    
-                    % 2021.10 update to start tracking immediately
-                    % after WFZ
-                    stValue = struct();
-                    stValue.waferZThenDriftControl = this.uiFemTool.dFocus(m);
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-                    
-                    % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-                    stValue = struct();
-                    stValue.workingMode = 4; % Drift closed loop for exposure
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-                    
-                    % 2022.01 update to open the SMS slow shutter (glass plate)
-                    % 2024.01 no longer do this
-                    % stValue = struct();
-                    % stValue.smsSlowShutter = true;
-                    % ceValues{u8Count} = stValue;
-                    % u8Count = u8Count + 1;
-                    
-
-                    % Exposure task 
-                    stValue = struct();
-                    stValue.type = 'exposure';
-
-                    stTask = struct();
-                    stTask.dose = dDose(n); % cant use this since the flip each row. this.uiFemTool.dDose(n);
-                    stTask.femCols = length(this.uiFemTool.dDose);
-                    stTask.femRows = length(this.uiFemTool.dFocus);
-                    
-                    stTask.femRow = m;
-                    stTask.femCol = n;
-
-                    % Enough time for resonant motion of frame excited from stage move
-                    % to settle
-                    % stTask.pausePreExpose = 5;
-
-                    stValue.task = stTask;
-
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-                    
-                    % 2022.01 update to open the SMS slow shutter (glass plate)
-                    % 2024.01 no longer do this
-                    % stValue = struct();
-                    % stValue.smsSlowShutter = false;
-                    % ceValues{u8Count} = stValue;
-                    % u8Count = u8Count + 1;
-
-
-                    % wm_RUN
-                    stValue = struct();
-                    stValue.workingMode = 5;
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-
-                    % Stop drift monitor tracking
-                    stValue = struct();
-                    stValue.tracking = 'stop';
-                    ceValues{u8Count} = stValue;
-                    u8Count = u8Count + 1;
-
-                end
-            end
-               
-            stUnit = struct();
-            stUnit.waferX = 'mm';
-            stUnit.waferY = 'mm';
-            stUnit.waferZ = 'nm';
-            stUnit.reticleX = 'mm';
-            stUnit.reticleY = 'mm';
-            stUnit.xReticleFine = 'um';
-            stUnit.yReticleFine = 'um';
-            stUnit.pupilFill = 'n/a';
-            stUnit.workingMode = 'n/a';
-            
-            stRecipe = struct();
-            stRecipe.process = this.uiProcessTool.savePublic();
-            stRecipe.fem = this.uiFemTool().savePublic();
-            stRecipe.unit = stUnit;
-            stRecipe.values = ceValues;
-
-        end
 
 
         
@@ -616,81 +364,82 @@ classdef PrescriptionTool < mic.Base
             u8Count = 1;
             
             
-            % SET WORKING MODE TO 5
-            stValue = struct();
-            stValue.workingMode = 5; % allow xy move
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
+            if ~this.uicbSkipIndex.get()
+                % SET WORKING MODE TO 5
+                stValue = struct();
+                stValue.workingMode = 5; % allow xy move
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
 
-            
-            % Reticle and wafer: Ret XY, Wafer XY, 
-            stValue = struct();
-                stValue.xyReticleFine = [5, 5];
+                
+                % Reticle and wafer: Ret XY, Wafer XY, 
+                stValue = struct();
+                    stValue.xyReticleFine = [5, 5];
 
-                %%  Index shot
-                mMid = ceil(length(this.uiFemTool.dDose)/2);
-                nMid = ceil(length(this.uiFemTool.dFocus)/2);
+                    %%  Index shot
+                    mMid = ceil(length(this.uiFemTool.dDose)/2);
+                    nMid = ceil(length(this.uiFemTool.dFocus)/2);
 
 
-                % x position on wafer you want the exposure to be
-                dXVal = -this.uiFemTool.dX(1); 
-                % y position on wafer you want exposure to be
-                if length(this.uiFemTool.dY) > 1
-                    dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
-                else
-                    dYStep = .2;
+                    % x position on wafer you want the exposure to be
+                    dXVal = -this.uiFemTool.dX(1); 
+                    % y position on wafer you want exposure to be
+                    if length(this.uiFemTool.dY) > 1
+                        dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+                    else
+                        dYStep = .2;
+                    end
+                    dYVal = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME;
+
+                    stValue.waferXY = [dXVal, dYVal]; 
+
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                
+                % DMI-based settle of motion of reticle fine xy from big move to index shot to
+                % dissipate
+                if this.uieTimeToSettle.get() > 0.1
+                    stValue = struct();
+                    stSettle = struct();
+                    stSettle.value = this.uieVibration.get();
+                    stSettle.time = this.uieTimeToSettle.get();
+                    stValue.settle = stSettle;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
                 end
-                dYVal = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME;
 
-                stValue.waferXY = [dXVal, dYVal]; 
-
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            
-            % DMI-based settle of motion of reticle fine xy from big move to index shot to
-            % dissipate
-            if this.uieTimeToSettle.get() > 0.1
+                % Wafer Z then drift control
                 stValue = struct();
-                stSettle = struct();
-                stSettle.value = this.uieVibration.get();
-                stSettle.time = this.uieTimeToSettle.get();
-                stValue.settle = stSettle;
+                stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
-            end
-
-             % Wafer Z then drift control
-             stValue = struct();
-             stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
-             ceValues{u8Count} = stValue;
-             u8Count = u8Count + 1;
-            
-            % WORKING MODE 4
-            stValue = struct();
-            stValue.workingMode = 4; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-
-            % EXPOSE
+                
+                % WORKING MODE 4
                 stValue = struct();
-                stValue.type = 'exposure';
-
-                % Exposure task this info is used to color the exposures
-                stTask = struct();
-                stTask.dose = this.uiFemTool.dDose(mMid);
-                stTask.femCols = length(this.uiFemTool.dDose);
-                stTask.femCol = mMid;
-                stTask.femRows = length(this.uiFemTool.dFocus);
-                stTask.femRow = nMid;
-
-                stValue.task = stTask;
-
+                stValue.workingMode = 4; % drift closed loop for exposure
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
-            
-       
+                
+
+                % EXPOSE
+                    stValue = struct();
+                    stValue.type = 'exposure';
+
+                    % Exposure task this info is used to color the exposures
+                    stTask = struct();
+                    stTask.dose = this.uiFemTool.dDose(mMid);
+                    stTask.femCols = length(this.uiFemTool.dDose);
+                    stTask.femCol = mMid;
+                    stTask.femRows = length(this.uiFemTool.dFocus);
+                    stTask.femRow = nMid;
+
+                    stValue.task = stTask;
+
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+            end % end index
+        
             
             % WORKING MODE 5
             stValue = struct();
@@ -1249,131 +998,135 @@ classdef PrescriptionTool < mic.Base
             
             %%  Index shot
             
-            mMid = ceil(length(this.uiFemTool.dDose)/2);
-            nMid = ceil(length(this.uiFemTool.dFocus)/2);
-            
+            if ~this.uicbSkipIndex.get()
+                mMid = ceil(length(this.uiFemTool.dDose)/2);
+                nMid = ceil(length(this.uiFemTool.dFocus)/2);
+                
 
-            % x position on wafer you want the exposure to be
-            stValue = struct();
-            stValue.waferX = -this.uiFemTool.dX(1); 
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % y position on wafer you want exposure to be
-            if length(this.uiFemTool.dY) > 1
-                dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
-            else
-                dYStep = .2;
-            end
-            stValue = struct();
-            stValue.waferY = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME; 
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-
-            
-            
-            
-            % Pause long time for motion of reticle fine xy from big move to index shot to
-            % dissipate
-            %{
-            stValue = struct();
-            stValue.pause = 10;
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            %}
-            
-            % DMI-based settle of motion of reticle fine xy from big move to index shot to
-            % dissipate
-            if this.uieTimeToSettle.get() > 0.1
+                % x position on wafer you want the exposure to be
                 stValue = struct();
-                stSettle = struct();
-                stSettle.value = this.uieVibration.get();
-                stSettle.time = this.uieTimeToSettle.get();
-                stValue.settle = stSettle;
+                stValue.waferX = -this.uiFemTool.dX(1); 
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
+                
+                % y position on wafer you want exposure to be
+                if length(this.uiFemTool.dY) > 1
+                    dYStep = this.uiFemTool.dY(2) - this.uiFemTool.dY(1);
+                else
+                    dYStep = .2;
+                end
+                stValue = struct();
+                stValue.waferY = -(this.uiFemTool.dY(1) - dYStep); % STEP FIX ME; 
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
+            
+            
+                
+                % Pause long time for motion of reticle fine xy from big move to index shot to
+                % dissipate
+                %{
+                stValue = struct();
+                stValue.pause = 10;
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                %}
+                
+                % DMI-based settle of motion of reticle fine xy from big move to index shot to
+                % dissipate
+                if this.uieTimeToSettle.get() > 0.1
+                    stValue = struct();
+                    stSettle = struct();
+                    stSettle.value = this.uieVibration.get();
+                    stSettle.time = this.uieTimeToSettle.get();
+                    stValue.settle = stSettle;
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                end
+            
+            %{
+                % Val you want HS to read during exposure
+                stValue = struct();
+                stValue.waferZ = this.uiFemTool.dFocus(nMid);
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
+                % Start drift monitor tracking 
+                stValue = struct();
+                stValue.tracking = 'start';
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
+                stValue = struct();
+                stValue.workingMode = 4; % drift closed loop for exposure
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
+                %}
+
+                % 2021.10 update to start drift control immediately after WFZ
+                stValue = struct();
+                stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                stValue = struct();
+                stValue.workingMode = 4; % drift closed loop for exposure
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                % 2022.01 update to open the SMS slow shutter (glass plate)
+                stValue = struct();
+                stValue.smsSlowShutter = true;
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+
+                % State
+                stValue = struct();
+                stValue.type = 'exposure';
+
+                % Exposure task this info is used to color the exposures
+                stTask = struct();
+                stTask.dose = this.uiFemTool.dDose(mMid);
+                stTask.femCols = length(this.uiFemTool.dDose);
+                stTask.femCol = mMid;
+                stTask.femRows = length(this.uiFemTool.dFocus);
+                stTask.femRow = nMid;
+                
+                % Enough time for resonant motion of frame excited from stage move
+                % to settle
+                % stTask.pausePreExpose = 30; % FIX ME
+
+                stValue.task = stTask;
+
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                % 2022.01 update to close the SMS slow shutter (glass plate)
+                stValue = struct();
+                stValue.smsSlowShutter = false;
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                
+                % wm_RUN
+                stValue = struct();
+                stValue.workingMode = 5; % drift closed loop for exposure
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+                
+                % Stop drift monitor tracking
+                stValue = struct();
+                stValue.tracking = 'stop';
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
             end
             
-           %{
-            % Val you want HS to read during exposure
-            stValue = struct();
-            stValue.waferZ = this.uiFemTool.dFocus(nMid);
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-
-            % Start drift monitor tracking 
-            stValue = struct();
-            stValue.tracking = 'start';
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % run exposure NEED TO USE SINGLE QUOTES IN RECIPE for struct2json
-            stValue = struct();
-            stValue.workingMode = 4; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-
-            %}
-
-            % 2021.10 update to start drift control immediately after WFZ
-            stValue = struct();
-            stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            stValue = struct();
-            stValue.workingMode = 4; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % 2022.01 update to open the SMS slow shutter (glass plate)
-            stValue = struct();
-            stValue.smsSlowShutter = true;
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-
-            % State
-            stValue = struct();
-            stValue.type = 'exposure';
-
-            % Exposure task this info is used to color the exposures
-            stTask = struct();
-            stTask.dose = this.uiFemTool.dDose(mMid);
-            stTask.femCols = length(this.uiFemTool.dDose);
-            stTask.femCol = mMid;
-            stTask.femRows = length(this.uiFemTool.dFocus);
-            stTask.femRow = nMid;
-            
-            % Enough time for resonant motion of frame excited from stage move
-            % to settle
-            % stTask.pausePreExpose = 30; % FIX ME
-
-            stValue.task = stTask;
-
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % 2022.01 update to close the SMS slow shutter (glass plate)
-            stValue = struct();
-            stValue.smsSlowShutter = false;
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            
-            % wm_RUN
-            stValue = struct();
-            stValue.workingMode = 5; % drift closed loop for exposure
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
-            % Stop drift monitor tracking
-            stValue = struct();
-            stValue.tracking = 'stop';
-            ceValues{u8Count} = stValue;
-            u8Count = u8Count + 1;
-            
             lVerticalSerp = false;
+            
             
             
             if lVerticalSerp
@@ -1815,6 +1568,10 @@ classdef PrescriptionTool < mic.Base
             this.uicbUseFastMode = mic.ui.common.Checkbox(...
                 'cLabel', 'Fast Mode' ...
             );
+
+            this.uicbSkipIndex = mic.ui.common.Checkbox(...
+                'cLabel', 'Skip Index Shot' ...
+            );
                         
             this.uieFadeY = mic.ui.common.Edit(...
                 'cType', 'd', ...
@@ -2021,6 +1778,9 @@ classdef PrescriptionTool < mic.Base
             cFastStr = '';
             if this.uicbUseFastMode.get()
                 cFastStr = '_FC';
+            end
+            if this.uicbSkipIndex.get()
+                cFastStr = [cFastStr '_noIndex']
             end
             
             cName = [...

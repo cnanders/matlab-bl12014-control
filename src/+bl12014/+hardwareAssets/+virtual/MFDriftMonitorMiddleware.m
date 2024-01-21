@@ -74,7 +74,7 @@ classdef MFDriftMonitorMiddleware < mic.Base
         
         % Default interpolant anme
         cDefaultData = fullfile(fileparts(mfilename('fullpath')),...
-            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2018-09-20_08.52.mat')
+            '..', '..', '..', 'config', 'interpolants', 'cal-interp_2024-01-12_10.29.mat')
 
         
         u8FitModel

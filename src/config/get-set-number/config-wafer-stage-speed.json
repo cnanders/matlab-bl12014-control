@@ -1,0 +1,33 @@
+{
+	"delay": 0.5,
+    "step": 1,
+    "stores": [
+        {
+            "name": "Slow (2)",
+            "raw": 2
+        },
+        {
+            "name": "Medium (5)",
+            "raw": 5
+      },
+      {
+              "name": "Fast (10)",
+              "raw": 10
+      },
+      {
+        "name": "Fast Tilts (20)",
+        "raw": 10
+      }
+    ],
+    "units": [
+		{
+			"name": "AU",
+			"slope": 1,
+			"offset": 0,
+			"precision": 1
+		}],
+    "min": 1,
+    "max": 25
+}	
+	
+	

@@ -28,6 +28,8 @@ classdef Wafer < mic.Base
         uiHeightSensorZClosedLoopCoarse
         uiHeightSensorRxClosedLoop
         uiHeightSensorRyClosedLoop
+
+        uiStageSpeed
         
         
         %Closed loop control for rx/ry/z
@@ -230,6 +232,9 @@ classdef Wafer < mic.Base
 
             dLeft = 10;
             this.uiDiode.build(this.hParent, dLeft, dTop);
+
+            this.uiStageSpeed.build(this.hParent, dLeft + 500, dTop);
+
             dTop = dTop + this.uiDiode.dHeight + dPad;
             
             this.uiShutter.build(this.hParent, dLeft, dTop);
@@ -237,6 +242,7 @@ classdef Wafer < mic.Base
             
             this.uiLsiCoarseStage.build(this.hParent, dLeft, dTop);
             dTop = dTop + this.uiLsiCoarseStage.dHeight + dPad;
+
             
             
             %{
@@ -347,6 +353,12 @@ classdef Wafer < mic.Base
             
             this.uiFineStage = bl12014.ui.WaferFineStage(...
                 'cName', [this.cName, 'wafer-fine-stage'], ...
+                'hardware', this.hardware, ...
+                'clock', this.uiClock ...
+            );
+
+            this.uiStageSpeed =  bl12014.ui.WaferStageSpeed(...
+                'cName', [this.cName, 'wafer-stage-speed'], ...
                 'hardware', this.hardware, ...
                 'clock', this.uiClock ...
             );
