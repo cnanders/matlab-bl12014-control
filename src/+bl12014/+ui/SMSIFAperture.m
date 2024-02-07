@@ -31,6 +31,10 @@ classdef SMSIFAperture < mic.Base
         
         % {bl12014.Hardware 1x1}
         hardware
+
+        dColorLeft  = [245, 120, 120]/256
+        dColorRight = [245, 184, 120]/256
+
         
     end
     
@@ -234,6 +238,9 @@ classdef SMSIFAperture < mic.Base
                 'fhOnPress', @(src, evt)this.hardware.getNewFocus8742MA().moveIndefinitely(u8Axis, 1), ...
                 'fhOnRelease', @(src, evt) this.hardware.getNewFocus8742MA().stop(u8Axis) ...
             );
+
+            this.uiButtonWheelLeft.setColor(this.dColorLeft);
+            this.uiButtonWheelRight.setColor(this.dColorRight);
             
         end
         

@@ -2795,8 +2795,8 @@ classdef Tasks < mic.Base
             %}
             
             
-            
-            dSpeedStart = 5; %hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse();
+            % Wafer level speed
+            dSpeedStart = 8; %hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse();
             
             
             % PPMAC control max velocity of WCX units of m/s

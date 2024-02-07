@@ -68,9 +68,9 @@ classdef WaferTTZClosedLoop < mic.Base
         % destination. Once it reaches the destination, it calls the
         % sensor.get() method after a delay of dDelay
         
-        dStageCheckPeriodZ = 0.1
-        dStageCheckPeriodTiltX = 0.1
-        dStageCheckPeriodTiltY = 0.1
+        dStageCheckPeriodZ = 0.25
+        dStageCheckPeriodTiltX = 0.25
+        dStageCheckPeriodTiltY = 0.25
         
         % No reason for delay here that I can think of since we call the height sensor
         % hardware as sensor.get()

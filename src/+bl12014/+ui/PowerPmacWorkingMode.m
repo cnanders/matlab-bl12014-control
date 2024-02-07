@@ -320,9 +320,33 @@ classdef PowerPmacWorkingMode < mic.Base
                 case 6
                     this.hardware.getDeltaTauPowerPmac().setWorkingModeLsiRun();
                 case 7
-                    this.hardware.getDeltaTauPowerPmac().setWorkingModeWaferTransfer();
+       
+
+                    % First confirm this with a msgbox: 
+                    cMsg = sprintf(...
+                        'Are you sure you want send WAFER to Transfer?\n\n' ...
+                    );
+                    cTitle = 'Confirm Wafer Transfer';
+                    cAnswer = questdlg(cMsg, cTitle, 'Yes', 'Cancel', 'Cancel');
+                    switch cAnswer
+                        case 'Yes'
+                            this.hardware.getDeltaTauPowerPmac().setWorkingModeWaferTransfer();
+                        case 'Cancel'
+                            return
+                    end
                 case 8
-                    this.hardware.getDeltaTauPowerPmac().setWorkingModeReticleTransfer();
+                     % First confirm this with a msgbox: 
+                    cMsg = sprintf(...
+                     'Are you sure you want send RETICLE to Transfer?\n\n' ...
+                    );
+                    cTitle = 'Confirm Reticle Transfer';
+                    cAnswer = questdlg(cMsg, cTitle, 'Yes', 'Cancel', 'Cancel');
+                    switch cAnswer
+                        case 'Yes'
+                            this.hardware.getDeltaTauPowerPmac().setWorkingModeReticleTransfer();
+                        case 'Cancel'
+                            return
+                    end
             end
                 
         end

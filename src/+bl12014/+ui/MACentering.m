@@ -1,7 +1,7 @@
 classdef MACentering < mic.Base
     
     properties (Constant)
-        scanOutputs =  {'DT-36', 'DT-37', 'MDM'}
+        scanOutputs =  {'DT-41', 'DT-42', 'MDM'}
         
     end
     properties (SetAccess = private)
@@ -46,6 +46,8 @@ classdef MACentering < mic.Base
         scanHandler
         lIsScanning = false
 
+        dInitialState
+
         % axes
         haScanAxis
         ceScanRanges
@@ -54,9 +56,12 @@ classdef MACentering < mic.Base
         dXAxis
         dYAxis
 
+        uiDTVoltage35
         uiDTVoltage41
         uiDTVoltage42
 
+        uiReticleCoarseStage
+        uiReticleAxes
 
         cScanLogDir
         
@@ -122,24 +127,28 @@ classdef MACentering < mic.Base
             
             % this.uiGigECamera.build(hParent, dLeft + 1250, dTop, 480);
 
-            this.uiMDMCurrent.build(hParent, dLeft + 720, 340);
+            % this.uiMDMCurrent.build(hParent, dLeft + 720, 340);
 
 
-            this.uiDTVoltage41.build(hParent, dLeft + 860, 650);
-            this.uiDTVoltage42.build(hParent, dLeft + 860, 710);
+            this.uiDTVoltage35.build(hParent, dLeft + 720, 350);
+            this.uiDTVoltage41.build(hParent, dLeft + 720, 390);
+            this.uiDTVoltage42.build(hParent, dLeft + 720, 430);
 
             
-            dTop = 10;
+            dTop = 300;
+
+            this.uiReticleCoarseStage.build(hParent, dLeft, 475);
+
 
              % Scans:
-             this.ss1D.build(hParent, dLeft, dTop, 850, 210); 
-             dTop = dTop + 230;
-             this.ss2D.build(hParent, dLeft, dTop, 850, 210);
+             this.ss1D.build(hParent, dLeft + 970, 2, 850, 210); 
+             dTop = dTop + 210;
+             this.ss2D.build(hParent, dLeft + 970, 200, 850, 210);
 
              this.haScanAxis = axes(...
                 'Parent', hParent, ...
                 'Units', 'pixels', ...
-                'Position', [dLeft + 1270, 390, 500, 500] ...
+                'Position', [dLeft + 1270, 430, 500, 500] ...
              );
 
             
@@ -218,6 +227,26 @@ classdef MACentering < mic.Base
                 'hardware', this.hardware ...
             );
 
+            this.uiDTVoltage35 = mic.ui.device.GetNumber(...
+                'clock', this.clock, ...
+                'cName', [this.cName, 'DT 35 Volts'], ... 
+                'config', mic.config.GetSetNumber(...
+                            'cPath',  fullfile(...
+                                bl12014.Utils.pathUiConfig(), ...
+                                'get-number', ...
+                                'config-volts.json' ...
+                            ) ...
+                        ), ...
+                'cLabel', 'DT-35 (PO)', ...
+                'dWidthPadUnit', 277, ...
+                'lShowInitButton', false, ...
+                'lShowLabels', false, ...
+                'fhGet',@() this.getDTChannelVal(35), ...
+                'fhIsVirtual', @() false, ...
+                'lShowRel', false, ...
+                'lShowZero', false, ...
+                'lUseFunctionCallbacks', true ...
+            );
 
             this.uiDTVoltage41 = mic.ui.device.GetNumber(...
                 'clock', this.clock, ...
@@ -235,6 +264,8 @@ classdef MACentering < mic.Base
                 'lShowLabels', false, ...
                 'fhGet',@() this.getDTChannelVal(41), ...
                 'fhIsVirtual', @() false, ...
+                'lShowRel', false, ...
+                'lShowZero', false, ...
                 'lUseFunctionCallbacks', true ...
             );
 
@@ -254,7 +285,25 @@ classdef MACentering < mic.Base
             'lShowLabels', false, ...
             'fhGet', @() this.getDTChannelVal(42), ...
             'fhIsVirtual', @() false, ...
+            'lShowRel', false, ...
+            'lShowZero', false, ...
             'lUseFunctionCallbacks', true ...
+        );
+
+        this.uiReticleCoarseStage = bl12014.ui.ReticleCoarseStage(...
+        'cName', [this.cName, 'reticle-coarse-stage'], ...
+         'hardware', this.hardware, ...
+        'clock', this.uiClock ...
+            );
+        
+        this.uiReticleAxes = bl12014.ui.ReticleAxes(...
+            'cName', [this.cName, 'reticle-axes'], ...
+            'clock', this.uiClock, ...
+            'fhGetIsShutterOpen', @this.uiShutter.uiOverride.get, ...
+            'fhGetX', @() this.uiReticleCoarseStage.uiX.getValCal('mm') / 1000, ...
+            'fhGetY', @() this.uiReticleCoarseStage.uiY.getValCal('mm') / 1000, ...
+            'dWidth', 600, ...
+            'dHeight', 600 ...
         );
 
             this.uiScanner = bl12014.ui.Scanner(...
@@ -273,7 +322,7 @@ classdef MACentering < mic.Base
             this.ss1D = mic.ui.common.ScanSetup( ...
                 'cLabel', 'Saved pos', ...
                 'ceOutputOptions', this.scanOutputs, ...
-                'ceScanAxisLabels', {'DC X', 'DC Y'}, ...
+                'ceScanAxisLabels', {'DC X', 'DC Y', 'RCX', 'RCY'}, ...
                 'dScanAxes', 1, ...
                 'cName', '1D-Scan', ...
                 'u8selectedDefaults', uint8(1),...
@@ -289,7 +338,7 @@ classdef MACentering < mic.Base
             this.ss2D = mic.ui.common.ScanSetup( ...
                 'cLabel', 'Saved pos', ...
                 'ceOutputOptions', this.scanOutputs, ...
-                'ceScanAxisLabels', {'DC X', 'DC Y'}, ...
+                'ceScanAxisLabels', {'DC X', 'DC Y',  'RCX', 'RCY'}, ...
                 'dScanAxes', 2, ...
                 'cName', '2D-Scan', ...
                 'u8selectedDefaults', uint8([1, 2]),...
@@ -317,10 +366,14 @@ classdef MACentering < mic.Base
         function stopScan(this)
             this.lIsScanning = false;
             this.scanHandler.stop();
+
+
         end
 
         function onScanAbort(this, dInitialState, fhSetState, fhIsAtState)
             this.lIsScanning = false;
+            fhSetState([], dInitialState);
+
         end
         
        
@@ -332,10 +385,28 @@ classdef MACentering < mic.Base
                 return
             end
                 
+
             dInitialState = this.getInitialState(u8ScanAxisIdx);
 
             % Save this state:
             this.stLastScanState = dInitialState;
+
+            % If using deltas, modify state to center around current
+            % values:
+            ceScanRanges = cell(1, length(u8ScanAxisIdx));
+
+            for m = 1:length(u8ScanAxisIdx)
+                for k = 1:length(stateList)
+                    if lUseDeltas(m)
+                        stateList{k}.values(m) = stateList{k}.values(m) + dInitialState.values(m);
+                        ceScanRanges{m}(k) = stateList{k}.values(m);
+                    else 
+                        ceScanRanges{m}(k) = stateList{k}.values(m);
+                    end
+                end
+            end
+
+            this.ceScanRanges = ceScanRanges;
             
             % Build "scan recipe" from scan states 
             stRecipe.values = stateList; % enumerable list of states that can be read by setState
@@ -372,6 +443,21 @@ classdef MACentering < mic.Base
            dInitialState = struct;
            dInitialState.values = [];
            dInitialState.axes = u8ScanAxisIdx;
+
+           % validate start conditions and get initial state
+           for k = 1:length(u8ScanAxisIdx)
+               dAxis = double(u8ScanAxisIdx(k));
+               switch dAxis
+                   case 1 % MA DC
+                       dInitialState.values(k) = this.uiScanner.uiPupilFillGenerator.getDCX();
+                   case 2 % MA DC
+                       dInitialState.values(k) = this.uiScanner.uiPupilFillGenerator.getDCY();
+                   case 3
+                       dInitialState.values(k) = this.uiReticleCoarseStage.uiX.getValCal('mm');
+                   case 4
+                       dInitialState.values(k) = this.uiReticleCoarseStage.uiY.getValCal('mm');
+               end
+           end
         end
         
         function onScanComplete(this, dInitialState, fhSetState)
@@ -383,6 +469,10 @@ classdef MACentering < mic.Base
 
             save(fullfile(this.cScanLogDir, [datestr(now, 'yyyy-mm-dd-HH-MM-SS'), '.mat']), 'st');
             fprintf('Saved scan data to %s\n', fullfile(this.cScanLogDir, [datestr(now, 'yyyy-mm-dd-HH-MM-SS'), '.mat']));
+
+            % Set back to initial state:
+            this.setScanAxisDevicesToState(dInitialState);
+
         end
 
         function setScanAxisDevicesToState(this, stState)
@@ -398,11 +488,23 @@ classdef MACentering < mic.Base
                         this.uiScanner.uiPupilFillGenerator.setDCX(dVal);
                     case 2
                         this.uiScanner.uiPupilFillGenerator.setDCY(dVal);
+                    case 3
+                        % Reticle coarse X:
+                        dX = dVal;
+                        this.uiReticleCoarseStage.uiX.setDestCal(dX, 'mm');
+                        this.uiReticleCoarseStage.uiX.moveToDest();
+                    case 4
+                        % Reticle coarse Y:
+                        dY = dVal;
+                        this.uiReticleCoarseStage.uiY.setDestCal(dY, 'mm');
+                        this.uiReticleCoarseStage.uiY.moveToDest();
                 end
             end
 
-            this.uiScanner.uiNPointLC400.setWritingIllum(true)
-            this.uiScanner.uiNPointLC400.executePupilFillWriteSequence();
+            if any(dAxes == 1) || any(dAxes == 2)
+                this.uiScanner.uiNPointLC400.setWritingIllum(true)
+                this.uiScanner.uiNPointLC400.executePupilFillWriteSequence();
+            end
         end
 
         function lOut = areScanAxisDevicesAtState(this, stState)
@@ -410,9 +512,31 @@ classdef MACentering < mic.Base
             dVals = stState.values;
             
 
-            lOut = ~this.uiScanner.uiNPointLC400.isExecutingPupilFillSequence();
-
-            % fprintf('Scan at state: %d\n', lOut);
+            lOut = true;
+            for n = 1:length(dAxes)
+                dAxis = dAxes(n);
+                dVal = dVals(n);
+                switch dAxis
+                    case {1, 2}
+                        lOut = ~this.uiScanner.uiNPointLC400.isExecutingPupilFillSequence();
+                    case 3
+                        lReady = abs(this.uiReticleCoarseStage.uiX.getValCal('mm') - dVal) <= 0.001;
+                        lOut = lOut && lReady;
+                        
+                        % if lDebug
+                        %     cMsg = sprintf('value = %1.3f; goal = %1.3f', ...
+                        %         this.uiReticleCoarseStage.uiX.getValCal('mm'), ...
+                        %         dVal ...
+                        %     );
+                        %     this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                        % end
+                
+                    case 4
+                        lReady = abs(this.uiReticleCoarseStage.uiY.getValCal('mm') - dVal) <= 0.001;
+                        lOut = lOut && lReady;
+                end
+            end
+           
         end
 
 
@@ -423,13 +547,25 @@ classdef MACentering < mic.Base
         function lAcquisitionFinished = scanIsAcquired(this, stState, outputIdx)
             lAcquisitionFinished = true;
 
+            nAve = 1;
+            dSum = 0;
             switch outputIdx
                 case 1
-                    dAcquiredValue = this.uiDTVoltage41.getValCalDisplay();
+                    for k = 1:nAve
+                        dSum = dSum + this.getDTChannelVal(41);
+                    end
+                    dAcquiredValue = dSum/nAve;
                 case 2
-                    dAcquiredValue = this.uiDTVoltage42.getValCalDisplay();
+                    for k = 1:nAve
+                        dSum = dSum + this.getDTChannelVal(42);
+                    end
+                    dAcquiredValue = dSum/nAve;
                 case 3
-                    dAcquiredValue = this.uiMDMCurrent.uiCurrent.getValRaw();
+                    for k = 1:nAve
+                        dSum = dSum + this.getDTChannelVal(35);
+                    end
+                    dAcquiredValue = dSum/nAve;
+                                        
             end
             
             this.handleUpdateScanOutput(stState, dAcquiredValue)
@@ -437,7 +573,32 @@ classdef MACentering < mic.Base
 
         function handleUpdateScanSetup(this, ceScanStates, u8ScanAxisIdx, lUseDeltas, cAxisNames, ceScanRanges)
 
+            dInitialState = this.getInitialState(u8ScanAxisIdx);
+            % If using deltas, modify state to center around current
+            % values:
+
+            for m = 1:length(u8ScanAxisIdx)
+                for k = 1:length(ceScanStates)
+                    if lUseDeltas(m)
+                        ceScanStates{k}.values(m) = ceScanStates{k}.values(m) + dInitialState.values(m);
+                        
+                    end
+                end
+                
+                for k = 1:length(ceScanRanges{m})
+                    if lUseDeltas(m)
+                        ceScanRanges{m}(k) = ceScanRanges{m}(k) + dInitialState.values(m);
+                    end
+                end
+                
+                
+            end
+
+
             this.ceScanRanges = ceScanRanges;
+
+
+
             switch length(ceScanRanges)
                 case 1
                     this.dImg = zeros(size(ceScanRanges{1}));

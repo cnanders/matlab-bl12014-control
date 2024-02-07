@@ -7,16 +7,16 @@
             "raw": 2
         },
         {
-            "name": "Medium (5)",
-            "raw": 5
+            "name": "Medium (8)",
+            "raw": 8
       },
       {
               "name": "Fast (10)",
               "raw": 10
       },
       {
-        "name": "Fast Tilts (20)",
-        "raw": 10
+        "name": "Fast Tilts (100)",
+        "raw": 100
       }
     ],
     "units": [
