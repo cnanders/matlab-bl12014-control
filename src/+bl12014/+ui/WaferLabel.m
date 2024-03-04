@@ -248,9 +248,9 @@ classdef WaferLabel < mic.Base
             % Define the URL
             url = 'https://met.lbl.gov/wafer/getLatestWafer';
 
-            if strcmp(license('inuse').user, 'rhmiyakawa')
-                url = 'https://local.met.lbl.gov/wafer/getLatestWafer';
-            end 
+%             if strcmp(license('inuse').user, 'rhmiyakawa')
+%                 url = 'https://local.met.lbl.gov/wafer/getLatestWafer';
+%             end 
 
             % Specify additional request options, such as headers
             options = weboptions('HeaderFields', {'params', jsonencode(struct(...
