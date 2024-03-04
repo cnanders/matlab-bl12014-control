@@ -6,6 +6,19 @@ classdef FemTool < mic.Base
                
        c_POSITION_TYPE_START = 'Start:';
        c_POSITION_TYPE_CENTER = 'Center:';
+
+
+
+       uieDoseNum
+        uieDoseCenter
+        uieDoseStep
+        uipDoseStepType
+        uitDoseRange
+        
+        uieFocusNum
+        uieFocusCenter
+        uieFocusStep
+        uitFocusRange
        
     end
     
@@ -62,16 +75,7 @@ classdef FemTool < mic.Base
         uitPositionRangeX
         uitPositionRangeY
         
-        uieDoseNum
-        uieDoseCenter
-        uieDoseStep
-        uipDoseStepType
-        uitDoseRange
         
-        uieFocusNum
-        uieFocusCenter
-        uieFocusStep
-        uitFocusRange
         
         
         

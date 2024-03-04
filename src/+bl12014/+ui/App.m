@@ -49,6 +49,7 @@ classdef App < mic.Base
         uiPowerPmacHydraMotMinMonitor
         uiDCT
         uiSMS
+        uiWaferLabel
         
         uiCurrentOfRing
         
@@ -123,6 +124,7 @@ classdef App < mic.Base
             'Log Plotter', ...
             'Height Sensor LEDs', ...
             'Network Status', ...
+            'Wafer Label'
         };
     
         lIsTabBuilt = false(1, 30);
@@ -342,6 +344,7 @@ classdef App < mic.Base
                 'uiScannerM142', ...
                 'uiMA', ...
                 'uiMACentering', ...
+                'uiWaferLabel', ...
                 'uiHeightSensorLEDs', ...
                 'uiCameraLEDs', ...
                 'uiScanResultPlot2x2', ...
@@ -420,6 +423,25 @@ classdef App < mic.Base
                         
                        
         end 
+
+        function prop = propGetter(this, route)
+            switch route
+                case 'uiScan.uiPrescriptionTool.uieName'
+                    prop = this.uiScan.uiPrescriptionTool.uieName.get();
+                case 'uiScan.uiPrescriptionTool.uieVibration'
+                    prop = this.uiScan.uiPrescriptionTool.uieVibration.get();
+                case 'uiScan.uiPrescriptionTool.uiFemTool.uieFocusNum'
+                    prop = this.uiScan.uiPrescriptionTool.uiFemTool.uieFocusNum.get();
+                case 'uiScan.uiPrescriptionTool.uiFemTool.uieFocusCenter'
+                    prop = this.uiScan.uiPrescriptionTool.uiFemTool.uieFocusCenter.get();
+                case 'uiScan.uiPrescriptionTool.uiFemTool.uieFocusStep'
+                    prop = this.uiScan.uiPrescriptionTool.uiFemTool.uieFocusStep.get();
+                case 'uiScan.uiPrescriptionTool.uiFemTool.uieFocusRange'
+                    prop = this.uiScan.uiPrescriptionTool.uiFemTool.uieFocusRange.get();
+
+
+            end
+        end
         
         function cec = getSaveLoadProps(this)
            
@@ -721,6 +743,13 @@ classdef App < mic.Base
                 'clock', this.clock, ...
                 'uiClock', this.uiClockMACentering ...
             )
+
+            this.uiWaferLabel = bl12014.ui.WaferLabel(...
+                'hardware', this.hardware, ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockWafer, ...
+                'fhAppPropGetter', @this.propGetter ...
+            );
         
             
             % LSI UIs exist separately.  Check if exists first though
@@ -1018,6 +1047,9 @@ classdef App < mic.Base
                 case 'MACentering'
                     this.uiMACentering.build(hTab, 10, 30);
                     this.uiMACentering.onFocus();
+                case 'Wafer Label'
+                    this.uiWaferLabel.build(hTab, 10, 30);
+                    this.uiWaferLabel.onFocus();
                 case 'DCT'
                     this.uiDCT.build(hTab, 10, 30);
                 case 'VIS'

@@ -115,7 +115,8 @@ classdef PrescriptionTool < mic.Base
             
             this.cDirThis = fileparts(mfilename('fullpath'));
             this.cDirSrc = fullfile(this.cDirThis, '..', '..');
-            
+            this.cDirConfig = fullfile(this.cDirSrc, 'config');
+
             
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
