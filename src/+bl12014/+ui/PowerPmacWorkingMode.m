@@ -320,7 +320,8 @@ classdef PowerPmacWorkingMode < mic.Base
                 case 6
                     this.hardware.getDeltaTauPowerPmac().setWorkingModeLsiRun();
                 case 7
-       
+                    this.hardware.getDeltaTauPowerPmac().setWorkingModeWaferTransfer();
+                    return
 
                     % First confirm this with a msgbox: 
                     cMsg = sprintf(...
