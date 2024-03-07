@@ -7,7 +7,7 @@ classdef FluxLogger < mic.Base
         uiSetLog
         uibSetFlux
 
-        
+        cLabel
 
         
     end
@@ -27,7 +27,7 @@ classdef FluxLogger < mic.Base
         fhSetFlux
 
         cName
-        cLabel
+        
 
         u8FalseColor = [1, 0.75, 0.75]
         cBlankColor = 'gray'
@@ -115,6 +115,14 @@ classdef FluxLogger < mic.Base
             );
             
 
+        end
+
+        function val =  getValCal(this)
+            val = this.uiGS.getValCal(this.getUnit());
+        end
+
+        function unit = getUnit(this)
+            unit = this.uiGS.getUnit().name;
         end
 
         function build(this, hParent, dLeft, dTop)
