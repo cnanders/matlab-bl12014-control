@@ -12,6 +12,11 @@ uiClock = mic.ui.Clock(clock);
 hardware = bl12014.Hardware('clock', clock);
 
 
+% Connect keithleys
+hardware.connectKeithley6482Wafer();
+hardware.connectKeithley6482Reticle();
+
+
 ui = bl12014.ui.WaferLabel(...
     'hardware', hardware, ...
     'clock', clock ...

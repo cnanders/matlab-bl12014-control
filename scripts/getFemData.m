@@ -21,7 +21,7 @@ varNames = {'time', 'x_wafer_coarse_mm', 'y_wafer_coarse_mm', 'tilt_x_wafer_coar
             'tilt_x_reticle_cap_urad', 'tilt_y_reticle_cap_urad', ...
             'z_reticle_cap_um', 'z_reticle_coarse_mm', 'cap_1_wafer_V', ...
             'cap_2_wafer_V', 'cap_3_wafer_V', 'cap_4_wafer_V', ...
-            'tilt_x_wafer_cap_urad', 'tilt_y_wafer_cap_urad'};
+            'tilt_x_wafer_cap_urad', 'tilt_y_wafer_cap_urad', 'z_encoder_1_vis_V', 'z_encoder_2_vis_V', 'z_encoder_3_vis_V', 'z_encoder_4_vis_V'};
 
 % Initialize a structure to store the data
 dataStruct = struct();
@@ -114,3 +114,5 @@ end
 toc
 
 % Now 'dataStruct' contains the sorted data from all folders, ready for plotting
+
+save('femdata.mat', 'dataStruct');

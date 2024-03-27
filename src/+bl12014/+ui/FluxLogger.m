@@ -14,8 +14,7 @@ classdef FluxLogger < mic.Base
     
     properties (Access = private)
         
-        % {bl12014.Hardware 1x1}
-        hardware
+
         clock
         
         dWidthName = 200
@@ -27,6 +26,8 @@ classdef FluxLogger < mic.Base
         fhSetFlux
 
         cName
+
+        cConfigFile = 'config-amps.json'
         
 
         u8FalseColor = [1, 0.75, 0.75]
@@ -45,6 +46,10 @@ classdef FluxLogger < mic.Base
                     this.(varargin{k}) = varargin{k + 1};
                 end
             end
+
+            if ~isa(this.clock, 'mic.Clock') && ~isa(this.clock, 'mic.ui.Clock')
+                error('clock must be mic.Clock | mic.ui.Clock');
+            end
             
             
             
@@ -56,7 +61,7 @@ classdef FluxLogger < mic.Base
 
             switch this.cBlankColor
                 case 'gray'
-
+                    this.u8FalseColor = [0.75, 0.75, 0.75];
                 case 'yellow'
                     this.u8FalseColor = [0.8, 0.8, 0];
                 case 'orange'
@@ -75,7 +80,7 @@ classdef FluxLogger < mic.Base
                             'cPath',  fullfile(...
                                 bl12014.Utils.pathUiConfig(), ...
                                 'get-number', ...
-                                'config-amps.json' ...
+                                this.cConfigFile ...
                             ) ...
                         ), ...
                 'cLabel', this.cLabel, ...
@@ -99,10 +104,11 @@ classdef FluxLogger < mic.Base
                         'config-sms.json' ...
                     ) ...
                 ), ...
-                'dWidthName', 1, ... 
+                'dWidthName', 1, ...  
                 'lShowDevice', false, ...
                 'lShowLabels', false, ...
                 'lShowInitButton', false, ...
+                'fhIsVirtual', @() false, ...
                 'fhGet', @() this.fhIsLogged(), ...
                 'lUseFunctionCallbacks', true, ...
                 'u8FalseColor', this.u8FalseColor, ...
@@ -118,7 +124,7 @@ classdef FluxLogger < mic.Base
         end
 
         function val =  getValCal(this)
-            val = this.uiGS.getValCal(this.getUnit());
+            val = abs(this.uiGS.getValCal(this.getUnit()));
         end
 
         function unit = getUnit(this)

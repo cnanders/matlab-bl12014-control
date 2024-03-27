@@ -1,0 +1,26 @@
+{
+	"delay": 1,
+	"units": [
+
+		{
+			"name": "uA",
+			"slope": 7.51,
+			"offset": 0,
+			"precision": 3
+		},
+        {
+			"name": "V",
+			"slope": 1,
+			"offset": 0,
+			"precision": 3
+		},
+		{
+			"name": "mV",
+			"slope": 1e3,
+			"offset": 0,
+			"precision": 3
+		}
+	]
+}	
+	
+	

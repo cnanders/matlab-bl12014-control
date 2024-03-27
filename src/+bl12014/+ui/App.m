@@ -66,6 +66,7 @@ classdef App < mic.Base
         uiClockVibrationIsolationSystem
         uiClockReticle
         uiClockWafer
+        uiClockWaferLabel
         uiClockPowerPmacStatus
         uiClockPrescriptionTool
         uiClockScan
@@ -369,6 +370,7 @@ classdef App < mic.Base
                 'uiClockVibrationIsolationSystem', ...
                 'uiClockReticle', ...
                 'uiClockWafer', ...
+                'uiClockWaferLabel', ...
                 'uiClockPowerPmacStatus', ...
                 'uiClockPrescriptionTool', ...
                 'uiClockScan', ...
@@ -575,7 +577,7 @@ classdef App < mic.Base
 
         
         
-        
+  
         
         
         
@@ -607,6 +609,7 @@ classdef App < mic.Base
             this.uiClockVibrationIsolationSystem = mic.ui.Clock(this.clock);
             this.uiClockReticle = mic.ui.Clock(this.clock);
             this.uiClockWafer = mic.ui.Clock(this.clock);
+            this.uiClockWaferLabel = mic.ui.Clock(this.clock);
             this.uiClockPowerPmacStatus = mic.ui.Clock(this.clock);
             this.uiClockPrescriptionTool = mic.ui.Clock(this.clock);
             this.uiClockScan = mic.ui.Clock(this.clock);
@@ -688,6 +691,8 @@ classdef App < mic.Base
                 'hardware', this.hardware, ...
                 'waferExposureHistory', this.waferExposureHistory ...
             );
+
+
             this.uiPowerPmacStatus = bl12014.ui.PowerPmacStatus(...
                 'hardware', this.hardware, ...
                 'clock', this.uiClockPowerPmacStatus ...
@@ -747,7 +752,7 @@ classdef App < mic.Base
             this.uiWaferLabel = bl12014.ui.WaferLabel(...
                 'hardware', this.hardware, ...
                 'clock', this.clock, ...
-                'uiClock', this.uiClockWafer, ...
+                'uiClock', this.uiClockWaferLabel, ...
                 'fhAppPropGetter', @this.propGetter ...
             );
         
@@ -936,6 +941,7 @@ classdef App < mic.Base
             this.uiClockVibrationIsolationSystem.stop();
             this.uiClockReticle.stop();
             this.uiClockWafer.stop();
+            this.uiClockWaferLabel.stop();
             this.uiClockPowerPmacStatus.stop();
             this.uiClockPrescriptionTool.stop();
             this.uiClockScan.stop();
@@ -960,6 +966,7 @@ classdef App < mic.Base
         
         function startUiClockOfActiveTab(this)
             cTab = this.uiTabGroup.getSelectedTabName();
+
             
             switch cTab
                 case 'Beamline'
@@ -986,6 +993,8 @@ classdef App < mic.Base
                     this.uiClockReticle.start();
                 case 'Wafer'
                     this.uiClockWafer.start();
+                case 'Wafer Label'
+                    this.uiClockWaferLabel.start();
                 case 'PPMAC Status'
                     this.uiClockPowerPmacStatus.start();
                 case 'PPMAC Hydra Mot Min'

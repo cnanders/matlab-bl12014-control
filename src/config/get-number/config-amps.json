@@ -1,16 +1,16 @@
 {
-	"delay": 1,
+	"delay": 3,
 	"units": [
 
 		{
 			"name": "uA",
-			"slope": 1,
+			"slope": 1e6,
 			"offset": 0,
 			"precision": 3
 		},
 		{
 			"name": "nA",
-			"slope": 1e3,
+			"slope": 1e9,
 			"offset": 0,
 			"precision": 3
 		}
