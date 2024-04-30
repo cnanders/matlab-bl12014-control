@@ -526,6 +526,8 @@ classdef WaferLabel < mic.Base
             cIlluminationParams = '';
             cNotes = '';
             cTimestamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+            cLightType = 'EUV';
+
             
             switch ui
                 case this.uiFluxPopin
@@ -536,6 +538,7 @@ classdef WaferLabel < mic.Base
                     dDiodeType = 3;
                 case this.uiFluxSF_VIS
                     dDiodeType = 3;
+                    cLightType = 'white';
                 case this.uiFluxReticle_F2X
                     dDiodeType = 4;
                 case this.uiFluxReticle_Cal
@@ -571,6 +574,7 @@ classdef WaferLabel < mic.Base
                     'value', dVal, ...
                     'unit', cUnit, ...
                     'source', cSource, ...
+                    'light_type', cLightType, ...
                     'illumination_params', cIlluminationParams, ...
                     'notes', cNotes ...
                     ))});
