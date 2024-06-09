@@ -2681,6 +2681,16 @@ classdef Scan < mic.Base
                 dSec * 1e3, ...
                 'ms' ...
             );
+
+            if lDebug
+                this.msg(sprintf('Issuing shutter pulse of %d ms', round(dSec * 1000)), this.u8_MSG_TYPE_SCAN);
+
+                % Check wafer z:
+                this.msg(sprintf('HS z pre shutter: %1.2f nm', ...
+                   this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal('nm')), ...
+                   this.u8_MSG_TYPE_SCAN);
+            end
+
             % Trigger the shutter UI
             this.uiShutter.uiShutter.moveToDest();
             
@@ -2688,7 +2698,13 @@ classdef Scan < mic.Base
             this.stScanAcquireContract.shutter.lIssued = true;
             
             
-                
+            if lDebug
+                this.msg(sprintf('Shutter pulse of %d ms has been issued', round(dSec * 1000)), this.u8_MSG_TYPE_SCAN);
+                % Check wafer z:
+                this.msg(sprintf('HS z post shutter issue: %1.2f nm', ...
+                    this.uiWafer.uiWaferTTZClosedLoop.uiCLZ.getValCal('nm')), ...
+                    this.u8_MSG_TYPE_SCAN);
+            end
             
         end
         
@@ -2698,6 +2714,10 @@ classdef Scan < mic.Base
         % @param {struct} stState - the state
         % @returns {logical} - true if the acquisition task is complete
         function lOut = onScanIsAcquired(this, stUnit, stValue)
+
+            if lDebug
+                this.msg(sprintf('onScanIsAcquired called'), this.u8_MSG_TYPE_SCAN);
+            end
 
             cFn = 'onScanIsAcquired';
             lDebug = true;           
