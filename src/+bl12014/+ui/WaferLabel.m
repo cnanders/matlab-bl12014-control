@@ -541,8 +541,10 @@ classdef WaferLabel < mic.Base
                     cLightType = 'white';
                 case this.uiFluxReticle_F2X
                     dDiodeType = 4;
+                    cIlluminationParams = 'F2X';
                 case this.uiFluxReticle_Cal
                     dDiodeType = 4;
+                    cIlluminationParams = 'annular';
                 case this.uiFluxReticle_shift_illumination1
                     dDiodeType = 4;
                     cIlluminationParams = 'illumination1';
