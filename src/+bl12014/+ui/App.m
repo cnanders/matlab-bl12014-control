@@ -205,7 +205,30 @@ classdef App < mic.Base
         function sayHi(this)
             this.msg('Hi!');
         end
-        
+
+        function reflow(this)
+
+            
+            dScreenSize = get(0, 'ScreenSize');
+            
+            % Centered
+            dLeft = (dScreenSize(3) - this.dWidth)/2;
+            dBottom = (dScreenSize(4) - this.dHeight)/2;
+
+            
+            % Top Left
+            dLeft = 10;
+            dBottom = dScreenSize(4) - this.dHeight - 10 - 60;
+            dBottom = max([dBottom, 0]);
+
+            this.hFigure.Position = [ ...
+                dLeft ...
+                dBottom ...
+                this.dWidth ...
+                this.dHeight ...
+            ];
+
+        end
                 
         function build(this)
             

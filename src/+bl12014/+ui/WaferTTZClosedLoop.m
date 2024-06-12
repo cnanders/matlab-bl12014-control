@@ -74,7 +74,7 @@ classdef WaferTTZClosedLoop < mic.Base
         
         % No reason for delay here that I can think of since we call the height sensor
         % hardware as sensor.get()
-        dDelayZ = 0
+        dDelayZ = 0 % changing 24.06.01 from 0 to see if a delay here helps
         dDelayTiltX = 0
         dDelayTiltY = 0
         

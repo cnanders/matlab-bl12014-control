@@ -2628,6 +2628,7 @@ classdef Scan < mic.Base
         % information about the task to execute during acquire)
         % called after every state is reached
         function onScanAcquire(this, stUnit, stValue)
+            lDebug = true;
             
             this.dTicScanAcquire = tic;
             this.resetScanAcquireContract();
@@ -2714,6 +2715,7 @@ classdef Scan < mic.Base
         % @param {struct} stState - the state
         % @returns {logical} - true if the acquisition task is complete
         function lOut = onScanIsAcquired(this, stUnit, stValue)
+            lDebug = true;           
 
             if lDebug
                 this.msg(sprintf('onScanIsAcquired called'), this.u8_MSG_TYPE_SCAN);
@@ -3109,6 +3111,7 @@ classdef Scan < mic.Base
 
              this.hScanLog.writeLine({'FEM aborted', '======'});
              this.hScanLog.appendElapsedTime();
+             diary off;
              
              
              
@@ -3141,6 +3144,7 @@ classdef Scan < mic.Base
 
             this.hScanLog.writeLine({'FEM complete', '======'});
             this.hScanLog.appendElapsedTime();
+            diary off;
              
              
              
@@ -3221,7 +3225,7 @@ classdef Scan < mic.Base
                     @this.onScanIsAcquired, ...
                     @this.onScanComplete, ...
                     @this.onScanAbort, ...
-                    0.25 ... % Need larger than the PPMAC cache period of 0.2 s
+                    0.45 ... % Need larger than the PPMAC cache period of 0.2 s
                 );
                 
                 this.dSpeedWCXBeforeScan = this.hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse();
@@ -3234,6 +3238,10 @@ classdef Scan < mic.Base
                 [~, p, ~] = fileparts(cFile);
                 cLogName = sprintf('FEM-timelog-%s-%s', p, datestr(now,30));
                 this.hScanLog = micPlus.Log(this.cScanLogDir, cLogName, this.ceScanHeaders);
+
+                % initialize diary
+                diary(fullfile(this.cScanLogDir, '..', 'diaries', sprintf('FEM-diary-%s-%s.txt', p, datestr(now,30))));
+
                 
                 
                 this.scan.start();
