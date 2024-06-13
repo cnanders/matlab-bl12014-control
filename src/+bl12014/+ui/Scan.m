@@ -3248,7 +3248,7 @@ classdef Scan < mic.Base
                 
                 this.dSpeedWCXBeforeScan = this.hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse();
 
-                this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXDuringScan);
+                % this.hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(this.dSpeedWCXDuringScan);
                             
                 this.initScanTimingStore();
 
