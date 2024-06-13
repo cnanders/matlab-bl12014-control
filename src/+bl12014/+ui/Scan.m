@@ -64,6 +64,12 @@ classdef Scan < mic.Base
         uiFocusLog
         uiCurrentOfALS
         uiDoseMonitorList
+
+        stAnomalousEventCounter = struct( ...
+            'wafer_stall', 0, ...
+            'vibration_settle_timeout', 0, ...
+            'focus_anomaly', 0 ...
+        )
         
         cName = 'fem-scan-control'
     
@@ -2293,6 +2299,8 @@ classdef Scan < mic.Base
                                        if lDebug
                                             this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
                                        end 
+
+                                       this.logAnomalousEvent('vibration_settle_timeout', sprintf('Vibration timeout, vibX = %1.2f, vibY = %1.2f', dRmsX, dRmsY));
                                        lReady = true;
                                     end
                                     
@@ -2399,8 +2407,10 @@ classdef Scan < mic.Base
                                     % auto-recover on stage timeout
                                     dTimeElapsed = toc(this.dTicScanSetState);
                                     if dTimeElapsed > 20 && ~this.lSkipWorkingMode
+
                                         % comment 2021.04.01
                                         this.uiSequenceRecoverFem.execute();
+                                        this.logAnomalousEvent('wafer_stall', 'Wafer X timeout');
                                     end
                                     
                                     dGoal = this.getStageXFromWaferX(stValue.waferX);
@@ -2423,6 +2433,8 @@ classdef Scan < mic.Base
                                     if (dTimeElapsed > 20)
                                         % comment 2021.04.01
                                         this.uiSequenceRecoverFem.execute();
+                                        this.logAnomalousEvent('wafer_stall', 'Wafer Y timeout');
+
                                     end
                                     
                                     dGoal = this.getStageYFromWaferY(stValue.waferY);
@@ -2447,6 +2459,8 @@ classdef Scan < mic.Base
                                     if (dTimeElapsed > 20)
                                         % comment 2021.04.01
                                         this.uiSequenceRecoverFem.execute();
+                                        this.logAnomalousEvent('wafer_stall', 'Wafer XY timeout');
+
                                     end
                                                                         
                                     dX = this.getStageXFromWaferX(stValue.waferXY(1)); % mm
@@ -2941,6 +2955,10 @@ classdef Scan < mic.Base
                 
                 if lDebug
                     this.msg(sprintf('%s height sensor z error %1.1f nm', cFn, dError), this.u8_MSG_TYPE_SCAN);
+
+                    if dError > 5
+                        this.logAnomalousEvent('focus_anomaly', sprintf('Height sensor error = %1.1f nm is greater than 5 nm', dError));
+                    end
                 end
                 
                 this.ceValues{end + 1} = stState;
@@ -3242,6 +3260,13 @@ classdef Scan < mic.Base
                 % initialize diary
                 diary(fullfile(this.cScanLogDir, '..', 'diaries', sprintf('FEM-diary-%s-%s.txt', p, datestr(now,30))));
 
+                % Initialize events couinter:
+                this.stAnomalousEventCounter = struct( ...
+                    'wafer_stall', 0, ...
+                    'vibration_settle_timeout', 0, ...
+                    'focus_anomaly', 0 ...
+                )
+
                 
                 
                 this.scan.start();
@@ -3250,7 +3275,12 @@ classdef Scan < mic.Base
         end
         
         
-        
+        function logAnomalousEvent(this, name, cMsg)
+            this.stAnomalousEventCounter.(name) = this.stAnomalousEventCounter.(name) + 1;
+            cMsg = sprintf('Anomalous FEM event %s: %s', name, cMsg);
+            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+            
+        end
         
        
         
@@ -3826,6 +3856,10 @@ classdef Scan < mic.Base
             st.time = datestr(datevec(now), 'yyyy-mm-dd HH:MM:SS', 'local');
             
             st.charge_dose_monitor = this.hardware.getDoseMonitor().getCharge(this.hardware.getSR570MDM().getSensitivity());
+
+            st.num_wafer_stalls = this.stAnomalousEventCounter.wafer_stall;
+            st.num_vibration_settle_timeouts = this.stAnomalousEventCounter.vibration_settle_timeout;
+            st.num_focus_anomalies = this.stAnomalousEventCounter.focus_anomaly;
 
         end
         
