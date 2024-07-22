@@ -3860,6 +3860,7 @@ classdef Scan < mic.Base
             st.num_wafer_stalls = this.stAnomalousEventCounter.wafer_stall;
             st.num_vibration_settle_timeouts = this.stAnomalousEventCounter.vibration_settle_timeout;
             st.num_focus_anomalies = this.stAnomalousEventCounter.focus_anomaly;
+            st.normalized_PO_charge = st.charge_dose_monitor/st.shutter_ms;
 
         end
         

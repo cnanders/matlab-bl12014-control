@@ -619,8 +619,8 @@ classdef MACentering < mic.Base
                     dAcquiredValue = this.hardware.getKeithley6482Reticle().read(1);
                 case 5 % Subframe diode
                     dAcquiredValue = this.hardware.getKeithley6482Reticle().read(2);    
-                case 6 % Subframe diode
-                    dAcquiredValue = this.hardware.getKeithley6482Wafer().read(1);                   
+                case 6 % Subframe diode % 06.28.24 hacking this to read wafer diode instead of SF
+                    dAcquiredValue = this.hardware.getKeithley6482Wafer().read(2);                   
             end
             
             this.handleUpdateScanOutput(stState, dAcquiredValue)
