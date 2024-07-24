@@ -422,7 +422,7 @@ classdef Uniformity < mic.Base
 
         function onComputeCombo(this, src, evt)
             
-            dFluxCenter = sum(this.dImgsField(:,:,this.dCenterIdx), 'all');
+            dFluxCenter = sum(sum(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
             dMaxCenter = max(max(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
            
             % Reshape the first 2 dimensions of the field uniformity images into a line:
@@ -453,8 +453,8 @@ classdef Uniformity < mic.Base
 
 
                     % Compute relative flux
-                    dFluxLeft = sum(this.dImgsField(:,:,k), 'all');
-                    dFluxRight = sum(this.dImgsField(:,:,m), 'all');
+                    dFluxLeft = sum(sum(squeeze(this.dImgsField(:,:,k))));
+                    dFluxRight = sum(sum(squeeze(this.dImgsField(:,:,m))));
                     dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
                     dResultVec(ct, 6) = dDoseFac;
 
@@ -476,12 +476,12 @@ classdef Uniformity < mic.Base
 
             % store in list:
             this.uilCombos.setOptions({...
-                sprintf('Error\t\t\tCoeff1   Coeff2   Img1     Img2    DoseFac   Uniformity') ...
+                sprintf('Error\t\t\t Coeff1   Coeff2   Img1     Img2    DoseFac   Uniformity') ...
                 });
-            for k = 1:6
+            for k = 1:15
                 dResultVec = this.dResultVec(k, :);
                 
-                cVal = sprintf('%.0f\t %.3f\t    %.3f\t    %0.2d\t      %0.2d\t \t\t\t\t\t\t %.3f\t\t\t\t\t\t %.3f', dResultVec);
+                cVal = sprintf('%.0f\t %.3f\t    %.3f\t    %0.2d\t      %0.2d\t  %.3f\t %.3f', dResultVec);
                 this.uilCombos.append(cVal);
             end
                 
@@ -525,15 +525,15 @@ classdef Uniformity < mic.Base
             dIdx1 = dBestIndex(1) - this.dCenterIdx;
             dIdx2 = dBestIndex(2) - this.dCenterIdx;
 
-            cCSV = 'Rx (deg),Ry (deg),Dwell Time(ms)\n';
-            cCSV = [cCSV, sprintf('%.3f,%.3f,%d\n', ...
+            cCSV = sprintf('Rx (deg),Ry (deg),Dwell Time(ms) \n ');
+            cCSV = [cCSV, sprintf('%.4f,%.4f,%d\n', ...
                             this.uieUnitVectorRx.get() * dIdx1, ...
                             this.uieUnitVectorRy.get() * dIdx1, ...
-                            dDwell1)];
-            cCSV = [cCSV, sprintf('%.3f,%.3f,%d', ...
+                            round(dDwell1))];
+            cCSV = [cCSV, sprintf('%.4f,%.4f,%d', ...
                             this.uieUnitVectorRx.get() * dIdx2, ...
                             this.uieUnitVectorRy.get() * dIdx2, ...
-                            dDwell2)];
+                            round(dDwell2))];
             % Set csv:
             this.uieCSV.set(cCSV);
 
@@ -558,10 +558,9 @@ classdef Uniformity < mic.Base
             
         end
 
-
         function onOpenDir(this, src, evt)
             
-            cPath = uigetdir();
+            cPath = uigetdir('C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\');
             if cPath == 0
                 return;
             end
