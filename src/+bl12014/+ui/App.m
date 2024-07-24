@@ -50,6 +50,7 @@ classdef App < mic.Base
         uiDCT
         uiSMS
         uiWaferLabel
+        uiUniformity
         
         uiCurrentOfRing
         
@@ -67,6 +68,7 @@ classdef App < mic.Base
         uiClockReticle
         uiClockWafer
         uiClockWaferLabel
+        uiClockUniformity
         uiClockPowerPmacStatus
         uiClockPrescriptionTool
         uiClockScan
@@ -125,7 +127,8 @@ classdef App < mic.Base
             'Log Plotter', ...
             'Height Sensor LEDs', ...
             'Network Status', ...
-            'Wafer Label'
+            'Wafer Label', ...
+            'Uniformity'
         };
     
         lIsTabBuilt = false(1, 30);
@@ -369,6 +372,7 @@ classdef App < mic.Base
                 'uiMA', ...
                 'uiMACentering', ...
                 'uiWaferLabel', ...
+                'uiUniformity', ...
                 'uiHeightSensorLEDs', ...
                 'uiCameraLEDs', ...
                 'uiScanResultPlot2x2', ...
@@ -394,6 +398,7 @@ classdef App < mic.Base
                 'uiClockReticle', ...
                 'uiClockWafer', ...
                 'uiClockWaferLabel', ...
+                'uiClockUniformity', ...
                 'uiClockPowerPmacStatus', ...
                 'uiClockPrescriptionTool', ...
                 'uiClockScan', ...
@@ -633,6 +638,7 @@ classdef App < mic.Base
             this.uiClockReticle = mic.ui.Clock(this.clock);
             this.uiClockWafer = mic.ui.Clock(this.clock);
             this.uiClockWaferLabel = mic.ui.Clock(this.clock);
+            this.uiClockUniformity = mic.ui.Clock(this.clock);
             this.uiClockPowerPmacStatus = mic.ui.Clock(this.clock);
             this.uiClockPrescriptionTool = mic.ui.Clock(this.clock);
             this.uiClockScan = mic.ui.Clock(this.clock);
@@ -777,6 +783,12 @@ classdef App < mic.Base
                 'clock', this.clock, ...
                 'uiClock', this.uiClockWaferLabel, ...
                 'fhAppPropGetter', @this.propGetter ...
+            );
+
+            this.uiUniformity = bl12014.ui.Uniformity(...
+                'hardware', this.hardware, ...
+                'clock', this.clock, ...
+                'uiClock', this.uiClockUniformity ...
             );
         
             
@@ -965,6 +977,7 @@ classdef App < mic.Base
             this.uiClockReticle.stop();
             this.uiClockWafer.stop();
             this.uiClockWaferLabel.stop();
+            this.uiClockUniformity.stop();
             this.uiClockPowerPmacStatus.stop();
             this.uiClockPrescriptionTool.stop();
             this.uiClockScan.stop();
@@ -1018,6 +1031,8 @@ classdef App < mic.Base
                     this.uiClockWafer.start();
                 case 'Wafer Label'
                     this.uiClockWaferLabel.start();
+                case 'Uniformity'
+                    this.uiClockUniformity.start();
                 case 'PPMAC Status'
                     this.uiClockPowerPmacStatus.start();
                 case 'PPMAC Hydra Mot Min'
@@ -1082,6 +1097,8 @@ classdef App < mic.Base
                 case 'Wafer Label'
                     this.uiWaferLabel.build(hTab, 10, 30);
                     this.uiWaferLabel.onFocus();
+                case 'Uniformity'
+                    this.uiUniformity.build(hTab, 10, 30);
                 case 'DCT'
                     this.uiDCT.build(hTab, 10, 30);
                 case 'VIS'
