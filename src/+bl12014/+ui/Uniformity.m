@@ -16,6 +16,7 @@ classdef Uniformity < mic.Base
         uieCenterPixelC
 
         uieIntrinsicDwellTime
+        uieMinDwellTime
         uieCSV
 
         uibOpenDir
@@ -202,10 +203,12 @@ classdef Uniformity < mic.Base
                 );
 
 
+            dTop = 50;
+            
+            this.uieIntrinsicDwellTime.build(hPanel, 20, dTop, 100, 30);
+            this.uieMinDwellTime.build(hPanel, 140, dTop, 100, 30);
 
-            this.uieIntrinsicDwellTime.build(hPanel, 20, 70, 100, 30);
-                
-            dTop = dTop + 40;
+            dTop = dTop + 60;
             this.uibComputeCombo.build(hPanel,  20, dTop, 100, 30);
 
             dTop = dTop + 40;
@@ -213,8 +216,9 @@ classdef Uniformity < mic.Base
 
             dTop = dTop + 170;
             this.uieCSV.build(hPanel, 20, dTop, 500, 100);
-            this.uieCSV.setMin(0);
-            this.uieCSV.setMax(2);
+            this.uieCSV.makeMax();
+
+           
 
         end
 
@@ -348,7 +352,7 @@ classdef Uniformity < mic.Base
                 );
 
             this.uibOpenDir = mic.ui.common.Button(...
-                'cText', 'Open Dir...', ...
+                'cText', 'Load Dir...', ...
                 'fhDirectCallback', @this.onOpenDir ...
                 );
             this.uibSetDirToLatest = mic.ui.common.Button(...
@@ -356,7 +360,7 @@ classdef Uniformity < mic.Base
                 'fhDirectCallback', @this.onSetDirToLatest ...
                 );
             this.uibLoadImages = mic.ui.common.Button(...
-                'cText', 'Load Images', ...
+                'cText', 'Reload Images', ...
                 'fhDirectCallback', @this.onLoadImages ...
                 );
             this.uibNextImg = mic.ui.common.Button(...
@@ -369,13 +373,17 @@ classdef Uniformity < mic.Base
                 );
 
             this.uibComputeCombo = mic.ui.common.Button(...
-                'cText', 'Compute Combo', ...
+                'cText', 'Recompute combinations', ...
                 'fhDirectCallback', @this.onComputeCombo ...
                 );
            
 
             this.uieIntrinsicDwellTime = mic.ui.common.Edit(...
                 'cLabel', 'Intrinsic Dwell Time (ms)', ...
+                'cType', 'd' ...
+                );
+            this.uieMinDwellTime = mic.ui.common.Edit(...
+                'cLabel', 'Minimum Dwell Time (ms)', ...
                 'cType', 'd' ...
                 );
             
@@ -397,6 +405,7 @@ classdef Uniformity < mic.Base
 
             % Set default values:
             this.uieHexapodDelay.set(500);
+            this.uieMinDwellTime.set(300);
 
             if (this.uieUnitVectorRx.get() == 0)
                 this.uieUnitVectorRx.set(0.005);
@@ -475,16 +484,20 @@ classdef Uniformity < mic.Base
 
 
             % store in list:
-            this.uilCombos.setOptions({...
+            ceResults = {...
                 sprintf('Error\t\t\t Coeff1   Coeff2   Img1     Img2    DoseFac   Uniformity') ...
-                });
-            for k = 1:15
+                };
+
+            dNumResults = 15;
+
+
+            for k = 1:dNumResults
                 dResultVec = this.dResultVec(k, :);
-                
                 cVal = sprintf('%.0f\t %.3f\t    %.3f\t    %0.2d\t      %0.2d\t  %.3f\t %.3f', dResultVec);
-                this.uilCombos.append(cVal);
+                ceResults{end + 1} = cVal;
             end
-                
+            
+            this.uilCombos.setOptions(ceResults);
             this.uilCombos.setSelectedIndexes(uint8(2));
 
             
@@ -519,7 +532,7 @@ classdef Uniformity < mic.Base
             end
 
             % Set the smaller dwell to 25 ms:
-            dDwell1 = 25;
+            dDwell1 = this.uieMinDwellTime.get();
             dDwell2 = dCoefficients(2) * dDwell1 / dCoefficients(1) + this.uieIntrinsicDwellTime.get() * (dCoefficients(2) - dCoefficients(1));
 
             dIdx1 = dBestIndex(1) - this.dCenterIdx;
@@ -536,6 +549,7 @@ classdef Uniformity < mic.Base
                             round(dDwell2))];
             % Set csv:
             this.uieCSV.set(cCSV);
+            this.uieCSV.makeMax();
 
             % plot combination:
             dAgg = dCoefficients(1)*this.dImgsField(:,:,dBestIndex(1)) + dCoefficients(2)*this.dImgsField(:,:,dBestIndex(2));
@@ -565,6 +579,7 @@ classdef Uniformity < mic.Base
                 return;
             end
             this.uiePathToImagesDir.set(cPath);
+            this.onLoadImages();
         end
 
 
@@ -650,6 +665,7 @@ classdef Uniformity < mic.Base
            
 
             this.updatePlots();
+            this.onComputeCombo();
         end
         
         function changeIndex(this, increment)
@@ -709,7 +725,50 @@ classdef Uniformity < mic.Base
            
 
         end
-      
+
+
+       
+        
+        function st = save(this)
+            cecProps = this.getSaveLoadProps();
+           
+           st = struct();
+           for n = 1 : length(cecProps)
+               cProp = cecProps{n};
+               if this.hasProp( cProp)
+                   st.(cProp) = this.(cProp).save();
+               end
+           end
+
+            
+       end
+       
+       function load(this, st)
+                       
+           cecProps = this.getSaveLoadProps();
+           for n = 1 : length(cecProps)
+              cProp = cecProps{n};
+              if isfield(st, cProp)
+                  if this.hasProp( cProp )
+                       this.(cProp).load(st.(cProp))
+                  end
+              end
+           end
+           
+       end
+
+       function cec = getSaveLoadProps(this)
+        cec = {...
+            'uieUnitVectorRx', ...
+            'uieUnitVectorRy', ...
+            'uiePathToImagesDir', ...
+            'uieHexapodDelay', ...
+            'uieCenterPixelR', ...
+            'uieCenterPixelC', ...
+            'uieIntrinsicDwellTime', ...
+            'uieMinDwellTime' ...
+         };
+    end
         
         
         
