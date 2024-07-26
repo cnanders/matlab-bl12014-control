@@ -519,7 +519,7 @@ classdef Uniformity < mic.Base
             end
 
             % Set the smaller dwell to 25 ms:
-            dDwell1 = 25;
+            dDwell1 = 300;
             dDwell2 = dCoefficients(2) * dDwell1 / dCoefficients(1) + this.uieIntrinsicDwellTime.get() * (dCoefficients(2) - dCoefficients(1));
 
             dIdx1 = dBestIndex(1) - this.dCenterIdx;
