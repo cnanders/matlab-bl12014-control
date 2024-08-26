@@ -31,6 +31,7 @@
 		"matlab_smaract_mcs",
 		"matlab_aerotech_ensemble",
 		"mic_plus",
-		"matlab_smaract_mcs2"
+		"matlab_smaract_mcs2",
+		"matlab_imaq_cam"
 	]
 }
