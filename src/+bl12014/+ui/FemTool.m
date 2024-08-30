@@ -795,15 +795,29 @@ classdef FemTool < mic.Base
                 fprintf('\n');
             end
             
-            fprintf('X (mm), Y (mm)\n');
+            fprintf('\nX (mm), Y (mm)\n');
             for k = 1:length(this.dY)
                 for l = 1:length(this.dX)
-                   fprintf('%1.2f, %1.0f \t', this.dX(l), this.dY(k));
+                   fprintf('%1.2f, %1.2f \t', this.dX(l), this.dY(k));
                 end
                 
                 fprintf('\n');
             end
             
+            fprintf('\nWafer coordinates: X (mm), Y (mm)\n');
+            for k = 1:length(this.dY)
+                for l = 1:length(this.dX)
+                   fprintf('%1.2f, %1.2f \t', -this.dX(l) +2.37, -this.dY(k) +9.12);
+                end
+                
+                fprintf('\n');
+            end
+
+            fprintf('\nWafer coordinates of FEM center\n');
+            dXCenter = (this.dX(1) + this.dX(end))/2;
+            dYCenter = (this.dY(1) + this.dY(end))/2;
+            fprintf('%1.2f, %1.2f\n', -dXCenter +2.37, -dYCenter +9.12);
+
         end
         
         function onCloseRequestFcn(this, src, evt)
