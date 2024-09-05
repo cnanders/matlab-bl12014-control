@@ -112,6 +112,7 @@ classdef Scan < mic.Base
         uiPupilFill
         uiScannerMA
         uiScannerM142
+        uiUniformity
         % {mic.ui.device.GetSetNumber 1x1}
         uiBeamline % Temporary, allows control of the shutter
         uiTuneFluxDensity
