@@ -40,6 +40,7 @@ classdef Scan < mic.Base
         dColorRed = [1, .85, .85];
 
 
+        cPathWobbleSMS = 'Z:'
         
     end
     
@@ -226,6 +227,9 @@ classdef Scan < mic.Base
         
         dSpeedWCXBeforeScan = 2; % mm/s
         dSpeedWCXDuringScan = 20; % mm/s
+
+        % Used to keep track of the timestamp of the last FEM
+        cTimestamp 
     end
     
         
@@ -1022,7 +1026,9 @@ classdef Scan < mic.Base
             );
             
         
-            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool();
+            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool(
+                'uiUniformity', this.uiUniformity, ...
+            );
             
             
             %{
@@ -1731,6 +1737,8 @@ classdef Scan < mic.Base
                     case 'tracking'
                     case 'workingMode'
                         this.hScanLog.writeLine({'Working mode change', 'Setting state'});
+                    case 'wobbleWorkingMode'
+                        this.hScanLog.writeLine({'Wobble Working mode change', 'Setting state'});
                     case 'waferXY'
                         this.hScanLog.writeLine({'Wafer and Reticle XY', 'Setting state'});
                     case 'waferZThenDriftControl'
@@ -1883,7 +1891,32 @@ classdef Scan < mic.Base
                         
                         this.stopReticleFineStageAndResetSpeed();
                         this.stScanSetContract.stopFadeY.lIssued = true;
-                     
+                    
+                    case 'writeWobble'
+
+                        % Overwrite current file in the wobble directory with new file:
+                        cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params.txt');
+
+                        fid = fopen(cPathWobbleFile, 'w');
+                        fprintf(fid, '%s\n', stValue.data);
+                        fclose(fid);
+
+                        % Overwrite a file in the wobble dir with a timestamp:
+                        cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params-timestamp.txt');
+                        fid = fopen(cPathWobbleFile, 'w');
+                        fprintf(fid, '%s\n', this.cTimestamp);
+                        fclose(fid);
+
+
+
+                    case 'wobbleWorkingMode'
+                        if stValue.workingMode == 0
+                            % Turn off wobble mode at the end of fem:
+                            this.hardware.getSMS().setWobbleWorkingMode(0)
+                        elseif stValue.workingMode == 1
+                            % Turn on wobble mode at the start of fem:
+                            this.hardware.getSMS().setWobbleWorkingMode(1)
+                        end
                     case 'workingMode'
 
                         if stValue.workingMode == 5
@@ -2551,6 +2584,31 @@ classdef Scan < mic.Base
                                         
                                     end
                                     
+                                case 'writeWobble'
+                                    cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params-timestamp.txt');
+
+                                    lReady = false;
+
+                                    % Attempt to read this file:
+                                    try 
+                                        fid = fopen(cPathWobbleFile, 'r');
+                                        cTimestamp = fgetl(fid);
+                                        fclose(fid);
+
+                                        if (strcmp(cTimestamp, this.cTimestamp))
+                                            lReady = true;
+                                        else
+                                            cMsg = 'Waiting for wobble to be written';
+                                            this.msg(cMsg, this.u8_MSG_TYPE_SCAN);
+                                        end
+
+                                    catch
+                                        lReady = false;
+                                        msgbox(sprintf('Wobble not set, Could not read wobble timestamp file: %s', cPathWobbleFile));
+                                    end
+                                case 'wobbleWorkingMode'
+                                    lReady = this.hardware.getSMS().getWobbleWorkingMode() == stValue.workingMode;
+                                    
                                 case 'workingMode'
                                     
 
@@ -3126,6 +3184,10 @@ classdef Scan < mic.Base
              
              this.saveScanResultsCsv(stUnit);
              this.saveScanResultsJson(stUnit, true);
+
+             % Cleanup wobble working mode by disabling the workingmode bit:
+             this.hardware.getSMS().setWobbleWorkingMode(0)
+
              this.abort();
 
              this.hScanLog.writeLine({'FEM aborted', '======'});
@@ -3176,6 +3238,9 @@ classdef Scan < mic.Base
         function startNewScan(this)
             
             this.msg('startFEM');
+
+            % Log timestamp:
+            this.cTimestamp = datestr(now);
                        
             % Pre-FEM Check
             

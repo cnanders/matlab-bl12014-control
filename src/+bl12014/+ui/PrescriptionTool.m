@@ -53,12 +53,13 @@ classdef PrescriptionTool < mic.Base
 
         uicbUseFastMode
         uicbSkipIndex
+        uicbWobbleFEM
         
         uiProcessTool              
         uiReticleTool                
         uiPupilFillTool            
         uiFemTool                  
-                
+        uiUniformity
     end
     
     properties (SetAccess = private)
@@ -138,6 +139,8 @@ classdef PrescriptionTool < mic.Base
                 'uieFadeY', ...
                 'uicbFadeY', ...
                 'uicbUseFastMode', ...
+                'uicbSkipIndex', ...
+                'uicbWobbleFEM', ...
                 ...'uiPupilFillTool', ...
                 'uiListPrescriptions', ...
                 'uiFemTool', ... 
@@ -277,6 +280,14 @@ classdef PrescriptionTool < mic.Base
                 dHeight ...
             )
 
+            this.uicbWobbleFEM.build(...
+                this.hPanel, ...
+                dLeft + 80, ...
+                dTop + 20, ...
+                dWidth + 40, ...
+                dHeight ...
+            )
+
             dLeft = dLeft + dWidth + 10;            
             this.uieFadeY.build(...
                 this.hPanel, ...
@@ -354,14 +365,40 @@ classdef PrescriptionTool < mic.Base
         
         function stRecipe = getRecipeFastCoupledMode(this)
 
+
+           
         
             % Combine unrelated tasks into a single state
-            
             ceValues = cell(1, length(this.uiFemTool.dX) * length(this.uiFemTool.dY) + 1);
             
             % Use first state to set reticle field and pupil fill 
-            
             u8Count = 1;
+
+
+            % Setup and start wobble
+            if this.uicbWobbleFEM.get()
+                % Create task to Write wobble params to CSV
+                stValue = struct();
+                stValue.type = 'writeWobble';
+                stValue.data = this.uiUniformity.getWobbleCSV( ...
+                    ~this.uicbSkipIndex.get(),  ...
+                    this.uiFemTool.dDose, ...
+                    this.uiFemTool.dFocus...
+                );
+
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+
+                % Create task to start wobble:
+                stValue = struct();
+                stValue.type = 'wobbleWorkingMode';
+                stValue.workingMode = 1; % wobble mode
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+            end
+
+
+
             
             
             if ~this.uicbSkipIndex.get()
@@ -545,6 +582,17 @@ classdef PrescriptionTool < mic.Base
             stValue.tracking = 'stop';
             ceValues{u8Count} = stValue;
             u8Count = u8Count + 1;
+
+
+            % Disable wobble if necessary:
+             if this.uicbWobbleFEM.get()
+                % Create task to stop wobble:
+                stValue = struct();
+                stValue.type = 'wobbleWorkingMode';
+                stValue.workingMode = 0; % wobble mode
+                ceValues{u8Count} = stValue;
+                u8Count = u8Count + 1;
+            end
                
             stUnit = struct();
             stUnit.waferX = 'mm';
@@ -556,6 +604,8 @@ classdef PrescriptionTool < mic.Base
             stUnit.yReticleFine = 'um';
             stUnit.pupilFill = 'n/a';
             stUnit.workingMode = 'n/a';
+
+
             
             stRecipe = struct();
             stRecipe.process = this.uiProcessTool.savePublic();
@@ -964,6 +1014,7 @@ classdef PrescriptionTool < mic.Base
             % Use first state to set reticle field and pupil fill 
             
             u8Count = 1;
+
             
             %{
             stValue = struct();
@@ -1569,6 +1620,10 @@ classdef PrescriptionTool < mic.Base
                 'cLabel', 'Fast Mode' ...
             );
 
+            this.uicbWobbleFEM = mic.ui.common.Checkbox(...
+                'cLabel', 'Auto Wobble' ...
+            );
+
             this.uicbSkipIndex = mic.ui.common.Checkbox(...
                 'cLabel', 'Skip Index Shot' ...
             );
@@ -1778,6 +1833,9 @@ classdef PrescriptionTool < mic.Base
             cFastStr = '';
             if this.uicbUseFastMode.get()
                 cFastStr = '_FC';
+            end
+            if this.uicbWobbleFEM.get()
+                cFastStr = [cFastStr '_autoWobble'];
             end
             if this.uicbSkipIndex.get()
                 cFastStr = [cFastStr '_noIndex']

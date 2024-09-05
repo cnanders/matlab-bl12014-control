@@ -179,6 +179,12 @@ classdef Hardware < mic.Base
         
         commNewFocus8742MA
         commNewFocus8742MAVirtual
+
+
+
+        
+
+
                 
     end
     

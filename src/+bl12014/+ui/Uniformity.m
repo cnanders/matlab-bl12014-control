@@ -18,6 +18,11 @@ classdef Uniformity < mic.Base
         uieCenterPixelR
         uieCenterPixelC
 
+        uieROIR1
+        uieROIR2
+        uieROIC1
+        uieROIC2
+
         uieIntrinsicDwellTime
         uieMinDwellTime
         uieCSV
@@ -35,6 +40,7 @@ classdef Uniformity < mic.Base
         uitUnitVector
         uitCenterPixel
         uitActiveImgText
+        uitROI
 
 
 
@@ -66,6 +72,21 @@ classdef Uniformity < mic.Base
 
         dResultVec = []
         dResultIdx = 1
+
+        % Tab group:
+        uitgMode
+        ceTabList = {'Uniformity Cam', 'Wobble setup'}
+
+
+        lShowDevice = false
+        lShowLabels = false
+        lShowInitButton = false     
+
+
+        hCameraUniformity
+        uiIsCameraAvailable
+        uiIsCameraConnected
+
 
 
     end
@@ -111,10 +132,20 @@ classdef Uniformity < mic.Base
         
         
         function build(this, hParent, dLeft, dTop)
+
+            % Build main tabs:
+            this.uitgMode.build(hParent, dLeft, dTop, this.dWidth, this.dHeight);
+
+            % Build uniformity cam tab:
+            this.buildUniformityCamPanel(this.uitgMode.getTabByIndex(1), dLeft, dTop);
+
             
-            this.buildSetup(hParent, dLeft, dTop)
-            this.buildProfiles(hParent, dLeft, dTop + 125)
-            this.buildCompute(hParent, dLeft, dTop + 125)
+            this.buildSetup(this.uitgMode.getTabByIndex(2), dLeft, dTop)
+            this.buildProfiles(this.uitgMode.getTabByIndex(2), dLeft, dTop + 125)
+            this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 125)
+
+
+            this.uitgMode.selectTabByIndex(2);
             
         end
         
@@ -137,6 +168,71 @@ classdef Uniformity < mic.Base
             
             
             
+        end
+
+        function cStr = getWobbleCSV(this, lUseIndex, dDose, dFocus)
+
+            dNDose = length(dDose);
+            dNFocus = length(dFocus);
+
+            % Create a matrix of the dose and focus values:
+            [dDoseMat, dFocusMat] = meshgrid(dDose, dFocus);
+
+
+            dDoseLinear = reshape(dDoseMat', 1, []);
+
+            ceLabels = {};
+            for k = 1:dNFocus
+                for m = 1:dNDose
+                    ceLabels{end + 1} = sprintf('F%dD%d', dFocus(k), dDose(m));
+                end
+            end
+
+            % Add index shot if needed:
+            if lUseIndex
+                mMid = ceil(length(this.dDose)/2);
+                dDoseLinear = [this.dDose(mMid), dDoseLinear];
+                ceLabels = [{'Index'}, ceLabels];
+            end
+
+
+            % Look up highlighted uniformity combinations:
+            ceCombo = this.dResultVec(this.dResultIdx, :);
+
+            dCoeff = ceCombo{2};
+            dIdx = ceCombo{3};
+            % Normalize coefficients:
+            dCoeff = dCoeff / sum(dCoeff);
+
+            % Get unit vectors:
+            dUx = this.uieUnitVectorRx.get();
+            dUy = this.uieUnitVectorRy.get();
+
+            cStr = 'index,name';
+            for k = 1:length(dCoeff)
+                cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', k, k, k)];
+            end
+
+            for k = 1:length(dDoseLinear)
+                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, dUx, dUy, ceLabels{k});
+                cStr = [cStr, cRow];
+            end
+
+        end
+
+        function cRow = getWobbleRow(this, id, dDose, dCoef, dIdx, dUx, dUy, cLabel)
+            % Multiply coefficients by dose:
+            dWobbleDwells = dCoef * dDose;
+            cRow = sprintf('\n%d,%s', id, cLabel);
+
+            % Build dwell strings:
+            for k = 1:length(dWobbleDwells)
+                dRx = dUx * (dIdx(k) - this.dCenterIdx);
+                dRy = dUy * (dIdx(k) - this.dCenterIdx);
+
+                cRow = [cRow, sprintf(',%.3f,%.3f,%d', dRx, dRy, round(1000 * dWobbleDwells(k)))];
+            end
+
         end
 
         function st = save(this)
@@ -175,6 +271,10 @@ classdef Uniformity < mic.Base
             'uieHexapodDelay', ...
             'uieCenterPixelR', ...
             'uieCenterPixelC', ...
+            'uieROIR1', ...
+            'uieROIR2', ...
+            'uieROIC1', ...
+            'uieROIC2', ...
             'uieIntrinsicDwellTime', ...
             'uieMinDwellTime' ...
          };
@@ -185,6 +285,35 @@ classdef Uniformity < mic.Base
     end
     
     methods (Access = private)
+
+        function buildUniformityCamPanel(this, hParent, dLeft, dTop)
+
+            hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Setup',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop + 20 ...
+                this.dWidth - 20 ...
+                150], hParent) ...
+                );
+            
+            dLeft = dLeft + 20;
+            
+            
+            
+            dTop = dTop + 30;
+            this.uiIsCameraAvailable.build(hParent, dLeft, dTop);
+            dTop = dTop + 20;
+            this.uiIsCameraConnected.build(hParent, dLeft, dTop);
+
+            
+
+            
+        end
+
 
         function buildSetup(this, hParent, dLeft, dTop)
 
@@ -228,10 +357,25 @@ classdef Uniformity < mic.Base
             this.uieCenterPixelR.build(hParent, dLeft, dTop, 100, 30);
             this.uieCenterPixelC.build(hParent, dLeft + 110, dTop, 100, 30);
 
+            dLeft = dLeft + 220;
+            dTop = dTop - 20;
+            this.uitROI.build(hParent, dLeft, dTop, this.dWidthName, 30);
+
+            dTop = dTop + 20;
+            this.uieROIC1.build(hParent, dLeft, dTop, 100, 30);
+            this.uieROIC2.build(hParent, dLeft + 110, dTop, 100, 30);
+            this.uieROIR1.build(hParent, dLeft + 220, dTop, 100, 30);
+            this.uieROIR2.build(hParent, dLeft + 330, dTop, 100, 30);
+
+
+
+
             
         end
 
         function buildCompute(this, hParent, dLeft, dTop)
+
+
 
             dPanelHeight = 700;
             hPanel = uipanel(...
@@ -346,6 +490,43 @@ classdef Uniformity < mic.Base
             
           
             this.msg('init()');
+
+
+
+            this.hCameraUniformity = imaqcam.ImaqCam(...
+                'cCameraName', 'UI225xSE-M R3_4102658007', ...
+                'cProtocol', 'winvideo', ...
+                'cFrameFormat', 'RGB24_1600x1200' ...
+                );
+
+            this.uiIsCameraAvailable = mic.ui.device.GetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowDevice', this.lShowDevice, ...
+                'lShowLabels', this.lShowLabels, ...
+                'lShowInitButton', this.lShowInitButton, ...
+                'fhGet', @() this.hCameraUniformity.isAvailable(), ...
+                'lUseFunctionCallbacks', true, ...
+                'cName', [this.cName, 'camera-available'], ...
+                'cLabel', 'Camera Available' ...
+            );
+
+            this.uiIsCameraConnected = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowDevice', this.lShowDevice, ...
+                'lShowLabels', this.lShowLabels, ...
+                'lShowInitButton', this.lShowInitButton, ...
+                'fhGet', @() this.hCameraUniformity.isConnected(), ...
+                'fhSet', @(lVal) mic.ternEval(lVal, @()this.hCameraUniformity.disconnect(), @()this.hCameraUniformity.connect()), ...
+                'lUseFunctionCallbacks', true, ...
+                'ceVararginCommandToggle', {'cTextTrue', 'Disconnect', 'cTextFalse', 'Connect'}, ...
+                'cName', [this.cName, 'camera-connected'], ...
+                'cLabel', 'Camera Connected' ...
+            );
+        
+
+            this.uitgMode = mic.ui.common.Tabgroup('ceTabNames', this.ceTabList);
             
             
             % Init labels:
@@ -357,6 +538,11 @@ classdef Uniformity < mic.Base
 
             this.uitCenterPixel = mic.ui.common.Text(...
                 'cVal', 'Center Pixel',...
+                'dFontSize', 14 ...
+                );
+
+            this.uitROI = mic.ui.common.Text(...
+                'cVal', 'Uniformity ROI',...
                 'dFontSize', 14 ...
                 );
 
@@ -382,6 +568,28 @@ classdef Uniformity < mic.Base
                 );
             this.uieCenterPixelC = mic.ui.common.Edit(...
                 'cLabel', 'Center Pixel C', ...
+                'cType', 'd' ...
+                );
+
+            this.uieROIC1 = mic.ui.common.Edit(...
+                'cLabel', 'ROI Left (col)', ...
+                'fhDirectCallback', @this.setROI ...
+                'cType', 'd' ...
+                );
+            this.uieROIC2 = mic.ui.common.Edit(...
+                'cLabel', 'ROI Right (col)', ...
+                'fhDirectCallback', @this.setROI ...
+                'cType', 'd' ...
+                );
+                
+            this.uieROIR1 = mic.ui.common.Edit(...
+                'cLabel', 'ROI Top (row)', ...
+                'fhDirectCallback', @this.setROI ...
+                'cType', 'd' ...
+                );
+            this.uieROIR2 = mic.ui.common.Edit(...
+                'cLabel', 'ROI Bot (row)', ...
+                'fhDirectCallback', @this.setROI ...
                 'cType', 'd' ...
                 );
 
@@ -468,8 +676,27 @@ classdef Uniformity < mic.Base
             if (this.uieIntrinsicDwellTime.get() == 0)
                 this.uieIntrinsicDwellTime.set(500);
             end
+
+            if (this.uieROIC1.get() == 0)
+                this.uieROIC1.set(935);
+            end
+            if (this.uieROIC2.get() == 0)
+                this.uieROIC2.set(485);
+            end
+            if (this.uieROIR1.get() == 0)
+                this.uieROIR1.set(200);
+            end
+            if (this.uieROIR2.get() == 0)
+                this.uieROIR2.set(15);
+            end
+
             
             
+        end
+
+        function setROI(this, src, evt)
+
+
         end
 
 
@@ -486,11 +713,100 @@ classdef Uniformity < mic.Base
            
             % Define the target flat curve
             b = dMaxCenter*ones(size(C,2), 1);
-
             D = C';
 
+            
+            dResultVec = {};
+
+            dResultIdeal = this.computeIdeal(D, b, dFluxCenter);
+            dResultPairs = this.computePairs(D, b, dFluxCenter, 15);
+            dResultTriples = this.computeTriples(D, b, dFluxCenter, 10);
+
+            % Append the results to the result vector:
+            dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
+
+             % Sort result vector by error:
+             this.dResultVec = sortrows(dResultVec, 1);
+             this.dResultIdx = 1;
+ 
+             % store in list:
+             ceResults = {...
+                 sprintf('Error\t\t\t Coefficeints  Image-idx    DoseFac   Uniformity') ...
+                 };
+ 
+             dNumResults = 25;
+ 
+ 
+             for k = 1:dNumResults
+                 dResultVec = this.dResultVec(k, :);
+
+                % Join the coefficients (unknown length) into a string:
+                dCoeff = dResultVec{2};
+                dCoeffStr = '[';
+                for m = 1:length(dCoeff)
+                    dCoeffStr = [dCoeffStr, sprintf('%.3f\t', dCoeff(m))];
+                end
+                dCoeffStr = [dCoeffStr, ']'];
+
+                % Join the image indices  (unknown length)  into a string:
+                dIndex = dResultVec{3};
+                dIndexStr = '[';
+                for m = 1:length(dIndex)
+                    dIndexStr = [dIndexStr, sprintf('%d\t', dIndex(m))];
+                end
+                dIndexStr = [dIndexStr, ']'];
+                
+                 cVal = sprintf('%.0f\t  %s\t    %s\t   %.3f\t %.3f', dResultVec{1}, dCoeffStr, dIndexStr, dResultVec{4}, dResultVec{5});
+                 ceResults{end + 1} = cVal;
+             end
+             
+             this.uilCombos.setOptions(ceResults);
+             this.uilCombos.setSelectedIndexes(uint8(2));
+
+            
+            this.handleSelectCombo();
+        end
+
+        function dResultVec = computeIdeal(this, D, b, dFluxCenter)
+            dResultVec = {};
+            ct = 1;
+
+            dCoeff = lsqnonneg(D, b);
+            dError = norm(b - D * dCoeff);
+            dResultVec{ct, 1} = dError;
+
+            idx = dCoeff > 0;
+            dResultVec{ct, 2} = dCoeff(idx);
+            dResultVec{ct, 3} = find(idx);
+            ids = dResultVec{ct, 3};
+
+            dFlux = 0;
+
+            dCoefSum = sum(dCoeff);
+            for k = 1:length(ids)
+                dFlux = dFlux + dCoeff(ids(k))/dCoefSum * sum(sum(squeeze(this.dImgsField(:,:,ids(k)))));
+            end
+            dDoseFac = dFlux/dFluxCenter;
+
+            dResultVec{ct, 4} = dDoseFac;
+
+            % Compute uniformity:
+            dAgg = 0;
+            for k = 1:length(ids)
+                dAgg = dAgg + dCoeff(ids(k))*this.dImgsField(:,:,dResultVec{ct, 3}(k));
+            end
+
+            dUniformity = std(dAgg(:))/median(dAgg(:));
+            dResultVec{ct, 5} = dUniformity;
+
+
+        end
+           
+
+        function dResultVec = computePairs(this, D, b, dFluxCenter, dMaxResults)
+            dResultVec = {};
             % Loop through choosing pairs of images and find best combination and coefficients:
-            dResultVec = [];
+
             ct = 1;
             for k = 1:size(D, 2)
                 for m = k+1:size(D, 2)
@@ -500,52 +816,75 @@ classdef Uniformity < mic.Base
                     dCoeff = lsqnonneg(dCombo, b);
                     dError = norm(b - dCombo * dCoeff);
                     
-                    dResultVec(ct, 1) = dError;
-                    dResultVec(ct, 2:3) = dCoeff;
-                    dResultVec(ct, 4:5) = [k, m];
+                    dResultVec{ct, 1} = dError;
+                    dResultVec{ct, 2} = dCoeff;
+                    dResultVec{ct, 3} = [k, m];
 
 
                     % Compute relative flux
                     dFluxLeft = sum(sum(squeeze(this.dImgsField(:,:,k))));
                     dFluxRight = sum(sum(squeeze(this.dImgsField(:,:,m))));
                     dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
-                    dResultVec(ct, 6) = dDoseFac;
+                    dResultVec{ct, 4} = dDoseFac;
 
                     % Compute uniformity:
                     dAgg = dCoeff(1)*this.dImgsField(:,:,k) + dCoeff(2)*this.dImgsField(:,:,m);
 
 
                     dUniformity = std(dAgg(:))/median(dAgg(:));
-                    dResultVec(ct, 7) = dUniformity;
+                    dResultVec{ct, 5} = dUniformity;
                     
                     ct = ct + 1;
                 end
             end
 
-            % Sort result vector by error:
-            this.dResultVec = sortrows(dResultVec, 1);
-            this.dResultIdx = 1;
+            dResultVec = sortrows(dResultVec, 1);
+
+            % Limit the number of results:
+            dResultVec = dResultVec(1:dMaxResults, :);
+
+        end
+
+        function dResultVec = computeTriples(this, D, b, dFluxCenter, dMaxResults)
+            dResultVec = {};
+            % Loop through choosing pairs of images and find best combination and coefficients:
+
+            ct = 1;
+            for k = 1:size(D, 2)
+                for m = k+1:size(D, 2)
+                    for l = m+1:size(D, 2)
+                        dCombo = [D(:, k), D(:, m), D(:, l)];
+                        % Solve for the coefficients using non-negative least squares
+
+                        dCoeff = lsqnonneg(dCombo, b);
+                        dError = norm(b - dCombo * dCoeff);
+
+                        dResultVec{ct, 1} = dError;
+                        dResultVec{ct, 2} = dCoeff;
+                        dResultVec{ct, 3} = [k, m, l];
+
+                
+                        % Compute relative flux
+                        dFluxLeft = sum(sum(squeeze(this.dImgsField(:,:,k))));
+                        dFluxRight = sum(sum(squeeze(this.dImgsField(:,:,m))));
+                        dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
+                        dResultVec{ct, 4} = dDoseFac;
+
+                        % Compute uniformity:
+                        dAgg = dCoeff(1)*this.dImgsField(:,:,k) + dCoeff(2)*this.dImgsField(:,:,m);
 
 
-            % store in list:
-            ceResults = {...
-                sprintf('Error\t\t\t Coeff1   Coeff2   Img1     Img2    DoseFac   Uniformity') ...
-                };
-
-            dNumResults = 15;
-
-
-            for k = 1:dNumResults
-                dResultVec = this.dResultVec(k, :);
-                cVal = sprintf('%.0f\t %.3f\t    %.3f\t    %0.2d\t      %0.2d\t  %.3f\t %.3f', dResultVec);
-                ceResults{end + 1} = cVal;
+                        dUniformity = std(dAgg(:))/median(dAgg(:));
+                        dResultVec{ct, 5} = dUniformity;
+                        
+                        ct = ct + 1;
+                    end
+                end
             end
-            
-            this.uilCombos.setOptions(ceResults);
-            this.uilCombos.setSelectedIndexes(uint8(2));
+            dResultVec = sortrows(dResultVec, 1);
 
-            
-            this.handleSelectCombo();
+            % Limit the number of results:
+            dResultVec = dResultVec(1:dMaxResults, :);
         end
 
         function handleSelectCombo(this, src, evt)
@@ -564,39 +903,42 @@ classdef Uniformity < mic.Base
             this.dResultIdx = dIdx - 1;
 
             
-            dCoefficients   = this.dResultVec(this.dResultIdx, 2:3);
-            dBestIndex      = this.dResultVec(this.dResultIdx, 4:5);
+            dCoefficients   = this.dResultVec{this.dResultIdx, 2};
+            dBestIndex      = this.dResultVec{this.dResultIdx, 3};
 
             % Build CSV string:
             
             % Make sure the lower of the two coefficients is on the left
-            if dCoefficients(1) > dCoefficients(2)
-                dCoefficients   = flip(dCoefficients);
-                dBestIndex      = flip(dBestIndex);
-            end
+            % if dCoefficients(1) > dCoefficients(2)
+            %     dCoefficients   = flip(dCoefficients);
+            %     dBestIndex      = flip(dBestIndex);
+            % end
 
-            % Set the smaller dwell to 25 ms:
-            dDwell1 = this.uieMinDwellTime.get();
-            dDwell2 = dCoefficients(2) * dDwell1 / dCoefficients(1) + this.uieIntrinsicDwellTime.get() * (dCoefficients(2) - dCoefficients(1));
+            % % Set the smaller dwell to 25 ms:
+            % dDwell1 = this.uieMinDwellTime.get();
+            % dDwell2 = dCoefficients(2) * dDwell1 / dCoefficients(1) + this.uieIntrinsicDwellTime.get() * (dCoefficients(2) - dCoefficients(1));
 
-            dIdx1 = dBestIndex(1) - this.dCenterIdx;
-            dIdx2 = dBestIndex(2) - this.dCenterIdx;
+            % dIdx1 = dBestIndex(1) - this.dCenterIdx;
+            % dIdx2 = dBestIndex(2) - this.dCenterIdx;
 
-            cCSV = sprintf('Rx (deg),Ry (deg),Dwell Time(ms) \n ');
-            cCSV = [cCSV, sprintf('%.4f,%.4f,%d\n', ...
-                            this.uieUnitVectorRx.get() * dIdx1, ...
-                            this.uieUnitVectorRy.get() * dIdx1, ...
-                            round(dDwell1))];
-            cCSV = [cCSV, sprintf('%.4f,%.4f,%d', ...
-                            this.uieUnitVectorRx.get() * dIdx2, ...
-                            this.uieUnitVectorRy.get() * dIdx2, ...
-                            round(dDwell2))];
-            % Set csv:
-            this.uieCSV.set(cCSV);
-            this.uieCSV.makeMax();
+            % cCSV = sprintf('Rx (deg),Ry (deg),Dwell Time(ms) \n ');
+            % cCSV = [cCSV, sprintf('%.4f,%.4f,%d\n', ...
+            %                 this.uieUnitVectorRx.get() * dIdx1, ...
+            %                 this.uieUnitVectorRy.get() * dIdx1, ...
+            %                 round(dDwell1))];
+            % cCSV = [cCSV, sprintf('%.4f,%.4f,%d', ...
+            %                 this.uieUnitVectorRx.get() * dIdx2, ...
+            %                 this.uieUnitVectorRy.get() * dIdx2, ...
+            %                 round(dDwell2))];
+            % % Set csv:
+            % this.uieCSV.set(cCSV);
+            % this.uieCSV.makeMax();
 
             % plot combination:
-            dAgg = dCoefficients(1)*this.dImgsField(:,:,dBestIndex(1)) + dCoefficients(2)*this.dImgsField(:,:,dBestIndex(2));
+            dAgg = 0;
+            for k = 1:length(dBestIndex)
+                dAgg = dAgg + dCoefficients(k)*this.dImgsField(:,:,dBestIndex(k));
+            end
 
             dAgg = dAgg / median(dAgg(:));
             dAgg = round(dAgg * 10)/ 10;
@@ -609,8 +951,10 @@ classdef Uniformity < mic.Base
 
             axes(this.haRecipe);
             dElms = zeros(size(this.dImgsField, 3), 1);
-            dElms(dBestIndex(1)) = dCoefficients(1);
-            dElms(dBestIndex(2)) = dCoefficients(2);
+
+            for k = 1:length(dCoefficients)
+                dElms(dBestIndex(k)) = dCoefficients(k);
+            end 
             stem(dElms, 'linewidth', 3);
 
             
