@@ -1026,8 +1026,9 @@ classdef Scan < mic.Base
             );
             
         
-            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool(
-                'uiUniformity', this.uiUniformity, ...
+            this.uiPrescriptionTool = bl12014.ui.PrescriptionTool(...
+                'uiFluxDensity', this.uiFluxDensity, ...
+                'uiUniformity', this.uiUniformity ...
             );
             
             
@@ -1307,6 +1308,8 @@ classdef Scan < mic.Base
                 'yReticleFine', ...
                 'xyReticleFine', ...
                 'workingMode', ...
+                'wobbleWorkingMode',
+                'writeWobble'...
             };
 
             for n = 1 : length(ceFields)
@@ -1895,28 +1898,30 @@ classdef Scan < mic.Base
                     case 'writeWobble'
 
                         % Overwrite current file in the wobble directory with new file:
-                        cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params.txt');
+                        cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params.txt');
 
                         fid = fopen(cPathWobbleFile, 'w');
-                        fprintf(fid, '%s\n', stValue.data);
+                        fprintf(fid, '%s\n', stValue.writeWobble.data);
                         fclose(fid);
 
                         % Overwrite a file in the wobble dir with a timestamp:
-                        cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params-timestamp.txt');
+                        cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params-timestamp.txt');
                         fid = fopen(cPathWobbleFile, 'w');
                         fprintf(fid, '%s\n', this.cTimestamp);
                         fclose(fid);
 
+                        this.stScanSetContract.writeWobble.lIssued = true;
 
 
                     case 'wobbleWorkingMode'
-                        if stValue.workingMode == 0
+                        if stValue.wobbleWorkingMode.workingMode == 0
                             % Turn off wobble mode at the end of fem:
                             this.hardware.getSMS().setWobbleWorkingMode(0)
-                        elseif stValue.workingMode == 1
+                        elseif stValue.wobbleWorkingMode.workingMode == 1
                             % Turn on wobble mode at the start of fem:
                             this.hardware.getSMS().setWobbleWorkingMode(1)
                         end
+                        this.stScanSetContract.wobbleWorkingMode.lIssued = true;
                     case 'workingMode'
 
                         if stValue.workingMode == 5
@@ -2585,7 +2590,7 @@ classdef Scan < mic.Base
                                     end
                                     
                                 case 'writeWobble'
-                                    cPathWobbleFile = fullfile(this.cPathWobbleFile, 'wobble-params-timestamp.txt');
+                                    cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params-timestamp.txt');
 
                                     lReady = false;
 
@@ -2607,7 +2612,7 @@ classdef Scan < mic.Base
                                         msgbox(sprintf('Wobble not set, Could not read wobble timestamp file: %s', cPathWobbleFile));
                                     end
                                 case 'wobbleWorkingMode'
-                                    lReady = this.hardware.getSMS().getWobbleWorkingMode() == stValue.workingMode;
+                                    lReady = this.hardware.getSMS().getWobbleWorkingMode() == stValue.wobbleWorkingMode.workingMode;
                                     
                                 case 'workingMode'
                                     
@@ -3409,6 +3414,19 @@ classdef Scan < mic.Base
             
             if (isempty(this.uiListActive.get()))
                 this.abort('No prescriptions were added. Please add a prescription before starting the FEM.');
+                lReturn = false;
+                return;
+            end
+
+
+            if this.uiPrescriptionTool.uicbWobbleFEM.get() && isempty(this.uiUniformity.dResultVec)
+                this.abort('Wobble FEM requires a selected uniformity profile')
+                lReturn = false;
+                return;
+            end
+
+            if this.hardware.getSMS().getWobbleWorkingMode()
+                this.abort(' Please disable wobble working mode before starting the FEM.');
                 lReturn = false;
                 return;
             end

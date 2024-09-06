@@ -60,6 +60,7 @@ classdef PrescriptionTool < mic.Base
         uiPupilFillTool            
         uiFemTool                  
         uiUniformity
+        uiFluxDensity
     end
     
     properties (SetAccess = private)
@@ -379,10 +380,10 @@ classdef PrescriptionTool < mic.Base
             if this.uicbWobbleFEM.get()
                 % Create task to Write wobble params to CSV
                 stValue = struct();
-                stValue.type = 'writeWobble';
-                stValue.data = this.uiUniformity.getWobbleCSV( ...
+                stValue.writeWobble = struct();
+                stValue.writeWobble.data = this.uiUniformity.getWobbleCSV( ...
                     ~this.uicbSkipIndex.get(),  ...
-                    this.uiFemTool.dDose, ...
+                    this.uiFemTool.dDose / this.uiFluxDensity.get(), ...
                     this.uiFemTool.dFocus...
                 );
 
@@ -391,8 +392,8 @@ classdef PrescriptionTool < mic.Base
 
                 % Create task to start wobble:
                 stValue = struct();
-                stValue.type = 'wobbleWorkingMode';
-                stValue.workingMode = 1; % wobble mode
+                stValue.wobbleWorkingMode = struct();
+                stValue.wobbleWorkingMode.workingMode = 1; % wobble mode
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
             end
@@ -588,8 +589,8 @@ classdef PrescriptionTool < mic.Base
              if this.uicbWobbleFEM.get()
                 % Create task to stop wobble:
                 stValue = struct();
-                stValue.type = 'wobbleWorkingMode';
-                stValue.workingMode = 0; % wobble mode
+                stValue.wobbleWorkingMode = struct();
+                stValue.wobbleWorkingMode.workingMode = 0; % wobble mode
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
             end

@@ -51,6 +51,8 @@ classdef App < mic.Base
         uiSMS
         uiWaferLabel
         uiUniformity
+
+        uibReflow
         
         uiCurrentOfRing
         
@@ -209,7 +211,7 @@ classdef App < mic.Base
             this.msg('Hi!');
         end
 
-        function reflow(this)
+        function reflow(this, src, evt)
 
             
             dScreenSize = get(0, 'ScreenSize');
@@ -286,9 +288,10 @@ classdef App < mic.Base
             );
         
             this.uiButtonListClockTasks.build(this.hFigure, 290, 5, 100, 20);
-            this.uiCurrentOfRing.build(this.hFigure, 400, 5);
-            this.uiDMIPowerMonitor.build(this.hFigure, 600, 1);
-            this.uiPowerPmacHydraMotMinMonitor.build(this.hFigure, 1000, 1);
+            this.uibReflow.build(this.hFigure, 400, 5, 80, 20);
+            this.uiCurrentOfRing.build(this.hFigure, 500, 5);
+            this.uiDMIPowerMonitor.build(this.hFigure, 700, 1);
+            this.uiPowerPmacHydraMotMinMonitor.build(this.hFigure, 1100, 1);
         
             this.clock.add(@this.onClock, this.id(), this.dDelay);
             
@@ -881,6 +884,11 @@ classdef App < mic.Base
             this.uiButtonListClockTasks = mic.ui.common.Button(...
                 'cText', 'List Clock Tasks', ...
                 'fhOnClick', @this.onListClockTasks ...
+            );
+
+            this.uibReflow = mic.ui.common.Button(...
+                'cText', 'Reflow', ...
+                'fhOnClick', @this.reflow ...
             );
         
             this.uiHardware = bl12014.ui.Hardware(...
