@@ -4,6 +4,12 @@
 classdef Uniformity < mic.Base
     
     properties
+
+        dImgROIWidth = 300 % width of the cropped part of the image
+        dImgROIHeight = 150 % height of the cropped part of the image
+
+        dFieldWidthPx = 200
+        dFieldHeightPx = 30
         
         cName = 'Uniformity'
         
@@ -83,10 +89,14 @@ classdef Uniformity < mic.Base
         lShowInitButton = false     
 
 
+        % Uniformity tab
+
         hCameraUniformity
         uiIsCameraAvailable
         uiIsCameraConnected
 
+        uibRefreshIMAQ
+        haUniformityCamAxes
 
 
     end
@@ -133,8 +143,30 @@ classdef Uniformity < mic.Base
         
         function build(this, hParent, dLeft, dTop)
 
+            % Build topline:
+
+            hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Global',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop + 10 ...
+                this.dWidth - 20 ...
+                90], hParent) ...
+                );
+
+            dLTop = dTop + 10;
+            this.uitCenterPixel.build(hPanel, dLeft, dLTop, this.dWidthName, 30);
+
+            dLTop = dLTop + 20;
+            this.uieCenterPixelR.build(hPanel, dLeft, dLTop, 100, 30);
+            this.uieCenterPixelC.build(hPanel, dLeft + 110, dLTop, 100, 30);
+
+
             % Build main tabs:
-            this.uitgMode.build(hParent, dLeft, dTop, this.dWidth, this.dHeight);
+            this.uitgMode.build(hParent, dLeft, dTop + 100, this.dWidth, this.dHeight - 120);
 
             % Build uniformity cam tab:
             this.buildUniformityCamPanel(this.uitgMode.getTabByIndex(1), dLeft, dTop);
@@ -145,7 +177,7 @@ classdef Uniformity < mic.Base
             this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 125)
 
 
-            this.uitgMode.selectTabByIndex(2);
+            % this.uitgMode.selectTabByIndex(2);
             
         end
         
@@ -295,8 +327,8 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
-                dTop + 20 ...
-                this.dWidth - 20 ...
+                dTop + 50 ...
+                this.dWidth - 40 ...
                 150], hParent) ...
                 );
             
@@ -304,12 +336,36 @@ classdef Uniformity < mic.Base
             
             
             
-            dTop = dTop + 30;
-            this.uiIsCameraAvailable.build(hParent, dLeft, dTop);
             dTop = dTop + 20;
-            this.uiIsCameraConnected.build(hParent, dLeft, dTop);
+            this.uibRefreshIMAQ.build(hPanel, dLeft, dTop, 100, 30);
+            dTop = dTop + 40;
+            this.uiIsCameraAvailable.build(hPanel, dLeft, dTop);
+            dTop = dTop + 40;
+            this.uiIsCameraConnected.build(hPanel, dLeft, dTop);
 
+            dLeft = dLeft - 20;
             
+            hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Camera',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop + 100 ...
+                this.dWidth - 40 ...
+                580], hParent) ...
+                );
+
+            this.haUniformityCamAxes = axes(...
+                'Parent', hPanel, ...
+                'Units', 'pixels', ...
+                'Position', [ ...
+                    40 , ...
+                        40, ...
+                    1000, ...
+                    500] ...
+                );
 
             
         end
@@ -350,14 +406,7 @@ classdef Uniformity < mic.Base
             this.uieUnitVectorRy.build(hParent, dLeft + 110, dTop, 100, 30);
 
             dLeft = dLeft + 220;
-            dTop = dTop - 20
-            this.uitCenterPixel.build(hParent, dLeft, dTop, this.dWidthName, 30);
-
-            dTop = dTop + 20;
-            this.uieCenterPixelR.build(hParent, dLeft, dTop, 100, 30);
-            this.uieCenterPixelC.build(hParent, dLeft + 110, dTop, 100, 30);
-
-            dLeft = dLeft + 220;
+            
             dTop = dTop - 20;
             this.uitROI.build(hParent, dLeft, dTop, this.dWidthName, 30);
 
@@ -508,7 +557,7 @@ classdef Uniformity < mic.Base
                 'fhGet', @() this.hCameraUniformity.isAvailable(), ...
                 'lUseFunctionCallbacks', true, ...
                 'cName', [this.cName, 'camera-available'], ...
-                'cLabel', 'Camera Available' ...
+                'cLabel', 'Uniformity Camera Available' ...
             );
 
             this.uiIsCameraConnected = mic.ui.device.GetSetLogical(...
@@ -522,7 +571,7 @@ classdef Uniformity < mic.Base
                 'lUseFunctionCallbacks', true, ...
                 'ceVararginCommandToggle', {'cTextTrue', 'Disconnect', 'cTextFalse', 'Connect'}, ...
                 'cName', [this.cName, 'camera-connected'], ...
-                'cLabel', 'Camera Connected' ...
+                'cLabel', 'Uniformity Camera Connected' ...
             );
         
 
@@ -655,6 +704,12 @@ classdef Uniformity < mic.Base
             );
 
 
+            this.uibRefreshIMAQ = mic.ui.common.Button(...
+                'cText', 'Refresh IMAQ', ...
+                'fhDirectCallback', @this.onRefreshIMAQ ...
+                );
+
+
             % Set default values:
             this.uieHexapodDelay.set(500);
             this.uieMinDwellTime.set(300);
@@ -695,6 +750,20 @@ classdef Uniformity < mic.Base
         end
 
         function setROI(this, src, evt)
+
+
+        end
+
+        function onRefreshIMAQ(this, src, evt)
+            this.hCameraUniformity.refreshIMAQ();
+        end
+
+        function plotUniformityGuides
+                
+                % Plot the center pixel:
+                plot(this.haImages, this.dCenterIdx, this.dCenterIdx, 'r+', 'MarkerSize', 10, 'LineWidth', 2);
+    
+                % Plot field:
 
 
         end
@@ -1019,7 +1088,10 @@ classdef Uniformity < mic.Base
                 % Crop image to 150 x 300 px region around center pixel:
                 dCenterR = this.uieCenterPixelR.get();
                 dCenterC = this.uieCenterPixelC.get();
-                img = img(dCenterR - 75:dCenterR + 75, dCenterC - 150:dCenterC + 150);
+
+                % Grab 150 x 300 pixels around the center pixel:
+                img = img(dCenterR - this.dImgROIHeight/2:dCenterR + this.dImgROIHeight/2,...
+                                     dCenterC - this.dImgROIWidth/2:dCenterC + this.dImgROIWidth/2);
 
                 this.dImgs(:,:,k) = img;
             end
@@ -1033,8 +1105,8 @@ classdef Uniformity < mic.Base
             end
             this.dImgs(this.dImgs < 0) = 0;
 
-            % Grab inner 200 x 30 pixels of these images:
-            this.dImgsField = this.dImgs(61:90, 51:250, :);
+            % Grab inner 200 x 30 pixels of these images, this is assuming that we have 5 um/px
+            this.dImgsField = this.dImgs(61:60 + this.dFieldHeightPx, 51:50 + this.dFieldWidthPx, :);
             this.dImgsFieldRound = zeros(size(this.dImgsField));
 
             % Normalize the field uniformity images:
