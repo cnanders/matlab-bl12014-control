@@ -2744,6 +2744,55 @@ classdef Tasks < mic.Base
                 'fhGetMessage', @() 'Prep Reticle, Wafer, HS LEDs, Shutter, M142 Scan, MA Scan' ...
             );
         end
+
+        function task = takeUniformitySeries(...
+            cName, ...
+            ui, ...
+            hardware, ...
+            clock ...
+        )
+
+        if ~isa(hardware, 'bl12014.Hardware')
+            error('hardware must be bl12014.Hardware');
+        end
+        
+        if ~isa(ui, 'bl12014.ui.Uniformity')
+            error('ui must be bl12014.ui.Uniformity');
+        end
+        
+        if ~isa(clock, 'mic.Clock')
+            error('clock must be mic.Clock');
+        end
+
+        % Tasks:
+
+        % Make sure shutter is closed
+        % Write CSV
+        % Check if Camera is connected
+        % Wobble working mode true
+
+        % Shutter on
+        % Acquire image
+        % shutter off
+        % save image
+        % repeat
+
+        % Wobble working mode false
+        % Turn off camera
+
+
+
+
+        taskWCXSpeed = mic.Task(...
+               'fhExecute', @() hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(dVal), ...
+               'fhIsDone', @() true, ... abs(hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse() - dVal) < dTol, ...
+               'fhGetMessage', @() sprintf('Set DemandSpeedCS1 to %1.0f mm/s', dVal) ...
+            );
+
+
+
+
+        end
         
         
         % Sequence that:
