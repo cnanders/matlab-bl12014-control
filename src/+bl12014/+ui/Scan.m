@@ -1900,8 +1900,17 @@ classdef Scan < mic.Base
                         % Overwrite current file in the wobble directory with new file:
                         cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params.txt');
 
+
+                        % Construct Wobble file:
+                        cWobbleData = this.uiUniformity.getWobbleCSV( ...
+                            stValue.writeWobble.data.lUseIndex,  ...
+                                stValue.writeWobble.data.dDose / this.uiFluxDensity.get(), ...
+                                stValue.writeWobble.data.dFocus...
+                        );
+
+
                         fid = fopen(cPathWobbleFile, 'w');
-                        fprintf(fid, '%s\n', stValue.writeWobble.data);
+                        fprintf(fid, '%s\n', cWobbleData);
                         fclose(fid);
 
                         % Overwrite a file in the wobble dir with a timestamp:
