@@ -429,30 +429,38 @@ classdef App < mic.Base
         
         function delete(this)
             
-            this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
-            
-            this.saveStateToDisk();
-            this.clock.remove(this.id());
-            
-            % Delete the figure
-            if ishandle(this.hFigure)
+            try
+
+                this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);  
+                
+                this.saveStateToDisk();
+                this.clock.remove(this.id());
+
+                delete(timerfind)
+                
+                % Delete the figure
+                if ishandle(this.hFigure)
+                    delete(this.hFigure);
+                end
+                
+                if ishandle(this.hFigure)
                 delete(this.hFigure);
+                end
+                
+                cecProps = this.getPropsDelete();
+                for n = 1 : length(cecProps)
+                    cProp = cecProps{n};
+                    cMsg = sprintf('delete() deleting %s', cProp);
+                    this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE);  
+                    this.(cProp).delete();
+                end
+                
+                this.uiLSIControl = [];
+                this.uiLSIAnalyze = [];
+
+                imaqreset
+
             end
-            
-            if ishandle(this.hFigure)
-               delete(this.hFigure);
-            end
-            
-            cecProps = this.getPropsDelete();
-            for n = 1 : length(cecProps)
-                cProp = cecProps{n};
-                cMsg = sprintf('delete() deleting %s', cProp);
-                this.msg(cMsg, this.u8_MSG_TYPE_CLASS_DELETE);  
-                this.(cProp).delete();
-            end
-            
-            this.uiLSIControl = [];
-            this.uiLSIAnalyze = [];
                         
                        
         end 
