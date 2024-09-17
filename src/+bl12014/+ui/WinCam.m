@@ -26,7 +26,8 @@ classdef WinCam < mic.Base
 
 
         
-        cName = 'Camera'
+        cName = 'win-cam'
+        cLabel = 'Camera'
         cCameraName = 'UI225xSE-M R3_4102658007'
         cProtocol = 'winvideo'
         dROI = []
@@ -49,7 +50,6 @@ classdef WinCam < mic.Base
         clock
         uiClock
         
-        cLabel = 'Camera'
         
         % {< mic.interface.device.GetSetNumber}
         device
@@ -89,7 +89,7 @@ classdef WinCam < mic.Base
             hPanel = uipanel(...
                 'Parent', hParent,...
                 'Units', 'pixels',...
-                'Title', this.cName,...
+                'Title', this.cLabel,...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
@@ -98,7 +98,8 @@ classdef WinCam < mic.Base
                 this.dHeight], hParent) ...
             );
         
-            dTop = dTop + 10;
+            dLeft = 30;
+            dTop = 10;
             this.uiIsCameraAvailable.build(hPanel, dLeft, dTop);
             dLeft = dLeft + 200;
             this.uiIsCameraPreviewing.build(hPanel, dLeft + 60, dTop);

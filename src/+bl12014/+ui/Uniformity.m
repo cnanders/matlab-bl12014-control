@@ -178,7 +178,7 @@ classdef Uniformity < mic.Base
                 dLeft ...
                 dTop ...
                 this.dWidth - 20 ...
-                90], hParent) ...
+                190], hParent) ...
                 );
 
             dLTop = 10 ;
@@ -195,28 +195,33 @@ classdef Uniformity < mic.Base
             this.uieUnitVectorRy.build(hPanel, dLeft + 410, dLTop, 100, 30);
 
             dLTop = dLTop - 10;
-            dLLeft = dLeft + 600;
+            dLLeft = dLeft + 800;
+            this.uiReticleCoarseStage.build(hPanel, dLLeft, dLTop - 7);
+            dLLeft = dLeft;
+            dLTop = dLTop + 60;
             this.uiWobbleWorkingMode.build(hPanel, dLLeft, dLTop);
-            dLLeft = dLLeft + 500;
+            dLLeft = dLLeft + 300;
             this.uiShutter.build(hPanel, dLLeft, dLTop)
-
+            dLLeft = dLeft;
+            dLTop = dLTop + 70;
+            this.uibRefreshIMAQ.build(hPanel, dLLeft, dLTop, 100, 30);
 
             
 
 
 
             % Build main tabs:
-            this.uitgMode.build(hParent, dLeft, dTop + 100, this.dWidth, this.dHeight - 120);
+            this.uitgMode.build(hParent, dLeft, dTop + 210, this.dWidth, this.dHeight - 120);
 
             % Build uniformity cam tab:
             this.buildUniformityCamPanel(this.uitgMode.getTabByIndex(1), dLeft, dTop);
 
             
             this.buildSetup(this.uitgMode.getTabByIndex(2), dLeft, dTop)
-            this.buildProfiles(this.uitgMode.getTabByIndex(2), dLeft, dTop + 125)
-            this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 125)
+            this.buildProfiles(this.uitgMode.getTabByIndex(2), dLeft, dTop + 70)
+            this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 70)
             
-            this.buildFiducialization(this.uitgMode.getTabByIndex(3), dLeft, dTop + 125);
+            this.buildFiducialization(this.uitgMode.getTabByIndex(3), dLeft, dTop);
 
 
             % this.uitgMode.selectTabByIndex(2);
@@ -361,11 +366,14 @@ classdef Uniformity < mic.Base
     methods (Access = private)
         
         function buildFiducialization(this, hParent, dLeft, dTop)
-            
+
+            % this.uiReticleCoarseStage.build(hParent, 10, 10);
+            % this.uibRefreshIMAQ.build(hParent, 10, 100);
+            dTop = dTop + 30
             this.hWinCamFid1.build(hParent, dLeft, dTop);
-            dLeft = dLeft + 550;
+            dLeft = dLeft + 610;
             this.hWinCamUniformity.build(hParent, dLeft, dTop);
-            dLeft = dLeft + 550;
+            dLeft = dLeft + 610;
             this.hWinCamFid2.build(hParent, dLeft, dTop);
 
             
@@ -375,33 +383,6 @@ classdef Uniformity < mic.Base
 
         function buildUniformityCamPanel(this, hParent, dLeft, dTop)
 
-            hPanel = uipanel(...
-                'Parent', hParent,...
-                'Units', 'pixels',...
-                'Title', 'Setup',...
-                'Clipping', 'on',...
-                'Position', mic.Utils.lt2lb([ ...
-                dLeft ...
-                dTop + 10 ...
-                800 ...
-                190], hParent) ...
-                );
-            
-            
-            
-            
-            dTop = dTop;
-            this.uibRefreshIMAQ.build(hPanel, dLeft, dTop, 100, 30);
-            dTop = dTop + 30;
-            this.uiIsCameraAvailable.build(hPanel, dLeft, dTop);
-            dTop = dTop + 30;
-            this.uiIsCameraConnected.build(hPanel, dLeft, dTop);
-
-
-            dLeft = dLeft - 20;
-
-
-            this.uiReticleCoarseStage.build(hParent, 820, 23);
 
             
             hPanel = uipanel(...
@@ -411,7 +392,7 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
-                dTop + 100 ...
+                dTop  ...
                 this.dWidth - 40 ...
                 580], hParent) ...
                 );
@@ -428,6 +409,13 @@ classdef Uniformity < mic.Base
 
             dLeft = 1050;
             dTop = 40;
+            dTop = dTop + 30;
+            this.uiIsCameraAvailable.build(hPanel, dLeft, dTop);
+            dTop = dTop + 30;
+            this.uiIsCameraConnected.build(hPanel, dLeft, dTop);
+            dTop = dTop + 30;
+
+
             this.uiIsCameraPreviewing.build(hPanel, dLeft, dTop);
 
 
@@ -452,7 +440,7 @@ classdef Uniformity < mic.Base
                 dLeft ...
                 dTop + 10 ...
                 this.dWidth - 20 ...
-                150], hParent) ...
+                110], hParent) ...
                 );
             
             dLeft = dLeft + 20;
@@ -470,8 +458,8 @@ classdef Uniformity < mic.Base
 
 
 
-
-            dTop = dTop + 40;
+            dLeft = dLeft + 650;
+            dTop = dTop - 20;
             this.uitROI.build(hParent, dLeft, dTop, this.dWidthName, 30);
 
             dTop = dTop + 20;
@@ -635,6 +623,7 @@ classdef Uniformity < mic.Base
                 'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'cName', 'Uniformity Camera', ...
+                    'dWidth', 600, ...
                 'clock', this.clock ...
                 );
             
@@ -642,6 +631,7 @@ classdef Uniformity < mic.Base
                 'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'cName', 'Fiducial Cam 1', ...
+                'dWidth', 600, ...
                 'clock', this.clock ...
                 );
             
@@ -649,6 +639,7 @@ classdef Uniformity < mic.Base
                 'hardware', this.hardware, ...
                 'uiClock', this.uiClock, ...
                 'cName', 'Fiducial Cam 2', ...
+                    'dWidth', 600, ...
                 'clock', this.clock ...
                 );
 
@@ -842,6 +833,7 @@ classdef Uniformity < mic.Base
 
             this.uibRefreshIMAQ = mic.ui.common.Button(...
                 'cText', 'Refresh IMAQ', ...
+                'dColor', [1, .7, .7], ...
                 'fhDirectCallback', @this.onRefreshIMAQ ...
                 );
 

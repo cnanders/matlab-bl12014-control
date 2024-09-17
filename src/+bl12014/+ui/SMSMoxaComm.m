@@ -23,7 +23,7 @@ classdef SMSMoxaComm < mic.Base
         lShowLabels = false
         lShowInitButton = false        
         
-        dWidth = 440
+        dWidth = 270
     
         
         % {bl12014.Hardware 1x1}
