@@ -2752,44 +2752,72 @@ classdef Tasks < mic.Base
             clock ...
         )
 
-        if ~isa(hardware, 'bl12014.Hardware')
-            error('hardware must be bl12014.Hardware');
-        end
-        
-        if ~isa(ui, 'bl12014.ui.Uniformity')
-            error('ui must be bl12014.ui.Uniformity');
-        end
-        
-        if ~isa(clock, 'mic.Clock')
-            error('clock must be mic.Clock');
-        end
+            if ~isa(hardware, 'bl12014.Hardware')
+                error('hardware must be bl12014.Hardware');
+            end
+            
+            if ~isa(ui, 'bl12014.ui.Uniformity')
+                error('ui must be bl12014.ui.Uniformity');
+            end
+            
+            if ~isa(clock, 'mic.Clock')
+                error('clock must be mic.Clock');
+            end
 
-        % Tasks:
+            % Tasks:
 
-        % Make sure shutter is closed
-        % Write CSV
-        % Check if Camera is connected
-        % Wobble working mode true
+            dNumExposures = 10;
 
-        % Shutter on
-        % Acquire image
-        % shutter off
-        % save image
-        % repeat
+            ceTasks = {};
 
-        % Wobble working mode false
-        % Turn off camera
+            ceTasksSetup = {...
+                ... Close shutter
+                mic.Task.fromUiGetSetLogical(ui.uiShutter.uiOverride, false, 'shutter-off'), ...
+                ... Write CSV
+                ... Set wobble working mode to true
+                mic.Task.fromUiGetSetLogical(ui.uiWobbleWorkingMode.uiWorkingMode, true, 'set-working-mode-true') ...
+            }
+            ceTasks = [ceTasks, ceTasksSetup];
+
+            for k = 1:dNumExposures
+                ceTasksRepeat = {...
+                    ... Open shutter
+                    mic.Task.fromUiGetSetLogical(ui.uiShutter.uiOverride, false, sprintf('shutter-on-%d', k)), ...
+                    ... Acquire image
+                    mic.Task(...
+                        'fhExecute', @() ui.acquireFromTask(), ...
+                        'fhIsDone', @() ui.lTaskAcquireSuccess, ...
+                        'fhGetMessage', @() 'Acquiring image' ...
+                    ), ...
+                    ... Close shutter
+                    mic.Task.fromUiGetSetLogical(ui.uiShutter.uiOverride, false, sprintf('shutter-off-%d', k)), ...
+                    ... Wait 1 sec:
+                    mic.Task(...
+                    'fhExecute', @() pause(1), ...
+                    'fhIsDone', @() true, ...
+                    'fhGetMessage', @() 'Waiting for shutter to be closed for a bit' ...
+                    ) ... 
+                }
+                
+                % Append to ceTasks:
+                ceTasks = [ceTasks, ceTasksRepeat]
+            end
+
+            ceTasksCleanup = {...
+                ... Close shutter
+                mic.Task.fromUiGetSetLogical(ui.uiWobbleWorkingMode.uiWorkingMode, false, 'set-working-mode-false') ...
+            }
+
+            ceTasks = [ceTasks, ceTasksCleanup];
 
 
-
-
-        taskWCXSpeed = mic.Task(...
-               'fhExecute', @() hardware.getDeltaTauPowerPmac().setDemandSpeedWaferCoarse(dVal), ...
-               'fhIsDone', @() true, ... abs(hardware.getDeltaTauPowerPmac().getDemandSpeedWaferCoarse() - dVal) < dTol, ...
-               'fhGetMessage', @() sprintf('Set DemandSpeedCS1 to %1.0f mm/s', dVal) ...
+            task = mic.TaskSequence(...
+                'cName', cName, ...
+                'clock', clock, ...
+                'ceTasks', ceTasks, ...
+                'dPeriod', 0.5, ...
+                'fhGetMessage', @() 'Taking uniformity series' ...
             );
-
-
 
 
         end
