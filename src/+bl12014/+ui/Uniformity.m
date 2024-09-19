@@ -12,6 +12,11 @@ classdef Uniformity < mic.Base
         l2u = @(x) [x(1) + 67.67, x(2) + .405]
         r2u = @(x) [x(1) - 68.17, x(2) + 0.265]
 
+        fid1R = 10;
+        fid2R = 10;
+        fid1C = -17.2;
+        fid2C = 37.2;
+
         cFidPath     = ...
             fullfile(fileparts(mfilename('fullpath')),...
             '..', '..',  'config', 'fiducial-config');
@@ -408,7 +413,13 @@ classdef Uniformity < mic.Base
                 600], hParent) ...
                 );
             
-            
+            dTop = 40;
+            dLeft = 10;
+            this.uibClearFiducials.build(hPanel, 10, dTop, 200, 30);
+            dTop = dTop + 50;
+            this.uiSetFid1.build(hPanel, dLeft, dTop);
+            dTop = dTop + 50;
+            this.uiSetFid2.build(hPanel, dLeft, dTop);
             
         end
 
@@ -888,6 +899,46 @@ classdef Uniformity < mic.Base
                 'fhDirectCallback', @this.onRefreshIMAQ ...
                 );
 
+            this.uibClearFiducials = mic.ui.common.Button(...
+                'cText', 'Clear Fiducials', ...
+                'fhDirectCallback', @this.onClearFiducials ...
+                );
+
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Clear LF', ...
+                'cTextFalse', 'Set LF' ...
+            };
+
+            this.uiSetFid1 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', 80, ... 
+                'lShowInitButton', false, ...
+                'fhGet', @() this.lIsSetFid1, ...
+                'fhSet', @(lVal) this.onSetFiducial(1, lVal), ...
+                'lUseFunctionCallbacks', true, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'cName', [this.cName, 'set-fid-1'], ...
+                'cLabel', 'Left Fid' ...
+            );
+
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Clear RF', ...
+                'cTextFalse', 'Set RF' ...
+            };
+
+            this.uiSetFid2 = mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'dWidthName', 80, ... 
+                    'lShowInitButton', false, ...
+                'fhGet', @() this.lIsSetFid2, ...
+                'fhSet', @(lVal) this.onSetFiducial(2, lVal), ...
+                'lUseFunctionCallbacks', true, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'cName', [this.cName, 'set-fid-2'], ...
+                'cLabel', 'Right Fid' ...
+            );
+
+
 
             % Set default values:
             this.uieHexapodDelay.set(500);
@@ -926,6 +977,83 @@ classdef Uniformity < mic.Base
 
             
             
+        end
+
+        function onClearFiducials(this, src, evt)
+            this.lIsSetFid1 = false;
+            this.lIsSetFid2 = false;
+        end
+
+        function onSetFiducial(this, idx, lVal)
+            if lVal
+                dX = this.uiReticleCoarseStage.uiX.getValCal('mm');
+                dY = this.uiReticleCoarseStage.uiY.getValCal('mm');
+
+
+                % Read file into json:
+                fid = fopen(fullfile(this.cFidPath, 'fiducials.json'), 'r');
+                cJson = fread(fid, inf, '*char');
+                st = jsondecode(cJson');
+                fclose(fid);
+
+                if idx == 1
+                    % Transform into the coordinate system of the camera:
+                    du = this.l2u([dX, dY]);
+
+                    st.fid1.X = du(1);
+                    st.fid1.Y = du(2);
+                    st.fid1.R = this.fid1R;
+                    st.fid1.C = this.fid1C;
+
+                    % Show question dlg confirming fiducialization:
+                    cMsg = sprintf('This will set the left fiducial to (%.3f, %.3f).  Is this correct?', du(1), du(2));
+                    cTitle = 'Set Left Fiducial';
+                    cAnswer = questdlg(cMsg, cTitle, 'Yes', 'No', 'No');
+                    if ~strcmp(cAnswer, 'Yes')
+                        return
+                    end
+
+                    this.lIsSetFid1 = true;
+                else
+                    % Transform into the coordinate system of the camera:
+                    du = this.r2u([dX, dY]);
+
+                    st.fid2.X = du(1);
+                    st.fid2.Y = du(2);
+                    st.fid2.R = this.fid2R;
+                    st.fid2.C = this.fid2C;
+                    
+                     % Show question dlg confirming fiducialization:
+                     cMsg = sprintf('This will set the right fiducial to (%.3f, %.3f).  Is this correct?', du(1), du(2));
+                     cTitle = 'Set Left Fiducial';
+                     cAnswer = questdlg(cMsg, cTitle, 'Yes', 'No', 'No');
+                     if ~strcmp(cAnswer, 'Yes')
+                         return
+                     end
+
+                    this.lIsSetFid2 = true;
+                end
+
+                % Write back to file and also write to /backups/fid-[date].json:
+                fid = fopen(fullfile(this.cFidPath, 'fiducials.json'), 'w');
+                fwrite(fid, jsonencode(st));
+                fclose(fid);
+
+                cDate = datestr(now, 'yyyy-mm-dd-HH-MM-SS');
+                fid = fopen(fullfile(this.cFidPath, 'backups', sprintf('fid-%s.json', cDate)), 'w');
+                fwrite(fid, jsonencode(st));
+                fclose(fid);
+
+            else 
+                if idx == 1
+                    this.lIsSetFid1 = false;
+                else
+                    this.lIsSetFid2 = false;
+                    
+                end
+                
+                
+            end
         end
 
         function onClickPreview(this, lVal)
