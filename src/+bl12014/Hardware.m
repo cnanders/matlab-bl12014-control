@@ -49,6 +49,9 @@ classdef Hardware < mic.Base
         cTcpipSMS                   = '192.168.10.31'
         cTcpipRigolDG1000Z          = '192.168.20.35'
         cTcpipDoseMonitor           = '192.168.20.60'
+
+        cTcpipIris                  = '192.168.20.50'
+        dPortIris                   = 5020
         
         cSNSM_MCS2_DCT              = 'network:sn:MCS2-00005705'
     end
@@ -181,8 +184,8 @@ classdef Hardware < mic.Base
         commNewFocus8742MAVirtual
 
 
-
-        
+        commIris
+        commIrisVirtual
 
 
                 
@@ -289,6 +292,7 @@ classdef Hardware < mic.Base
             this.commWebSwitchBeamlineVirtual = [];
             this.commWebSwitchEndstationVirtual = [];
             this.commWebSwitchVisVirtual = [];
+            this.commIrisVirtual = [];
         end
         
         
@@ -933,6 +937,42 @@ classdef Hardware < mic.Base
             else
                 comm = this.commNewFocus8742MAVirtual;
             end            
+        end
+
+        function l = getIsConnectedIris(this)
+            if this.notEmptyAndIsA(this.commIris, 'bl12014.hardwareAssets.ModbusIris')
+                l = true;
+                return;
+            end
+            l = false;
+        end
+
+        function connectIrisModbus(this)
+            try
+                this.commIris = bl12014.hardwareAssets.ModbusIris(...
+                    'cTcpipHost', this.cTcpipIris, ...
+                    'dPort', this.dPortIris ...
+                );
+                this.commIris.init();
+            catch mE
+                this.commIris = [];
+                % error(getReport(mE));
+            end
+        end
+
+        function disconnectIrisModbus(this)
+            if this.getIsConnectedIris()
+                this.commIris.disconnect();
+            end
+            this.commIris = [];
+        end
+
+        function comm = getModbusIris(this)
+            if this.getIsConnectedIris()
+                comm = this.commIris;
+            else
+                comm = this.commIrisVirtual;
+            end
         end
         
         
@@ -2080,6 +2120,8 @@ classdef Hardware < mic.Base
             
             this.commNewFocus8742M142Virtual = newfocus.Model8742Virtual();
             this.commNewFocus8742MAVirtual = newfocus.Model8742Virtual();
+
+            this.commIrisVirtual = bl12014.hardwareAssets.virtual.ModbusIris();
         end
         
   
