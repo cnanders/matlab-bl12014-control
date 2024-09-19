@@ -16,6 +16,7 @@ classdef WinCam < mic.Base
         dWidth = 500
         dWidthName = 100
         
+        dAxesAspectRatio = 1
         
 
         lShowDevice = false
@@ -42,6 +43,10 @@ classdef WinCam < mic.Base
         uibSaveAs
         uibSave
         haUniformityCamAxes
+
+        dRotation = 0;
+        lFlipud = false;
+        lShowCrosshairs = true;
 
     end
     
@@ -115,20 +120,22 @@ classdef WinCam < mic.Base
             
             dTop = dTop + 50;
 
+            dAxesWidth = min(this.dWidth - 100, this.dHeight - 200);
+            dAxesHeight = dAxesWidth / this.dAxesAspectRatio;
 
             this.haUniformityCamAxes = axes(...
                 'Parent', hPanel, ...
                 'Units', 'pixels', ...
                 'Position', [ ...
-                    40 , ...
-                        200, ...
-                    this.dWidth - 80, ...
-                    300] ...
+                    (this.dWidth - dAxesWidth)/2 , ...
+                    100 + (this.dAxesAspectRatio - 1)/2 * dAxesHeight, ...
+                    dAxesWidth, ...
+                    dAxesHeight] ...
                 );
 
-                dTop = dTop + 300;
+            dTop = this.dHeight - 50;
 
-                this.uieSaveImage.build(hPanel, dLeft, dTop, 200, 30);
+            this.uieSaveImage.build(hPanel, dLeft, dTop, 200, 30);
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
             this.uibSaveAs.build(hPanel, dLeft + 320, dTop + 10, 100, 30);
 
@@ -236,6 +243,25 @@ classdef WinCam < mic.Base
             if lVal
                 axes(this.haUniformityCamAxes);
                 this.hCameraHandle.preview(this.haUniformityCamAxes);
+
+                if this.dRotation ~= 0
+                    % Rotate axes:
+                    view(this.haUniformityCamAxes, [this.dRotation, 90]);
+                    
+                end
+                if this.lFlipud
+                    set(this.haUniformityCamAxes, 'YDir', 'normal');
+                end
+
+                hold on
+                % plot crosshairs:
+                if this.lShowCrosshairs
+                    dX = this.haUniformityCamAxes.XLim(2)/2;
+                    dY = this.haUniformityCamAxes.YLim(2)/2;
+                    plot(this.haUniformityCamAxes, [dX, dX], this.haUniformityCamAxes.YLim, 'y');
+                    plot(this.haUniformityCamAxes, this.haUniformityCamAxes.XLim, [dY, dY], 'y');
+                end
+                hold off
             else
                 this.hCameraHandle.stopPreview();
             end
@@ -254,7 +280,7 @@ classdef WinCam < mic.Base
                 this.hCameraHandle.stopPreview();
             end
 
-            this.dImg = this.hCameraUniformity.acquire();
+            this.dImg = this.hCameraHandle.acquire();
 
 
             axes(this.haUniformityCamAxes);

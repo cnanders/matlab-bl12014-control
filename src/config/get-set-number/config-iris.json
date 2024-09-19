@@ -1,0 +1,51 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "Counts",
+			"slope": "1",
+			"offset": 0,
+			"precision": 0
+		},
+		{
+			"name": "mm",
+			"slope": -0.0027624309,
+			"offset": 33017,
+			"precision": 0
+		},
+		{
+			"name": "sigma",
+			"slope": -0.00027624309,
+			"offset": 33017,
+			"precision": 3
+		}		
+	],
+	"stores": [
+        {
+            "name": "2 mm",
+            "raw": 32293
+        },
+		{
+            "name": "2.5 mm",
+            "raw": 32112
+        },
+		{
+            "name": "3 mm",
+            "raw": 31931
+        },
+		{
+            "name": "3.5 mm",
+            "raw": 31750
+        },
+		{
+			"name": "Open",
+			"raw": 19990
+		}
+
+    ],
+    "step": 0.1,
+	"min": 19000,
+    "max": 33000
+}	
+	
+	

@@ -33,9 +33,7 @@ classdef MA < mic.Base
         % {mic.ui.device.GetSetLogical 1x1}
         uiSwitch2Outlet2
         
-        
-        
-
+    
         
     end
     
