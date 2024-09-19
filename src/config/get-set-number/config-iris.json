@@ -11,13 +11,13 @@
 			"name": "mm",
 			"slope": -0.0027624309,
 			"offset": 33017,
-			"precision": 0
+			"precision": 2
 		},
 		{
 			"name": "sigma",
 			"slope": -0.00027624309,
 			"offset": 33017,
-			"precision": 3
+			"precision": 2
 		}		
 	],
 	"stores": [

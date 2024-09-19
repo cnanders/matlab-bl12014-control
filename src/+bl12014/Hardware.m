@@ -953,7 +953,6 @@ classdef Hardware < mic.Base
                     'cTcpipHost', this.cTcpipIris, ...
                     'dPort', this.dPortIris ...
                 );
-                this.commIris.init();
             catch mE
                 this.commIris = [];
                 % error(getReport(mE));
