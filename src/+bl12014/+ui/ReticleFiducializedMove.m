@@ -211,6 +211,8 @@ classdef ReticleFiducializedMove < mic.Base
          
         end
         
+        
+        
         function makeFiducializedMove(this)
             
             dTargetR = this.uiRow.getDestRaw();
@@ -226,6 +228,38 @@ classdef ReticleFiducializedMove < mic.Base
             this.uiY.setDestCalAndGo(dTargetXY(2), 'mm');
             
         
+        end
+
+        function setFiducial(this, idx, dX, dY, dR, dC)
+            if nargin < 4
+                dX = this.hardware.getDeltaTauPowerPmac().getXReticleCoarse();
+                dY = this.hardware.getDeltaTauPowerPmac().getYReticleCoarse();
+            end
+            
+            
+            switch idx
+                case 1
+                    if nargin < 6
+                        dR = this.uieR1.get();
+                        dC = this.uieC1.get();
+                    end
+                    this.stFiducials.fid1.R = dR;
+                    this.stFiducials.fid1.C = dC;
+                    this.stFiducials.fid1.X = dX;
+                    this.stFiducials.fid1.Y = dY;
+                case 2
+                    if nargin < 6
+                        dR = this.uieR2.get();
+                        dC = this.uieC2.get();
+                    end
+                    this.stFiducials.fid2.R = dR;
+                    this.stFiducials.fid2.C = dC;
+                    this.stFiducials.fid2.X = dX;
+                    this.stFiducials.fid2.Y = dY;
+            end
+            
+            this.syncFiducialsFromStruct(true);
+            
         end
         
         
@@ -329,9 +363,9 @@ classdef ReticleFiducializedMove < mic.Base
         
         % Syncs fiducial text and writes file
         function syncFiducialsFromStruct(this, bWriteFile)
-             this.uitFid1.set(sprintf('[%d, %d] set to position [%0.3f, %0.3f]', ...
+             this.uitFid1.set(sprintf('[%g, %g] set to position [%0.3f, %0.3f]', ...
                  this.stFiducials.fid1.R, this.stFiducials.fid1.C, this.stFiducials.fid1.X, this.stFiducials.fid1.Y ));
-             this.uitFid2.set(sprintf('[%d, %d] set to position [%0.3f, %0.3f]', ...
+             this.uitFid2.set(sprintf('[%g, %g] set to position [%0.3f, %0.3f]', ...
                  this.stFiducials.fid2.R, this.stFiducials.fid2.C, this.stFiducials.fid2.X, this.stFiducials.fid2.Y ));
             
              this.uieR1.set(this.stFiducials.fid1.R);
@@ -416,26 +450,7 @@ classdef ReticleFiducializedMove < mic.Base
             
         end
         
-        function setFiducial(this, idx)
-            dX = this.hardware.getDeltaTauPowerPmac().getXReticleCoarse();
-            dY = this.hardware.getDeltaTauPowerPmac().getYReticleCoarse();
-            
-            switch idx
-                case 1
-                    this.stFiducials.fid1.R = this.uieR1.get();
-                    this.stFiducials.fid1.C = this.uieC1.get();
-                    this.stFiducials.fid1.X = dX;
-                    this.stFiducials.fid1.Y = dY;
-                case 2
-                    this.stFiducials.fid2.R = this.uieR2.get();
-                    this.stFiducials.fid2.C = this.uieC2.get();
-                    this.stFiducials.fid2.X = dX;
-                    this.stFiducials.fid2.Y = dY;
-            end
-            
-            this.syncFiducialsFromStruct(true);
-            
-        end
+        
         
         % Return list of values from your app
         function dValues = onUiPositionRecallerGet(this)

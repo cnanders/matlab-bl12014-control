@@ -14,8 +14,8 @@ classdef Uniformity < mic.Base
 
         fid1R = 10;
         fid2R = 10;
-        fid1C = -17.2;
-        fid2C = 37.2;
+        fid1C = 37.2;
+        fid2C = -17.2;
 
         cFidPath     = ...
             fullfile(fileparts(mfilename('fullpath')),...
@@ -30,6 +30,7 @@ classdef Uniformity < mic.Base
         
         cName = 'Uniformity'
         
+        uiReticleFiducializedMove
 
         % UI:
         uieUnitVectorRx
@@ -989,21 +990,9 @@ classdef Uniformity < mic.Base
                 dX = this.uiReticleCoarseStage.uiX.getValCal('mm');
                 dY = this.uiReticleCoarseStage.uiY.getValCal('mm');
 
-
-                % Read file into json:
-                fid = fopen(fullfile(this.cFidPath, 'fiducials.json'), 'r');
-                cJson = fread(fid, inf, '*char');
-                st = jsondecode(cJson');
-                fclose(fid);
-
                 if idx == 1
                     % Transform into the coordinate system of the camera:
                     du = this.l2u([dX, dY]);
-
-                    st.fid1.X = du(1);
-                    st.fid1.Y = du(2);
-                    st.fid1.R = this.fid1R;
-                    st.fid1.C = this.fid1C;
 
                     % Show question dlg confirming fiducialization:
                     cMsg = sprintf('This will set the left fiducial to (%.3f, %.3f).  Is this correct?', du(1), du(2));
@@ -1013,15 +1002,11 @@ classdef Uniformity < mic.Base
                         return
                     end
 
+                    this.uiReticleFiducializedMove.setFiducial(idx, du(1), du(2), this.fid1R, this.fid1C)
                     this.lIsSetFid1 = true;
                 else
                     % Transform into the coordinate system of the camera:
                     du = this.r2u([dX, dY]);
-
-                    st.fid2.X = du(1);
-                    st.fid2.Y = du(2);
-                    st.fid2.R = this.fid2R;
-                    st.fid2.C = this.fid2C;
                     
                      % Show question dlg confirming fiducialization:
                      cMsg = sprintf('This will set the right fiducial to (%.3f, %.3f).  Is this correct?', du(1), du(2));
@@ -1031,18 +1016,10 @@ classdef Uniformity < mic.Base
                          return
                      end
 
+                    this.uiReticleFiducializedMove.setFiducial(idx, du(1), du(2), this.fid2R, this.fid2C)
                     this.lIsSetFid2 = true;
                 end
 
-                % Write back to file and also write to /backups/fid-[date].json:
-                fid = fopen(fullfile(this.cFidPath, 'fiducials.json'), 'w');
-                fwrite(fid, jsonencode(st));
-                fclose(fid);
-
-                cDate = datestr(now, 'yyyy-mm-dd-HH-MM-SS');
-                fid = fopen(fullfile(this.cFidPath, 'backups', sprintf('fid-%s.json', cDate)), 'w');
-                fwrite(fid, jsonencode(st));
-                fclose(fid);
 
             else 
                 if idx == 1

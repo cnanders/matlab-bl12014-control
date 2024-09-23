@@ -133,8 +133,8 @@ classdef SMS < mic.Base
             this.uiDiagnostics.build(hPanel, dLeft, dTop);
             dTop = dTop + this.uiDiagnostics.dHeight + dSep;
             
-            this.uiAperture.build(hPanel, dLeft, dTop);
-            dTop = dTop + this.uiAperture.dHeight + dSep;
+            % this.uiAperture.build(hPanel, dLeft, dTop);
+            % dTop = dTop + this.uiAperture.dHeight + dSep;
             
             
         end
