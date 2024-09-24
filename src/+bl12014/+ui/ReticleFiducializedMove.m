@@ -32,6 +32,9 @@ classdef ReticleFiducializedMove < mic.Base
         uieC1
         uieR2
         uieC2
+
+        uieOffsetX
+        uieOffsetY
         
         % Change of basis matrix, [r;c] -> [x;y]
         T = []
@@ -160,14 +163,16 @@ classdef ReticleFiducializedMove < mic.Base
             
             this.uieR1.build(uitSet, dLeft, dTop, 40, 25);
             this.uieC1.build(uitSet, dLeft + 60, dTop, 40, 25);
-            this.uibSetFid1.build(uitSet, dLeft + 120, dTop + 10, 100, 30);
+            this.uieOffsetX.build(uitSet, dLeft + 120, dTop, 50, 25);
+            % this.uibSetFid1.build(uitSet, dLeft + 120, dTop + 10, 100, 30);
             this.uitFid1.build(uitSet, dLeft + 240, dTop + 15, 250, 30);
             
             dTop = dTop + 40;
             
             this.uieR2.build(uitSet, dLeft, dTop, 40, 25);
             this.uieC2.build(uitSet, dLeft + 60, dTop, 40, 25);
-            this.uibSetFid2.build(uitSet, dLeft + 120, dTop + 10, 100, 30);
+            this.uieOffsetY.build(uitSet, dLeft + 120, dTop, 50, 25);
+            % this.uibSetFid2.build(uitSet, dLeft + 120, dTop + 10, 100, 30);
             this.uitFid2.build(uitSet, dLeft + 240, dTop + 15, 250, 30);
             
            
@@ -197,6 +202,9 @@ classdef ReticleFiducializedMove < mic.Base
             st = struct();
             st.uiX = this.uiRow.save();
             st.uiY = this.uiCol.save();
+
+            st.uieOffsetX = this.uieOffsetX.get();
+            st.uieOffsetY = this.uieOffsetY.get();
         end
         
         function load(this, st)
@@ -206,6 +214,18 @@ classdef ReticleFiducializedMove < mic.Base
             
             if isfield(st, 'uiCol')
                 this.uiCol.load(st.uiCol)
+            end
+
+            if isfield(st, 'uieOffsetX')
+                this.uieOffsetX.set(st.uieOffsetX)
+            else
+                this.uieOffsetX.set(0)
+            end
+
+            if isfield(st, 'uieOffsetY')
+                this.uieOffsetY.set(st.uieOffsetY)
+            else 
+                this.uieOffsetY.set(0)
             end
             
          
@@ -220,6 +240,7 @@ classdef ReticleFiducializedMove < mic.Base
             
             
             dTargetXY = this.fhRC2XY([dTargetR; dTargetC]);
+            dTargetXY = dTargetXY + [this.uieOffsetX.get(); this.uieOffsetY.get()];
 
             
             % this.hardware.getDeltaTauPowerPmac().setXReticleCoarse(dTargetXY(1));
@@ -402,7 +423,7 @@ classdef ReticleFiducializedMove < mic.Base
             
             this.T = [[-sin(dAng); -cos(dAng)],[cos(dAng); -sin(dAng)]] * this.dCellLength * mag(vXY)/mag(vRC);
                 
-            this.fhRC2XY = @(rc) this.T * (rc - [dFidR1; dFidC1]) + [dFidX1; dFidY1];
+            this.fhRC2XY = @(rc) this.T * (rc - [dFidR1; dFidC1]) + [dFidX1; dFidY1] ;
             this.fhXY2RC = @(xy) ((this.T) \ (xy - [dFidX1; dFidY1])) + [dFidR1; dFidC1]; 
              
         end
@@ -416,6 +437,11 @@ classdef ReticleFiducializedMove < mic.Base
             this.uieC1 = mic.ui.common.Edit('cLabel', 'Fid 1 C', 'cType', 'd');
             this.uieR2 = mic.ui.common.Edit('cLabel', 'Fid 2 R', 'cType', 'd');
             this.uieC2 = mic.ui.common.Edit('cLabel', 'Fid 2 C', 'cType', 'd');
+
+            this.uieOffsetX = mic.ui.common.Edit('cLabel', 'Offset X', 'cType', 'd');
+            this.uieOffsetY = mic.ui.common.Edit('cLabel', 'Offset Y', 'cType', 'd');
+
+            
             
             
             % init fiducial config:

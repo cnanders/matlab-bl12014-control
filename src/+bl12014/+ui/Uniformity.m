@@ -21,6 +21,7 @@ classdef Uniformity < mic.Base
             fullfile(fileparts(mfilename('fullpath')),...
             '..', '..',  'config', 'fiducial-config');
 
+        cUniformitySavePath = 'C:\Users\metmatlab\Pictures\Mod3 Uniformity Cam\'
 
         dImgROIWidth = 300 % width of the cropped part of the image
         dImgROIHeight = 150 % height of the cropped part of the image
@@ -119,6 +120,8 @@ classdef Uniformity < mic.Base
 
         % Uniformity tab
 
+        uiButtonSyncDestinations
+
         hCameraUniformity
         uiIsCameraAvailable
         uiIsCameraConnected
@@ -146,6 +149,8 @@ classdef Uniformity < mic.Base
         uibClearFiducials
         uiSetFid1
         uiSetFid2
+
+        uigsExposure
 
 
     end
@@ -218,6 +223,8 @@ classdef Uniformity < mic.Base
 
             this.uieUnitVectorRx.build(hPanel, dLeft + 300, dLTop, 100, 30);
             this.uieUnitVectorRy.build(hPanel, dLeft + 410, dLTop, 100, 30);
+
+            this.uiButtonSyncDestinations.build(hPanel, dLeft + 660, dLTop + 12, 100, 30);
 
             dLTop = dLTop - 10;
             dLLeft = dLeft + 800;
@@ -464,9 +471,13 @@ classdef Uniformity < mic.Base
 
             this.uibAcquire.build(hPanel, dLeft + 230 + 105, dTop, 100, 24);
             dTop = dTop + 50;
+            this.uigsExposure.build(hPanel, dLeft, dTop);
+
+            dTop = dTop + 50;
             dLeft = dLeft + 5;
             this.uieSaveImage.build(hPanel, dLeft, dTop, 200, 30);
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
+
 
             
         end
@@ -635,6 +646,35 @@ classdef Uniformity < mic.Base
           
             this.msg('init()');
 
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-set-number', ...
+                'config-uniformity-cam-exposure.json' ...
+            );
+
+            uiConfig = mic.config.GetSetNumber(...
+            'cPath',  cPathConfig ...
+        );
+
+            this.uigsExposure = mic.ui.device.GetSetNumber(...
+                'clock', this.clock, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowInitButton', false, ...
+                'lShowZero', false, ...
+                'lShowRel', false, ...
+                'lShowRange', true, ...
+                'lShowStores', false, ...
+                'lShowUnit', false, ...
+                'lUseFunctionCallbacks', true, ...
+                'lShowLabels', false, ...
+                'fhIsVirtual', @() false, ...
+                'config', uiConfig, ...
+                'fhGet', @() this.hCameraUniformity.getExposure(), ...
+                'fhSet', @(dVal) this.hCameraUniformity.setExposure(dVal), ...
+                'cName', [this.cName, 'exposure'], ...
+                'cLabel', 'Exposure Setting' ...
+            );
+
             this.uiWobbleWorkingMode = bl12014.ui.SMSMoxaComm(...
                 'cName', [this.cName, 'wobble-working-mode'], ...
                 'uiClock', this.uiClock, ...
@@ -672,6 +712,7 @@ classdef Uniformity < mic.Base
                 'dWidth', 500, ...
                 'dHeight', 600, ...
                 'dAxesAspectRatio', 2, ...
+                'cSavePath', 'C:\Users\metmatlab\Pictures\fiducialization\', ...
                 'clock', this.clock ...
                 );
             
@@ -688,6 +729,7 @@ classdef Uniformity < mic.Base
                 'cLabel', 'Fiducial Cam 1', ...
                 'dWidth', 500, ...
                 'dHeight', 600, ...
+                'cSavePath', 'C:\Users\metmatlab\Pictures\fiducialization\', ...
                 'clock', this.clock ...
                 );
             
@@ -703,6 +745,7 @@ classdef Uniformity < mic.Base
                 'cName', 'Fiducial Cam 2', ...
                 'dWidth', 500, ...
                 'dHeight', 600, ...
+                'cSavePath', 'C:\Users\metmatlab\Pictures\fiducialization\', ...
                 'clock', this.clock ...
                 );
 
@@ -939,6 +982,11 @@ classdef Uniformity < mic.Base
                 'cLabel', 'Right Fid' ...
             );
 
+            this.uiButtonSyncDestinations = mic.ui.common.Button(...
+                'fhOnClick', @(src, evt) this.syncDestinations(), ...
+                'cText', 'Sync Destinations' ...
+            );
+
 
 
             % Set default values:
@@ -978,6 +1026,14 @@ classdef Uniformity < mic.Base
 
             
             
+        end
+
+        function syncDestinations(this)
+            this.uiReticleCoarseStage.uiX.syncDestination();
+            this.uiReticleCoarseStage.uiY.syncDestination();
+            this.uiReticleCoarseStage.uiZ.syncDestination();
+            this.uiReticleCoarseStage.uiTiltX.syncDestination();
+            this.uiReticleCoarseStage.uiTiltY.syncDestination();
         end
 
         function onClearFiducials(this, src, evt)
@@ -1099,13 +1155,22 @@ classdef Uniformity < mic.Base
             end
 
             data = this.dImg;
-            cPath = this.uiePathToImagesDir.get();
-            cName = this.uieSaveImage.get();
-            [cPath, cName] = uigetfile([cPath, cName], 'Save Image');
-            if cPath == 0
-                return
+            cPath = this.cUniformitySavePath;
+
+            % if folder without today's date doesn't exist, create it:
+            cPath = fullfile(cPath, datestr(now, 'yyyy-mm-dd'));
+            if ~exist(cPath, 'dir')
+                mkdir(cPath);
             end
-            imwrite(data, [cPath, cName]);
+
+            cName = this.uieSaveImage.get();
+            
+            if length(cName) < 4 || ~strcmp(cName(end-4:end), '.png')
+                cName = [cName, '.png'];
+            end
+
+            imwrite(data, fullfile(cPath, cName));
+            msgbox(sprintf('Saved image to %s\n',fullfile(cPath, cName))); 
         end
 
         function setROI(this, src, evt)

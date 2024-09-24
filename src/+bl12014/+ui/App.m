@@ -460,6 +460,11 @@ classdef App < mic.Base
 
                 imaqreset
 
+            catch mE
+                
+                fprintf('Cannot close app %s\n', mE)
+                
+                
             end
                         
                        

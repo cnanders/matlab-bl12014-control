@@ -1,0 +1,16 @@
+{
+	"delay": 1,
+    "units": [
+		{
+			"name": "counts",
+			"slope": 1,
+			"offset": 0,
+			"precision": 0
+		}
+	],
+    "step": 1,
+	"min": -12,
+    "max": -2
+}	
+	
+	

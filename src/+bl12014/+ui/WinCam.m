@@ -6,7 +6,7 @@ classdef WinCam < mic.Base
         % {mic.ui.device.GetSetNumber 1x1}
         hCameraHandle
         
-      
+        dImg % container for acquired image
         
     end
     
@@ -33,6 +33,7 @@ classdef WinCam < mic.Base
         cProtocol = 'winvideo'
         dROI = []
         cFrameFormat = 'RGB24_1600x1200'
+        cSavePath = 'C:\Users\metmatlab\Pictures\'
         
         uiTextCameraLabel
         uiIsCameraAvailable
@@ -235,6 +236,64 @@ classdef WinCam < mic.Base
                 'cText', 'Acquire', ...
                 'fhDirectCallback', @this.onAcquire ...
             );
+        end
+
+        function onSaveImage(this)
+            if ~this.hCameraHandle.isConnected()
+                msgbox('Camera not connected');
+                return
+            end
+            if this.hCameraHandle.isPreviewing()
+                this.hCameraHandle.stopPreview();
+            end
+
+            data = this.dImg;
+            cPath = this.cUniformitySavePath;
+
+            % if folder without today's date doesn't exist, create it:
+            cPath = fullfile(cPath, datestr(now, 'yyyy-mm-dd'));
+            if ~exist(cPath, 'dir')
+                mkdir(cPath);
+            end
+
+            cName = this.uieSaveImage.get();
+            if length(cName) < 4 || ~strcmp(cName(end-4:end), '.png')
+                cName = [cName, '.png'];
+            end
+
+            imwrite(data, fullfile(cPath, cName));
+            msgbox(sprintf('Saved image to %s\n',fullfile(cPath, cName))); 
+        end
+
+        function onSaveAsImage(this)
+            if ~this.hCameraHandle.isConnected()
+                msgbox('Camera not connected');
+                return
+            end
+            if this.hCameraHandle.isPreviewing()
+                this.hCameraHandle.stopPreview();
+            end
+
+            data = this.dImg;
+            cPath = this.cUniformitySavePath;
+
+            % if folder without today's date doesn't exist, create it:
+            cPath = fullfile(cPath, datestr(now, 'yyyy-mm-dd'));
+            if ~exist(cPath, 'dir')
+                mkdir(cPath);
+            end
+
+            [cFile, cPath] = uiputfile('*.png', 'Save Image As', cPath);
+            if isequal(cFile, 0)
+                return
+            end
+
+            if length(cName) < 4 || ~strcmp(cName(end-4:end), '.png')
+                cName = [cName, '.png'];
+            end
+
+            imwrite(data, fullfile(cPath, cFile));
+
         end
 
 
