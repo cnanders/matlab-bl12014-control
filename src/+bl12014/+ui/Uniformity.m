@@ -281,6 +281,55 @@ classdef Uniformity < mic.Base
             
         end
 
+        function cStr = getAutoWobbleCSV(this, dNum)
+            % First get unit vectors:
+            dUx = this.uieUnitVectorRx.get();
+            dUy = this.uieUnitVectorRy.get();
+
+           
+            dLinNum = (dNum - 1) / 2;
+
+            dIdx = -dLinNum:dLinNum;
+
+            ceLabels = {};
+            for k = 1:dNum
+                ceLabels{end + 1} = sprintf('%d',  (m));
+            end
+
+            % Add index shot if needed:
+            if lUseIndex
+                mMid = ceil(length(dDose)/2);
+                dDoseLinear = [dDose(mMid), dDoseLinear];
+                ceLabels = [{'Index'}, ceLabels];
+            end
+
+
+            % Look up highlighted uniformity combinations:
+            ceCombo = this.dResultVec(this.dResultIdx, :);
+
+            dCoeff = ceCombo{2};
+            dIdx = ceCombo{3};
+            % Normalize coefficients:
+            dCoeff = dCoeff / sum(dCoeff);
+
+            % Get unit vectors:
+            dUx = this.uieUnitVectorRx.get();
+            dUy = this.uieUnitVectorRy.get();
+
+            cStr = 'index,name';
+            for k = 1:length(dCoeff)
+                cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', k, k, k)];
+            end
+
+            for k = 1:length(dDoseLinear)
+                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, dUx, dUy, ceLabels{k});
+                cStr = [cStr, cRow];
+            end
+
+
+
+        end
+
         function cStr = getWobbleCSV(this, lUseIndex, dDose, dFocus)
 
             dNDose = length(dDose);
@@ -434,6 +483,7 @@ classdef Uniformity < mic.Base
         function buildUniformityCamPanel(this, hParent, dLeft, dTop)
 
 
+            dTop = 20;
             
             hPanel = uipanel(...
                 'Parent', hParent,...
