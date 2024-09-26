@@ -206,7 +206,7 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
-                dTop ...
+                dTop - 25 ...
                 this.dWidth - 20 ...
                 190], hParent) ...
                 );
@@ -243,15 +243,15 @@ classdef Uniformity < mic.Base
 
 
             % Build main tabs:
-            this.uitgMode.build(hParent, dLeft, dTop + 210, this.dWidth, this.dHeight - 120);
+            this.uitgMode.build(hParent, dLeft, dTop + 175, this.dWidth, this.dHeight - 120);
 
             % Build uniformity cam tab:
             this.buildUniformityCamPanel(this.uitgMode.getTabByIndex(1), dLeft, dTop);
 
             
-            this.buildSetup(this.uitgMode.getTabByIndex(2), dLeft, dTop)
-            this.buildProfiles(this.uitgMode.getTabByIndex(2), dLeft, dTop + 70)
-            this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 70)
+            this.buildSetup(this.uitgMode.getTabByIndex(2), dLeft, dTop - 25)
+            this.buildProfiles(this.uitgMode.getTabByIndex(2), dLeft, dTop + 60)
+            this.buildCompute(this.uitgMode.getTabByIndex(2), dLeft, dTop + 60)
             
             this.buildFiducialization(this.uitgMode.getTabByIndex(3), dLeft, dTop);
 
@@ -492,9 +492,9 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
-                dTop + 10 ...
+                dTop ...
                 this.dWidth - 20 ...
-                110], hParent) ...
+                80], hParent) ...
                 );
             
             dLeft = dLeft + 20;
@@ -502,25 +502,25 @@ classdef Uniformity < mic.Base
             
             
             dTop = 20
-            this.uiePathToImagesDir.build(hParent, dLeft, dTop, 300, 30);
+            this.uiePathToImagesDir.build(hPanel, dLeft, dTop, 300, 30);
 
             dTop = dTop + 10;
-            this.uibOpenDir.build(hParent, dLeft + 310, dTop, 100, 30);
-            this.uibSetDirToLatest.build(hParent, dLeft + 420, dTop, 100, 30);
+            this.uibOpenDir.build(hPanel, dLeft + 310, dTop, 100, 30);
+            this.uibSetDirToLatest.build(hPanel, dLeft + 420, dTop, 100, 30);
             
-            this.uibLoadImages.build(hParent, dLeft + 530, dTop, 100, 30);
+            this.uibLoadImages.build(hPanel, dLeft + 530, dTop, 100, 30);
 
 
 
             dLeft = dLeft + 650;
             dTop = dTop - 20;
-            this.uitROI.build(hParent, dLeft, dTop, this.dWidthName, 30);
+            this.uitROI.build(hPanel, dLeft, dTop, this.dWidthName, 30);
 
             dTop = dTop + 20;
-            this.uieROIC1.build(hParent, dLeft, dTop, 100, 30);
-            this.uieROIC2.build(hParent, dLeft + 110, dTop, 100, 30);
-            this.uieROIR1.build(hParent, dLeft + 220, dTop, 100, 30);
-            this.uieROIR2.build(hParent, dLeft + 330, dTop, 100, 30);
+            this.uieROIC1.build(hPanel, dLeft, dTop, 100, 30);
+            this.uieROIC2.build(hPanel, dLeft + 110, dTop, 100, 30);
+            this.uieROIR1.build(hPanel, dLeft + 220, dTop, 100, 30);
+            this.uieROIR2.build(hPanel, dLeft + 330, dTop, 100, 30);
 
 
 
@@ -540,7 +540,7 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 this.dWidth - 680 ...
-                dTop + 50 ...
+                dTop  ...
                 560 ...
                     dPanelHeight], hParent) ...
                 );
@@ -548,10 +548,10 @@ classdef Uniformity < mic.Base
 
             dTop = 50;
             
-            this.uieIntrinsicDwellTime.build(hPanel, 20, dTop, 100, 30);
-            this.uieMinDwellTime.build(hPanel, 140, dTop, 100, 30);
+            % this.uieIntrinsicDwellTime.build(hPanel, 20, dTop, 100, 30);
+            % this.uieMinDwellTime.build(hPanel, 140, dTop, 100, 30);
 
-            dTop = dTop + 60;
+            % dTop = dTop + 60;
             this.uibComputeCombo.build(hPanel,  20, dTop, 100, 30);
 
             dTop = dTop + 40;
@@ -575,7 +575,7 @@ classdef Uniformity < mic.Base
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft ...
-                dTop + 50 ...
+                dTop ...
                 this.dWidth - 700 ...
                     dPanelHeight], hParent) ...
                 );
@@ -886,7 +886,7 @@ classdef Uniformity < mic.Base
                 );
 
             this.uibOpenDir = mic.ui.common.Button(...
-                'cText', 'Load Dir...', ...
+                'cText', 'Set Dir...', ...
                 'fhDirectCallback', @this.onOpenDir ...
                 );
             this.uibSetDirToLatest = mic.ui.common.Button(...
@@ -1012,16 +1012,16 @@ classdef Uniformity < mic.Base
             end
 
             if (this.uieROIC1.get() == 0)
-                this.uieROIC1.set(935);
+                this.uieROIC1.set(0);
             end
             if (this.uieROIC2.get() == 0)
-                this.uieROIC2.set(485);
+                this.uieROIC2.set(200);
             end
             if (this.uieROIR1.get() == 0)
-                this.uieROIR1.set(200);
+                this.uieROIR1.set(0);
             end
             if (this.uieROIR2.get() == 0)
-                this.uieROIR2.set(15);
+                this.uieROIR2.set(30);
             end
 
             
@@ -1090,19 +1090,19 @@ classdef Uniformity < mic.Base
         end
 
         function onClickPreview(this, lVal)
-
             if lVal
                 axes(this.haUniformityCamAxes);
                 hold off
                 this.hCameraUniformity.preview(this.haUniformityCamAxes);
                 hold on
                 this.plotUniformityGuides();
+                colormap default
             else
                 this.hCameraUniformity.stopPreview();
             end
-            
-
         end
+        
+        
 
         function lVal = onAcquire(this, src, evt)
             lVal = false;
@@ -1146,41 +1146,97 @@ classdef Uniformity < mic.Base
         end 
 
         function onSaveImage(this, src, evt)
-            if ~this.hCameraUniformity.isConnected()
-                msgbox('Camera not connected');
-                return
-            end
-            if this.hCameraUniformity.isPreviewing()
+            if this.hCameraUniformity.isConnected() && this.hCameraUniformity.isPreviewing()
                 this.hCameraUniformity.stopPreview();
             end
+            
 
             data = this.dImg;
+
+            if isempty(this.dImg)
+                msgbox('No image to save, please acquire an image first');
+                return
+            end
+            
             cPath = this.cUniformitySavePath;
 
             % if folder without today's date doesn't exist, create it:
             cPath = fullfile(cPath, datestr(now, 'yyyy-mm-dd'));
-            if ~exist(cPath, 'dir')
+            
+            if exist(cPath, 'dir') ~= 7
                 mkdir(cPath);
             end
 
             cName = this.uieSaveImage.get();
             
-            if length(cName) < 4 || ~strcmp(cName(end-4:end), '.png')
+            if length(cName) <= 4 || ~strcmp(cName(end-4:end), '.png')
                 cName = [cName, '.png'];
             end
 
             imwrite(data, fullfile(cPath, cName));
+
+            % image with guides:
+            cNameGuides = [cName(1:end-4), '-guides.png'];
+%             exportgraphics(this.haUniformityCamAxes, fullfile(cPath, cNameGuides), 'Resolution', 300);
             msgbox(sprintf('Saved image to %s\n',fullfile(cPath, cName))); 
         end
 
         function setROI(this, src, evt)
-
+            this.updatePlots();
+            this.onComputeCombo();
 
         end
 
         function onRefreshIMAQ(this, src, evt)
             this.hCameraUniformity.refreshIMAQ();
         end
+        
+        function plotUniformityGuidesWobbleField(this, ax)
+            % Get the 4 lines defined by roi left, right, top and bot:
+            dR1 = this.uieROIR1.get();
+            dR2 = this.uieROIR2.get();
+            dC1 = this.uieROIC1.get();
+            dC2 = this.uieROIC2.get();
+            
+            if (dR1 ~= 30 || dR2 ~= 0 || dC1 ~= 0 || dC2 ~= 200)
+                % Draw rectangle defined by this new boundary that is dotted magenta:
+                rectangle(ax, 'Position', ...
+                    [dC1, dR1, dC2 - dC1, dR2 - dR1], 'EdgeColor', 'm', 'LineStyle', '--', 'linewidth', 2);
+            end
+            
+        end
+
+        function plotUniformityGuidesWobble(this)
+
+            dCr = 75;
+            dCc = 150;
+            
+            % Plot the center pixel:
+            plot(this.haImages, dCc, dCr, 'r+', 'MarkerSize', 10, 'LineWidth', 2);
+
+            % Plot field:
+            rectangle(this.haImages, 'Position', ...
+                [dCc - this.dFieldWidthPx/2, dCr - this.dFieldHeightPx/2, this.dFieldWidthPx, this.dFieldHeightPx], 'EdgeColor', 'r', 'linewidth', 2);
+
+        
+            % Get the 4 lines defined by roi left, right, top and bot:
+            dR1 = this.uieROIR1.get() + 60;
+            dR2 = this.uieROIR2.get() + 60;
+            dC1 = this.uieROIC1.get() + 50;
+            dC2 = this.uieROIC2.get() + 50;
+
+            % Draw magenta lines across image corresponding to the lines defined by the ROI:
+            plot(this.haImages, [1, size(this.dImgs, 2)], [dR1, dR1], 'm', 'LineWidth', 0.5);
+            plot(this.haImages, [1, size(this.dImgs, 2)], [dR2, dR2], 'm', 'LineWidth', 0.5);
+            plot(this.haImages, [dC1, dC1], [1, size(this.dImgs, 1)], 'm', 'LineWidth', 0.5);
+            plot(this.haImages, [dC2, dC2], [1, size(this.dImgs, 1)], 'm', 'LineWidth', 0.5);
+
+
+            % Draw a horizontal line and verticle line through the center pixel:
+            plot(this.haImages, [dCc, dCc], [dCr - 50, dCr + 50], 'g', 'LineWidth', 1.5);
+            plot(this.haImages, [dCc - 50, dCc + 50], [dCr, dCr], 'g', 'LineWidth', 1.5);
+
+    end
 
         function plotUniformityGuides(this)
 
@@ -1213,11 +1269,20 @@ classdef Uniformity < mic.Base
             
             dFluxCenter = sum(sum(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
             dMaxCenter = max(max(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
+
+            % Create indices defined by roi:
+            dR1 = this.uieROIR1.get();
+            dR2 = this.uieROIR2.get();
+            dC1 = this.uieROIC1.get();
+            dC2 = this.uieROIC2.get();
+
+            dROIr = dR1+1:dR2;
+            dROIc = dC1+1:dC2;
            
             % Reshape the first 2 dimensions of the field uniformity images into a line:
-            C = zeros(size(this.dImgsField, 3), size(this.dImgsField, 1) * size(this.dImgsField, 2) );
+            C = zeros(size(this.dImgsField, 3), length(dROIr) * length(dROIc));
             for k = 1:size(this.dImgsFieldRound, 3)
-                C(k, :) = reshape(this.dImgsField(:,:,k), 1, []);
+                C(k, :) = reshape(this.dImgsField(dROIr,dROIc,k), 1, []);
             end
            
             % Define the target flat curve
@@ -1227,9 +1292,9 @@ classdef Uniformity < mic.Base
             
             dResultVec = {};
 
-            dResultIdeal = this.computeIdeal(D, b, dFluxCenter);
-            dResultPairs = this.computePairs(D, b, dFluxCenter, 15);
-            dResultTriples = this.computeTriples(D, b, dFluxCenter, 10);
+            dResultIdeal = this.computeIdeal(D, b, dFluxCenter, dROIr, dROIc);
+            dResultPairs = this.computePairs(D, b, dFluxCenter, 15, dROIr, dROIc);
+            dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
 
             % Append the results to the result vector:
             dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
@@ -1276,7 +1341,7 @@ classdef Uniformity < mic.Base
             this.handleSelectCombo();
         end
 
-        function dResultVec = computeIdeal(this, D, b, dFluxCenter)
+        function dResultVec = computeIdeal(this, D, b, dFluxCenter, dROIr, dROIc)
             dResultVec = {};
             ct = 1;
 
@@ -1293,7 +1358,7 @@ classdef Uniformity < mic.Base
 
             dCoefSum = sum(dCoeff);
             for k = 1:length(ids)
-                dFlux = dFlux + dCoeff(ids(k))/dCoefSum * sum(sum(squeeze(this.dImgsField(:,:,ids(k)))));
+                dFlux = dFlux + dCoeff(ids(k))/dCoefSum * sum(sum(squeeze(this.dImgsField(dROIr, dROIc,ids(k)))));
             end
             dDoseFac = dFlux/dFluxCenter;
 
@@ -1302,7 +1367,7 @@ classdef Uniformity < mic.Base
             % Compute uniformity:
             dAgg = 0;
             for k = 1:length(ids)
-                dAgg = dAgg + dCoeff(ids(k))*this.dImgsField(:,:,dResultVec{ct, 3}(k));
+                dAgg = dAgg + dCoeff(ids(k))*this.dImgsField(dROIr, dROIc,dResultVec{ct, 3}(k));
             end
 
             dUniformity = std(dAgg(:))/median(dAgg(:));
@@ -1312,7 +1377,7 @@ classdef Uniformity < mic.Base
         end
            
 
-        function dResultVec = computePairs(this, D, b, dFluxCenter, dMaxResults)
+        function dResultVec = computePairs(this, D, b, dFluxCenter, dMaxResults, dROIr, dROIc)
             dResultVec = {};
             % Loop through choosing pairs of images and find best combination and coefficients:
 
@@ -1331,13 +1396,13 @@ classdef Uniformity < mic.Base
 
 
                     % Compute relative flux
-                    dFluxLeft = sum(sum(squeeze(this.dImgsField(:,:,k))));
-                    dFluxRight = sum(sum(squeeze(this.dImgsField(:,:,m))));
+                    dFluxLeft = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,k))));
+                    dFluxRight = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,m))));
                     dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
                     dResultVec{ct, 4} = dDoseFac;
 
                     % Compute uniformity:
-                    dAgg = dCoeff(1)*this.dImgsField(:,:,k) + dCoeff(2)*this.dImgsField(:,:,m);
+                    dAgg = dCoeff(1)*this.dImgsField(dROIr, dROIc,k) + dCoeff(2)*this.dImgsField(dROIr, dROIc,m);
 
 
                     dUniformity = std(dAgg(:))/median(dAgg(:));
@@ -1354,7 +1419,7 @@ classdef Uniformity < mic.Base
 
         end
 
-        function dResultVec = computeTriples(this, D, b, dFluxCenter, dMaxResults)
+        function dResultVec = computeTriples(this, D, b, dFluxCenter, dMaxResults, dROIr, dROIc)
             dResultVec = {};
             % Loop through choosing pairs of images and find best combination and coefficients:
 
@@ -1374,13 +1439,13 @@ classdef Uniformity < mic.Base
 
                 
                         % Compute relative flux
-                        dFluxLeft = sum(sum(squeeze(this.dImgsField(:,:,k))));
-                        dFluxRight = sum(sum(squeeze(this.dImgsField(:,:,m))));
+                        dFluxLeft = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,k))));
+                        dFluxRight = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,m))));
                         dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
                         dResultVec{ct, 4} = dDoseFac;
 
                         % Compute uniformity:
-                        dAgg = dCoeff(1)*this.dImgsField(:,:,k) + dCoeff(2)*this.dImgsField(:,:,m);
+                        dAgg = dCoeff(1)*this.dImgsField(dROIr, dROIc,k) + dCoeff(2)*this.dImgsField(dROIr, dROIc,m);
 
 
                         dUniformity = std(dAgg(:))/median(dAgg(:));
@@ -1456,6 +1521,9 @@ classdef Uniformity < mic.Base
 
             imagesc(dAgg);
             title('Field Uniformity Aggregate');
+            hold on
+            this.plotUniformityGuidesWobbleField(this.haFieldUniformityAgg);
+            hold off
             colorbar;
 
             axes(this.haRecipe);
@@ -1466,6 +1534,22 @@ classdef Uniformity < mic.Base
             end 
             stem(dElms/sum(dElms), 'linewidth', 3);
 
+            
+        end
+        
+        function onSetDirToLatest(this, src, evt)
+            cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
+
+            % Look in this dir and find the dir with the latest date:
+            cDirs = dir(cPath);
+            cDirs = cDirs([cDirs.isdir]);
+            cDirs = cDirs(3:end);
+            cDates = {cDirs.date};
+            cDates = datetime(cDates, 'InputFormat', 'dd-MMM-yyyy HH:mm:ss');
+            [~, dIdx] = max(cDates);
+            cPath = fullfile(cPath, cDirs(dIdx).name);
+            this.uiePathToImagesDir.set(cPath);
+            this.onLoadImages();
             
         end
 
@@ -1488,8 +1572,17 @@ classdef Uniformity < mic.Base
                 return;
             end
             
-            cPath = fullfile(cPath, '*.bmp');
-            cFiles = dir(cPath);
+            cPathBmp = fullfile(cPath, '*.bmp');
+            cPathPng = fullfile(cPath, '*.png');
+
+            % Get files with .bmp extension
+            cFilesBmp = dir(cPathBmp);
+
+            % Get files with .png extension
+            cFilesPng = dir(cPathPng);
+
+            % Combine the two lists of files
+            cFiles = [cFilesBmp; cFilesPng];
             
             if isempty(cFiles)
                 msgbox('No images found in the directory');
@@ -1497,7 +1590,7 @@ classdef Uniformity < mic.Base
             end
             
             % Load the images
-            this.dImgs = zeros( 151, 301, length(cFiles));
+            this.dImgs = zeros( 150, 300, length(cFiles));
             this.dCenterIdx = ceil(length(cFiles)/2);
 
             % sort files by name:
@@ -1506,7 +1599,7 @@ classdef Uniformity < mic.Base
 
             % Convert the names to numerical values
             % Assuming the names are numbers stored as strings
-            numValues = cellfun(@(x) str2double(regexp(x, '-?\d+(?=\.bmp)', 'match', 'once')), names);
+            numValues = cellfun(@(x) str2double(regexp(x, '-?\d+(?=\.(?:bmp|png))', 'match', 'once')), names);
             
             % Sort the numerical values and get the sorting indices
             [~, sortIdx] = sort(numValues);
@@ -1529,9 +1622,17 @@ classdef Uniformity < mic.Base
                 dCenterR = this.uieCenterPixelR.get();
                 dCenterC = this.uieCenterPixelC.get();
 
+                
                 % Grab 150 x 300 pixels around the center pixel:
-                img = img(dCenterR - this.dImgROIHeight/2:dCenterR + this.dImgROIHeight/2,...
-                                     dCenterC - this.dImgROIWidth/2:dCenterC + this.dImgROIWidth/2);
+                
+                % Crop only if we are taking full images.  ROI images don't
+                % need a crop
+                if ~all(size(img) == [150, 300])
+                    
+                    img = img(dCenterR - this.dImgROIHeight/2:dCenterR + this.dImgROIHeight/2 - 1,...
+                                     dCenterC - this.dImgROIWidth/2:dCenterC + this.dImgROIWidth/2 - 1);
+                                 
+                end
 
                 this.dImgs(:,:,k) = img;
             end
@@ -1594,14 +1695,18 @@ classdef Uniformity < mic.Base
             imagesc(squeeze(this.dImgs(:, :, this.dActiveIdx)));
             title(sprintf('Image %d', this.dActiveIdx));
             hold on
-            plot(150, 75, 'rx', 'MarkerSize', 10);
+            this.plotUniformityGuidesWobble();
             hold off
 
             % Update the field uniformity plot
             axes(this.haFieldUniformity);
             imagesc(squeeze(this.dImgsFieldRound(:, :, this.dActiveIdx)));
             title('Field Uniformity');
+             hold on
+            this.plotUniformityGuidesWobbleField(this.haFieldUniformity);
+            hold off
             colorbar
+            colormap default
             
             % Update the x-section plot
             axes(this.haXSec);

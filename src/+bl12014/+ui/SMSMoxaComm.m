@@ -96,7 +96,6 @@ classdef SMSMoxaComm < mic.Base
             
             this.msg('delete()', this.u8_MSG_TYPE_CLASS_DELETE);
 
-            delete(this.ui) % uses deviceVirtrual so need to delete this first
             
         end    
         

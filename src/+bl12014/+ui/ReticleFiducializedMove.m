@@ -203,8 +203,8 @@ classdef ReticleFiducializedMove < mic.Base
             st.uiX = this.uiRow.save();
             st.uiY = this.uiCol.save();
 
-            st.uieOffsetX = this.uieOffsetX.get();
-            st.uieOffsetY = this.uieOffsetY.get();
+            st.uieOffsetX = this.uieOffsetX.save();
+            st.uieOffsetY = this.uieOffsetY.save();
         end
         
         function load(this, st)
@@ -217,13 +217,13 @@ classdef ReticleFiducializedMove < mic.Base
             end
 
             if isfield(st, 'uieOffsetX')
-                this.uieOffsetX.set(st.uieOffsetX)
+                this.uieOffsetX.load(st.uieOffsetX)
             else
                 this.uieOffsetX.set(0)
             end
 
             if isfield(st, 'uieOffsetY')
-                this.uieOffsetY.set(st.uieOffsetY)
+                this.uieOffsetY.load(st.uieOffsetY)
             else 
                 this.uieOffsetY.set(0)
             end
