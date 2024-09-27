@@ -152,6 +152,11 @@ classdef Uniformity < mic.Base
 
         uigsExposure
 
+        uiSequenceAutoWobble
+        uieNumWobble
+        uieHexOffsetRu
+        uieHexOffsetRv
+
 
     end
     
@@ -281,50 +286,49 @@ classdef Uniformity < mic.Base
             
         end
 
-        function cStr = getAutoWobbleCSV(this, dNum)
+        function cStr = writeAutoWobbleCSV(this)
             % First get unit vectors:
             dUx = this.uieUnitVectorRx.get();
             dUy = this.uieUnitVectorRy.get();
 
+            % Define v as perpendicular vector to u:
+            dVx = -dUy;
+            dVy = dUx;
+
            
             dLinNum = (dNum - 1) / 2;
 
-            dIdx = -dLinNum:dLinNum;
+            dNum = this.uieNumWobble.get();
+            dIdxs = -dLinNum:dLinNum;
 
             ceLabels = {};
             for k = 1:dNum
                 ceLabels{end + 1} = sprintf('%d',  (m));
             end
 
-            % Add index shot if needed:
-            if lUseIndex
-                mMid = ceil(length(dDose)/2);
-                dDoseLinear = [dDose(mMid), dDoseLinear];
-                ceLabels = [{'Index'}, ceLabels];
-            end
-
-
-            % Look up highlighted uniformity combinations:
-            ceCombo = this.dResultVec(this.dResultIdx, :);
-
-            dCoeff = ceCombo{2};
-            dIdx = ceCombo{3};
-            % Normalize coefficients:
-            dCoeff = dCoeff / sum(dCoeff);
-
-            % Get unit vectors:
-            dUx = this.uieUnitVectorRx.get();
-            dUy = this.uieUnitVectorRy.get();
-
             cStr = 'index,name';
-            for k = 1:length(dCoeff)
-                cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', k, k, k)];
-            end
+            cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', 1, 1, 1)];
 
-            for k = 1:length(dDoseLinear)
-                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, dUx, dUy, ceLabels{k});
+            dRu = this.uieHexOffsetRu.get();
+            dRv = this.uieHexOffsetRv.get();
+
+            for k = 1:length(dIdxs)
+                dIdx = dIdxs(k);
+
+
+                dRx = dUx * (dIdx + dRu) + dRv * dVx;
+                dRy = dUy * (dIdx + dRu) + dRv * dVy;
+
+                cRow = sprintf('\n%d,%s', id, cLabel);
+                cRow = [cRow, sprintf(',%.3f,%.3f,%d', dRx, dRy, 15000)];
                 cStr = [cStr, cRow];
             end
+
+            cPathWobbleSMS = 'Z:'
+            cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params.txt');
+            fid = fopen(cPathWobbleFile, 'w');
+            fprintf(fid, '%s\n', cWobbleData);
+            fclose(fid);
 
 
 
@@ -527,6 +531,16 @@ classdef Uniformity < mic.Base
             dLeft = dLeft + 5;
             this.uieSaveImage.build(hPanel, dLeft, dTop, 200, 30);
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
+
+
+            dTop = dTop + 50;
+            this.uieNumWobble.build(hPanel, dLeft, dTop, 100, 30);
+            this.uieHexOffsetRu.build(hPanel, dLeft + 110, dTop, 100, 30);
+            this.uieHexOffsetRv.build(hPanel, dLeft + 220, dTop, 100, 30);
+
+            dTop = dTop + 50;
+%             this.uiSequenceAutoWobble.build(hPanel, dLeft, dTop);
+
 
 
             
@@ -842,6 +856,34 @@ classdef Uniformity < mic.Base
                 'cName', [this.cName, 'camera-previewing'], ...
                 'cLabel', 'Preview' ...
             );
+
+%             this.uiSequenceAutoWobble = mic.ui.TaskSequence(...
+%                 'cName', [this.cName, 'ui-task-sequence-auto-wobble'], ...
+%                 'task', bl12014.Tasks.takeUniformitySeries(...
+%                     [this.cName, 'task-sequence-auto-wobble'], ...
+%                     this, ...
+%                     this.clock ...
+%                 ), ...
+%                 'clock', this.uiClock ...
+%             );
+
+            this.uieNumWobble = mic.ui.common.Edit(...
+                'cLabel', 'Num Wobble', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+            this.uieHexOffsetRu = mic.ui.common.Edit(...
+                'cLabel', 'Hex Offset Ru', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+            this.uieHexOffsetRv = mic.ui.common.Edit(...
+                'cLabel', 'Hex Offset Rv', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
         
         
 
@@ -1059,6 +1101,10 @@ classdef Uniformity < mic.Base
 
             if (this.uieIntrinsicDwellTime.get() == 0)
                 this.uieIntrinsicDwellTime.set(500);
+            end
+
+            if (this.uieNumWobble.get() == 0)
+                this.uieNumWobble.set(11);
             end
 
             if (this.uieROIC1.get() == 0)
@@ -1316,6 +1362,9 @@ classdef Uniformity < mic.Base
 
 
         function onComputeCombo(this, src, evt)
+            if isempty(this.dImgsField)
+                return 
+            end
             
             dFluxCenter = sum(sum(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
             dMaxCenter = max(max(squeeze(this.dImgsField(:,:,this.dCenterIdx))));
