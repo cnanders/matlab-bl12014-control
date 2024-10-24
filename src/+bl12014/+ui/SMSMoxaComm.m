@@ -3,6 +3,7 @@ classdef SMSMoxaComm < mic.Base
     properties
         
                 
+        uiWorkingMode
     end
     
     properties (SetAccess = private)
@@ -28,7 +29,6 @@ classdef SMSMoxaComm < mic.Base
         
         % {bl12014.Hardware 1x1}
         hardware
-        uiWorkingMode
 
         
     end

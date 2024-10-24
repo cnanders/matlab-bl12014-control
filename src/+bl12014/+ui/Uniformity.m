@@ -98,6 +98,7 @@ classdef Uniformity < mic.Base
 
         dTaskImgs = {}
         lTaskAcquireSuccess
+        cTaskAcquireDir
 
         dImgs = []
         dImgsField = []
@@ -156,6 +157,12 @@ classdef Uniformity < mic.Base
         uieNumWobble
         uieHexOffsetRu
         uieHexOffsetRv
+        uieHexOffsetAngle
+        uibExecuteUniformitySequence
+        uibAbortUniformitySequence
+        hUniformityTaskSequence = []
+
+        uibGoToOffset
 
 
     end
@@ -285,51 +292,73 @@ classdef Uniformity < mic.Base
             
             
         end
+        
+         function acquireFromTask(this, index)
+
+            this.lTaskAcquireSuccess = false;
+            lTaskAcquireSuccess = this.onAcquire();
+
+            this.dTaskImgs{end + 1} = this.dImg;
+
+            cPath = fullfile(this.cTaskAcquireDir, sprintf('%d.png', index));
+
+            imwrite(this.dImg, cPath);
+
+
+            this.lTaskAcquireSuccess = true;
+
+
+        end 
 
         function cStr = writeAutoWobbleCSV(this)
-            % First get unit vectors:
-            dUx = this.uieUnitVectorRx.get();
-            dUy = this.uieUnitVectorRy.get();
-
-            % Define v as perpendicular vector to u:
-            dVx = -dUy;
-            dVy = dUx;
-
            
+
+ 
+
+            dNum = this.uieNumWobble.get();
             dLinNum = (dNum - 1) / 2;
 
             dNum = this.uieNumWobble.get();
             dIdxs = -dLinNum:dLinNum;
 
-            ceLabels = {};
-            for k = 1:dNum
-                ceLabels{end + 1} = sprintf('%d',  (m));
-            end
+
 
             cStr = 'index,name';
             cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', 1, 1, 1)];
 
-            dRu = this.uieHexOffsetRu.get();
-            dRv = this.uieHexOffsetRv.get();
+           
+
+            dTh = this.uieHexOffsetAngle.get();
+            % Create rot matrix:
+            R = [cosd(dTh), -sind(dTh); sind(dTh), cosd(dTh)];
+
+            
 
             for k = 1:length(dIdxs)
                 dIdx = dIdxs(k);
 
+                [dRx, dRy] = this.getHexapodBasisVectors(dIdx, 0);
 
-                dRx = dUx * (dIdx + dRu) + dRv * dVx;
-                dRy = dUy * (dIdx + dRu) + dRv * dVy;
 
-                cRow = sprintf('\n%d,%s', id, cLabel);
-                cRow = [cRow, sprintf(',%.3f,%.3f,%d', dRx, dRy, 15000)];
+                cRow = sprintf('\n%d,%d', k, dIdx);
+                cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, 15000)];
                 cStr = [cStr, cRow];
             end
 
-            cPathWobbleSMS = 'Z:'
-            cPathWobbleFile = fullfile(this.cPathWobbleSMS, 'wobble-params.txt');
+            cPathWobbleSMS = 'Z:';
+            cPathWobbleFile = fullfile(cPathWobbleSMS, 'wobble-params.txt');
             fid = fopen(cPathWobbleFile, 'w');
-            fprintf(fid, '%s\n', cWobbleData);
+            fprintf(fid, '%s\n', cStr);
             fclose(fid);
 
+
+            % Make dir for these images
+            cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
+            this.cTaskAcquireDir = fullfile(cPath, datestr(now, 'yyyy-mm-dd_HH_MM'));
+            
+            mkdir(this.cTaskAcquireDir);
+
+           
 
 
         end
@@ -378,26 +407,53 @@ classdef Uniformity < mic.Base
             end
 
             for k = 1:length(dDoseLinear)
-                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, dUx, dUy, ceLabels{k});
+                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, ceLabels{k});
                 cStr = [cStr, cRow];
             end
 
         end
 
-        function cRow = getWobbleRow(this, id, dDose, dCoef, dIdx, dUx, dUy, cLabel)
+        function cRow = getWobbleRow(this, id, dDose, dCoef, dIdx, cLabel)
             % Multiply coefficients by dose:
             dWobbleDwells = dCoef * dDose;
             cRow = sprintf('\n%d,%s', id, cLabel);
 
             % Build dwell strings:
             for k = 1:length(dWobbleDwells)
-                dRx = dUx * (dIdx(k) - this.dCenterIdx);
-                dRy = dUy * (dIdx(k) - this.dCenterIdx);
+                [dRx, dRy] = this.getHexapodBasisVectors(dIdx(k) - this.dCenterIdx, 0);
 
-                cRow = [cRow, sprintf(',%.3f,%.3f,%d', dRx, dRy, round(1000 * dWobbleDwells(k)))];
+                cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, round(1000 * dWobbleDwells(k)))];
             end
 
         end
+
+        
+        % Returns coordinates for hexapod in Rx,Ry based on basis coefficients cu,cv accounting for rotation and offset
+        function [dRx, dRy] = getHexapodBasisVectors(this, cu, cv)
+            % First get unit vectors:
+            dUx = this.uieUnitVectorRx.get();
+            dUy = this.uieUnitVectorRy.get();
+
+            % Define v as perpendicular vector to u:
+            dVx = -dUy;
+            dVy = dUx;
+
+            % Offsets:
+            dRu = this.uieHexOffsetRu.get();
+            dRv = this.uieHexOffsetRv.get();
+
+            dRx = dUx * (cu + dRU) + dVx * (cv + dRV);
+            dRy = dUy * (cu + dRU) + dVy * (cv + dRV);
+
+            R = [cosd(dTh), -sind(dTh); sind(dTh), cosd(dTh)];
+
+            drRXY = R * [dRx; dRy];
+            dRx = drRXY(1);
+            dRy = drRXY(2);
+
+
+        end
+
 
         function st = save(this)
             cecProps = this.getSaveLoadProps();
@@ -487,7 +543,7 @@ classdef Uniformity < mic.Base
         function buildUniformityCamPanel(this, hParent, dLeft, dTop)
 
 
-            dTop = 20;
+            dTop = 50;
             
             hPanel = uipanel(...
                 'Parent', hParent,...
@@ -498,7 +554,7 @@ classdef Uniformity < mic.Base
                 dLeft ...
                 dTop  ...
                 this.dWidth - 40 ...
-                580], hParent) ...
+                700], hParent) ...
                 );
 
             this.haUniformityCamAxes = axes(...
@@ -533,13 +589,35 @@ classdef Uniformity < mic.Base
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
 
 
-            dTop = dTop + 50;
+            dTop = dTop + 80;
+           
+
+            hPanel = uipanel(...
+                'Parent', hParent,...
+                'Units', 'pixels',...
+                'Title', 'Auto Wobble Sequence',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                dLeft ...
+                dTop  ...
+                730 ...
+                140], hParent) ...
+                );
+
+            dTop = 20;
+            dLeft = 10;
             this.uieNumWobble.build(hPanel, dLeft, dTop, 100, 30);
-            this.uieHexOffsetRu.build(hPanel, dLeft + 110, dTop, 100, 30);
+            this.uieHexOffsetRu.build(hPanel, dLeft +  110, dTop, 100, 30);
             this.uieHexOffsetRv.build(hPanel, dLeft + 220, dTop, 100, 30);
+            this.uieHexOffsetAngle.build(hPanel, dLeft + 330, dTop, 100, 30);
 
             dTop = dTop + 50;
-%             this.uiSequenceAutoWobble.build(hPanel, dLeft, dTop);
+            this.uibExecuteUniformitySequence.build(hPanel, dLeft, dTop, 200, 30);
+            this.uibAbortUniformitySequence.build(hPanel, dLeft + 210, dTop, 100, 30);
+            this.uibGoToOffset.build(hPanel, dLeft + 320, dTop, 100, 30);
+
+            dTop = dTop + 40;
+            this.uiSequenceAutoWobble.build(hPanel, dLeft, dTop, 300);
 
 
 
@@ -722,6 +800,7 @@ classdef Uniformity < mic.Base
 
             this.uigsExposure = mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
+                'uiClock', this.uiClock, ...
                 'dWidthName', this.dWidthName, ... 
                 'lShowInitButton', false, ...
                 'lShowZero', false, ...
@@ -857,18 +936,37 @@ classdef Uniformity < mic.Base
                 'cLabel', 'Preview' ...
             );
 
-%             this.uiSequenceAutoWobble = mic.ui.TaskSequence(...
-%                 'cName', [this.cName, 'ui-task-sequence-auto-wobble'], ...
-%                 'task', bl12014.Tasks.takeUniformitySeries(...
-%                     [this.cName, 'task-sequence-auto-wobble'], ...
-%                     this, ...
-%                     this.clock ...
-%                 ), ...
-%                 'clock', this.uiClock ...
-%             );
+            this.uiSequenceAutoWobble =  mic.ui.TaskSequence(...
+                'cName', [this.cName, 'ui-state-mono-grating-at-euv'], ...
+                'lShowButton', false, ...
+                'task', bl12014.Tasks.placeholderTask([this.cName, 'placeholder'], this.clock),...
+                'clock', this.uiClock ...
+            );
+
+
+            this.uibExecuteUniformitySequence = mic.ui.common.Button(...
+                'cText', 'Execute Uniformity Sequence', ...
+                'fhDirectCallback', @(~,~)this.onExecuteUniformitySequence() ...
+            );
+
+            this.uibGoToOffset = mic.ui.common.Button(...
+                'cText', 'Go to Offset', ...
+                'fhDirectCallback', @(~,~)this.onGoToOffset() ...
+            );
+
+            this.uibAbortUniformitySequence = mic.ui.common.Button(...
+                'cText', 'Abort Sequence', ...
+                'fhDirectCallback', @(~,~)this.onAbortUniformitySequence() ...
+            );
 
             this.uieNumWobble = mic.ui.common.Edit(...
                 'cLabel', 'Num Wobble', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+            this.uieHexOffsetAngle = mic.ui.common.Edit(...
+                'cLabel', 'Hex Offset Angle', ...
                 'cType', 'd', ...
                 'dWidth', 50 ...
             );
@@ -969,7 +1067,7 @@ classdef Uniformity < mic.Base
                 );
             this.uibAcquire = mic.ui.common.Button(...
                 'cText', 'Acquire', ...
-                'fhDirectCallback', @this.onAcquire ...
+                'fhDirectCallback', @(~,~)this.onAcquire ...
             );
 
             this.uieHexapodDelay = mic.ui.common.Edit(...
@@ -1200,24 +1298,28 @@ classdef Uniformity < mic.Base
         
         
 
-        function lVal = onAcquire(this, src, evt)
+        function lVal = onAcquire(this)
             lVal = false;
             if ~this.hCameraUniformity.isConnected()
-                msgbox('Camera not connected');
-                return
-            end
-            if this.hCameraUniformity.isPreviewing()
-                this.hCameraUniformity.stopPreview();
-            end
+                % msgbox('Camera not connected');
 
-            this.dImg = this.hCameraUniformity.acquire();
-
+                this.dImg = magic(15);
+                 
+            else 
+                if this.hCameraUniformity.isPreviewing()
+                    this.hCameraUniformity.stopPreview();
+                end
+                this.dImg = this.hCameraUniformity.acquire();
+                
+            end
+            
+            
+            % dR1 = this.uieCenterPixelR.get() - this.dImgROIHeight/2;
+            % dR2 = this.uieCenterPixelR.get() + this.dImgROIHeight/2;
+            % dC1 = this.uieCenterPixelC.get() - this.dImgROIWidth/2;
+            % dC2 = this.uieCenterPixelC.get() + this.dImgROIWidth/2;
             % Crop to this.dImgROIWidth x this.dImgROIHeight centered on the center pixel:
-            dR1 = this.uieCenterPixelR.get() - this.dImgROIHeight/2;
-            dR2 = this.uieCenterPixelR.get() + this.dImgROIHeight/2;
-            dC1 = this.uieCenterPixelC.get() - this.dImgROIWidth/2;
-            dC2 = this.uieCenterPixelC.get() + this.dImgROIWidth/2;
-
+           
 %             this.dImg = this.dImg(dR1:dR2, dC1:dC2, :);
 
 
@@ -1231,19 +1333,63 @@ classdef Uniformity < mic.Base
             lVal = true
         end
 
-        function acquireFromTask(this)
+        function onAbortUniformitySequence(this)
 
-            this.lTaskAcquireSuccess = false;
-            lTaskAcquireSuccess = this.onAcquire();
+            if ~isempty(this.hUniformityTaskSequence) &&  isa(this.hUniformityTaskSequence, 'mic.TaskSequence')
+                this.hUniformityTaskSequence.abort();
+                this.hUniformityTaskSequence.delete();
+                this.hUniformityTaskSequence = [];
+                msgbox('Aborted task sequence');
+            else
+                msgbox('No task sequence to abort');
+            end
+        end
 
-            this.dTaskImgs{end + 1} = this.dImg;
+        function onGoToOffset(this)
+           
+            
+            this.hUniformityTaskSequence = bl12014.Tasks.goToHexapodOffset(...
+                [this.cName, 'task-go-to-offset'], ...
+                this, ...
+                this.clock ...
+            );
+        end
 
 
-        end 
+        function onExecuteUniformitySequence(this)
+            if ~isempty(this.hUniformityTaskSequence)  ...
+                && isa(this.hUniformityTaskSequence, 'mic.TaskSequence') ...
+                && this.hUniformityTaskSequence.isExecuting()
+
+                msgbox('Task sequence already executing');
+                return
+
+            end
+
+            % Build the task sequence:
+            this.hUniformityTaskSequence  = bl12014.Tasks.takeUniformitySeries(...
+                [this.cName, 'task-sequence-auto-wobble'], ...
+                this, ...
+                this.clock ...
+            )
+
+            % Set ui
+            this.uiSequenceAutoWobble.setTask(this.hUniformityTaskSequence);
+
+            % Execute the task sequence:
+            this.hUniformityTaskSequence.execute();
+
+
+        end
+
+       
 
         function onSaveImage(this, src, evt)
             if this.hCameraUniformity.isConnected() && this.hCameraUniformity.isPreviewing()
                 this.hCameraUniformity.stopPreview();
+
+                % snap an image
+                this.onAcquire();
             end
             
 
