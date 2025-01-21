@@ -1,5 +1,5 @@
 {
-	"delay": 0.5,
+	"delay": 20,
 	"units": [
 		{
 			"name": "mA",
