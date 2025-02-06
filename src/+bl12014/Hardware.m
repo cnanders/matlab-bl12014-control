@@ -50,6 +50,9 @@ classdef Hardware < mic.Base
         cTcpipRigolDG1000Z          = '192.168.20.35'
         cTcpipDoseMonitor           = '192.168.20.60'
 
+        cTcpipGalilM1               = '192.168.10.150'
+        dPortGalilM1                = uint16(23)
+
         cTcpipIris                  = '192.168.20.50'
         dPortIris                   = 5020
         
@@ -161,6 +164,9 @@ classdef Hardware < mic.Base
         commGalilVis
         commGalilVisFiltered % middleware filter
         commGalilVisVirtual
+
+        commGalilM1
+        commGalilM1Virtual
         
         commMightex1
         commMightex1Virtual
@@ -262,6 +268,8 @@ classdef Hardware < mic.Base
             this.commGalilD142Virtual = [];
             this.commGalilM143Virtual = [];
             this.commGalilVisVirtual = [];
+
+            this.commGalilM1Virtual = [];
             
             this.commDCTWaferStageVirtual = [];
             this.commDCTApertureStageVirtual = [];
@@ -1505,6 +1513,46 @@ classdef Hardware < mic.Base
                 
         end
         
+
+        %% GalilM1
+        function l = getIsConnectedGalilM1(this)
+            if ~isempty(this.commGalilM1)
+                l = true;
+            else
+                l = false;
+            end
+        end
+
+        function connectGalilM1(this)
+            if this.getIsConnectedGalilM1()
+                return
+            end
+
+            try
+                this.commGalilM1 = galilTCP.GalilTCP2Ch(...
+                    'cTcpipHost', this.cTcpipGalilM1, ...
+                    'u16TcpipPort', this.dPortGalilM1, ...
+                    'axes', [2, 3]...
+                );
+            catch mE
+                this.commGalilM1 = [];
+                this.msg(mE.msgtext, this.u8_MSG_TYPE_ERROR);
+            end
+        end
+
+        function disconnectGalilM1(this)
+            if this.getIsConnectedGalilM1()
+                this.commGalilM1 = [];
+            end
+        end
+
+        function getGalilM1(this)
+            if this.getIsConnectedGalilM1()
+                comm = this.commGalilM1;
+            else
+                comm = this.commGalilM1Virtual;
+            end
+        end
         
         
         %% GalilM143
@@ -2097,6 +2145,8 @@ classdef Hardware < mic.Base
             this.commGalilD142Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commGalilM143Virtual = bl12014.hardwareAssets.virtual.Stage();
             this.commGalilVisVirtual = bl12014.hardwareAssets.virtual.Stage();
+
+            this.commGalilM1Virtual = bl12014.hardwareAssets.virtual.Stage();
             
             
             this.commDCTWaferStageVirtual = aerotech.EnsembleVirtual(); % bl12014.hardwareAssets.virtual.Stage();
