@@ -160,6 +160,13 @@ classdef Uniformity < mic.Base
         uieHexOffsetRu
         uieHexOffsetRv
         uieHexOffsetAngle
+
+        % new M1 wobble:
+        uieM1WobbleStepSize
+        uieM1WobbleAngle
+
+        dWobbleCoordinates = {}
+
         uibExecuteUniformitySequence
         uibAbortUniformitySequence
         hUniformityTaskSequence = []
@@ -312,10 +319,17 @@ classdef Uniformity < mic.Base
 
         end 
 
+        function makeAutoWobbleImagesDir(this)
+            % Make dir for these images
+            cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
+            this.cTaskAcquireDir = fullfile(cPath, datestr(now, 'yyyy-mm-dd_HH_MM'));
+            
+            mkdir(this.cTaskAcquireDir);
+        end
+
+        % no longer require a csv to do wobbler sequence
         function cStr = writeAutoWobbleCSV(this)
            
-
- 
 
             dNum = this.uieNumWobble.get();
             dLinNum = (dNum - 1) / 2;
@@ -324,17 +338,13 @@ classdef Uniformity < mic.Base
             dIdxs = -dLinNum:dLinNum;
 
 
-
             cStr = 'index,name';
             cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', 1, 1, 1)];
 
-           
 
             dTh = this.uieHexOffsetAngle.get();
             % Create rot matrix:
             R = [cosd(dTh), -sind(dTh); sind(dTh), cosd(dTh)];
-
-            
 
             for k = 1:length(dIdxs)
                 dIdx = dIdxs(k);
@@ -359,11 +369,9 @@ classdef Uniformity < mic.Base
             this.cTaskAcquireDir = fullfile(cPath, datestr(now, 'yyyy-mm-dd_HH_MM'));
             
             mkdir(this.cTaskAcquireDir);
-
-           
-
-
         end
+
+        
 
         function cStr = getWobbleCSV(this, lUseIndex, dDose, dFocus)
 
@@ -547,17 +555,6 @@ classdef Uniformity < mic.Base
 
             dTop = 35;
 
-            hPanelM1 = uipanel(...
-            'Parent', hParent,...
-            'Units', 'pixels',...
-            'Title', 'M1 controls',...
-            'Clipping', 'on',...
-            'Position', mic.Utils.lt2lb([ ...
-            dLeft ...
-            dTop  ...
-            500 ...
-            100], hParent) ...
-            );
 
             dTop = 140
             
@@ -604,8 +601,10 @@ classdef Uniformity < mic.Base
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
 
 
-            dTop = dTop + 100;
-           
+            dTop = dTop + 50;
+
+            this.uiM1.build(hPanel, dLeft, dTop);
+            dTop = dTop + 300;
 
             hPanel = uipanel(...
                 'Parent', hParent,...
@@ -613,7 +612,7 @@ classdef Uniformity < mic.Base
                 'Title', 'Auto Wobble Sequence',...
                 'Clipping', 'on',...
                 'Position', mic.Utils.lt2lb([ ...
-                dLeft ...
+                dLeft + 10 ...
                 dTop  ...
                 680 ...
                 140], hParent) ...
@@ -622,9 +621,11 @@ classdef Uniformity < mic.Base
             dTop = 20;
             dLeft = 10;
             this.uieNumWobble.build(hPanel, dLeft, dTop, 100, 30);
-            this.uieHexOffsetRu.build(hPanel, dLeft +  110, dTop, 100, 30);
-            this.uieHexOffsetRv.build(hPanel, dLeft + 220, dTop, 100, 30);
-            this.uieHexOffsetAngle.build(hPanel, dLeft + 330, dTop, 100, 30);
+            % this.uieHexOffsetRu.build(hPanel, dLeft +  110, dTop, 100, 30);
+            this.uieM1WobbleStepSize.build(hPanel, dLeft + 110, dTop, 100, 30);
+            % this.uieHexOffsetRv.build(hPanel, dLeft + 220, dTop, 100, 30);
+            this.uieM1WobbleAngle.build(hPanel, dLeft + 220, dTop, 100, 30);
+            % this.uieHexOffsetAngle.build(hPanel, dLeft + 330, dTop, 100, 30);
 
             dTop = dTop + 50;
             this.uibExecuteUniformitySequence.build(hPanel, dLeft, dTop, 200, 30);
@@ -1005,6 +1006,20 @@ classdef Uniformity < mic.Base
                 'cType', 'd', ...
                 'dWidth', 50 ...
             );
+
+            this.uieM1WobbleStepSize = mic.ui.common.Edit(...
+                'cLabel', 'M1 Wobble Step Size', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+            this.uieM1WobbleAngle = mic.ui.common.Edit(...
+                'cLabel', 'M1 Wobble Angle', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+
         
         
 
@@ -1389,6 +1404,21 @@ classdef Uniformity < mic.Base
 
             end
 
+
+            % Construct the wobble coordinates:
+            dSteps = 1:this.uieNumWobble.get();
+            dSteps = dSteps - mean(dSteps);
+
+            % Unit vector:
+            dU = [1, -1] * this.uieM1WobbleStepSize.get();
+
+            % Rotate about angle:
+            dAngle = this.uieM1WobbleAngle.get();
+            dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
+
+            this.dWobbleCoordinates = dSteps' * dRotUnit';
+
+
             % Build the task sequence:
             this.hUniformityTaskSequence  = bl12014.Tasks.takeUniformitySeries(...
                 [this.cName, 'task-sequence-auto-wobble'], ...
@@ -1401,8 +1431,19 @@ classdef Uniformity < mic.Base
 
             % Execute the task sequence:
             this.hUniformityTaskSequence.execute();
+        end
 
+        % Sets M1 motor 1 and 2 to the values in the series:
+        function setM1StateUniformitySeries(this, k)
+            dVals = this.dWobbleCoordinates(k,:);
+            this.uiM1.uiM1Motor1.setDestCalAndGo(dVals(1), 'counts');
+            this.uiM1.uiM1Motor2.setDestCalAndGo(dVals(2), 'counts');
+        end
 
+        % Sets M1 motor 1 and 2 to the values in the series:
+        function resetM1ZeroUniformitySeries(this)
+            this.uiM1.uiM1Motor1.setDestCalAndGo(0, 'counts');
+            this.uiM1.uiM1Motor2.setDestCalAndGo(0, 'counts');
         end
 
        

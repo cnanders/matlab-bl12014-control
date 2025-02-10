@@ -1,0 +1,26 @@
+{
+	"delay": 0.5,
+	"units": [
+		{
+			"name": "Counts",
+			"slope": "1",
+			"offset": 0,
+			"precision": 0
+		},
+		{
+			"name": "Wobble Width",
+			"slope": 0.00066,
+			"offset": 0,
+			"precision": 2
+		}	
+	],
+	"stores": [
+       
+
+    ],
+    "step": 100,
+	"min": -30000,
+    "max": 30000
+}	
+	
+	

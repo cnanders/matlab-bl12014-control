@@ -1902,12 +1902,14 @@ classdef Scan < mic.Base
 
 
                         % Construct Wobble file:
-                        cWobbleData = this.uiUniformity.getWobbleCSV( ...
-                            stValue.writeWobble.data.lUseIndex,  ...
-                                stValue.writeWobble.data.dDose / this.uiFluxDensity.get(), ...
-                                stValue.writeWobble.data.dFocus...
-                        );
+                        % cWobbleData = this.uiUniformity.getWobbleCSV( ...
+                        %     stValue.writeWobble.data.lUseIndex,  ...
+                        %         stValue.writeWobble.data.dDose / this.uiFluxDensity.get(), ...
+                        %         stValue.writeWobble.data.dFocus...
+                        % );
 
+                        % 1/2025 write a zero wobble file
+                        cWobbleData = sprintf('index,name,pose1_rx,pose1_ry,pose_1_t_ms,pose2_rx,pose2_ry,pose_2_t_ms\n0,zero,0,0,300000,0,0,300000\n');
 
                         fid = fopen(cPathWobbleFile, 'w');
                         fprintf(fid, '%s\n', cWobbleData);
@@ -1924,13 +1926,28 @@ classdef Scan < mic.Base
 
                     case 'wobbleWorkingMode'
                         if stValue.wobbleWorkingMode.workingMode == 0
-                            % Turn off wobble mode at the end of fem:
+
+                            % Turn on CLC
                             this.hardware.getSMS().setWobbleWorkingMode(0)
+
+
                         elseif stValue.wobbleWorkingMode.workingMode == 1
-                            % Turn on wobble mode at the start of fem:
+                            % Turn off CLC 
                             this.hardware.getSMS().setWobbleWorkingMode(1)
+
                         end
                         this.stScanSetContract.wobbleWorkingMode.lIssued = true;
+                    case 'M1Wobble'
+                        if stValue.M1Wobble.enable == 1
+                            this.uiUniformity.uiM1.setWobbleDelayFromPeriod(...
+                                stValue.M1Wobble.dDose / this.uiFluxDensity.get() ...
+                            );
+
+                            this.uiUniformity.uiM1.startWobble();
+                        else
+                            this.uiUniformity.uiM1.stopWobble();
+                        end
+                        this.stScanSetContract.M1Wobble.lIssued = true;
                     case 'workingMode'
 
                         if stValue.workingMode == 5
@@ -2622,7 +2639,8 @@ classdef Scan < mic.Base
                                     end
                                 case 'wobbleWorkingMode'
                                     lReady = this.hardware.getSMS().getWobbleWorkingMode() == stValue.wobbleWorkingMode.workingMode;
-                                    
+                                case 'M1Wobble'
+                                    lReady = true;
                                 case 'workingMode'
                                     
 

@@ -381,12 +381,7 @@ classdef PrescriptionTool < mic.Base
                 % Create task to Write wobble params to CSV
                 stValue = struct();
                 stValue.writeWobble = struct();
-                % stValue.writeWobble.data = this.uiUniformity.getWobbleCSV( ...
-                %     ~this.uicbSkipIndex.get(),  ...
-                %     this.uiFemTool.dDose / this.uiFluxDensity.get(), ...
-                %     this.uiFemTool.dFocus...
-                % );
-
+               
                 stValue.writeWobble.data = struct();
                 stValue.writeWobble.data.lUseIndex = ~this.uicbSkipIndex.get();
                 stValue.writeWobble.data.dDose = this.uiFemTool.dDose;
@@ -396,12 +391,6 @@ classdef PrescriptionTool < mic.Base
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
 
-                % Create task to start wobble:
-                stValue = struct();
-                stValue.wobbleWorkingMode = struct();
-                stValue.wobbleWorkingMode.workingMode = 1; % wobble mode
-                ceValues{u8Count} = stValue;
-                u8Count = u8Count + 1;
             end
 
 
@@ -458,6 +447,23 @@ classdef PrescriptionTool < mic.Base
                 stValue.waferZThenDriftControl = this.uiFemTool.dFocus(nMid);
                 ceValues{u8Count} = stValue;
                 u8Count = u8Count + 1;
+
+                if this.uicbWobbleFEM.get()
+                    % Disable CLC (SMS working mode 1)
+                    stValue = struct();
+                    stValue.wobbleWorkingMode = struct();
+                    stValue.wobbleWorkingMode.workingMode = 1; % wobble mode
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+
+                    % Start Wobble
+                    stValue = struct();
+                    stValue.M1Wobble = struct();
+                    stValue.M1Wobble.enable = 1; % wobble mode
+                    stValue.M1Wobble.dDose = this.uiFemTool.dDose(mMid);
+                    ceValues{u8Count} = stValue;
+                    u8Count = u8Count + 1;
+                end
                 
                 % WORKING MODE 4
                 stValue = struct();
@@ -482,6 +488,23 @@ classdef PrescriptionTool < mic.Base
 
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
+
+                
+                    if this.uicbWobbleFEM.get()
+                        % Stop Wobble
+                        stValue = struct();
+                        stValue.M1Wobble = struct();
+                        stValue.M1Wobble.enable = 0; % wobble mode
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+
+                        % Enable CLC (SMS working mode 0)
+                        stValue = struct();
+                        stValue.wobbleWorkingMode = struct();
+                        stValue.wobbleWorkingMode.workingMode = 0; % wobble mode
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                    end
             end % end index
         
             
@@ -540,6 +563,23 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
 
+                    if this.uicbWobbleFEM.get()
+                        % Disable CLC (SMS working mode 1)
+                        stValue = struct();
+                        stValue.wobbleWorkingMode = struct();
+                        stValue.wobbleWorkingMode.workingMode = 1; % wobble mode
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+
+                        % Start Wobble
+                        stValue = struct();
+                        stValue.M1Wobble = struct();
+                        stValue.M1Wobble.enable = 1; % wobble mode
+                        stValue.M1Wobble.dDose = this.uiFemTool.dDose(mMid);
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                    end
+
                     % WORKING MODE 4
                     stValue = struct();
                     stValue.workingMode = 4; % Drift closed loop for exposure
@@ -581,6 +621,23 @@ classdef PrescriptionTool < mic.Base
                     ceValues{u8Count} = stValue;
                     u8Count = u8Count + 1;
 
+
+                    if this.uicbWobbleFEM.get()
+                        % Stop Wobble
+                        stValue = struct();
+                        stValue.M1Wobble = struct();
+                        stValue.M1Wobble.enable = 0; % wobble mode
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+
+                        % Enable CLC (SMS working mode 0)
+                        stValue = struct();
+                        stValue.wobbleWorkingMode = struct();
+                        stValue.wobbleWorkingMode.workingMode = 0; % wobble mode
+                        ceValues{u8Count} = stValue;
+                        u8Count = u8Count + 1;
+                    end
+
                 end
             end
 
@@ -591,15 +648,6 @@ classdef PrescriptionTool < mic.Base
             u8Count = u8Count + 1;
 
 
-            % Disable wobble if necessary:
-             if this.uicbWobbleFEM.get()
-                % Create task to stop wobble:
-                stValue = struct();
-                stValue.wobbleWorkingMode = struct();
-                stValue.wobbleWorkingMode.workingMode = 0; % wobble mode
-                ceValues{u8Count} = stValue;
-                u8Count = u8Count + 1;
-            end
                
             stUnit = struct();
             stUnit.waferX = 'mm';

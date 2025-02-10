@@ -15,14 +15,14 @@ hardware = bl12014.Hardware('clock', clock);
 
 
 
-ui = bl12014.ui.Uniformity(...
+ui = bl12014.ui.M1(...
     'hardware', hardware, ...
     'clock', clock, ...
     'uiClock', uiClock' ...
     );
 
-    dWidth = 1850;
-    dHeight = 1040;
+    dWidth = 1000;
+    dHeight = 600;
 
 
 dScreenSize = get(0, 'ScreenSize');

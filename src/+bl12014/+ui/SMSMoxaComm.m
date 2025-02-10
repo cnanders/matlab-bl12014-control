@@ -88,6 +88,11 @@ classdef SMSMoxaComm < mic.Base
            
                         
         end
+
+
+        function lVal = get(this)
+            lVal = this.uiWorkingMode.get();
+        end
         
         
         

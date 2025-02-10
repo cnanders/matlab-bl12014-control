@@ -1546,7 +1546,7 @@ classdef Hardware < mic.Base
             end
         end
 
-        function getGalilM1(this)
+        function comm = getGalilM1(this)
             if this.getIsConnectedGalilM1()
                 comm = this.commGalilM1;
             else

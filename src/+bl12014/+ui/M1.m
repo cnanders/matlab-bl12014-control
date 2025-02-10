@@ -9,10 +9,11 @@ classdef M1 < mic.Base
     
     properties (SetAccess = private)
         
-        dWidth = 960
-        dHeight = 170
+        dWidth = 680
+        dHeight = 200
 
-        dWidthName = 100
+        dWidthName = 75
+        dWidthUnit = 90
 
         
         cName = 'M1'
@@ -21,6 +22,7 @@ classdef M1 < mic.Base
         lShowStores = false
         
       
+        lIsWobbling = false
 
         
         % {mic.ui.device.GetSetNumber 1x1}
@@ -30,8 +32,33 @@ classdef M1 < mic.Base
         uigsMotor2
         uigsCoupledMove
 
+        uigslIsWobbling
+
         uibZeroEncoders
+        uibStop
         
+        hPanel
+
+        uieMotor1Pos1
+        uieMotor1Pos2
+        uieMotor2Pos1
+        uieMotor2Pos2
+        uieMotor1Dwell
+        uieMotor2Dwell
+        uieWobbleDelay
+
+        uibSetWobblePos1
+        uibSetWobblePos2
+
+        uieMotor1WobbleDelay
+        uieMotor2WobbleDelay
+
+        uibStartWobble
+        uibStopWobble
+
+        uiWobbleWorkingMode
+
+        % uieWobbleLC
  
         
     end
@@ -39,6 +66,7 @@ classdef M1 < mic.Base
     properties (Access = private)
         
         clock
+        uiClock
         hardware
         
 
@@ -46,7 +74,7 @@ classdef M1 < mic.Base
     
     methods
         
-        function this = ReticleFiducializedMove(varargin)
+        function this = M1(varargin)
             for k = 1 : 2: length(varargin)
                 this.msg(sprintf('passed in %s', varargin{k}), this.u8_MSG_TYPE_VARARGIN_PROPERTY);
                 if this.hasProp( varargin{k})
@@ -80,8 +108,69 @@ classdef M1 < mic.Base
           
             
         end
+
+        function cb(this, src, evt)
+            this.msg('cb()');
+            switch src
+                case this.uibSetWobblePos1
+                    this.uieMotor1Pos1.set(this.uigsMotor1.getValRaw());
+                    this.uieMotor2Pos1.set(this.uigsMotor2.getValRaw());
+                case this.uibSetWobblePos2
+                    this.uieMotor1Pos2.set(this.uigsMotor1.getValRaw());
+                    this.uieMotor2Pos2.set(this.uigsMotor2.getValRaw());
+                case this.uibStartWobble
+
+                    this.startWobble();
+
+                case this.uibStopWobble
+                    this.stopWobble();
+            end
+        end
+
+
+
+        function setWobbleDelayFromPeriod(this, dPeriod)
+
+        end
+
+        function toggleWobble(this, lVal)
+            if lVal
+                this.startWobble();
+            else
+                this.stopWobble();
+            end
+        end
+
+        function startWobble(this)
+            this.lIsWobbling = true;
+
+             % Run program
+             this.galilTCP.writeParameter('posA1', this.uieMotor1Pos1.get());
+             this.galilTCP.writeParameter('posB1', this.uieMotor1Pos2.get());
+             this.galilTCP.writeParameter('posA2', this.uieMotor2Pos1.get());
+             this.galilTCP.writeParameter('posB2', this.uieMotor2Pos2.get());
+
+             this.galilTCP.writeParameter('waitA', this.uieMotor1Dwell.get());
+             this.galilTCP.writeParameter('waitB', this.uieMotor2Dwell.get());
+
+             this.galilTCP.writeParameter('speed', 50000);
+
+             this.galilTCP.runProgram('wobble');
+        end
+
+        function stopWobble(this)
+            this.lIsWobbling = false;
+
+            this.galilTCP.stopAxisMove();
+
+             % Reset axes to 0:
+             this.galilTCP.moveAxisAbsolute(1, 0);
+             this.galilTCP.moveAxisAbsolute(2, 0);
+        end
         
         function build(this, hParent, dLeft, dTop)
+
+
             
             this.hPanel = uipanel(...
                 'Parent', hParent,...
@@ -94,23 +183,74 @@ classdef M1 < mic.Base
                 this.dWidth ...
                 this.dHeight], hParent) ...
             );
+
+            hpIsWobbling = uipanel(...
+                'Parent', this.hPanel,...
+                'Units', 'pixels',...
+                'Title', 'Executing wobble',...
+                'Clipping', 'on',...
+                'Position', mic.Utils.lt2lb([ ...
+                    350 ...
+                        15 ...
+                        270 ...
+                        60], this.hPanel) ...
+            );
+        
+            dLeft = 0;
+            dTop = 15;
+            
+            this.uigslIsWobbling.build(hpIsWobbling, dLeft, dTop);
+
         
 			drawnow;            
 
-            dTop = 50;
+            dTop = 15;
             dLeft = 10;
-            dSep = 24;
+            dSep = 40;
+
+            dColB1 = 430;
+            dColB2 = 540;
+            dColB3 = 600;
+
+
+            this.uiWobbleWorkingMode.build(this.hPanel, dLeft, dTop);
+
+            % this.uibStartWobble.build(this.hPanel, dLeft + dColB1, dTop + 20,  100, 30);
+            % this.uibStopWobble.build(this.hPanel, dLeft + dColB2, dTop+ 20,  100, 30);
+
+
+            dTop = dTop + 80
             
-            this.uigsMotor1.build(this.hPanel, dTop, dLeft);
+            this.uigsMotor1.build(this.hPanel, dLeft, dTop - 8);
+            this.uieMotor1Pos1.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
+            this.uieMotor1Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+
             dTop = dTop + dSep;
             
-            this.uigsMotor2.build(this.hPanel, dTop, dLeft);
+            this.uigsMotor2.build(this.hPanel, dLeft, dTop - 8);
+            this.uieMotor2Pos1.build(this.hPanel,  dLeft + dColB1, dTop - 17,  90, 25);
+            this.uieMotor2Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+            
+            
+            dTop = dTop + dSep;
+            
+            this.uieWobbleDelay.build(this.hPanel, dLeft + 330, dTop - 17,  90, 25);
+            this.uieMotor1Dwell.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
+            this.uieMotor2Dwell.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+
+            % this.uibSetWobblePos1.build(this.hPanel, dLeft + dColB1, dTop,  90, 30);
+            % this.uibSetWobblePos2.build(this.hPanel, dLeft + dColB2, dTop,  90, 30);
+            
             dTop = dTop + dSep;
 
-            this.uigsCoupledMove.build(this.hPanel, dTop, dLeft);
 
-            dTop = dTop + dSep;
-            this.uibZeroEncoders.build(this.hPanel, dTop, dLeft, 100, 30);
+
+
+            % this.uieWobbleLC.build(this.hPanel, dLeft, dTop,  100, 30);
+            % this.uibZeroEncoders.build(this.hPanel, dLeft, dTop,  100, 30);
+            % dTop = dTop + dSep;
+            % this.uigsCoupledMove.build(this.hPanel, dLeft, dTop);
+            
            
            
            
@@ -118,46 +258,85 @@ classdef M1 < mic.Base
 
             
         end
+
+        function disableControls(this)
+
+            % Needs to make sure UI is disabled when CLC is running:
+            this.uigsMotor1.disable();
+            this.uigsMotor2.disable();
+            this.uibSetWobblePos1.disable();
+            this.uibSetWobblePos2.disable();
+            this.uigslIsWobbling.disable();
+        end
+
+        function enableControls(this)
+            this.uigsMotor1.enable();
+            this.uigsMotor2.enable();
+            this.uibSetWobblePos1.enable();
+            this.uibSetWobblePos2.enable();
+            this.uigslIsWobbling.enable();
+        end
+
+        function checkWorkingMode(this)
+            if ~this.uiWobbleWorkingMode.get() 
+                this.disableControls();
+            else
+                this.enableControls();
+            end
+        end
         
         function delete(this)
-            
+            this.uiClock.remove(this.id());
+
             this.msg('delete');
-            
-         
-            
-            
         end  
         
-        
+   
         function st = save(this)
             st = struct();
-        %     st.uiX = this.uiRow.save();
-        %     st.uiY = this.uiCol.save();
 
-        %     st.uieOffsetX = this.uieOffsetX.save();
-        %     st.uieOffsetY = this.uieOffsetY.save();
-        % end
+            st.uigsMotor1 = this.uigsMotor1.save();
+            st.uigsMotor2 = this.uigsMotor2.save();
+
+            st.uieMotor1Pos1 = this.uieMotor1Pos1.get();
+            st.uieMotor1Pos2 = this.uieMotor1Pos2.get();
+            st.uieMotor2Pos1 = this.uieMotor2Pos1.get();
+            st.uieMotor2Pos2 = this.uieMotor2Pos2.get();
+            st.uieWobbleDelay = this.uieWobbleDelay.get();
+        end
         
         function load(this, st)
             % if isfield(st, 'uiRow')
             %     this.uiRow.load(st.uiRow)
             % end
             
-            % if isfield(st, 'uiCol')
-            %     this.uiCol.load(st.uiCol)
-            % end
+            if isfield(st, 'uigsMotor1')
+                this.uigsMotor1.load(st.uigsMotor1)
+            end
 
-            % if isfield(st, 'uieOffsetX')
-            %     this.uieOffsetX.load(st.uieOffsetX)
-            % else
-            %     this.uieOffsetX.set(0)
-            % end
+            if isfield(st, 'uigsMotor2')
+                this.uigsMotor2.load(st.uigsMotor2)
+            end
 
-            % if isfield(st, 'uieOffsetY')
-            %     this.uieOffsetY.load(st.uieOffsetY)
-            % else 
-            %     this.uieOffsetY.set(0)
-            % end
+            if isfield(st, 'uieMotor1Pos1')
+                this.uieMotor1Pos1.set(st.uieMotor1Pos1)
+            end
+
+            if isfield(st, 'uieMotor1Pos2')
+                this.uieMotor1Pos2.set(st.uieMotor1Pos2)
+            end
+
+            if isfield(st, 'uieMotor2Pos1')
+                this.uieMotor2Pos1.set(st.uieMotor2Pos1)
+            end
+
+            if isfield(st, 'uieMotor2Pos2')
+                this.uieMotor2Pos2.set(st.uieMotor2Pos2)
+            end
+
+            if isfield(st, 'uieWobbleDelay')
+                this.uieWobbleDelay.set(st.uieWobbleDelay)
+            end
             
          
         end
@@ -169,6 +348,14 @@ classdef M1 < mic.Base
 
             % Initialize galil
             this.galilTCP = this.hardware.getGalilM1();
+
+            this.uiWobbleWorkingMode = bl12014.ui.SMSMoxaComm(...
+                'cName', [this.cName, 'wobble-working-mode'], ...
+                'uiClock', this.uiClock, ...
+                'hardware', this.hardware, ...
+                'clock', this.clock ...
+            );
+
 
             cPathConfig = fullfile(...
                 bl12014.Utils.pathUiConfig(), ...
@@ -189,15 +376,16 @@ classdef M1 < mic.Base
                 'lShowRel', false, ...
                 'lShowRange', false, ...
                 'lShowStores', false, ...
-                'lShowUnit', false, ...
+                'lShowUnit', true, ...
+                'dWidthUnit', this.dWidthUnit, ...
                 'lUseFunctionCallbacks', true, ...
                 'lShowLabels', false, ...
                 'fhIsVirtual', @() false, ...
                 'config', uiConfig, ...
-                'fhGet', @() this.galilTCP.getAxisAbsolute(1), ...
+                'fhGet', @() this.galilTCP.getAxisPosition(1), ...
                 'fhSet', @(dVal) this.galilTCP.moveAxisAbsolute(1, dVal), ...
                 'cName', [this.cName, 'motor-1'], ...
-                'cLabel', 'M1 Motor 1' ...
+                'cLabel', 'M1 Motor A' ...
             );
 
             this.uigsMotor2 =   mic.ui.device.GetSetNumber(...
@@ -209,15 +397,16 @@ classdef M1 < mic.Base
                 'lShowRel', false, ...
                 'lShowRange', false, ...
                 'lShowStores', false, ...
-                'lShowUnit', false, ...
+                'lShowUnit', true, ...
+                    'dWidthUnit', this.dWidthUnit, ...
                 'lUseFunctionCallbacks', true, ...
                 'lShowLabels', false, ...
                 'fhIsVirtual', @() false, ...
                 'config', uiConfig, ...
-                'fhGet', @() this.galilTCP.getAxisAbsolute(2), ...
+                'fhGet', @() this.galilTCP.getAxisPosition(2), ...
                 'fhSet', @(dVal) this.galilTCP.moveAxisAbsolute(12, dVal), ...
                 'cName', [this.cName, 'motor-2'], ...
-                'cLabel', 'M1 Motor 2' ...
+                'cLabel', 'M1 Motor B' ...
             );
 
             this.uigsCoupledMove =   mic.ui.device.GetSetNumber(...
@@ -229,7 +418,7 @@ classdef M1 < mic.Base
                 'lShowRel', false, ...
                 'lShowRange', false, ...
                 'lShowStores', false, ...
-                'lShowUnit', false, ...
+                'lShowUnit', true, ...
                 'lUseFunctionCallbacks', true, ...
                 'lShowLabels', false, ...
                 'fhIsVirtual', @() false, ...
@@ -240,18 +429,90 @@ classdef M1 < mic.Base
                 'cLabel', 'M1 Tilt' ...
             );
 
-            this.uibZeroEncoders = mic.ui.common.Button('cText', 'Zero encoders' , 'fhDirectCallback', @(src,evt) this.zeroEncoders());
+            this.uieMotor1Pos1 = mic.ui.common.Edit('cLabel', 'Wobble Pos 1', 'cType', 'd');
+            this.uieMotor1Pos2 = mic.ui.common.Edit('cLabel', 'Wobble Pos 2', 'cType', 'd');
+            this.uieMotor2Pos1 = mic.ui.common.Edit('cLabel', 'Wobble Pos 1', 'cType', 'd');
+            this.uieMotor2Pos2 = mic.ui.common.Edit('cLabel', 'Wobble Pos 2', 'cType', 'd');
+            this.uieMotor1Dwell = mic.ui.common.Edit('cLabel', 'Dwell 1 (ms)', 'cType', 'd');
+            this.uieMotor2Dwell = mic.ui.common.Edit('cLabel', 'Dwell 2 (ms)', 'cType', 'd');
+            this.uieWobbleDelay = mic.ui.common.Edit('cLabel', 'Move Latency (ms)', 'cType', 'd');
+
+            % If the first time then set values:
+            if (this.uieMotor1Pos1.get() == 0 ...
+                && this.uieMotor1Pos2.get() == 0 ...
+                && this.uieMotor2Pos1.get() == 0 ...
+                && this.uieMotor2Pos2.get() == 0 ...
+                && this.uieWobbleDelay.get() == 0)
+
+                this.uieMotor1Pos1.set(-1500);
+                this.uieMotor1Pos2.set(1500);
+                this.uieMotor2Pos1.set(1500);
+                this.uieMotor2Pos2.set(-1500);
+                this.uieWobbleDelay.set(500);
+                this.uieMotor1Dwell.set(1000);
+                this.uieMotor2Dwell.set(1000);
+            end
+
+            this.uibSetWobblePos1 = mic.ui.common.Button('cText', 'Set Wobble Pos 1' , 'fhDirectCallback', @this.cb);
+            this.uibSetWobblePos2 = mic.ui.common.Button('cText', 'Set Wobble Pos 2' , 'fhDirectCallback', @this.cb);
+            
+            this.uieMotor1WobbleDelay = mic.ui.common.Edit('cLabel', 'Wobble Delay 1', 'cType', 'd');
+            this.uieMotor2WobbleDelay = mic.ui.common.Edit('cLabel', 'Wobble Delay 2', 'cType', 'd');
+
+            this.uibStartWobble = mic.ui.common.Button('cText', 'Execute Wobble' , 'fhDirectCallback', @this.cb);
+            this.uibStopWobble = mic.ui.common.Button('cText', 'Stop Wobble' , 'fhDirectCallback',  @this.cb);
+
+            ceVararginCommandToggle = {...
+                'cTextTrue', 'Stop', ...
+                'cTextFalse', 'Start' ...
+            };
+
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-logical', ...
+                'config-sms-moxa.json' ...
+            );
+        
+            config = mic.config.GetSetLogical(...
+                'cPath',  cPathConfig ...
+            );
+
+            this.uigslIsWobbling =  mic.ui.device.GetSetLogical(...
+                'clock', this.clock, ...
+                'config', config, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowDevice', false, ...
+                'lShowLabels', false, ...
+                'lShowInitButton', false, ...
+                'fhGet', @() this.lIsWobbling, ...
+                'fhSet', @(lVal) this.toggleWobble(lVal), ...
+                'lUseFunctionCallbacks', true, ...
+                'ceVararginCommandToggle', ceVararginCommandToggle, ...
+                'cName', [this.cName, 'execute-wobble'], ...
+                'cLabel', 'M1 Wobbler' ...
+            );
+            % this.uieWobbleLC = mic.ui.common.Edit('cLabel', 'Wobble LC', 'cType', 'c');
+
+            % this.uieWobbleLC.setVal('[1, 1]');
+
+            this.uibZeroEncoders = mic.ui.common.Button('cText', 'Reset encoders' , 'fhDirectCallback', @(src,evt) this.zeroEncoders());
             this.uibStop = mic.ui.common.Button('cText', 'Stop' , 'fhDirectCallback', @(src,evt) this.galilTCP.stop());
 
             
            
 
+            this.uiClock.add(...
+                @this.checkWorkingMode, ...
+                this.id(), ...
+                1 ...
+            );
             
             
         end
 
         function makeCoupledMove(this, dVal)
-            dPos = this.galilTCP.getAbs(1:2);
+            dPos(1) = this.galilTCP.getAxisPosition(1);
+            dPos(2) = this.galilTCP.getAxisPosition(2);
 
             dTarget = dPos + [1;-1]*dVal;
 
@@ -260,7 +521,9 @@ classdef M1 < mic.Base
         end
 
         function dPos = getCoupledPos(this)
-            dPos = this.galilTCP.getAbs(1:2);
+            dPos(1) = this.galilTCP.getAxisPosition(1);
+            dPos(2) = this.galilTCP.getAxisPosition(2);
+
             dPos = (dPos(1) - dPos(2))/2;
         end
 
