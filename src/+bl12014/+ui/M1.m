@@ -10,7 +10,7 @@ classdef M1 < mic.Base
     properties (SetAccess = private)
         
         dWidth = 680
-        dHeight = 200
+        dHeight = 240
 
         dWidthName = 75
         dWidthUnit = 90
@@ -30,6 +30,7 @@ classdef M1 < mic.Base
 
         uigsMotor1
         uigsMotor2
+        uigsMotor3
         uigsCoupledMove
 
         uigslIsWobbling
@@ -59,6 +60,10 @@ classdef M1 < mic.Base
         uiWobbleWorkingMode
 
         % uieWobbleLC
+        
+        
+        % Store position locally so we don't need to do as many requests:
+        dPos = [0,0, 0]
  
         
     end
@@ -145,32 +150,33 @@ classdef M1 < mic.Base
             this.lIsWobbling = true;
 
              % Run program
-             this.galilTCP.writeParameter('posA1', this.uieMotor1Pos1.get());
-             this.galilTCP.writeParameter('posB1', this.uieMotor1Pos2.get());
-             this.galilTCP.writeParameter('posA2', this.uieMotor2Pos1.get());
-             this.galilTCP.writeParameter('posB2', this.uieMotor2Pos2.get());
+             this.hardware.getGalilM1().writeParameter('posA1', this.uieMotor1Pos1.get());
+             this.hardware.getGalilM1().writeParameter('posB1', this.uieMotor2Pos1.get());
+             this.hardware.getGalilM1().writeParameter('posA2', this.uieMotor1Pos2.get());
+             this.hardware.getGalilM1().writeParameter('posB2', this.uieMotor2Pos2.get());
 
-             this.galilTCP.writeParameter('waitA', this.uieMotor1Dwell.get());
-             this.galilTCP.writeParameter('waitB', this.uieMotor2Dwell.get());
+             this.hardware.getGalilM1().writeParameter('waitA', this.uieMotor1Dwell.get());
+             this.hardware.getGalilM1().writeParameter('waitB', this.uieMotor2Dwell.get());
 
-             this.galilTCP.writeParameter('speed', 50000);
+             this.hardware.getGalilM1().writeParameter('speed', 50000);
 
-             this.galilTCP.runProgram('wobble');
+             this.hardware.getGalilM1().runProgram('wobble');
         end
 
         function stopWobble(this)
             this.lIsWobbling = false;
 
-            this.galilTCP.stopAxisMove();
+            this.hardware.getGalilM1().stopAxisMove();
 
              % Reset axes to 0:
-             this.galilTCP.moveAxisAbsolute(1, 0);
-             this.galilTCP.moveAxisAbsolute(2, 0);
+             this.hardware.getGalilM1().moveAxisAbsolute(1, 0);
+             this.hardware.getGalilM1().moveAxisAbsolute(2, 0);
         end
         
         function build(this, hParent, dLeft, dTop)
 
 
+            
             
             this.hPanel = uipanel(...
                 'Parent', hParent,...
@@ -233,8 +239,8 @@ classdef M1 < mic.Base
             
             
             dTop = dTop + dSep;
-            
-            this.uieWobbleDelay.build(this.hPanel, dLeft + 330, dTop - 17,  90, 25);
+            this.uigsMotor3.build(this.hPanel, dLeft, dTop - 8);
+
             this.uieMotor1Dwell.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
             this.uieMotor2Dwell.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
 
@@ -242,6 +248,7 @@ classdef M1 < mic.Base
             % this.uibSetWobblePos2.build(this.hPanel, dLeft + dColB2, dTop,  90, 30);
             
             dTop = dTop + dSep;
+            this.uieWobbleDelay.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
 
 
 
@@ -264,6 +271,7 @@ classdef M1 < mic.Base
             % Needs to make sure UI is disabled when CLC is running:
             this.uigsMotor1.disable();
             this.uigsMotor2.disable();
+            this.uigsMotor3.disable();
             this.uibSetWobblePos1.disable();
             this.uibSetWobblePos2.disable();
             this.uigslIsWobbling.disable();
@@ -272,6 +280,7 @@ classdef M1 < mic.Base
         function enableControls(this)
             this.uigsMotor1.enable();
             this.uigsMotor2.enable();
+            this.uigsMotor3.enable();
             this.uibSetWobblePos1.enable();
             this.uibSetWobblePos2.enable();
             this.uigslIsWobbling.enable();
@@ -279,15 +288,22 @@ classdef M1 < mic.Base
 
         function checkWorkingMode(this)
             if ~this.uiWobbleWorkingMode.get() 
-                this.disableControls();
+%                 this.disableControls(); temporarily force enable cause we
+%                 don't trust CLC
+                this.enableControls();
+
             else
                 this.enableControls();
             end
         end
         
         function delete(this)
-            this.uiClock.remove(this.id());
-
+            try
+                this.uiClock.remove(this.id());
+            catch
+                
+            end
+            
             this.msg('delete');
         end  
         
@@ -297,6 +313,7 @@ classdef M1 < mic.Base
 
             st.uigsMotor1 = this.uigsMotor1.save();
             st.uigsMotor2 = this.uigsMotor2.save();
+            st.uigsMotor3 = this.uigsMotor3.save();
 
             st.uieMotor1Pos1 = this.uieMotor1Pos1.get();
             st.uieMotor1Pos2 = this.uieMotor1Pos2.get();
@@ -316,6 +333,10 @@ classdef M1 < mic.Base
 
             if isfield(st, 'uigsMotor2')
                 this.uigsMotor2.load(st.uigsMotor2)
+            end
+
+            if isfield(st, 'uigsMotor3')
+                this.uigsMotor3.load(st.uigsMotor3)
             end
 
             if isfield(st, 'uieMotor1Pos1')
@@ -342,7 +363,20 @@ classdef M1 < mic.Base
         end
         
         
+        function refreshPositions(this)
+            this.dPos = this.hardware.getGalilM1().getAxisPosition(1:3);
+        end
         
+        function d = getPos(this, channel)
+%             this.dPos/-8000
+
+            if length(this.dPos) < channel
+                d = 0;
+                return
+            end
+            
+            d = this.dPos(channel);
+        end
         
         function init(this)   
 
@@ -382,8 +416,8 @@ classdef M1 < mic.Base
                 'lShowLabels', false, ...
                 'fhIsVirtual', @() false, ...
                 'config', uiConfig, ...
-                'fhGet', @() this.galilTCP.getAxisPosition(1), ...
-                'fhSet', @(dVal) this.galilTCP.moveAxisAbsolute(1, dVal), ...
+                'fhGet', @()this.getPos(1), ...
+                'fhSet', @(dVal) this.hardware.getGalilM1().moveAxisAbsolute(1, dVal), ...
                 'cName', [this.cName, 'motor-1'], ...
                 'cLabel', 'M1 Motor A' ...
             );
@@ -403,11 +437,44 @@ classdef M1 < mic.Base
                 'lShowLabels', false, ...
                 'fhIsVirtual', @() false, ...
                 'config', uiConfig, ...
-                'fhGet', @() this.galilTCP.getAxisPosition(2), ...
-                'fhSet', @(dVal) this.galilTCP.moveAxisAbsolute(12, dVal), ...
+                'fhGet', @()this.getPos(2), ...
+                'fhSet', @(dVal) this.hardware.getGalilM1().moveAxisAbsolute(2, dVal), ...
                 'cName', [this.cName, 'motor-2'], ...
                 'cLabel', 'M1 Motor B' ...
             );
+
+            
+            % cPathConfig = fullfile(...
+            %     bl12014.Utils.pathUiConfig(), ...
+            %     'get-set-number', ...
+            %     'config-M1_d.json' ...
+            % );
+
+            % uiConfig = mic.config.GetSetNumber(...
+            %     'cPath',  cPathConfig ...
+            % );
+
+            this.uigsMotor3 =   mic.ui.device.GetSetNumber(...
+                'clock', this.clock, ...
+                'uiClock', this.uiClock, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowInitButton', false, ...
+                'lShowZero', false, ...
+                'lShowRel', false, ...
+                'lShowRange', false, ...
+                'lShowStores', false, ...
+                'lShowUnit', true, ...
+                    'dWidthUnit', this.dWidthUnit, ...
+                'lUseFunctionCallbacks', true, ...
+                'lShowLabels', false, ...
+                'fhIsVirtual', @() false, ...
+                'config', uiConfig, ...
+                'fhGet', @()this.getPos(3), ...
+                'fhSet', @(dVal) this.hardware.getGalilM1().moveAxisAbsolute(3, dVal), ...
+                'cName', [this.cName, 'motor-3'], ...
+                'cLabel', 'M1 Motor C' ...
+            );
+
 
             this.uigsCoupledMove =   mic.ui.device.GetSetNumber(...
                 'clock', this.clock, ...
@@ -496,33 +563,39 @@ classdef M1 < mic.Base
             % this.uieWobbleLC.setVal('[1, 1]');
 
             this.uibZeroEncoders = mic.ui.common.Button('cText', 'Reset encoders' , 'fhDirectCallback', @(src,evt) this.zeroEncoders());
-            this.uibStop = mic.ui.common.Button('cText', 'Stop' , 'fhDirectCallback', @(src,evt) this.galilTCP.stop());
+            this.uibStop = mic.ui.common.Button('cText', 'Stop' , 'fhDirectCallback', @(src,evt) this.hardware.getGalilM1().stop());
 
             
            
-
+% 
+%             this.uiClock.add(...
+%                 @this.checkWorkingMode, ...
+%                 this.id(), ...
+%                 1 ...
+%             );
+%         
             this.uiClock.add(...
-                @this.checkWorkingMode, ...
-                this.id(), ...
-                1 ...
-            );
+                @this.refreshPositions, ...
+                [this.id(), '-refresh'], ...
+                0.5 ...
+                );
             
             
         end
 
         function makeCoupledMove(this, dVal)
-            dPos(1) = this.galilTCP.getAxisPosition(1);
-            dPos(2) = this.galilTCP.getAxisPosition(2);
+            dPos(1) = this.hardware.getGalilM1().getAxisPosition(1);
+            dPos(2) = this.hardware.getGalilM1().getAxisPosition(2);
 
             dTarget = dPos + [1;-1]*dVal;
 
-            this.galilTCP.moveAbs(1, dTarget(1));
-            this.galilTCP.moveAbs(2, dTarget(2));
+            this.hardware.getGalilM1().moveAbs(1, dTarget(1));
+            this.hardware.getGalilM1().moveAbs(2, dTarget(2));
         end
 
         function dPos = getCoupledPos(this)
-            dPos(1) = this.galilTCP.getAxisPosition(1);
-            dPos(2) = this.galilTCP.getAxisPosition(2);
+            dPos(1) = this.hardware.getGalilM1().getAxisPosition(1);
+            dPos(2) = this.hardware.getGalilM1().getAxisPosition(2);
 
             dPos = (dPos(1) - dPos(2))/2;
         end
@@ -531,7 +604,7 @@ classdef M1 < mic.Base
 
             a = questdlg('Are you sure you want to zero the encoders? This cannot be undone', 'Zero Encoders', 'Yes', 'No', 'No');
             if strcmp(a, 'Yes')
-                this.galilTCP.zeroEncoders();
+                this.hardware.getGalilM1().zeroEncoders();
             end
         end
         

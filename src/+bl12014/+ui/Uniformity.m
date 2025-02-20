@@ -319,6 +319,23 @@ classdef Uniformity < mic.Base
 
         end 
 
+        
+        % Sets M1 motor 1 and 2 to the values in the series:
+        function lVal = setM1StateUniformitySeries(this, k)
+            dVals = this.dWobbleCoordinates(k,:);
+            this.uiM1.uigsMotor1.setDestCalAndGo(dVals(1), 'Counts');
+            this.uiM1.uigsMotor2.setDestCalAndGo(dVals(2), 'Counts');
+
+            lVal = true;
+        end
+
+        % Sets M1 motor 1 and 2 to the values in the series:
+        function resetM1ZeroUniformitySeries(this)
+            this.uiM1.uigsMotor1.setDestCalAndGo(0, 'Counts');
+            this.uiM1.uigsMotor2.setDestCalAndGo(0, 'Counts');
+        end
+
+
         function makeAutoWobbleImagesDir(this)
             % Make dir for these images
             cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
@@ -592,19 +609,19 @@ classdef Uniformity < mic.Base
 
 
             this.uibAcquire.build(hPanel, dLeft + 230 + 105, dTop, 100, 24);
-            dTop = dTop + 50;
+            dTop = dTop + 30;
             this.uigsExposure.build(hPanel, dLeft, dTop);
 
-            dTop = dTop + 50;
+            dTop = dTop + 30;
             dLeft = dLeft + 5;
             this.uieSaveImage.build(hPanel, dLeft, dTop, 200, 30);
             this.uibSave.build(hPanel, dLeft + 210, dTop + 10, 100, 30);
 
 
-            dTop = dTop + 50;
+            dTop = dTop + 45;
 
             this.uiM1.build(hPanel, dLeft, dTop);
-            dTop = dTop + 300;
+            dTop = dTop + 350;
 
             hPanel = uipanel(...
                 'Parent', hParent,...
@@ -1431,19 +1448,6 @@ classdef Uniformity < mic.Base
 
             % Execute the task sequence:
             this.hUniformityTaskSequence.execute();
-        end
-
-        % Sets M1 motor 1 and 2 to the values in the series:
-        function setM1StateUniformitySeries(this, k)
-            dVals = this.dWobbleCoordinates(k,:);
-            this.uiM1.uiM1Motor1.setDestCalAndGo(dVals(1), 'counts');
-            this.uiM1.uiM1Motor2.setDestCalAndGo(dVals(2), 'counts');
-        end
-
-        % Sets M1 motor 1 and 2 to the values in the series:
-        function resetM1ZeroUniformitySeries(this)
-            this.uiM1.uiM1Motor1.setDestCalAndGo(0, 'counts');
-            this.uiM1.uiM1Motor2.setDestCalAndGo(0, 'counts');
         end
 
        

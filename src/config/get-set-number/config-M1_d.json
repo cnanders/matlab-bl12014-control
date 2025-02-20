@@ -2,14 +2,14 @@
 	"delay": 0.5,
 	"units": [
 		{
-			"name": "Counts",
-			"slope": -1,
+			"name": "counts",
+			"slope": 1,
 			"offset": 0,
 			"precision": 0
 		},
 		{
-			"name": "Revs",
-			"slope": -0.0001250,
+			"name": "revs",
+			"slope": 0.0001250,
 			"offset": 0,
 			"precision": 2
 		}	
