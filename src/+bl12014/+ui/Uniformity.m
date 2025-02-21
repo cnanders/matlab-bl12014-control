@@ -315,19 +315,33 @@ classdef Uniformity < mic.Base
 
 
             this.lTaskAcquireSuccess = true;
-
-
         end 
 
         
         % Sets M1 motor 1 and 2 to the values in the series:
-        function lVal = setM1StateUniformitySeries(this, k)
+        function setM1StateUniformitySeries(this, k)
             dVals = this.dWobbleCoordinates(k,:);
             this.uiM1.uigsMotor1.setDestCalAndGo(dVals(1), 'Counts');
             this.uiM1.uigsMotor2.setDestCalAndGo(dVals(2), 'Counts');
-
-            lVal = true;
         end
+
+        function lVal = isM1StateSet(this, k)
+            dValTargets = this.dWobbleCoordinates(k,:);
+            dVal1 = this.uiM1.uigsMotor1.getValCal('Counts');
+            dVal2 = this.uiM1.uigsMotor2.getValCal('Counts');
+
+            dTol = 20; % 20 counts
+
+            % if values match within tolerance:
+            if (abs(dValTargets(1) - dVal1) < dTol) && (abs(dValTargets(2) - dVal2) < dTol)
+                lVal = true;
+            else
+                lVal = false;
+            end
+
+        end
+
+
 
         % Sets M1 motor 1 and 2 to the values in the series:
         function resetM1ZeroUniformitySeries(this)
@@ -1271,6 +1285,10 @@ classdef Uniformity < mic.Base
             end
             if (this.uieROIR2.get() == 0)
                 this.uieROIR2.set(30);
+            end
+
+            if (this.uieM1WobbleStepSize.get() == 0)
+                this.uieROIR2.set(250);
             end
 
             
