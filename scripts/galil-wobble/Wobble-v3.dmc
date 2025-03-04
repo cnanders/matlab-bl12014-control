@@ -1,0 +1,33 @@
+#wobble
+'count=0
+'posA1=2000
+'posA2=-2000
+'posB1=-2000
+'posB2=2000
+'waitA=100
+'waitB=100
+'speed=15000
+'
+'DP ,0,0
+SH BC
+'PA ,pos,-pos
+#loop
+'count=count+1
+'PR ,pos,-pos
+AC ,500000,500000
+DC ,500000,500000
+SP ,speed,speed
+BG BC
+AM BC
+PA ,posA1,posA2
+BG BC
+AM BC
+WT waitA
+PA ,posB1,posB2
+BG BC
+AM BC
+WT waitB
+'JP#loop,(count<50)
+JP#loop
+MO BC
+EN
