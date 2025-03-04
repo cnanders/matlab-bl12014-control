@@ -537,6 +537,9 @@ classdef Uniformity < mic.Base
             'uieROIC1', ...
             'uieROIC2', ...
             'uieIntrinsicDwellTime', ...
+            'uieNumWobble', ...
+            'uieM1WobbleStepSize', ...
+            'uieM1WobbleAngle', ...
             'uieMinDwellTime' ...
          };
     end
@@ -1410,7 +1413,6 @@ classdef Uniformity < mic.Base
 
             if ~isempty(this.hUniformityTaskSequence) &&  isa(this.hUniformityTaskSequence, 'mic.TaskSequence')
                 this.hUniformityTaskSequence.abort();
-                this.hUniformityTaskSequence.delete();
                 this.hUniformityTaskSequence = [];
                 msgbox('Aborted task sequence');
             else
@@ -1628,7 +1630,9 @@ classdef Uniformity < mic.Base
             dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
 
             % Append the results to the result vector:
-            dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
+%             dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
+            dResultVec = dResultPairs;
+            
 
              % Sort result vector by error:
              this.dResultVec = sortrows(dResultVec, 1);
@@ -1639,7 +1643,7 @@ classdef Uniformity < mic.Base
                  sprintf('Error\t\t\t Coefficeints  Image-idx    DoseFac   Uniformity') ...
                  };
  
-             dNumResults = 25;
+             dNumResults = length(this.dResultVec);
  
  
              for k = 1:dNumResults
@@ -1865,7 +1869,25 @@ classdef Uniformity < mic.Base
             end 
             stem(dElms/sum(dElms), 'linewidth', 3);
 
-            
+            % Update M1:
+            ceCombo = this.dResultVec(this.dResultIdx, :);
+
+            dCoeff = ceCombo{2};
+            dIdx = this.dCenterIdx - ceCombo{3};
+            % Normalize coefficients:
+            dCoeff = dCoeff / sum(dCoeff);
+
+            % Unit vector:
+            dU = [1, -1] * this.uieM1WobbleStepSize.get();
+
+            % Rotate about angle:
+            dAngle = this.uieM1WobbleAngle.get();
+            dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
+
+            dV1 = dIdx(1) * dRotUnit;
+            dV2 = dIdx(2) * dRotUnit;
+
+            this.uiM1.setWobbleParamsFromCombo(dV1, dV2, dCoeff);
         end
         
         function onSetDirToLatest(this, src, evt)

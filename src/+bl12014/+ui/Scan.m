@@ -1938,9 +1938,15 @@ classdef Scan < mic.Base
                         end
                         this.stScanSetContract.wobbleWorkingMode.lIssued = true;
                     case 'M1Wobble'
+
+                        % Get coeff rat:
+                        ceCombo = this.uiUniformity.dResultVec(this.uiUniformity.dResultIdx, :);
+                        dCoeff = ceCombo{2};
+
                         if stValue.M1Wobble.enable == 1
                             this.uiUniformity.uiM1.setWobbleDelayFromPeriod(...
-                                stValue.M1Wobble.dDose / this.uiFluxDensity.get() ...
+                                stValue.M1Wobble.dDose / this.uiFluxDensity.get(), ...
+                                dCoeff ...
                             );
 
                             this.uiUniformity.uiM1.startWobble();
@@ -3409,7 +3415,7 @@ classdef Scan < mic.Base
             
             this.uiListActive.setOptions({});
              
-            cMsg = sprintf('The FEM was aborted. The list of added prescriptions has been purged.');
+            cMsg = sprintf('The FEM was aborted. The list of added prescriptions has been purged. %s', cMsg);
             cTitle = 'Fem Aborted';
             cIcon = 'help';
             h = msgbox(cMsg, cTitle, cIcon, 'modal');  
@@ -3456,11 +3462,11 @@ classdef Scan < mic.Base
                 return;
             end
 
-            if this.hardware.getSMS().getWobbleWorkingMode()
-                this.abort(' Please disable wobble working mode before starting the FEM.');
-                lReturn = false;
-                return;
-            end
+%             if this.hardware.getSMS().getWobbleWorkingMode()
+%                 this.abort(' Please disable wobble working mode before starting the FEM.');
+%                 lReturn = false;
+%                 return;
+%             end
             
             % Verify that DMIs are zeroed:
             % this.uiMFDriftMonitor.apiDriftMonitor.setDMIZero();

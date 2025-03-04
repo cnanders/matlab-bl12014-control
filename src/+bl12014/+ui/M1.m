@@ -64,6 +64,10 @@ classdef M1 < mic.Base
         
         % Store position locally so we don't need to do as many requests:
         dPos = [0,0, 0]
+
+
+        % Uniformity vectors:
+        dCoefRat = 1;
  
         
     end
@@ -132,9 +136,33 @@ classdef M1 < mic.Base
             end
         end
 
+        function setWobbleParamsFromCombo(this, dV1, dV2, dCoeff)
+            this.uieMotor1Pos1.set(dV1(1));
+            this.uieMotor2Pos1.set(dV1(2));
+            this.uieMotor1Pos2.set(dV2(1));
+            this.uieMotor2Pos2.set(dV2(2));
+
+            dCoefRat = dCoeff(2)/dCoeff(1);
+
+            dStartDwell = 1000;
+
+            this.uieMotor1Dwell.set(dStartDwell)
+            this.uieMotor2Dwell.set(floor(dStartDwell*dCoefRat))
+            
+        end
+        
 
 
-        function setWobbleDelayFromPeriod(this, dPeriod)
+        function setWobbleDelayFromPeriod(this, dPeriod, dCoeff)
+            dT1 = dCoeff(1)/(dCoeff(1) + dCoeff(2));
+            dT2 = dCoeff(2)/(dCoeff(1) + dCoeff(2));
+
+            dDelay = this.uieWobbleDelay.get();
+            dPeriod = dPeriod * 1000 - 2*dDelay;
+
+            this.uieMotor1Dwell.set(dT1 * dPeriod);
+            this.uieMotor2Dwell.set(dT2 * dPeriod);
+
 
         end
 
@@ -150,15 +178,15 @@ classdef M1 < mic.Base
             this.lIsWobbling = true;
 
              % Run program
-             this.hardware.getGalilM1().writeParameter('posA1', this.uieMotor1Pos1.get());
-             this.hardware.getGalilM1().writeParameter('posB1', this.uieMotor2Pos1.get());
-             this.hardware.getGalilM1().writeParameter('posA2', this.uieMotor1Pos2.get());
-             this.hardware.getGalilM1().writeParameter('posB2', this.uieMotor2Pos2.get());
+             this.hardware.getGalilM1().writeParameter('posA1', round(this.uieMotor1Pos1.get()));
+             this.hardware.getGalilM1().writeParameter('posB1', round(this.uieMotor2Pos1.get()));
+             this.hardware.getGalilM1().writeParameter('posA2', round(this.uieMotor1Pos2.get()));
+             this.hardware.getGalilM1().writeParameter('posB2', round(this.uieMotor2Pos2.get()));
 
-             this.hardware.getGalilM1().writeParameter('waitA', this.uieMotor1Dwell.get());
-             this.hardware.getGalilM1().writeParameter('waitB', this.uieMotor2Dwell.get());
+             this.hardware.getGalilM1().writeParameter('waitA', round(this.uieMotor1Dwell.get()));
+             this.hardware.getGalilM1().writeParameter('waitB', round(this.uieMotor2Dwell.get()));
 
-             this.hardware.getGalilM1().writeParameter('speed', 50000);
+             this.hardware.getGalilM1().writeParameter('speed', 90000);
 
              this.hardware.getGalilM1().runProgram('wobble');
         end
@@ -320,6 +348,7 @@ classdef M1 < mic.Base
             st.uieMotor2Pos1 = this.uieMotor2Pos1.get();
             st.uieMotor2Pos2 = this.uieMotor2Pos2.get();
             st.uieWobbleDelay = this.uieWobbleDelay.get();
+
         end
         
         function load(this, st)
