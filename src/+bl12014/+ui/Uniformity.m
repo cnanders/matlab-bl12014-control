@@ -1679,9 +1679,11 @@ classdef Uniformity < mic.Base
             dResultVec = {};
 
             % dResultIdeal = this.computeIdeal(D, b, dFluxCenter, dROIr, dROIc);
+            tic
             dResultPairs = this.computePairs(D, b, dFluxCenter, 15, dROIr, dROIc);
             dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
             dResultQuads = this.computeQuadruples(D, b, dFluxCenter, 10, dROIr, dROIc);
+            toc
 
             % Append the results to the result vector:
             dResultVec = [dResultVec; dResultQuads; dResultPairs; dResultTriples];
@@ -1706,7 +1708,7 @@ classdef Uniformity < mic.Base
                 dCoeff = dResultVec{2};
                 dCoeffStr = '[';
                 for m = 1:length(dCoeff)
-                    dCoeffStr = [dCoeffStr, sprintf('%.3f\t', dCoeff(m))];
+                    dCoeffStr = [dCoeffStr, sprintf('%.2f ', dCoeff(m))];
                 end
                 dCoeffStr = [dCoeffStr, ']'];
 
@@ -1714,11 +1716,11 @@ classdef Uniformity < mic.Base
                 dIndex = dResultVec{3};
                 dIndexStr = '[';
                 for m = 1:length(dIndex)
-                    dIndexStr = [dIndexStr, sprintf('%d\t', dIndex(m))];
+                    dIndexStr = [dIndexStr, sprintf('%d ', dIndex(m))];
                 end
                 dIndexStr = [dIndexStr, ']'];
                 
-                 cVal = sprintf('%.0f\t  %s\t    %s\t   %.3f\t %.3f', dResultVec{1}, dCoeffStr, dIndexStr, dResultVec{4}, dResultVec{5});
+                 cVal = sprintf('%.0f %s %s %.3f %.3f', dResultVec{1}, dCoeffStr, dIndexStr, dResultVec{4}, dResultVec{5});
                  ceResults{end + 1} = cVal;
              end
              

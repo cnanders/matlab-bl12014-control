@@ -1954,6 +1954,8 @@ classdef Scan < mic.Base
                             this.uiUniformity.uiM1.stopWobble();
                         end
                         this.stScanSetContract.M1Wobble.lIssued = true;
+                        this.stScanSetContract.M1Wobble.lAchieved = true;
+
                     case 'workingMode'
 
                         if stValue.workingMode == 5

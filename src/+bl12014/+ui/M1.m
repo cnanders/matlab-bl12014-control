@@ -201,12 +201,15 @@ classdef M1 < mic.Base
             dCoords = eval(this.uieWobbleAr.get());
 
             % Set up the wobble program:
-            this.hardware.getGalilM1().writeParameter('NUM_POS', length(dDwells));
+            dNumPos = length(dDwells);
+            this.hardware.getGalilM1().writeParameter('NUM_POS',dNumPos);
             for k = 1:length(dDwells)
-                this.hardware.getGalilM1().writeParameter(sprintf('POS_B[%d]', k), dCoords(k, 1));
-                this.hardware.getGalilM1().writeParameter(sprintf('POS_C[%d]', k), dCoords(k, 2));
-                this.hardware.getGalilM1().writeParameter(sprintf('DWELL[%d]', k), dDwells(k));
+                this.hardware.getGalilM1().writeParameter(sprintf('POS_B%d', k - 1), dCoords(k, 1));
+                this.hardware.getGalilM1().writeParameter(sprintf('POS_C%d', k - 1), dCoords(k, 2));
+                this.hardware.getGalilM1().writeParameter(sprintf('DWELL%d', k - 1), dDwells(k));
             end
+            
+           
 
             this.hardware.getGalilM1().writeParameter('speed', 90000);
 

@@ -1,51 +1,70 @@
 #wobbleAr
+' Define variables for positions and dwell times
+'POS_B0 = 100  ' Position for motor B, step 0
+'POS_C0 = 50   ' Position for motor C, step 0
+'DWELL0 = 100  ' Dwell time for step 0
 
-' User sets speed NUM_POS, POS_B[], POS_C[], and DWELL[] before running
+'POS_B1 = 200  ' Position for motor B, step 1
+'POS_C1 = 100  ' Position for motor C, step 1
+'DWELL1 = 200  ' Dwell time for step 1
 
-' Allocate memory for arrays
-DM POS_B[4], POS_C[4], DWELL[4]  ' Increase to 4 positions
+'POS_B2 = 300  ' Position for motor B, step 2
+'POS_C2 = 150  ' Position for motor C, step 2
+'DWELL2 = 300  ' Dwell time for step 2
 
-' USER MUST SET THESE VALUES BEFORE RUNNING PROGRAM
-' Example:
-' POS_B[0] = 10000
-' POS_B[1] = -10000
-' POS_C[0] = 10000
-' POS_C[1] = -10000
-' DWELL[0] = 500  ' Target dwell time in milliseconds
-' DWELL[1] = 500  
-' NUM_POS = 2  ' Number of positions
+'POS_B3 = 400  ' Position for motor B, step 3
+'POS_C3 = 200  ' Position for motor C, step 3
+'DWELL3 = 400  ' Dwell time for step 3
 
+' Set the number of positions
+'NUM_POS = 4  ' Maximum of 4 positions
 
 ' Enable motors B and C
-SH BC  
+SH B, C  
 
 ' Set acceleration and deceleration
 AC ,500000, 500000  
 DC ,500000, 500000  
 
 ' Set speed for B and C
-SP ,speed, speed  
+SP ,900000, 900000  
 
-k = 0  
+k = 0  ' Initialize step counter
 
 #loop
-    ' Start timing cycle
-    TM 0   ' Reset the timer
+    ' Reset timer before motion starts
+    TM 0   
 
-    ' Move motors B and C to the kth position
-    POSB = POS_B[k]  
-    POSC = POS_C[k]  
+    ' Retrieve positions based on step counter
+    IF (k == 0)
+        POSB = POS_B0
+        POSC = POS_C0
+        DW = DWELL0
+    ELSEIF (k == 1)
+        POSB = POS_B1
+        POSC = POS_C1
+        DW = DWELL1
+    ELSEIF (k == 2)
+        POSB = POS_B2
+        POSC = POS_C2
+        DW = DWELL2
+    ELSEIF (k == 3)
+        POSB = POS_B3
+        POSC = POS_C3
+        DW = DWELL3
+    ENDIF
+
+    ' Command motors to absolute positions
     PA ,POSB, POSC  
-    BG BC  
+    BG B, C  
 
-    ' Wait for motion to complete
-    AM BC  
+    ' Wait for motion completion
+    AM B, C  
 
-    ' Check elapsed time
-    ELAPSED = TI  ' Get elapsed time in milliseconds
+    ' Measure move time
+    ELAPSED = TI  
 
     ' Calculate remaining time for dwell
-    DW = DWELL[k]
     REMAINING = DW - ELAPSED
 
     ' Ensure remaining time is not negative (avoid negative wait times)
@@ -64,6 +83,6 @@ k = 0
     JP #loop  
 
 ' Disable motors when stopping (optional safety)
-MO BC  
+MO B, C  
 
 EN  ' End program
