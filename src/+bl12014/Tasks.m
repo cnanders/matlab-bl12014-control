@@ -2822,7 +2822,7 @@ classdef Tasks < mic.Base
             end
 
             % Tasks:
-            dNumExposures = ui.uieNumWobble.get();
+            dNumExposures = ui.uieNumWobbleX.get() * ui.uieNumWobbleY.get();
             dCenterExposure = floor((dNumExposures + 1)/2);
 
             ceTasks = {};
