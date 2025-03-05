@@ -156,13 +156,18 @@ classdef Uniformity < mic.Base
         uigsExposure
 
         uiSequenceAutoWobble
-        uieNumWobble
+
+        uieNumWobbleX
+        uieNumWobbleY
+
         uieHexOffsetRu
         uieHexOffsetRv
         uieHexOffsetAngle
 
         % new M1 wobble:
-        uieM1WobbleStepSize
+        uieM1WobbleStepSizeX
+        uieM1WobbleStepSizeY
+
         uieM1WobbleAngle
 
         dWobbleCoordinates = {}
@@ -359,112 +364,115 @@ classdef Uniformity < mic.Base
         end
 
         % no longer require a csv to do wobbler sequence
+        % DEPRECATED 1/2025
         function cStr = writeAutoWobbleCSV(this)
            
 
-            dNum = this.uieNumWobble.get();
-            dLinNum = (dNum - 1) / 2;
+            % dNum = this.uieNumWobble.get();
+            % dLinNum = (dNum - 1) / 2;
 
-            dNum = this.uieNumWobble.get();
-            dIdxs = -dLinNum:dLinNum;
-
-
-            cStr = 'index,name';
-            cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', 1, 1, 1)];
+            % dNum = this.uieNumWobble.get();
+            % dIdxs = -dLinNum:dLinNum;
 
 
-            dTh = this.uieHexOffsetAngle.get();
-            % Create rot matrix:
-            R = [cosd(dTh), -sind(dTh); sind(dTh), cosd(dTh)];
-
-            for k = 1:length(dIdxs)
-                dIdx = dIdxs(k);
-
-                [dRx, dRy] = this.getHexapodBasisVectors(dIdx, 0);
+            % cStr = 'index,name';
+            % cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', 1, 1, 1)];
 
 
-                cRow = sprintf('\n%d,%d', k, dIdx);
-                cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, 15000)];
-                cStr = [cStr, cRow];
-            end
+            % dTh = this.uieHexOffsetAngle.get();
+            % % Create rot matrix:
+            % R = [cosd(dTh), -sind(dTh); sind(dTh), cosd(dTh)];
 
-            cPathWobbleSMS = 'Z:';
-            cPathWobbleFile = fullfile(cPathWobbleSMS, 'wobble-params.txt');
-            fid = fopen(cPathWobbleFile, 'w');
-            fprintf(fid, '%s\n', cStr);
-            fclose(fid);
+            % for k = 1:length(dIdxs)
+            %     dIdx = dIdxs(k);
+
+            %     [dRx, dRy] = this.getHexapodBasisVectors(dIdx, 0);
 
 
-            % Make dir for these images
-            cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
-            this.cTaskAcquireDir = fullfile(cPath, datestr(now, 'yyyy-mm-dd_HH_MM'));
+            %     cRow = sprintf('\n%d,%d', k, dIdx);
+            %     cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, 15000)];
+            %     cStr = [cStr, cRow];
+            % end
+
+            % cPathWobbleSMS = 'Z:';
+            % cPathWobbleFile = fullfile(cPathWobbleSMS, 'wobble-params.txt');
+            % fid = fopen(cPathWobbleFile, 'w');
+            % fprintf(fid, '%s\n', cStr);
+            % fclose(fid);
+
+
+            % % Make dir for these images
+            % cPath = 'C:\Users\metmatlab\Pictures\MOD3-Uniformity-Cam-Wobble\';
+            % this.cTaskAcquireDir = fullfile(cPath, datestr(now, 'yyyy-mm-dd_HH_MM'));
             
-            mkdir(this.cTaskAcquireDir);
+            % mkdir(this.cTaskAcquireDir);
         end
 
         
+        % DEPRECATED 1/2025
 
         function cStr = getWobbleCSV(this, lUseIndex, dDose, dFocus)
 
-            dNDose = length(dDose);
-            dNFocus = length(dFocus);
+            % dNDose = length(dDose);
+            % dNFocus = length(dFocus);
 
-            % Create a matrix of the dose and focus values:
-            [dDoseMat, dFocusMat] = meshgrid(dDose, dFocus);
-
-
-            dDoseLinear = reshape(dDoseMat', 1, []);
-
-            ceLabels = {};
-            for k = 1:dNFocus
-                for m = 1:dNDose
-                    ceLabels{end + 1} = sprintf('F%dD%d', (k), (m));
-                end
-            end
-
-            % Add index shot if needed:
-            if lUseIndex
-                mMid = ceil(length(dDose)/2);
-                dDoseLinear = [dDose(mMid), dDoseLinear];
-                ceLabels = [{'Index'}, ceLabels];
-            end
+            % % Create a matrix of the dose and focus values:
+            % [dDoseMat, dFocusMat] = meshgrid(dDose, dFocus);
 
 
-            % Look up highlighted uniformity combinations:
-            ceCombo = this.dResultVec(this.dResultIdx, :);
+            % dDoseLinear = reshape(dDoseMat', 1, []);
 
-            dCoeff = ceCombo{2};
-            dIdx = ceCombo{3};
-            % Normalize coefficients:
-            dCoeff = dCoeff / sum(dCoeff);
+            % ceLabels = {};
+            % for k = 1:dNFocus
+            %     for m = 1:dNDose
+            %         ceLabels{end + 1} = sprintf('F%dD%d', (k), (m));
+            %     end
+            % end
 
-            % Get unit vectors:
-            dUx = this.uieUnitVectorRx.get();
-            dUy = this.uieUnitVectorRy.get();
+            % % Add index shot if needed:
+            % if lUseIndex
+            %     mMid = ceil(length(dDose)/2);
+            %     dDoseLinear = [dDose(mMid), dDoseLinear];
+            %     ceLabels = [{'Index'}, ceLabels];
+            % end
 
-            cStr = 'index,name';
-            for k = 1:length(dCoeff)
-                cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', k, k, k)];
-            end
 
-            for k = 1:length(dDoseLinear)
-                cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, ceLabels{k});
-                cStr = [cStr, cRow];
-            end
+            % % Look up highlighted uniformity combinations:
+            % ceCombo = this.dResultVec(this.dResultIdx, :);
+
+            % dCoeff = ceCombo{2};
+            % dIdx = ceCombo{3};
+            % % Normalize coefficients:
+            % dCoeff = dCoeff / sum(dCoeff);
+
+            % % Get unit vectors:
+            % dUx = this.uieUnitVectorRx.get();
+            % dUy = this.uieUnitVectorRy.get();
+
+            % cStr = 'index,name';
+            % for k = 1:length(dCoeff)
+            %     cStr = [cStr, sprintf(',pose%d_rx,pose%d_ry,pose_%d_t_ms', k, k, k)];
+            % end
+
+            % for k = 1:length(dDoseLinear)
+            %     cRow = this.getWobbleRow(k, dDoseLinear(k), dCoeff, dIdx, ceLabels{k});
+            %     cStr = [cStr, cRow];
+            % end
 
         end
 
+        % DEPRECATED 1/2025
         function cRow = getWobbleRow(this, id, dDose, dCoef, dIdx, cLabel)
-            % Multiply coefficients by dose:
-            dWobbleDwells = dCoef * dDose;
-            cRow = sprintf('\n%d,%s', id, cLabel);
+            % % Multiply coefficients by dose:
+            % dWobbleDwells = dCoef * dDose;
+            % cRow = sprintf('\n%d,%s', id, cLabel);
 
-            % Build dwell strings:
-            for k = 1:length(dWobbleDwells)
-                [dRx, dRy] = this.getHexapodBasisVectors(dIdx(k) - this.dCenterIdx, 0);
+            % % Build dwell strings:
+            % for k = 1:length(dWobbleDwells)
+            %     [dRx, dRy] = this.getHexapodBasisVectors(dIdx(k) - this.dCenterIdx, 0);
 
-                cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, round(1000 * dWobbleDwells(k)))];
-            end
+            %     cRow = [cRow, sprintf(',%.5f,%.5f,%d', dRx, dRy, round(1000 * dWobbleDwells(k)))];
+            % end
 
         end
 
@@ -537,7 +545,8 @@ classdef Uniformity < mic.Base
             'uieROIC1', ...
             'uieROIC2', ...
             'uieIntrinsicDwellTime', ...
-            'uieNumWobble', ...
+            'uieNumWobbleX', ...
+            'uieNumWobbleY', ...
             'uieM1WobbleStepSize', ...
             'uieM1WobbleAngle', ...
             'uieMinDwellTime' ...
@@ -654,12 +663,18 @@ classdef Uniformity < mic.Base
 
             dTop = 20;
             dLeft = 10;
-            this.uieNumWobble.build(hPanel, dLeft, dTop, 100, 30);
-            % this.uieHexOffsetRu.build(hPanel, dLeft +  110, dTop, 100, 30);
-            this.uieM1WobbleStepSize.build(hPanel, dLeft + 110, dTop, 100, 30);
-            % this.uieHexOffsetRv.build(hPanel, dLeft + 220, dTop, 100, 30);
-            this.uieM1WobbleAngle.build(hPanel, dLeft + 220, dTop, 100, 30);
-            % this.uieHexOffsetAngle.build(hPanel, dLeft + 330, dTop, 100, 30);
+            this.uieNumWobbleX.build(hPanel, dLeft, dTop, 65, 30);
+
+            dLeft = dLeft + 80;
+            this.uieM1WobbleStepSizeX.build(hPanel, dLeft, dTop, 65, 30);
+            dLeft = dLeft + 100;
+            this.uieNumWobbleY.build(hPanel, dLeft, dTop, 65, 30);
+            dLeft = dLeft + 80;
+            this.uieM1WobbleStepSizeY.build(hPanel, dLeft, dTop, 65, 30);
+            dLeft = dLeft + 100;
+            this.uieM1WobbleAngle.build(hPanel, dLeft , dTop, 100, 30);
+
+            dLeft = 10;
 
             dTop = dTop + 50;
             this.uibExecuteUniformitySequence.build(hPanel, dLeft, dTop, 200, 30);
@@ -1017,8 +1032,14 @@ classdef Uniformity < mic.Base
                 'fhDirectCallback', @(~,~)this.onAbortUniformitySequence() ...
             );
 
-            this.uieNumWobble = mic.ui.common.Edit(...
-                'cLabel', 'Num Wobble', ...
+            this.uieNumWobbleX = mic.ui.common.Edit(...
+                'cLabel', 'N Wobble X', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+
+            this.uieNumWobbleY = mic.ui.common.Edit(...
+                'cLabel', 'N Wobble Y', ...
                 'cType', 'd', ...
                 'dWidth', 50 ...
             );
@@ -1041,8 +1062,13 @@ classdef Uniformity < mic.Base
                 'dWidth', 50 ...
             );
 
-            this.uieM1WobbleStepSize = mic.ui.common.Edit(...
-                'cLabel', 'M1 Wobble Step Size', ...
+            this.uieM1WobbleStepSizeX = mic.ui.common.Edit(...
+                'cLabel', 'Wobble Step X', ...
+                'cType', 'd', ...
+                'dWidth', 50 ...
+            );
+            this.uieM1WobbleStepSizeY = mic.ui.common.Edit(...
+                'cLabel', 'Wobble Step Y', ...
                 'cType', 'd', ...
                 'dWidth', 50 ...
             );
@@ -1273,10 +1299,6 @@ classdef Uniformity < mic.Base
                 this.uieIntrinsicDwellTime.set(500);
             end
 
-            if (this.uieNumWobble.get() == 0)
-                this.uieNumWobble.set(11);
-            end
-
             if (this.uieROIC1.get() == 0)
                 this.uieROIC1.set(0);
             end
@@ -1290,8 +1312,17 @@ classdef Uniformity < mic.Base
                 this.uieROIR2.set(30);
             end
 
-            if (this.uieM1WobbleStepSize.get() == 0)
-                this.uieROIR2.set(250);
+            if (this.uieM1WobbleStepSizeX.get() == 0)
+                this.uieM1WobbleStepSizeX.set(400);
+            end
+            if (this.uieM1WobbleStepSizeY.get() == 0)
+                this.uieM1WobbleStepSizeY.set(250);
+            end
+            if (this.uieNumWobbleX.get() == 0)
+                this.uieNumWobbleX.set(11);
+            end
+            if (this.uieNumWobbleY.get() == 0)
+                this.uieNumWobbleY.set(4);
             end
 
             
@@ -1443,17 +1474,35 @@ classdef Uniformity < mic.Base
 
 
             % Construct the wobble coordinates:
-            dSteps = 1:this.uieNumWobble.get();
-            dSteps = dSteps - mean(dSteps);
+            dStepsX = 1:this.uieNumWobbleX.get();
+            dStepsY = 1:this.uieNumWobbleY.get();
+            dStepsX = dStepsX - mean(dStepsX);
+            dStepsY = dStepsY - mean(dStepsY);
+
+            [allStepsX, allStepsY] = meshgrid(dStepsX, dStepsY);
+            allStepsX = allStepsX';
+            allStepsY = allStepsY';
+            
+            dWo = [allStepsX(:), allStepsY(:)];
+
 
             % Unit vector:
-            dU = [1, -1] * this.uieM1WobbleStepSize.get();
+            dU = [1, -1] * this.uieM1WobbleStepSizeX.get();
+            dV = [1,  1] * this.uieM1WobbleStepSizeY.get();
 
             % Rotate about angle:
             dAngle = this.uieM1WobbleAngle.get();
-            dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
+            dRotUnitU = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
+            dRotUnitV = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dV';
 
-            this.dWobbleCoordinates = dSteps' * dRotUnit';
+
+
+
+
+            this.dWobbleCoordinates = zeros(size(dWo));
+            for k = 1:length(dWo(:,1))
+                this.dWobbleCoordinates(k, :) = dWo(k, 1)*dRotUnitU' + dWo(k, 2)*dRotUnitV';
+            end
 
 
             % Build the task sequence:
@@ -1592,6 +1641,10 @@ classdef Uniformity < mic.Base
                 plot(this.haUniformityCamAxes, [dCc, dCc], [dCr - 50, dCr + 50], 'g', 'LineWidth', 1.5);
                 plot(this.haUniformityCamAxes, [dCc - 50, dCc + 50], [dCr, dCr], 'g', 'LineWidth', 1.5);
 
+                % Compute centroid of this.dImg:
+                
+
+
         end
 
 
@@ -1630,8 +1683,7 @@ classdef Uniformity < mic.Base
             dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
 
             % Append the results to the result vector:
-%             dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
-            dResultVec = dResultPairs;
+            dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
             
 
              % Sort result vector by error:
@@ -1877,17 +1929,11 @@ classdef Uniformity < mic.Base
             % Normalize coefficients:
             dCoeff = dCoeff / sum(dCoeff);
 
-            % Unit vector:
-            dU = [1, -1] * this.uieM1WobbleStepSize.get();
 
-            % Rotate about angle:
-            dAngle = this.uieM1WobbleAngle.get();
-            dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
+            % Assume this is stored from the last uniformity series
+            dCoords = this.dWobbleCoordinates(dIdx, 1:2);
 
-            dV1 = dIdx(1) * dRotUnit;
-            dV2 = dIdx(2) * dRotUnit;
-
-            this.uiM1.setWobbleParamsFromCombo(dV1, dV2, dCoeff);
+            this.uiM1.setWobbleParamsFromCombo(dCoords, dCoeff);
         end
         
         function onSetDirToLatest(this, src, evt)

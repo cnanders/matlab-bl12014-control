@@ -48,6 +48,10 @@ classdef M1 < mic.Base
         uieMotor2Dwell
         uieWobbleDelay
 
+        uieWobbleAr
+        uieDwellAr
+
+
         uibSetWobblePos1
         uibSetWobblePos2
 
@@ -136,32 +140,48 @@ classdef M1 < mic.Base
             end
         end
 
-        function setWobbleParamsFromCombo(this, dV1, dV2, dCoeff)
-            this.uieMotor1Pos1.set(dV1(1));
-            this.uieMotor2Pos1.set(dV1(2));
-            this.uieMotor1Pos2.set(dV2(1));
-            this.uieMotor2Pos2.set(dV2(2));
+        function setWobbleParamsFromCombo(this, dCoords, dCoeff)
 
-            dCoefRat = dCoeff(2)/dCoeff(1);
+        
+            dStartDwell = 100;
 
-            dStartDwell = 1000;
+            dwellStr = [];
+            for i = 1:length(dCoeff)
+                dwellStr = [dwellStr, sprintf('%0.1f', dStartDwell * dCoeff(i))];
+                if i < length(dCoeff)
+                    dwellStr = [dwellStr, ', '];
+                end
+            end
+            dwellStr = ['[', dwellStr, ']'];
+            this.uieDwellAr.set(dwellStr);
 
-            this.uieMotor1Dwell.set(dStartDwell)
-            this.uieMotor2Dwell.set(floor(dStartDwell*dCoefRat))
+            % Generate coords string:
+            coordStr = [];
+            for i = 1:length(dCoords)
+                coordStr = [coordStr, sprintf('%d, %d', floor(dCoords(i, 1)), floor(dCoords(i, 2)))];
+                if i < length(dCoords)
+                    coordStr = [coordStr, '; '];
+                end
+            end
+            coordStr = ['[', coordStr, ']'];
+
+            this.uieWobbleAr.set(coordStr);
             
         end
         
 
-
         function setWobbleDelayFromPeriod(this, dPeriod, dCoeff)
-            dT1 = dCoeff(1)/(dCoeff(1) + dCoeff(2));
-            dT2 = dCoeff(2)/(dCoeff(1) + dCoeff(2));
 
-            dDelay = this.uieWobbleDelay.get();
-            dPeriod = dPeriod * 1000 - 2*dDelay;
-
-            this.uieMotor1Dwell.set(dT1 * dPeriod);
-            this.uieMotor2Dwell.set(dT2 * dPeriod);
+            dCoeff = dCoeff / sum(dCoeff);
+            dwellStr = [];
+            for i = 1:length(dCoeff)
+                dwellStr = [dwellStr, sprintf('%0.1f', dPeriod * dCoeff(i))];
+                if i < length(dCoeff)
+                    dwellStr = [dwellStr, ', '];
+                end
+            end
+            dwellStr = ['[', dwellStr, ']'];
+            this.uieDwellAr.set(dwellStr);
 
 
         end
@@ -177,18 +197,21 @@ classdef M1 < mic.Base
         function startWobble(this)
             this.lIsWobbling = true;
 
-             % Run program
-             this.hardware.getGalilM1().writeParameter('posA1', round(this.uieMotor1Pos1.get()));
-             this.hardware.getGalilM1().writeParameter('posB1', round(this.uieMotor2Pos1.get()));
-             this.hardware.getGalilM1().writeParameter('posA2', round(this.uieMotor1Pos2.get()));
-             this.hardware.getGalilM1().writeParameter('posB2', round(this.uieMotor2Pos2.get()));
+            dDwells = eval(this.uieDwellAr.get());
+            dCoords = eval(this.uieWobbleAr.get());
 
-             this.hardware.getGalilM1().writeParameter('waitA', round(this.uieMotor1Dwell.get()));
-             this.hardware.getGalilM1().writeParameter('waitB', round(this.uieMotor2Dwell.get()));
+            % Set up the wobble program:
+            this.hardware.getGalilM1().writeParameter('NUM_POS', length(dDwells));
+            for k = 1:length(dDwells)
+                this.hardware.getGalilM1().writeParameter(sprintf('POS_B[%d]', k), dCoords(k, 1));
+                this.hardware.getGalilM1().writeParameter(sprintf('POS_C[%d]', k), dCoords(k, 2));
+                this.hardware.getGalilM1().writeParameter(sprintf('DWELL[%d]', k), dDwells(k));
+            end
 
-             this.hardware.getGalilM1().writeParameter('speed', 90000);
+            this.hardware.getGalilM1().writeParameter('speed', 90000);
 
-             this.hardware.getGalilM1().runProgram('wobble');
+            this.hardware.getGalilM1().runProgram('wobbleAr');
+
         end
 
         function stopWobble(this)
@@ -256,27 +279,29 @@ classdef M1 < mic.Base
             dTop = dTop + 80
             
             this.uigsMotor1.build(this.hPanel, dLeft, dTop - 8);
-            this.uieMotor1Pos1.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
-            this.uieMotor1Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+            this.uieWobbleAr.build(this.hPanel, dLeft + dColB1, dTop - 17,  200, 25);
+            % this.uieMotor1Pos1.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
+            % this.uieMotor1Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
 
             dTop = dTop + dSep;
             
             this.uigsMotor2.build(this.hPanel, dLeft, dTop - 8);
-            this.uieMotor2Pos1.build(this.hPanel,  dLeft + dColB1, dTop - 17,  90, 25);
-            this.uieMotor2Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+            this.uieDwellAr.build(this.hPanel, dLeft + dColB1, dTop - 17,  200, 25);
+            % this.uieMotor2Pos1.build(this.hPanel,  dLeft + dColB1, dTop - 17,  90, 25);
+            % this.uieMotor2Pos2.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
             
             
             dTop = dTop + dSep;
             this.uigsMotor3.build(this.hPanel, dLeft, dTop - 8);
 
-            this.uieMotor1Dwell.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
-            this.uieMotor2Dwell.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
+            % this.uieMotor1Dwell.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
+            % this.uieMotor2Dwell.build(this.hPanel, dLeft + dColB2, dTop - 17,  90, 25);
 
             % this.uibSetWobblePos1.build(this.hPanel, dLeft + dColB1, dTop,  90, 30);
             % this.uibSetWobblePos2.build(this.hPanel, dLeft + dColB2, dTop,  90, 30);
             
-            dTop = dTop + dSep;
-            this.uieWobbleDelay.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
+            % dTop = dTop + dSep;
+            % this.uieWobbleDelay.build(this.hPanel, dLeft + dColB1, dTop - 17,  90, 25);
 
 
 
@@ -532,6 +557,12 @@ classdef M1 < mic.Base
             this.uieMotor1Dwell = mic.ui.common.Edit('cLabel', 'Dwell 1 (ms)', 'cType', 'd');
             this.uieMotor2Dwell = mic.ui.common.Edit('cLabel', 'Dwell 2 (ms)', 'cType', 'd');
             this.uieWobbleDelay = mic.ui.common.Edit('cLabel', 'Move Latency (ms)', 'cType', 'd');
+
+            this.uieWobbleAr = mic.ui.common.Edit('cLabel', 'Wobble coordinates', 'cType', 'c');
+            this.uieDwellAr = mic.ui.common.Edit('cLabel', 'Dwells', 'cType', 'c');
+
+            this.uieWobbleAr.set('[]');
+            this.uieDwellAr.set('[]');
 
             % If the first time then set values:
             if (this.uieMotor1Pos1.get() == 0 ...

@@ -1,0 +1,69 @@
+#wobbleAr
+
+' User sets speed NUM_POS, POS_B[], POS_C[], and DWELL[] before running
+
+' Allocate memory for arrays
+DM POS_B[4], POS_C[4], DWELL[4]  ' Increase to 4 positions
+
+' USER MUST SET THESE VALUES BEFORE RUNNING PROGRAM
+' Example:
+' POS_B[0] = 10000
+' POS_B[1] = -10000
+' POS_C[0] = 10000
+' POS_C[1] = -10000
+' DWELL[0] = 500  ' Target dwell time in milliseconds
+' DWELL[1] = 500  
+' NUM_POS = 2  ' Number of positions
+
+
+' Enable motors B and C
+SH BC  
+
+' Set acceleration and deceleration
+AC ,500000, 500000  
+DC ,500000, 500000  
+
+' Set speed for B and C
+SP ,speed, speed  
+
+k = 0  
+
+#loop
+    ' Start timing cycle
+    TM 0   ' Reset the timer
+
+    ' Move motors B and C to the kth position
+    POSB = POS_B[k]  
+    POSC = POS_C[k]  
+    PA ,POSB, POSC  
+    BG BC  
+
+    ' Wait for motion to complete
+    AM BC  
+
+    ' Check elapsed time
+    ELAPSED = TI  ' Get elapsed time in milliseconds
+
+    ' Calculate remaining time for dwell
+    DW = DWELL[k]
+    REMAINING = DW - ELAPSED
+
+    ' Ensure remaining time is not negative (avoid negative wait times)
+    IF (REMAINING < 0)  
+        REMAINING = 0  
+
+    ' Wait for the remaining dwell time
+    WT REMAINING  
+
+    ' Increment counter and reset if needed
+    k = k + 1  
+    IF (k >= NUM_POS)  
+        k = 0  
+
+    ' Loop forever
+    JP #loop  
+
+' Disable motors when stopping (optional safety)
+MO BC  
+
+EN  ' End program
