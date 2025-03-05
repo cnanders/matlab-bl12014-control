@@ -1678,12 +1678,13 @@ classdef Uniformity < mic.Base
             
             dResultVec = {};
 
-            dResultIdeal = this.computeIdeal(D, b, dFluxCenter, dROIr, dROIc);
+            % dResultIdeal = this.computeIdeal(D, b, dFluxCenter, dROIr, dROIc);
             dResultPairs = this.computePairs(D, b, dFluxCenter, 15, dROIr, dROIc);
             dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
+            dResultQuads = this.computeQuadruples(D, b, dFluxCenter, 10, dROIr, dROIc);
 
             % Append the results to the result vector:
-            dResultVec = [dResultVec; dResultIdeal; dResultPairs; dResultTriples];
+            dResultVec = [dResultVec; dResultQuads; dResultPairs; dResultTriples];
             
 
              % Sort result vector by error:
@@ -1839,6 +1840,50 @@ classdef Uniformity < mic.Base
                         dResultVec{ct, 5} = dUniformity;
                         
                         ct = ct + 1;
+                    end
+                end
+            end
+            dResultVec = sortrows(dResultVec, 1);
+
+            % Limit the number of results:
+            dResultVec = dResultVec(1:dMaxResults, :);
+        end
+
+        function dResultVec = computeQuadruples(this, D, b, dFluxCenter, dMaxResults, dROIr, dROIc)
+            dResultVec = {};
+            % Loop through choosing pairs of images and find best combination and coefficients:
+
+            ct = 1;
+            for k = 1:size(D, 2)
+                for m = k+1:size(D, 2)
+                    for l = m+1:size(D, 2)
+                        for n = l+1:size(D, 2)
+                            dCombo = [D(:, k), D(:, m), D(:, l), D(:, n)];
+                            % Solve for the coefficients using non-negative least squares
+
+                            dCoeff = lsqnonneg(dCombo, b);
+                            dError = norm(b - dCombo * dCoeff);
+
+                            dResultVec{ct, 1} = dError;
+                            dResultVec{ct, 2} = dCoeff;
+                            dResultVec{ct, 3} = [k, m, l, n];
+
+                    
+                            % Compute relative flux
+                            dFluxLeft = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,k))));
+                            dFluxRight = sum(sum(squeeze(this.dImgsField(dROIr, dROIc,m))));
+                            dDoseFac = (dFluxLeft * dCoeff(1)/(dCoeff(1) + dCoeff(2)) + dFluxRight * dCoeff(2)/(dCoeff(1) + dCoeff(2)))/dFluxCenter;
+                            dResultVec{ct, 4} = dDoseFac;
+
+                            % Compute uniformity:
+                            dAgg = dCoeff(1)*this.dImgsField(dROIr, dROIc,k) + dCoeff(2)*this.dImgsField(dROIr, dROIc,m);
+
+
+                            dUniformity = std(dAgg(:))/median(dAgg(:));
+                            dResultVec{ct, 5} = dUniformity;
+
+                            ct = ct + 1;
+                        end
                     end
                 end
             end
