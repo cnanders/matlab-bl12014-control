@@ -959,7 +959,9 @@ classdef App < mic.Base
         end
         
         function onCloseRequest(this, src, evt)
+            try
             this.fhOnCloseFigure(); % in test, calls this.delete()
+            end
         end
             
         function onPrescriptionToolNew(this, src, evt)

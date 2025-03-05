@@ -1,26 +1,26 @@
-#wobbleAr
+#wobbleA
 ' Define variables for positions and dwell times
-'POS_B0 = 100  ' Position for motor B, step 0
-'POS_C0 = 50   ' Position for motor C, step 0
-'DWELL0 = 100  ' Dwell time for step 0
+POS_B0 = 100  
+POS_C0 = 50 
+DWELL0 = 100  
 
-'POS_B1 = 200  ' Position for motor B, step 1
-'POS_C1 = 100  ' Position for motor C, step 1
-'DWELL1 = 200  ' Dwell time for step 1
+POS_B1 = 200  
+POS_C1 = 100  
+DWELL1 = 200  
 
-'POS_B2 = 300  ' Position for motor B, step 2
-'POS_C2 = 150  ' Position for motor C, step 2
-'DWELL2 = 300  ' Dwell time for step 2
+POS_B2 = 300  
+POS_C2 = 150  
+DWELL2 = 300  
 
-'POS_B3 = 400  ' Position for motor B, step 3
-'POS_C3 = 200  ' Position for motor C, step 3
-'DWELL3 = 400  ' Dwell time for step 3
+POS_B3 = 400  
+POS_C3 = 200  
+DWELL3 = 400  
 
 ' Set the number of positions
-'NUM_POS = 4  ' Maximum of 4 positions
+NUM_POS = 4  
 
 ' Enable motors B and C
-SH B, C  
+SH BC  
 
 ' Set acceleration and deceleration
 AC ,500000, 500000  
@@ -29,50 +29,53 @@ DC ,500000, 500000
 ' Set speed for B and C
 SP ,900000, 900000  
 
-k = 0  ' Initialize step counter
+k = 0  
 
 #loop
     ' Reset timer before motion starts
     TM 0   
 
     ' Retrieve positions based on step counter
-    IF (k == 0)
+    IF (k = 0)
         POSB = POS_B0
         POSC = POS_C0
         DW = DWELL0
-    ELSEIF (k == 1)
+    ENDIF
+ 		IF (k = 1)
         POSB = POS_B1
         POSC = POS_C1
         DW = DWELL1
-    ELSEIF (k == 2)
+		ENDIF
+    IF (k = 2)
         POSB = POS_B2
         POSC = POS_C2
         DW = DWELL2
-    ELSEIF (k == 3)
+		ENDIF
+    IF (k = 3)
         POSB = POS_B3
         POSC = POS_C3
         DW = DWELL3
     ENDIF
 
     ' Command motors to absolute positions
-    PA ,POSB, POSC  
-    BG B, C  
+    PA ,POSB,POSC  
+    BG BC  
 
     ' Wait for motion completion
-    AM B, C  
+    AM BC  
 
     ' Measure move time
     ELAPSED = TI  
 
     ' Calculate remaining time for dwell
-    REMAINING = DW - ELAPSED
+    REM = DW - ELAPSED
 
     ' Ensure remaining time is not negative (avoid negative wait times)
-    IF (REMAINING < 0)  
+    IF (REM < 0)  
         REMAINING = 0  
 
     ' Wait for the remaining dwell time
-    WT REMAINING  
+    WT REM  
 
     ' Increment counter and reset if needed
     k = k + 1  
@@ -83,6 +86,6 @@ k = 0  ' Initialize step counter
     JP #loop  
 
 ' Disable motors when stopping (optional safety)
-MO B, C  
+MO BC  
 
-EN  ' End program
+EN  

@@ -211,7 +211,7 @@ classdef M1 < mic.Base
             
            
 
-            this.hardware.getGalilM1().writeParameter('speed', 90000);
+            this.hardware.getGalilM1().writeParameter('speed', 900000);
 
             this.hardware.getGalilM1().runProgram('wobbleAr');
 
