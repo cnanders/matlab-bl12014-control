@@ -1453,7 +1453,7 @@ classdef Uniformity < mic.Base
             dAngle = this.uieM1WobbleAngle.get();
             dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
 
-            this.dWobbleCoordinates = dSteps' * dRotUnit';
+            this.dWobbleCoordinates = round(dSteps' * dRotUnit');
 
 
             % Build the task sequence:
@@ -1461,7 +1461,7 @@ classdef Uniformity < mic.Base
                 [this.cName, 'task-sequence-auto-wobble'], ...
                 this, ...
                 this.clock ...
-            )
+            );
 
             % Set ui
             this.uiSequenceAutoWobble.setTask(this.hUniformityTaskSequence);
@@ -1884,8 +1884,8 @@ classdef Uniformity < mic.Base
             dAngle = this.uieM1WobbleAngle.get();
             dRotUnit = [cosd(dAngle), -sind(dAngle); sind(dAngle), cosd(dAngle)] * dU';
 
-            dV1 = dIdx(1) * dRotUnit;
-            dV2 = dIdx(2) * dRotUnit;
+            dV1 = round(dIdx(1) * dRotUnit);
+            dV2 = round(dIdx(2) * dRotUnit);
 
             this.uiM1.setWobbleParamsFromCombo(dV1, dV2, dCoeff);
         end
