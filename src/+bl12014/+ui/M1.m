@@ -175,7 +175,7 @@ classdef M1 < mic.Base
             dCoeff = dCoeff / sum(dCoeff);
             dwellStr = [];
             for i = 1:length(dCoeff)
-                dwellStr = [dwellStr, sprintf('%0.1f', dPeriod * dCoeff(i))];
+                dwellStr = [dwellStr, sprintf('%d', round(1000*dPeriod * dCoeff(i)))];
                 if i < length(dCoeff)
                     dwellStr = [dwellStr, ', '];
                 end
@@ -202,18 +202,18 @@ classdef M1 < mic.Base
 
             % Set up the wobble program:
             dNumPos = length(dDwells);
-            this.hardware.getGalilM1().writeParameter('NUM_POS',dNumPos);
+            this.hardware.getGalilM1().writeParameter('num_pos',dNumPos);
             for k = 1:length(dDwells)
-                this.hardware.getGalilM1().writeParameter(sprintf('POS_B%d', k - 1), dCoords(k, 1));
-                this.hardware.getGalilM1().writeParameter(sprintf('POS_C%d', k - 1), dCoords(k, 2));
-                this.hardware.getGalilM1().writeParameter(sprintf('DWELL%d', k - 1), dDwells(k));
+                this.hardware.getGalilM1().writeParameter(sprintf('pos_B%d', k - 1), dCoords(k, 1));
+                this.hardware.getGalilM1().writeParameter(sprintf('pos_C%d', k - 1), dCoords(k, 2));
+                this.hardware.getGalilM1().writeParameter(sprintf('dwel%d', k - 1), round(dDwells(k)));
             end
             
            
 
             this.hardware.getGalilM1().writeParameter('speed', 900000);
 
-            this.hardware.getGalilM1().runProgram('wobbleAr');
+            this.hardware.getGalilM1().runProgram('wobbleA', 0);
 
         end
 

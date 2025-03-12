@@ -794,6 +794,7 @@ classdef FemTool < mic.Base
                 
                 fprintf('\n');
             end
+
             
             fprintf('\nX (mm), Y (mm)\n');
             for k = 1:length(this.dY)

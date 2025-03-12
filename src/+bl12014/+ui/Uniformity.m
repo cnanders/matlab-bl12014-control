@@ -160,6 +160,9 @@ classdef Uniformity < mic.Base
         uieNumWobbleX
         uieNumWobbleY
 
+        dWobbleIdxX
+        dWobbleIdxY
+
         uieHexOffsetRu
         uieHexOffsetRv
         uieHexOffsetAngle
@@ -325,7 +328,7 @@ classdef Uniformity < mic.Base
         
         % Sets M1 motor 1 and 2 to the values in the series:
         function setM1StateUniformitySeries(this, k)
-            dVals = this.dWobbleCoordinates(k,:);
+            dVals = round(this.dWobbleCoordinates(k,:));
             this.uiM1.uigsMotor1.setDestCalAndGo(dVals(1), 'Counts');
             this.uiM1.uigsMotor2.setDestCalAndGo(dVals(2), 'Counts');
         end
@@ -1398,6 +1401,7 @@ classdef Uniformity < mic.Base
                 hold on
                 this.plotUniformityGuides();
                 colormap default
+                set(this.haUniformityCamAxes, 'YDir', 'normal')
             else
                 this.hCameraUniformity.stopPreview();
             end
@@ -1484,6 +1488,10 @@ classdef Uniformity < mic.Base
             allStepsY = allStepsY';
             
             dWo = [allStepsX(:), allStepsY(:)];
+
+            % Store steps:
+            this.dWobbleIdxX = allStepsX;
+            this.dWobbleIdxY = allStepsY;
 
 
             % Unit vector:
@@ -1672,7 +1680,19 @@ classdef Uniformity < mic.Base
             end
            
             % Define the target flat curve
-            b = dMaxCenter*ones(size(C,2), 1);
+           
+            % Define biased curve:
+            xIdx = linspace(-1, 1, length(dROIc));
+            yIdx = linspace(-1, 1, length(dROIr));
+            [X,Y] = meshgrid(xIdx, yIdx);
+            
+            dBiasX = -0.1;
+            
+            dBiasPlane = 1 + dBiasX*X;
+            dBiasLine = dBiasPlane(:);
+            
+%             b = dMaxCenter*ones(size(C,2), 1);
+            b = dMaxCenter*ones(size(C,2), 1).*dBiasLine;
             D = C';
 
             
@@ -1853,13 +1873,23 @@ classdef Uniformity < mic.Base
 
         function dResultVec = computeQuadruples(this, D, b, dFluxCenter, dMaxResults, dROIr, dROIc)
             dResultVec = {};
+
             % Loop through choosing pairs of images and find best combination and coefficients:
+            lidxUL = this.dWobbleIdxX < 0 & this.dWobbleIdxY > 0;
+            lidxUR = this.dWobbleIdxX > 0 & this.dWobbleIdxY > 0;
+            lidxLL = this.dWobbleIdxX < 0 & this.dWobbleIdxY < 0;
+            lidxLR = this.dWobbleIdxX > 0 & this.dWobbleIdxY < 0;
+
+            idxUL = find(lidxUL);
+            idxUR = find(lidxUR);
+            idxLL = find(lidxLL);
+            idxLR = find(lidxLR);
 
             ct = 1;
-            for k = 1:size(D, 2)
-                for m = k+1:size(D, 2)
-                    for l = m+1:size(D, 2)
-                        for n = l+1:size(D, 2)
+            for k = idxUL'
+                for m = idxUR'
+                    for l = idxLL'
+                        for n = idxLR'
                             dCombo = [D(:, k), D(:, m), D(:, l), D(:, n)];
                             % Solve for the coefficients using non-negative least squares
 
@@ -1948,6 +1978,18 @@ classdef Uniformity < mic.Base
                 dAgg = dAgg + dCoefficients(k)*this.dImgsField(:,:,dBestIndex(k));
             end
 
+            
+            dR1 = this.uieROIR1.get();
+            dR2 = this.uieROIR2.get();
+            dC1 = this.uieROIC1.get();
+            dC2 = this.uieROIC2.get();
+
+            dROIr = dR1+1:dR2;
+            dROIc = dC1+1:dC2;
+            
+            dAggOrig = dAgg(dROIr, dROIc);
+            dAggOrig = dAggOrig - mean(dAggOrig(:));
+
             dAgg = dAgg / median(dAgg(:));
             dAgg = round(dAgg * 10)/ 10;
 
@@ -1959,6 +2001,10 @@ classdef Uniformity < mic.Base
             this.plotUniformityGuidesWobbleField(this.haFieldUniformityAgg);
             hold off
             colorbar;
+            set(this.haFieldUniformityAgg, 'YDir', 'normal');
+            
+            figure(10)
+            surf(dAggOrig), shading interp;
 
             axes(this.haRecipe);
             dElms = zeros(size(this.dImgsField, 3), 1);
@@ -2143,6 +2189,7 @@ classdef Uniformity < mic.Base
             hold on
             this.plotUniformityGuidesWobble();
             hold off
+            set(this.haImages, 'YDir', 'normal');
 
             % Update the field uniformity plot
             axes(this.haFieldUniformity);
@@ -2153,6 +2200,8 @@ classdef Uniformity < mic.Base
             hold off
             colorbar
             colormap default
+            set(this.haFieldUniformity, 'YDir', 'normal');
+
             
             % Update the x-section plot
             axes(this.haXSec);

@@ -1,23 +1,23 @@
 #wobbleA
 ' Define variables for positions and dwell times
-POS_B0 = 100  
-POS_C0 = 50 
-DWELL0 = 100  
-
-POS_B1 = 200  
-POS_C1 = 100  
-DWELL1 = 200  
-
-POS_B2 = 300  
-POS_C2 = 150  
-DWELL2 = 300  
-
-POS_B3 = 400  
-POS_C3 = 200  
-DWELL3 = 400  
+'pos_B0 = 1000  
+'pos_C0 = 1000 
+'dwel0 = 1000  
+'
+'pos_B1 = 200  
+'pos_C1 = 100  
+'dwel1 = 1000  
+'
+'pos_B2 = 300  
+'pos_C2 = 150  
+'dwel2 = 1000  
+'
+'pos_B3 = 400  
+'pos_C3 = 200  
+'dwel3 = 1000  
 
 ' Set the number of positions
-NUM_POS = 4  
+num_pos = 4  
 
 ' Enable motors B and C
 SH BC  
@@ -33,54 +33,64 @@ k = 0
 
 #loop
     ' Reset timer before motion starts
-    TM 0   
-
+    t0 = TIME   
+		MG t0
     ' Retrieve positions based on step counter
+
+
     IF (k = 0)
-        POSB = POS_B0
-        POSC = POS_C0
-        DW = DWELL0
+        posB = pos_B0
+        posC = pos_C0
+        dwel = dwel0
     ENDIF
+
  		IF (k = 1)
-        POSB = POS_B1
-        POSC = POS_C1
-        DW = DWELL1
+        posB = pos_B1
+        posC = pos_C1
+        dwel = dwel1
 		ENDIF
+
     IF (k = 2)
-        POSB = POS_B2
-        POSC = POS_C2
-        DW = DWELL2
+        posB = pos_B2
+        posC = pos_C2
+        dwel = dwel2
 		ENDIF
+
     IF (k = 3)
-        POSB = POS_B3
-        POSC = POS_C3
-        DW = DWELL3
+        posB = pos_B3
+        posC = pos_C3
+        dwel = dwel3
     ENDIF
 
     ' Command motors to absolute positions
-    PA ,POSB,POSC  
+ 		MG "k:", k, " posB:", posB, " posC:", posC, " dwel:", dwel
+    PA 0,posB,posC,0  
     BG BC  
 
     ' Wait for motion completion
     AM BC  
 
     ' Measure move time
-    ELAPSED = TI  
+    elaps = TIME - t0
 
     ' Calculate remaining time for dwell
-    REM = DW - ELAPSED
+    rem = dwel - elaps
+
+		MG "time", TIME, " dwell: ", dwel, ", elapsed: ", elaps," remaining: ", rem
 
     ' Ensure remaining time is not negative (avoid negative wait times)
-    IF (REM < 0)  
-        REMAINING = 0  
+    IF (rem < 0)  
+        rem = 0  
+		ENDIF
 
     ' Wait for the remaining dwell time
-    WT REM  
+    WT rem  
 
     ' Increment counter and reset if needed
     k = k + 1  
-    IF (k >= NUM_POS)  
+    IF (k >= num_pos)  
         k = 0  
+		ENDIF
 
     ' Loop forever
     JP #loop  
