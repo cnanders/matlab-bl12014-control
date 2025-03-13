@@ -49,6 +49,8 @@ classdef Uniformity < mic.Base
         uieROIR2
         uieROIC1
         uieROIC2
+        
+        uieUniformityBiasX
 
         uieIntrinsicDwellTime
         uieMinDwellTime
@@ -547,6 +549,7 @@ classdef Uniformity < mic.Base
             'uieROIR2', ...
             'uieROIC1', ...
             'uieROIC2', ...
+            'uieUniformityBiasX', ...
             'uieIntrinsicDwellTime', ...
             'uieNumWobbleX', ...
             'uieNumWobbleY', ...
@@ -731,6 +734,8 @@ classdef Uniformity < mic.Base
             this.uieROIC2.build(hPanel, dLeft + 110, dTop, 100, 30);
             this.uieROIR1.build(hPanel, dLeft + 220, dTop, 100, 30);
             this.uieROIR2.build(hPanel, dLeft + 330, dTop, 100, 30);
+            
+            this.uieUniformityBiasX.build(hPanel, dLeft + 500, dTop, 150, 30);
 
 
 
@@ -1152,6 +1157,11 @@ classdef Uniformity < mic.Base
                 'fhDirectCallback', @this.setROI, ...
                 'cType', 'd' ...
                 );
+            
+            this.uieUniformityBiasX = mic.ui.common.Edit(...
+                'cLabel', 'Uniformity Bias X (%)', ...
+                'cType', 'd' ...
+                );
 
             this.uiePathToImagesDir = mic.ui.common.Edit(...
                 'cLabel', 'Path to Images Dir', ...
@@ -1308,6 +1318,8 @@ classdef Uniformity < mic.Base
             if (this.uieROIC2.get() == 0)
                 this.uieROIC2.set(200);
             end
+            
+            
             if (this.uieROIR1.get() == 0)
                 this.uieROIR1.set(0);
             end
@@ -1684,9 +1696,9 @@ classdef Uniformity < mic.Base
             % Define biased curve:
             xIdx = linspace(-1, 1, length(dROIc));
             yIdx = linspace(-1, 1, length(dROIr));
-            [X,Y] = meshgrid(xIdx, yIdx);
+            [X,~] = meshgrid(xIdx, yIdx);
             
-            dBiasX = -0.1;
+            dBiasX = this.uieUniformityBiasX.get()/100;
             
             dBiasPlane = 1 + dBiasX*X;
             dBiasLine = dBiasPlane(:);
