@@ -1686,7 +1686,7 @@ classdef Uniformity < mic.Base
             yIdx = linspace(-1, 1, length(dROIr));
             [X,Y] = meshgrid(xIdx, yIdx);
             
-            dBiasX = -0.1;
+            dBiasX = 0.2;
             
             dBiasPlane = 1 + dBiasX*X;
             dBiasLine = dBiasPlane(:);
