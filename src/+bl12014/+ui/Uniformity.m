@@ -51,6 +51,13 @@ classdef Uniformity < mic.Base
         uieROIC2
         
         uieUniformityBiasX
+        uieUniformityBiasY
+        uipUniformityMeritFunction
+
+        ceUniformityMeritOptions = {...
+        'X-Y Linear Bias', 'Half-field Left', 'Half-field Right', ...
+        'Quadrant Top-Right', 'Quadrant Top-Left', 'Quadrant Bottom-Left', 'Quadrant Bottom-Right', ...
+        'Bias off'}
 
         uieIntrinsicDwellTime
         uieMinDwellTime
@@ -550,6 +557,7 @@ classdef Uniformity < mic.Base
             'uieROIC1', ...
             'uieROIC2', ...
             'uieUniformityBiasX', ...
+            'uieUniformityBiasY', ...
             'uieIntrinsicDwellTime', ...
             'uieNumWobbleX', ...
             'uieNumWobbleY', ...
@@ -735,8 +743,7 @@ classdef Uniformity < mic.Base
             this.uieROIR1.build(hPanel, dLeft + 220, dTop, 100, 30);
             this.uieROIR2.build(hPanel, dLeft + 330, dTop, 100, 30);
             
-            this.uieUniformityBiasX.build(hPanel, dLeft + 500, dTop, 150, 30);
-
+           
 
 
 
@@ -766,7 +773,13 @@ classdef Uniformity < mic.Base
             % this.uieIntrinsicDwellTime.build(hPanel, 20, dTop, 100, 30);
             % this.uieMinDwellTime.build(hPanel, 140, dTop, 100, 30);
 
-            % dTop = dTop + 60;
+            dLeft = 20;
+
+            this.uipUniformityMeritFunction.build(hPanel, dLeft, dTop, 150, 30);
+            this.uieUniformityBiasX.build(hPanel, dLeft  + 160, dTop, 150, 30);
+            this.uieUniformityBiasY.build(hPanel, dLeft + 320, dTop, 150, 30);
+
+            dTop = dTop + 60;
             this.uibComputeCombo.build(hPanel,  20, dTop, 100, 30);
 
             dTop = dTop + 40;
@@ -1161,7 +1174,19 @@ classdef Uniformity < mic.Base
             this.uieUniformityBiasX = mic.ui.common.Edit(...
                 'cLabel', 'Uniformity Bias X (%)', ...
                 'cType', 'd' ...
-                );
+            );
+
+            this.uieUniformityBiasY = mic.ui.common.Edit(...
+                'cLabel', 'Uniformity Bias Y (%)', ...
+                'cType', 'd' ...
+            );
+
+            this.uipUniformityMeritFunction = mic.ui.common.Popup(...
+                'cLabel', 'Merit Function', ...
+                'ceOptions', this.ceUniformityMeritOptions, ...
+                'lShowLabel', true, ...
+                'lShow', true...
+            );
 
             this.uiePathToImagesDir = mic.ui.common.Edit(...
                 'cLabel', 'Path to Images Dir', ...
@@ -1697,15 +1722,48 @@ classdef Uniformity < mic.Base
             xIdx = linspace(-1, 1, length(dROIc));
             yIdx = linspace(-1, 1, length(dROIr));
             [X, Y] = meshgrid(xIdx, yIdx);
-            
-            dBiasX = this.uieUniformityBiasX.get()/100;
-            dBiasY = 0.1;
-            
-            dBiasPlane = 1 + dBiasX*X + dBiasY*Y;
-            dBiasLine = dBiasPlane(:);
+
+            dMeritLine = ones(size(C,2), 1);
+
+            % Switch based on options:
+            switch this.uipUniformityMeritFunction.getSelectedIndex()
+                case 1 % Linear bias
+                    dBiasX = this.uieUniformityBiasX.get()/100;
+                    dBiasY = this.uieUniformityBiasY.get()/100;
+                    dBiasPlane = 1 + dBiasX*X + dBiasY*Y;
+                    dMeritLine = dBiasPlane(:);
+
+                case 2 % Half field Left
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X < 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 3 % Half field Right
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X > 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 4 % Upper Right quadrant
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X > 0 & Y > 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 5 % Upper Left quadrant
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X < 0 & Y > 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 6 % Lower Left quadrant
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X < 0 & Y < 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 7 % Lower Right quadrant
+                    dBiasPlane = zeros(size(X));
+                    dBiasPlane(X > 0 & Y < 0) = 1;
+                    dMeritLine = dBiasPlane(:);
+                case 8 % Do nothing
+                    % Do nothing
+            end
+
             
 %             b = dMaxCenter*ones(size(C,2), 1);
-            b = dMaxCenter*ones(size(C,2), 1).*dBiasLine;
+            b = dMaxCenter*ones(size(C,2), 1).*dMeritLine;
             D = C';
 
             
