@@ -49,6 +49,8 @@ classdef Uniformity < mic.Base
         uieROIR2
         uieROIC1
         uieROIC2
+        
+        uieUniformityBiasX
 
         uieIntrinsicDwellTime
         uieMinDwellTime
@@ -547,6 +549,7 @@ classdef Uniformity < mic.Base
             'uieROIR2', ...
             'uieROIC1', ...
             'uieROIC2', ...
+            'uieUniformityBiasX', ...
             'uieIntrinsicDwellTime', ...
             'uieNumWobbleX', ...
             'uieNumWobbleY', ...
@@ -731,6 +734,8 @@ classdef Uniformity < mic.Base
             this.uieROIC2.build(hPanel, dLeft + 110, dTop, 100, 30);
             this.uieROIR1.build(hPanel, dLeft + 220, dTop, 100, 30);
             this.uieROIR2.build(hPanel, dLeft + 330, dTop, 100, 30);
+            
+            this.uieUniformityBiasX.build(hPanel, dLeft + 500, dTop, 150, 30);
 
 
 
@@ -1152,6 +1157,11 @@ classdef Uniformity < mic.Base
                 'fhDirectCallback', @this.setROI, ...
                 'cType', 'd' ...
                 );
+            
+            this.uieUniformityBiasX = mic.ui.common.Edit(...
+                'cLabel', 'Uniformity Bias X (%)', ...
+                'cType', 'd' ...
+                );
 
             this.uiePathToImagesDir = mic.ui.common.Edit(...
                 'cLabel', 'Path to Images Dir', ...
@@ -1308,6 +1318,8 @@ classdef Uniformity < mic.Base
             if (this.uieROIC2.get() == 0)
                 this.uieROIC2.set(200);
             end
+            
+            
             if (this.uieROIR1.get() == 0)
                 this.uieROIR1.set(0);
             end
@@ -1684,11 +1696,12 @@ classdef Uniformity < mic.Base
             % Define biased curve:
             xIdx = linspace(-1, 1, length(dROIc));
             yIdx = linspace(-1, 1, length(dROIr));
-            [X,Y] = meshgrid(xIdx, yIdx);
+            [X, Y] = meshgrid(xIdx, yIdx);
             
-            dBiasX = 0.2;
+            dBiasX = this.uieUniformityBiasX.get()/100;
+            dBiasY = 0.1;
             
-            dBiasPlane = 1 + dBiasX*X;
+            dBiasPlane = 1 + dBiasX*X + dBiasY*Y;
             dBiasLine = dBiasPlane(:);
             
 %             b = dMaxCenter*ones(size(C,2), 1);
@@ -1884,12 +1897,14 @@ classdef Uniformity < mic.Base
             idxUR = find(lidxUR);
             idxLL = find(lidxLL);
             idxLR = find(lidxLR);
-
+            ulCt = 0;
             ct = 1;
             for k = idxUL'
+                ulCt = ulCt + 1;
+                fprintf('Computing Uniformity combinations %d/%d\n', ulCt, length(idxUL));
                 for m = idxUR'
-                    for l = idxLL'
-                        for n = idxLR'
+                    for l = idxLR'
+                        for n = idxLL'
                             dCombo = [D(:, k), D(:, m), D(:, l), D(:, n)];
                             % Solve for the coefficients using non-negative least squares
 
@@ -1919,7 +1934,11 @@ classdef Uniformity < mic.Base
                     end
                 end
             end
+            if ~isempty(dResultVec)
             dResultVec = sortrows(dResultVec, 1);
+            else
+                fprintf('No quads avail \n')
+            end
 
             % Limit the number of results:
             dResultVec = dResultVec(1:dMaxResults, :);

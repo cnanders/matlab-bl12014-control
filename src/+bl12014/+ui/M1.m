@@ -308,9 +308,10 @@ classdef M1 < mic.Base
 
 
 
+            dTop = dTop + dSep;
 
             % this.uieWobbleLC.build(this.hPanel, dLeft, dTop,  100, 30);
-            % this.uibZeroEncoders.build(this.hPanel, dLeft, dTop,  100, 30);
+            this.uibZeroEncoders.build(this.hPanel, dLeft, dTop -10,  100, 30);
             % dTop = dTop + dSep;
             % this.uigsCoupledMove.build(this.hPanel, dLeft, dTop);
             
@@ -625,7 +626,7 @@ classdef M1 < mic.Base
 
             % this.uieWobbleLC.setVal('[1, 1]');
 
-            this.uibZeroEncoders = mic.ui.common.Button('cText', 'Reset encoders' , 'fhDirectCallback', @(src,evt) this.zeroEncoders());
+            this.uibZeroEncoders = mic.ui.common.Button('cText', 'Zero encoders' , 'fhDirectCallback', @(src,evt) this.zeroEncoders());
             this.uibStop = mic.ui.common.Button('cText', 'Stop' , 'fhDirectCallback', @(src,evt) this.hardware.getGalilM1().stop());
 
             
@@ -665,7 +666,7 @@ classdef M1 < mic.Base
 
         function zeroEncoders(this)
 
-            a = questdlg('Are you sure you want to zero the encoders? This cannot be undone', 'Zero Encoders', 'Yes', 'No', 'No');
+            a = questdlg('Are you sure you want to zero the M1 motor encoders? This cannot be undone', 'Zero Encoders', 'Yes', 'No', 'No');
             if strcmp(a, 'Yes')
                 this.hardware.getGalilM1().zeroEncoders();
             end
