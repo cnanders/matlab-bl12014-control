@@ -211,7 +211,8 @@ classdef Reticle < mic.Base
             st = struct();
             st.uiCoarseStage = this.uiCoarseStage.save();
 
-            st.uiFineStage = this.uiFineStage.save();            
+            st.uiFineStage = this.uiFineStage.save();     
+            st.uiReticleFiducializedMove = this.uiReticleFiducializedMove.save();       
         end
         
         function load(this, st)
@@ -221,6 +222,10 @@ classdef Reticle < mic.Base
             
             if isfield(st, 'uiFineStage')
                 this.uiFineStage.load(st.uiFineStage)
+            end
+
+            if isfield(st, 'uiReticleFiducializedMove')
+                this.uiReticleFiducializedMove.load(st.uiReticleFiducializedMove)
             end
         end
         
