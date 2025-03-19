@@ -71,6 +71,7 @@ classdef Uniformity < mic.Base
         uibPrevImg
 
         uibComputeCombo
+        uitComputeStatus
 
         % Labels
         uitUnitVector
@@ -332,7 +333,20 @@ classdef Uniformity < mic.Base
 
 
             this.lTaskAcquireSuccess = true;
-        end 
+         end 
+        
+         function saveWobbleParams(this)
+            % Save wobble coordinates to the task dir:
+            cPath = fullfile(this.cTaskAcquireDir, sprintf('wobble-coordinates.mat'));
+            
+            stSave = struct;
+            stSave.dWobbleIdxX = this.dWobbleIdxX;
+            stSave.dWobbleIdxY = this.dWobbleIdxY;
+            stSave.dWobbleCoordinates = this.dWobbleCoordinates;
+            stSave.dWobbleStepSizeX = this.uieM1WobbleStepSizeX.get();
+            stSave.dWobbleStepSizeY = this.uieM1WobbleStepSizeY.get();
+            save(cPath, 'stSave');
+        end
 
         
         % Sets M1 motor 1 and 2 to the values in the series:
@@ -780,7 +794,8 @@ classdef Uniformity < mic.Base
             this.uieUniformityBiasY.build(hPanel, dLeft + 320, dTop, 150, 30);
 
             dTop = dTop + 60;
-            this.uibComputeCombo.build(hPanel,  20, dTop, 100, 30);
+            this.uibComputeCombo.build(hPanel,  20, dTop, 150, 30);
+            this.uitComputeStatus.build(hPanel, 200, dTop, 200, 30);
 
             dTop = dTop + 40;
             this.uilCombos.build(hPanel, 20, dTop, 500, 150);
@@ -1236,8 +1251,11 @@ classdef Uniformity < mic.Base
                 'cText', 'Recompute combinations', ...
                 'fhDirectCallback', @this.onComputeCombo ...
                 );
+            this.uitComputeStatus = mic.ui.common.Text(...
+                'cVal', '...' ...
+                );
            
-
+    
             this.uieIntrinsicDwellTime = mic.ui.common.Edit(...
                 'cLabel', 'Intrinsic Dwell Time (ms)', ...
                 'cType', 'd' ...
@@ -1478,6 +1496,8 @@ classdef Uniformity < mic.Base
             hold on
             this.plotUniformityGuides();
 
+            set(this.haUniformityCamAxes, 'YDir', 'normal');
+
             lVal = true
         end
 
@@ -1562,7 +1582,14 @@ classdef Uniformity < mic.Base
 
             % Execute the task sequence:
             this.hUniformityTaskSequence.execute();
+
+           
+
+           
+
         end
+        
+
 
        
 
@@ -1771,10 +1798,20 @@ classdef Uniformity < mic.Base
 
             % dResultIdeal = this.computeIdeal(D, b, dFluxCenter, dROIr, dROIc);
             tic
+            this.uitComputeStatus.set('Computing 2-pt wobbles')
+            drawnow
+
             dResultPairs = this.computePairs(D, b, dFluxCenter, 15, dROIr, dROIc);
+            this.uitComputeStatus.set('Computing 3-pt wobbles')
+            drawnow
             dResultTriples = this.computeTriples(D, b, dFluxCenter, 10, dROIr, dROIc);
+            this.uitComputeStatus.set('Computing 4-pt wobbles')
+            drawnow
             dResultQuads = this.computeQuadruples(D, b, dFluxCenter, 10, dROIr, dROIc);
             toc
+            
+            
+
 
             % Append the results to the result vector:
             dResultVec = [dResultVec; dResultQuads; dResultPairs; dResultTriples];
@@ -1790,6 +1827,9 @@ classdef Uniformity < mic.Base
                  };
  
              dNumResults = length(this.dResultVec);
+             
+             this.uitComputeStatus.set('Uniformity combinations finished computing!');
+
  
  
              for k = 1:dNumResults
@@ -1906,6 +1946,8 @@ classdef Uniformity < mic.Base
 
             ct = 1;
             for k = 1:size(D, 2)
+                this.uitComputeStatus.set(sprintf('Computing Uniformity Triple %d/%d\n', k, size(D, 2)));
+                drawnow
                 for m = k+1:size(D, 2)
                     for l = m+1:size(D, 2)
                         dCombo = [D(:, k), D(:, m), D(:, l)];
@@ -1959,7 +2001,8 @@ classdef Uniformity < mic.Base
             ct = 1;
             for k = idxUL'
                 ulCt = ulCt + 1;
-                fprintf('Computing Uniformity combinations %d/%d\n', ulCt, length(idxUL));
+                this.uitComputeStatus.set(sprintf('Computing Uniformity Quad combinations %d/%d\n', ulCt, length(idxUL)));
+                drawnow
                 for m = idxUR'
                     for l = idxLR'
                         for n = idxLL'
@@ -1996,6 +2039,7 @@ classdef Uniformity < mic.Base
             dResultVec = sortrows(dResultVec, 1);
             else
                 fprintf('No quads avail \n')
+                return
             end
 
             % Limit the number of results:
@@ -2003,7 +2047,7 @@ classdef Uniformity < mic.Base
         end
 
         function handleSelectCombo(this, src, evt)
-
+  
             % Get the selected index:
             dIdx = double(this.uilCombos.getSelectedIndexes());
             if isempty(dIdx)
