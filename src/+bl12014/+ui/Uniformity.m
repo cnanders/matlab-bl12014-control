@@ -164,6 +164,7 @@ classdef Uniformity < mic.Base
         uiSetFid2
 
         uigsExposure
+        uigsGain
 
         uiSequenceAutoWobble
 
@@ -627,7 +628,7 @@ classdef Uniformity < mic.Base
             dTop = 35;
 
 
-            dTop = 140
+            dTop = 50
             
             hPanel = uipanel(...
                 'Parent', hParent,...
@@ -638,7 +639,7 @@ classdef Uniformity < mic.Base
                 dLeft ...
                 dTop  ...
                 this.dWidth - 40 ...
-                600], hParent) ...
+                650], hParent) ...
                 );
 
             this.haUniformityCamAxes = axes(...
@@ -665,6 +666,8 @@ classdef Uniformity < mic.Base
             this.uibAcquire.build(hPanel, dLeft + 230 + 105, dTop, 100, 24);
             dTop = dTop + 30;
             this.uigsExposure.build(hPanel, dLeft, dTop);
+            dTop = dTop + 30;
+            this.uigsGain.build(hPanel, dLeft, dTop)
 
             dTop = dTop + 30;
             dLeft = dLeft + 5;
@@ -685,7 +688,7 @@ classdef Uniformity < mic.Base
                 'Position', mic.Utils.lt2lb([ ...
                 dLeft + 10 ...
                 dTop  ...
-                680 ...
+                630 ...
                 140], hParent) ...
                 );
 
@@ -925,6 +928,37 @@ classdef Uniformity < mic.Base
                 'fhSet', @(dVal) this.hCameraUniformity.setExposure(dVal), ...
                 'cName', [this.cName, 'exposure'], ...
                 'cLabel', 'Exposure Setting' ...
+            );
+
+            cPathConfig = fullfile(...
+                bl12014.Utils.pathUiConfig(), ...
+                'get-set-number', ...
+                'config-uniformity-cam-gain.json' ...
+            );
+
+            uiConfig = mic.config.GetSetNumber(...
+                'cPath',  cPathConfig ...
+            );
+
+
+            this.uigsGain = mic.ui.device.GetSetNumber(...
+                'clock', this.clock, ...
+                'uiClock', this.uiClock, ...
+                'dWidthName', this.dWidthName, ... 
+                'lShowInitButton', false, ...
+                'lShowZero', false, ...
+                'lShowRel', false, ...
+                'lShowRange', true, ...
+                'lShowStores', false, ...
+                'lShowUnit', false, ...
+                'lUseFunctionCallbacks', true, ...
+                'lShowLabels', false, ...
+                'fhIsVirtual', @() false, ...
+                'config', uiConfig, ...
+                'fhGet', @() this.hCameraUniformity.getGain(), ...
+                'fhSet', @(dVal) this.hCameraUniformity.setGain(dVal), ...
+                'cName', [this.cName, 'gain'], ...
+                'cLabel', 'Gain Setting' ...
             );
 
             this.uiWobbleWorkingMode = bl12014.ui.SMSMoxaComm(...
@@ -1371,13 +1405,13 @@ classdef Uniformity < mic.Base
             end
 
             if (this.uieM1WobbleStepSizeX.get() == 0)
-                this.uieM1WobbleStepSizeX.set(400);
+                this.uieM1WobbleStepSizeX.set(550);
             end
             if (this.uieM1WobbleStepSizeY.get() == 0)
                 this.uieM1WobbleStepSizeY.set(250);
             end
             if (this.uieNumWobbleX.get() == 0)
-                this.uieNumWobbleX.set(11);
+                this.uieNumWobbleX.set(10);
             end
             if (this.uieNumWobbleY.get() == 0)
                 this.uieNumWobbleY.set(4);
@@ -1816,6 +1850,14 @@ classdef Uniformity < mic.Base
             % Append the results to the result vector:
             dResultVec = [dResultVec; dResultQuads; dResultPairs; dResultTriples];
             
+            % Filter results with coefficients less than 10%:
+            dTHRESHOLD = 0.1;
+            for k = size(dResultVec, 1):-1:1
+                if any(dResultVec{k,2} < dTHRESHOLD)
+                    dResultVec(k,:) = [];
+                end
+                
+            end
 
              % Sort result vector by error:
              this.dResultVec = sortrows(dResultVec, 1);
@@ -2187,6 +2229,8 @@ classdef Uniformity < mic.Base
             
             cPathBmp = fullfile(cPath, '*.bmp');
             cPathPng = fullfile(cPath, '*.png');
+            
+            cPathWobbleSetup = fullfile(cPath, 'wobble-coordinates.mat');
 
             % Get files with .bmp extension
             cFilesBmp = dir(cPathBmp);
@@ -2275,6 +2319,29 @@ classdef Uniformity < mic.Base
             end
 
             this.dActiveIdx = this.dCenterIdx;
+            
+            
+            % Load wobble coordinates
+            try
+                a = load(cPathWobbleSetup);
+                stWobbleVals = a.stSave;
+
+                this.dWobbleIdxX = stWobbleVals.dWobbleIdxX;
+                this.dWobbleIdxY = stWobbleVals.dWobbleIdxY;
+                this.dWobbleCoordinates = stWobbleVals.dWobbleCoordinates;
+
+                [sr, sc] = size(stWobbleVals.dWobbleIdxX);
+
+                this.uieM1WobbleStepSizeX.set(stWobbleVals.dWobbleStepSizeX);
+                this.uieM1WobbleStepSizeY.set(stWobbleVals.dWobbleStepSizeY);
+                this.uieNumWobbleY.set(sc);
+                this.uieNumWobbleX.set(sr);
+
+
+
+            catch
+                msgbox(sprintf('Cannot find .mat file storing wobble coordinates at %s', cPathWobbleSetup))
+            end
 
            
 
